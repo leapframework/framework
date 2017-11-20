@@ -43,7 +43,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
     protected boolean        autoCreateTable;
     protected boolean        autoGenerateColumns;
     protected Boolean        queryFilterEnabled;
-    protected boolean        remote;
+    protected boolean        remote=false;
     private RemoteSettings    remoteSettings;
 
     protected List<FieldMappingBuilder>    fieldMappings = new ArrayList<>();

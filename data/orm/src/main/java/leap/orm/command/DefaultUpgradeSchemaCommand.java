@@ -36,9 +36,9 @@ import java.util.List;
 import java.util.function.Predicate;
 
 public class DefaultUpgradeSchemaCommand extends AbstractDmoCommand implements UpgradeSchemaCommand,Predicate<DbCommand> {
-	
+
 	private static final Log log = LogFactory.get(DefaultUpgradeSchemaCommand.class);
-	
+
     protected EntityMapping[] entityMappings;
     protected boolean         dropTableEnabled;
     protected boolean         dropTableObjectsEnabled;
@@ -52,7 +52,7 @@ public class DefaultUpgradeSchemaCommand extends AbstractDmoCommand implements U
 	public DefaultUpgradeSchemaCommand(Dmo dmo) {
 	    super(dmo);
     }
-	
+
     public DefaultUpgradeSchemaCommand(Dmo dmo, EntityMapping[] entityMappings) {
         super(dmo);
         this.entityMappings = entityMappings;
@@ -63,12 +63,12 @@ public class DefaultUpgradeSchemaCommand extends AbstractDmoCommand implements U
 		this.dropTableObjectsEnabled = dropTableObjectsEnabled;
 	    return this;
     }
-	
+
 	@Override
 	public boolean isDropTableObjectsEnabled() {
 		return dropTableObjectsEnabled;
 	}
-	
+
 	@Override
 	public boolean isDropColumnEnabled() {
 		return dropColumnEnabled;
@@ -123,7 +123,7 @@ public class DefaultUpgradeSchemaCommand extends AbstractDmoCommand implements U
 		this.dropIndexEnabled = dropIndexEnabled;
 		return this;
 	}
-	
+
 	@Override
 	public boolean isAlterColumnEnabled() {
 		return alterColumnEnabled;
@@ -138,30 +138,30 @@ public class DefaultUpgradeSchemaCommand extends AbstractDmoCommand implements U
 	@Override
     public boolean test(DbCommand command) {
 		boolean apply = false;
-		
+
 		if(command instanceof DropTable){
 			apply = isDropTableEnabled();
-			
+
 			if(!apply){
 				log.info("Dropping table '{}' is disabled",((DropTable)command).getTableName());
 			}
-			
+
 		}else if(command instanceof DropColumn){
 			apply = isDropTableObjectsEnabled() || isDropColumnEnabled();
-			
+
 			if(!apply){
 				log.info("Dropping column '{}.{}' is disabled",
 						 ((DropColumn)command).getTableName(),((DropColumn)command).getColumnName());
 			}
 		}else if(command instanceof DropPrimaryKey){
 			apply = isDropTableObjectsEnabled() || isDropPrimaryKeyEnabled();
-			
+
 			if(!apply){
 				log.info("Dropping primary key of table '{}' is disabled",((DropPrimaryKey)command).getTableName());
 			}
 		}else if(command instanceof DropForeignKey){
 			apply = isDropTableObjectsEnabled() || isDropForeignKeyEnabled();
-			
+
 			if(!apply){
 				log.info("Dropping foreign key '{}' of table '{}' is disabled",
 						 ((DropForeignKey)command).getForeignKeyName(),((DropForeignKey)command).getTableName());
@@ -176,7 +176,7 @@ public class DefaultUpgradeSchemaCommand extends AbstractDmoCommand implements U
 		}else{
 			apply = true;
 		}
-		
+
 	    return apply;
     }
 
@@ -260,7 +260,7 @@ public class DefaultUpgradeSchemaCommand extends AbstractDmoCommand implements U
 		    return execution.execute();
 		}
     }
-	
+
 	protected List<SchemaChanges> compareChanges() {
         List<SchemaChanges> allChanges = new ArrayList<SchemaChanges>();
 
@@ -275,6 +275,7 @@ public class DefaultUpgradeSchemaCommand extends AbstractDmoCommand implements U
         }else{
             List<DbTable> tables = new ArrayList<>();
             for(EntityMapping em : entityMappings) {
+            	if(em.isRemote()) continue;
                 tables.add(em.getTable());
                 if(em.hasSecondaryTable()) {
                     tables.add(em.getSecondaryTable());
