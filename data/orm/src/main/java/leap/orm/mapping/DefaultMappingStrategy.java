@@ -368,10 +368,11 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
         remoteSettings.setRemoteType(rType);
         if(reAn!=null){
         	emb.setEntityName(Strings.firstNotEmpty(reAn.value(), entityType.getSimpleName()));
-        	remoteSettings.setPathPrefix(Strings.firstNotEmpty(reAn.path(),Strings.lowerUnderscore(emb.getEntityName())));
+        	remoteSettings.setRelativePath(Strings.firstNotEmpty(reAn.relativePath(),Strings.lowerUnderscore(emb.getEntityName())));
+        	remoteSettings.setEndpoint(reAn.endPoint());
         }else{
         	emb.setEntityName(entityType.getSimpleName());
-        	remoteSettings.setPathPrefix(Strings.lowerUnderscore(emb.getEntityName()));
+        	remoteSettings.setRelativePath(Strings.lowerUnderscore(emb.getEntityName()));
         }
         emb.setTableName(emb.getEntityName());
 
