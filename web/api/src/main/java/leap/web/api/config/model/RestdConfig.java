@@ -281,6 +281,7 @@ public class RestdConfig {
         private String               path;
         private String               script;
         private String               scriptPath;
+        private Boolean              prior;
         private MApiOperationBuilder metaOperation;
 
         private Map<String, Object> arguments = new LinkedHashMap<>();
@@ -319,6 +320,15 @@ public class RestdConfig {
 
         public void setScript(String script) {
             this.script = script;
+        }
+
+        @Override
+        public Boolean getPrior() {
+            return prior;
+        }
+
+        public void setPrior(Boolean prior) {
+            this.prior = prior;
         }
 
         @Override

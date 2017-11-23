@@ -27,9 +27,9 @@ import leap.orm.mapping.EntityMapping;
 import java.util.List;
 
 public class DefaultCreateTableCommand extends AbstractDmoCommand implements CreateTableCommand {
-    
+
     protected final EntityMapping em;
-    
+
     protected DbExecution execution;
     protected String      tableName;
 
@@ -59,6 +59,10 @@ public class DefaultCreateTableCommand extends AbstractDmoCommand implements Cre
     @Override
     protected boolean doExecute() {
         DbTable table;
+
+        if(em.isRemote()){
+        	return false;
+        }
 
         if(Strings.equalsIgnoreCase(tableName, em.getTableName())) {
             table = em.getTable();

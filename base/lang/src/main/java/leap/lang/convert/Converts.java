@@ -106,6 +106,7 @@ public class Converts {
 		
 		//Clob, Blob, InputStream
 		registerAssignableFrom(Clob.class, new ClobConverter());
+        registerAssignableFrom(Map.class,  new MapConverter.ConcreteMapConverter());
 		registerAssignableFrom(Blob.class, new BlobConverter());
 		registerAssignableFrom(InputStream.class, new InputStreamConverter());
 		

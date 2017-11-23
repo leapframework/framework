@@ -64,7 +64,7 @@ public class ScalarTest extends OrmTestCase {
 		assertEquals("b",firstNameArray[1]);
 		
 		Scalars lastNames = Owner.query().select("lastName").scalars();
-		Integer[] lastNameArray = lastNames.arrray(Integer.class);
+		Integer[] lastNameArray = lastNames.array(Integer.class);
 		assertEquals(new Integer(0),lastNameArray[0]);
 		assertEquals(new Integer(1),lastNameArray[1]);
 		

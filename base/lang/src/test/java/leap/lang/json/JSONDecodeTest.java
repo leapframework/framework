@@ -19,6 +19,7 @@ package leap.lang.json;
 import leap.junit.concurrent.ConcurrentTestCase;
 import leap.lang.Beans;
 import leap.lang.New;
+import leap.lang.convert.StringParsable;
 import leap.lang.io.IO;
 import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
@@ -245,8 +246,48 @@ public class JSONDecodeTest extends ConcurrentTestCase {
         assertEquals("[1,2]", JSON.encode(JSON.decode("[/*comment\n*/1,2]")));
         assertEquals("[1,2]", JSON.encode(JSON.decode("[1,2/*comment\n*/]")));
     }
+
+    @Test
+    public void testStringParsable() {
+        StringParsableBean bean = JSON.decode("\"a\"", StringParsableBean.class);
+        assertEquals("a", bean.getName());
+
+        Map<String, StringParsableBean> map = JSON.decode("{\"map\":{\"k\":\"v\"}}", StringParsableBeans.class).map;
+        bean = map.get("k");
+        assertEquals("v", bean.getName());
+    }
+
+    private static class StringParsableBeans {
+        Map<String, StringParsableBean> map;
+
+        public Map<String, StringParsableBean> getMap() {
+            return map;
+        }
+
+        public void setMap(Map<String, StringParsableBean> map) {
+            this.map = map;
+        }
+    }
+
+    private static class StringParsableBean implements StringParsable {
+
+        private String name;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public void parseString(String s) {
+            this.name = s;
+        }
+    }
     
-    private static  class JsonWriterBean{
+    private static class JsonWriterBean{
         public String str = "str";
         public String strEmpty = "";
         public String strNull = null;

@@ -14,4 +14,12 @@
  *  limitations under the License.
  */
 
-package leap.core.doc;
+package leap.web.api.restd;
+
+public interface RestdOperationSupport {
+
+    default boolean isOperationExists(RestdContext context, String verb, String path) {
+        return false;
+    }
+
+}

@@ -16,6 +16,7 @@
 
 package leap.web.api.restd.crud;
 
+import leap.lang.Arrays2;
 import leap.lang.Strings;
 import leap.orm.dao.Dao;
 import leap.web.action.ActionParams;
@@ -32,6 +33,9 @@ import leap.web.api.restd.RestdModel;
 import leap.web.api.restd.RestdProcessor;
 import leap.web.api.restd.RestdContext;
 import leap.web.route.RouteBuilder;
+
+import java.util.Map;
+import java.util.function.Function;
 
 /**
  * Delete by id operation.
@@ -55,7 +59,7 @@ public class DeleteOperation extends CrudOperation implements RestdProcessor {
         RouteBuilder      route  = rm.createRoute(verb, path);
 
         action.setName(Strings.lowerCamel("delete", model.getName()));
-        action.setFunction((params) -> execute(context.getApi(), dao, model, params));
+        action.setFunction(new DeleteFunction(context.getApi(), dao, model));
 
         addIdArgument(action, model);
         addArgument(action, DeleteOptions.class, "options");
@@ -68,20 +72,38 @@ public class DeleteOperation extends CrudOperation implements RestdProcessor {
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 
-    protected Object execute(Api api, Dao dao, RestdModel model, ActionParams params) {
-        ApiMetadata amd = api.getMetadata();
-        MApiModel   am  = amd.getModel(model.getName());
+    private final class DeleteFunction implements Function<ActionParams, Object> {
+        private final Api        api;
+        private final Dao        dao;
+        private final RestdModel model;
 
-        ModelExecutorContext context = new SimpleModelExecutorContext(api, am, dao, model.getEntityMapping());
-        ModelDeleteExecutor executor = mef.newDeleteExecutor(context);
+        public DeleteFunction(Api api, Dao dao, RestdModel model) {
+            this.api = api;
+            this.dao = dao;
+            this.model = model;
+        }
 
-        Object        id      = params.get(0);
-        DeleteOptions options = params.get(1);
+        @Override
+        public Object apply(ActionParams params) {
+            ApiMetadata amd = api.getMetadata();
+            MApiModel   am  = amd.getModel(model.getName());
 
-        if(executor.deleteOne(id, options).success) {
-            return ApiResponse.NO_CONTENT;
-        }else{
-            return ApiResponse.NOT_FOUND;
+            ModelExecutorContext context = new SimpleModelExecutorContext(api, am, dao, model.getEntityMapping());
+            ModelDeleteExecutor executor = mef.newDeleteExecutor(context);
+
+            Object        id      = params.get(0);
+            DeleteOptions options = params.get(1);
+
+            if(executor.deleteOne(id, options).success) {
+                return ApiResponse.NO_CONTENT;
+            }else{
+                return ApiResponse.NOT_FOUND;
+            }
+        }
+
+        @Override
+        public String toString() {
+            return "Function:" + "Delete " + model.getName() + "";
         }
     }
 }

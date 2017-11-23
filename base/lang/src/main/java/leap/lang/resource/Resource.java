@@ -169,9 +169,10 @@ public interface Resource extends InputStreamSource {
 	String getFilename();
 	
 	/**
-	 * Returns the absolute path of the {@link File} object returned by calling {@link #getFile()}.
-	 * 
-	 * @throws IllegalStateException if error calling {@link #getFile()}.
+	 * Returns the absolute path of the underlying {@link File}.
+     *
+     * <p/>
+     * Returns {@link #getURLString()} if not a {@link File}.
 	 */
 	String getFilepath() throws IllegalStateException;
 

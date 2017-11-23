@@ -69,6 +69,15 @@ public interface ActionContext extends AttributeAccessor {
 	Action getAction();
 
 	/**
+	 * Returns execution of current executing action
+	 */
+	ActionExecution getActionExecution();
+	/**
+	 * Sets execution of current executing action
+	 */
+	void setActionExecution(ActionExecution execution);
+	
+	/**
 	 * Returns an immutable map contains all the variables resolved in current routing path.
 	 */
 	Map<String, String> getPathParameters();

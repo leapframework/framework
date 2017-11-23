@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.leapframework.org/schema/beans">
-
+<beans xmlns="http://www.leapframework.org/schema/beans" if-servlet-environment="true">
     <bean type="leap.web.api.Apis"
           class="leap.web.api.DefaultApis" primary="true"/>
 
@@ -67,4 +66,10 @@
 
     <!-- dyna -->
     <bean type="leap.web.api.dyna.DynaApiFactory" class="leap.web.api.dyna.DefaultDynaApiFactory" primary="true"/>
+
+	<!-- remote rest entity -->
+	<bean type="leap.web.api.remote.ds.RestDatasourceManager"
+		class="leap.web.api.remote.ds.DefaultRestDataSourceManager" primary="true"/>
+	<bean class="leap.web.api.remote.TokenFetcher" />
+
 </beans>

@@ -44,6 +44,10 @@ public class DefaultDropTableCommand extends AbstractDmoCommand implements DropT
     protected boolean doExecute() {
         Confirm.checkConfirmed("dmo.cmdDropTable", "Will drop the table in db and lost all the data in table");
 
+        if(em.isRemote()){
+        	return false;
+        }
+
         if(!db.checkTableExists(em.getTable())) {
             return false;
         }

@@ -36,6 +36,8 @@ import leap.web.api.restd.RestdModel;
 import leap.web.api.restd.RestdProcessor;
 import leap.web.route.RouteBuilder;
 
+import java.util.function.Function;
+
 /**
  * Count records operation.
  */
@@ -43,7 +45,7 @@ public class CountOperation extends CrudOperation implements RestdProcessor {
 
     @Override
     public void preProcessModel(ApiConfigurator c, RestdContext context, RestdModel model) {
-        if(!context.getConfig().allowQueryModel(model.getName())) {
+        if(!context.getConfig().allowCountModel(model.getName())) {
             return;
         }
 
@@ -58,7 +60,7 @@ public class CountOperation extends CrudOperation implements RestdProcessor {
         RouteBuilder      route  = rm.createRoute(verb, path);
 
         action.setName(Strings.lowerCamel("count", model.getName()));
-        action.setFunction((params) -> execute(context.getApi(), dao, model, params));
+        action.setFunction(new CountFunction(context.getApi(), dao, model));
 
         addArgument(action, CountOptions.class, "options");
         addModelCountResponse(action, model);
@@ -70,18 +72,35 @@ public class CountOperation extends CrudOperation implements RestdProcessor {
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 
-    protected Object execute(Api api, Dao dao, RestdModel model, ActionParams params) {
-        ApiMetadata amd = api.getMetadata();
-        MApiModel   am  = amd.getModel(model.getName());
+    private final class CountFunction implements Function<ActionParams, Object> {
+        private final Api        api;
+        private final Dao        dao;
+        private final RestdModel model;
 
-        ModelExecutorContext context  = new SimpleModelExecutorContext(api, am, dao, model.getEntityMapping());
-        ModelQueryExecutor   executor = mef.newQueryExecutor(context);
+        public CountFunction(Api api, Dao dao, RestdModel model) {
+            this.api = api;
+            this.dao = dao;
+            this.model = model;
+        }
 
-        CountOptions options = params.get(0);
+        @Override
+        public Object apply(ActionParams params) {
+            ApiMetadata amd = api.getMetadata();
+            MApiModel   am  = amd.getModel(model.getName());
 
-        QueryListResult result = executor.count(options, null);
+            ModelExecutorContext context  = new SimpleModelExecutorContext(api, am, dao, model.getEntityMapping());
+            ModelQueryExecutor   executor = mef.newQueryExecutor(context);
 
-        return ApiResponse.of(result.count);
+            CountOptions options = params.get(0);
+
+            QueryListResult result = executor.count(options, null);
+
+            return ApiResponse.of(result.count);
+        }
+
+        @Override
+        public String toString() {
+            return "Function:" + "Count " + model.getName() + "";
+        }
     }
-
 }

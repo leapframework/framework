@@ -58,6 +58,8 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 		INIT_PROPERTIES.add(INIT_PROPERTY_DEFAULT_LOCALE);
 	}
 
+    protected AppConfigSupport[]            preSupports         = new AppConfigSupport[0];
+    protected AppConfigSupport[]            postSupports        = new AppConfigSupport[0];
     protected PropertyProvider              propertyProvider    = null;
     protected String                        profile             = null;
     protected Boolean                       debug               = null;
@@ -76,13 +78,23 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     protected Map<String, String>           propertiesReadonly  = Collections.unmodifiableMap(properties);
     protected Map<String, List<String>>     arrayProperties     = new ConcurrentHashMap<>();
     protected List<SysPermissionDef>        permissions         = new ArrayList<>();
-    protected List<SysPermissionDef>        permissionsReadonly = Collections.unmodifiableList(permissions);
-    protected ResourceSet                   resources           = null;
-    protected DefaultPlaceholderResolver    placeholderResolver = new DefaultPlaceholderResolver(this);
+    protected List<SysPermissionDef>     permissionsReadonly = Collections.unmodifiableList(permissions);
+    protected ResourceSet                resources           = null;
+    protected DefaultPlaceholderResolver placeholderResolver = new DefaultPlaceholderResolver(this);
 
     public DefaultAppConfig(String profile) {
         this.profile = profile;
         this.properties.put(INIT_PROPERTY_PROFILE, profile);
+    }
+
+    @Override
+    public void setPreSupports(AppConfigSupport... supports) {
+        this.preSupports = supports;
+    }
+
+    @Override
+    public void setPostSupports(AppConfigSupport... supports) {
+        this.postSupports = supports;
     }
 
     public void setPropertyProvider(PropertyProvider p)  {
@@ -236,13 +248,31 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 	@Override
     public String getProperty(String name) {
         String v;
+
+        for(AppConfigSupport support : preSupports) {
+            if((v = support.getProperty(name)) != null) {
+                return v;
+            }
+        }
+
         try {
             v = null == propertyProvider ? null : propertyProvider.getRawProperty(name);
             return null == v ? properties.get(name) : v;
         } catch (UnsupportedRawPropertyException e) {
             log.error(e);
         }
-        return properties.get(name);
+
+        v = properties.get(name);
+
+        if(null == v) {
+            for(AppConfigSupport support : preSupports) {
+                if((v = support.getProperty(name)) != null) {
+                    return v;
+                }
+            }
+        }
+
+        return v;
     }
 	
 	@Override

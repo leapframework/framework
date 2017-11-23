@@ -20,9 +20,15 @@ import leap.lang.intercepting.Interceptor;
 import leap.lang.intercepting.State;
 
 public interface ActionInterceptor extends Interceptor {
-
 	/**
-	 * Called before executing the action.
+	 * Called before resolve parameters
+	 */
+	default State preResolveActionParameters(ActionContext context, Validation validation) throws Throwable {
+		return State.CONTINUE;
+	}
+	
+	/**
+	 * Called after resolve and before executing the action.
      */
 	default State preExecuteAction(ActionContext context, Validation validation) throws Throwable {
 		return State.CONTINUE;

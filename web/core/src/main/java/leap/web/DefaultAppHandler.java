@@ -148,6 +148,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
         if (null == request.getAssetSource()) {
             request.setAssetSource(assetSource);
         }
+        interceptors.onPrepareRequest(request, response);
     }
 
     protected synchronized void initServerInfoAndNotifyListener(Request request, Response response) {
@@ -182,8 +183,20 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
         try {
             boolean handled = false;
             try {
+                // resolve route info
+                Router router = request.getExternalRouter();
+                if (null == router) {
+                    router = new SimpleRouter(app.routes(), null);
+                }
+                DefaultActionContext ac = newActionContext(request, response);
+                //resolve action path
+                String path = resolveActionPath(request, response, router, ac);
+                // resolve route
+                Route route = resolveRoute(request,response,router,ac);
+                ac.setRoute(route);
+
                 //handle by interceptors
-                handled = State.isIntercepted(interceptors.preHandleRequest(request, response));
+                handled = State.isIntercepted(interceptors.preHandleRequest(request, response,ac));
 
                 //handle by handlers
                 if (!handled) {
@@ -192,15 +205,6 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 
                 //routing to action
                 if (!handled) {
-                    Router router = request.getExternalRouter();
-                    if (null == router) {
-                        router = new SimpleRouter(app.routes(), null);
-                    }
-
-                    DefaultActionContext ac = newActionContext(request, response);
-
-                    //resolve action path
-                    String path = resolveActionPath(request, response, router, ac);
 
                     if (_debug) {
                         log.debug("Routing path '{}'", ac.getPath());
@@ -355,6 +359,30 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
         return path;
     }
 
+    protected Route resolveRoute(Request request,Response response,Router router,DefaultActionContext ac){
+        Map<String, String> pathVariables = new LinkedHashMap<>();
+
+        Route route = router.match(request.getMethod(),
+                ac.getPath(),
+                request.getParameters(),
+                pathVariables);
+
+        if (null == route && request.hasPathExtension() && null != ac.getResponseFormat()) {
+            route = router.match(request.getMethod(),
+                    request.getServicePathWithoutExtension(),
+                    request.getParameters(),
+                    pathVariables);
+
+            if (null != route) {
+                ac.setPath(request.getServicePathWithoutExtension());
+            }
+        }
+        if(null != route){
+            ac.setPathParameters(pathVariables);
+        }
+        return route;
+    }
+
     //0 : not handled , 1: handled 2 : end
     private static final int ROUTE_STATE_NOT_HANDLED = 0;
     private static final int ROUTE_STATE_HANLDED = 1;
@@ -400,23 +428,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
                                         DefaultActionContext ac) throws Throwable {
 
         if (!Strings.isEmpty(ac.getPath())) {
-            Map<String, String> pathVariables = new LinkedHashMap<>();
-
-            Route route = router.match(request.getMethod(),
-                    ac.getPath(),
-                    request.getParameters(),
-                    pathVariables);
-
-            if (null == route && request.hasPathExtension() && null != ac.getResponseFormat()) {
-                route = router.match(request.getMethod(),
-                        request.getServicePathWithoutExtension(),
-                        request.getParameters(),
-                        pathVariables);
-
-                if (null != route) {
-                    ac.setPath(request.getServicePathWithoutExtension());
-                }
-            }
+            Route route = ac.getRoute();
 
             if (null != route) {
 
@@ -429,14 +441,6 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
                     //TODO : https only exception.
                     throw new BadRequestException("The request must be https");
                 }
-
-                ac.setRoute(route);
-
-                // decode path variable value
-                pathVariables.forEach((key, value) -> {
-                    pathVariables.put(key, Urls.decode(value));
-                });
-                ac.setPathParameters(pathVariables);
                 
                 // handle cors request.
                 // support multipart cors

@@ -697,6 +697,10 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		if(null == javaType){
 			javaType = null != beanProperty ? beanProperty.getType() : JdbcTypes.forTypeCode(column.getTypeCode()).getDefaultReadType();
 		}
+
+        if(column.isAutoIncrement()) {
+            insert = false;
+        }
 		
 		if(null == nullable){
 			nullable = true;

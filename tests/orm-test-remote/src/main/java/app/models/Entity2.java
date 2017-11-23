@@ -16,18 +16,34 @@
 
 package app.models;
 
+import leap.lang.enums.Bool;
+import leap.lang.meta.annotation.Filterable;
 import leap.orm.annotation.*;
+import leap.orm.model.Model;
 
 @Entity
 @DataSource("db2")
-@Remote
-public class Entity2 {
+public class Entity2 extends Model {
 
     @Id
     protected String id;
 
     @Column
     protected String field1;
+
+    @Column
+    @Filterable
+    private String name;
+
+    @Column
+    @Filterable
+    private String title;
+
+    @ManyToOne(target = Entity3.class,optional=Bool.TRUE)
+	private String entity3Id;
+
+    @Relational
+    private Entity3 reEntity;
 
 
     public String getId() {
@@ -45,5 +61,29 @@ public class Entity2 {
     public void setField1(String field1) {
         this.field1 = field1;
     }
+
+	public String getEntity3Id() {
+		return entity3Id;
+	}
+
+	public void setEntity3Id(String entity3Id) {
+		this.entity3Id = entity3Id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
 
 }

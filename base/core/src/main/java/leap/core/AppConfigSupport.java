@@ -14,34 +14,13 @@
  *  limitations under the License.
  */
 
-package leap.orm.annotation;
+package leap.core;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-@Target({ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Remote {
-    /**
-     * The type of reference.
-     */
-    String value() default "";
+public interface AppConfigSupport {
 
     /**
-     * Same as {@link #value()}
+     * Returns null if not exists.
      */
-    String type() default "";
-
-    /**
-     * The target entity name.
-     */
-    String name() default  "";
-
-    /**
-     * The target dataSource name.
-     */
-    String dataSource() default "";
+    String getProperty(String name);
 
 }

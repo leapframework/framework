@@ -45,6 +45,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Internal
@@ -81,7 +82,7 @@ public class BeanContainer implements BeanFactory {
     private   BeanFactory                beanFactory;
     private   BeanConfigurator           beanConfigurator;
     protected BeanFactoryInitializable[] initializables;
-    protected BeanFactorySupport[]       supports = new BeanFactorySupport[0];
+    protected BeanFactorySupport[]       postSupports = new BeanFactorySupport[0];
     protected BeanProcessor[]            processors;
     protected BeanInjector[]             injectors;
     private   boolean                    initializing;
@@ -245,6 +246,7 @@ public class BeanContainer implements BeanFactory {
 		initializing = false;
 
         AppConfigurator configurator = new DefaultAppConfigurator((DefaultAppConfig)config);
+        addBean(AppConfigurator.class, configurator, true);
         for(AppConfigInitializer ci : getBeans(AppConfigInitializer.class)) {
             ci.init(appContext, configurator);
         }
@@ -274,7 +276,15 @@ public class BeanContainer implements BeanFactory {
         }
 
         if(config instanceof AppConfigBase) {
-            ((AppConfigBase) config).setPropertyProvider(tryCreateBean(PropertyProvider.class));
+            AppConfigBase c = (AppConfigBase)config;
+
+            c.setPropertyProvider(tryCreateBean(PropertyProvider.class));
+
+            List<AppConfigSupport> preSupports  = getBeans(AppConfigSupport.class, "pre");
+            List<AppConfigSupport> postSupports = getBeans(AppConfigSupport.class, "post", true);
+
+            c.setPreSupports(preSupports.toArray(new AppConfigSupport[0]));
+            c.setPostSupports(postSupports.toArray(new AppConfigSupport[0]));
         }
 
         this.containerInited = true;
@@ -394,7 +404,7 @@ public class BeanContainer implements BeanFactory {
 			return null;
 		}
 
-        for(BeanFactorySupport support : supports) {
+        for(BeanFactorySupport support : postSupports) {
             T bean = (T)support.tryGetBean(id);
             if(null != bean) {
                 return bean;
@@ -498,7 +508,7 @@ public class BeanContainer implements BeanFactory {
             }
 		}
 
-        for(BeanFactorySupport support : supports) {
+        for(BeanFactorySupport support : postSupports) {
             bean = (T)support.tryGetBean(type);
             if(null != bean) {
                 return bean;
@@ -549,7 +559,7 @@ public class BeanContainer implements BeanFactory {
 			return (T)doGetBean(bd);
 		}
 
-        for(BeanFactorySupport support : supports) {
+        for(BeanFactorySupport support : postSupports) {
             T bean = (T)support.tryGetBean(type, name);
             if(null != bean) {
                 return bean;
@@ -610,41 +620,78 @@ public class BeanContainer implements BeanFactory {
 
 	@Override
     public <T> List<T> getBeans(Class<? super T> type) throws BeanException {
-		return getBeans(type, null);
+        String key = type.getName();
+
+        List<T> beans = (List<T>)typedBeansMap.get(key);
+
+        if(null == beans){
+            beans = new ArrayList<T>();
+            BeanListDefinition bld = beanListDefinitions.get(key);
+            if(null != bld){
+                for(ValueDefinition vd : bld.getValues()){
+                    Object bean = doCreateBean(vd);
+                    if(!type.isAssignableFrom(bean.getClass())){
+                        throw new BeanDefinitionException("The bean list's element must be instance of '" + type.getName() + "' in '" + bld.getSource() + "'");
+                    }
+                    beans.add((T)bean);
+                }
+            }else{
+                Map<T, BeanDefinition> bds = getBeansWithDefinition(type);
+                bds.keySet().forEach(beans::add);
+            }
+            typedBeansMap.put(key, beans);
+        }
+
+        return beans;
     }
-    
+
+    public <T> List<T> getBeans(Class<? super T> type, String qualifier, boolean orEmpty) throws BeanException {
+        List<T> beans = getBeans(type, qualifier);
+        if(orEmpty) {
+            List<T> defaultBeans = getBeans(type, "");
+            beans.addAll(defaultBeans);
+        }
+        return beans;
+    }
+
     @Override
     public <T> List<T> getBeans(Class<? super T> type, String qualifier) throws BeanException {
-    	String key = null == qualifier ? type.getName() : type.getName() + "$" + qualifier;
-    	
+        qualifier = Strings.nullToEmpty(qualifier);
+
+        String key = null == qualifier ? type.getName() : type.getName() + "$" + qualifier;
+
         List<T> beans = (List<T>)typedBeansMap.get(key);
-    	
-    	if(null == beans){
-    		beans = new ArrayList<T>();
-    		BeanListDefinition bld = beanListDefinitions.get(key);
-    		if(null != bld){
-    			for(ValueDefinition vd : bld.getValues()){
-    				Object bean = doCreateBean(vd);
-    				if(!type.isAssignableFrom(bean.getClass())){
-    					throw new BeanDefinitionException("The bean list's element must be instance of '" + type.getName() + "' in '" + bld.getSource() + "'");
-    				}
-    				beans.add((T)bean);
-    			}
-    		}else{
-    	    	Map<T, BeanDefinition> bds = getBeansWithDefinition(type);
-    	    	
-    	    	for(Entry<T, BeanDefinition> entry : bds.entrySet()){
-    	    		BeanDefinition bd = entry.getValue();
-    	    		if(null == qualifier || bd.getQualifiers().contains(qualifier)){
-    	    			beans.add(entry.getKey());
-    	    		}
-    	    	}
-    		}
-    		
-    		typedBeansMap.put(key, beans);
-    	}
-    	return beans;
+
+        if(null == beans){
+            beans = new ArrayList<T>();
+            BeanListDefinition bld = beanListDefinitions.get(key);
+            if(null != bld){
+                for(ValueDefinition vd : bld.getValues()){
+                    Object bean = doCreateBean(vd);
+                    if(!type.isAssignableFrom(bean.getClass())){
+                        throw new BeanDefinitionException("The bean list's element must be instance of '" + type.getName() + "' in '" + bld.getSource() + "'");
+                    }
+                    beans.add((T)bean);
+                }
+            }else{
+                Map<T, BeanDefinition> bds = getBeansWithDefinition(type);
+
+                for(Entry<T, BeanDefinition> entry : bds.entrySet()){
+                    BeanDefinition bd = entry.getValue();
+
+                    if(Strings.isEmpty(qualifier) && bd.getQualifiers().isEmpty()) {
+                        beans.add(entry.getKey());
+                    }else if(bd.getQualifiers().contains(qualifier)){
+                        beans.add(entry.getKey());
+                    }
+                }
+            }
+
+            typedBeansMap.put(key, beans);
+        }
+        return beans;
     }
+
 
 	@Override
     @SuppressWarnings("unchecked")
@@ -970,7 +1017,7 @@ public class BeanContainer implements BeanFactory {
         for(BeanDefinitionBase bd : supportBeans) {
             supportsList.add((BeanFactorySupport)doGetBean(bd));
         }
-        this.supports = supportsList.toArray(new BeanFactorySupport[0]);
+        this.postSupports = supportsList.toArray(new BeanFactorySupport[0]);
 
         //bean injector.
         List<BeanInjector> injectorList = new ArrayList<>();

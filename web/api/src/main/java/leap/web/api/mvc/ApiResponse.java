@@ -42,12 +42,20 @@ public class ApiResponse<T> implements ResponseEntity {
         return of(HTTP.Status.OK, entity);
     }
 
+    public static ApiResponse created() {
+        return of(HTTP.Status.CREATED);
+    }
+
     public static ApiResponse created(Object entity) {
         return of(HTTP.Status.CREATED, entity);
     }
 
     public static ApiResponse accepted() {
         return ACCEPTED;
+    }
+
+    public static ApiResponse accepted(Object data) {
+        return of(HTTP.Status.ACCEPTED, data);
     }
 
     public static ApiResponse noContent() {
@@ -70,6 +78,14 @@ public class ApiResponse<T> implements ResponseEntity {
         return err(HTTP.Status.NOT_FOUND, errorCode, message);
     }
 
+    public static ApiResponse notImplemented() {
+        return NOT_IMPLEMENTED;
+    }
+
+    public static ApiResponse notImplemented(String message) {
+        return err(HTTP.Status.NOT_IMPLEMENTED, message);
+    }
+
     public static ApiResponse err(String message) {
         return err(HTTP.Status.INTERNAL_SERVER_ERROR, message);
     }
@@ -80,6 +96,10 @@ public class ApiResponse<T> implements ResponseEntity {
 
     public static ApiResponse err(int status, String message) {
         return err(HTTP.Status.valueOf(status), message);
+    }
+
+    public static ApiResponse err(String errorCode, String message){
+        return of(HTTP.Status.INTERNAL_SERVER_ERROR,new ApiError(errorCode,message));
     }
 
     public static ApiResponse err(HTTP.Status status,String errorCode, String message){

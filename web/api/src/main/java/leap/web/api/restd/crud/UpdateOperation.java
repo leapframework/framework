@@ -35,6 +35,7 @@ import leap.web.api.restd.RestdContext;
 import leap.web.route.RouteBuilder;
 
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * Update a record operation.
@@ -61,7 +62,7 @@ public class UpdateOperation extends CrudOperation implements RestdProcessor {
         RouteBuilder      route  = rm.createRoute(verb, path);
 
         action.setName(Strings.lowerCamel("update", model.getName()));
-        action.setFunction((params) -> execute(context.getApi(), dao, model, params));
+        action.setFunction(new UpdateFunction(context.getApi(), dao, model));
         addIdArgument(action, model);
         addModelArgument(action, model);
         addNoContentResponse(action, model);
@@ -73,28 +74,46 @@ public class UpdateOperation extends CrudOperation implements RestdProcessor {
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 
-    protected Object execute(Api api, Dao dao, RestdModel model, ActionParams params) {
-        ApiMetadata amd = api.getMetadata();
-        MApiModel   am  = amd.getModel(model.getName());
+    private final class UpdateFunction implements Function<ActionParams, Object> {
+        private final Api        api;
+        private final Dao        dao;
+        private final RestdModel model;
 
-        Object             id     = params.get(0);
-        Map<String,Object> record = params.get(1);
+        public UpdateFunction(Api api, Dao dao, RestdModel model) {
+            this.api = api;
+            this.dao = dao;
+            this.model = model;
+        }
 
-        ModelExecutorContext context  = new SimpleModelExecutorContext(api, am, dao, model.getEntityMapping());
-        ModelUpdateExecutor  executor = mef.newUpdateExecutor(context);
+        @Override
+        public Object apply(ActionParams params) {
+            ApiMetadata amd = api.getMetadata();
+            MApiModel   am  = amd.getModel(model.getName());
 
-        if(Arrays2.isNotEmpty(validators)) {
-            for (RestdValidator validator : validators) {
-                validator.validate(model.getName(), record);
+            Object             id     = params.get(0);
+            Map<String,Object> record = params.get(1);
+
+            ModelExecutorContext context  = new SimpleModelExecutorContext(api, am, dao, model.getEntityMapping());
+            ModelUpdateExecutor  executor = mef.newUpdateExecutor(context);
+
+            if(Arrays2.isNotEmpty(validators)) {
+                for (RestdValidator validator : validators) {
+                    validator.validate(model.getName(), record);
+                }
+            }
+
+            UpdateOneResult result = executor.partialUpdateOne(id, record);
+
+            if (result.affectedRows > 0) {
+                return ApiResponse.NO_CONTENT;
+            } else {
+                return ApiResponse.NOT_FOUND;
             }
         }
 
-        UpdateOneResult result = executor.partialUpdateOne(id, record);
-
-        if (result.affectedRows > 0) {
-            return ApiResponse.NO_CONTENT;
-        } else {
-            return ApiResponse.NOT_FOUND;
+        @Override
+        public String toString() {
+            return "Function:" + "Update " + model.getName() + "";
         }
     }
 

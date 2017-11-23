@@ -21,28 +21,29 @@ import leap.core.annotation.M;
 import leap.lang.resource.ResourceSet;
 import leap.orm.annotation.Entity;
 import leap.orm.annotation.ExtendedEntity;
+import leap.orm.annotation.RestEntity;
 import leap.orm.metadata.MetadataException;
 
 import java.util.HashSet;
 import java.util.Set;
 
 public class ClassMapper implements Mapper {
-	
+
     protected @Inject @M AppConfig       config;
     protected @Inject @M MappingStrategy mappingStrategy;
-	
+
 	@Override
     public void loadMappings(final MappingConfigContext context) throws MetadataException {
 		ResourceSet resources = config.getResources();
 
         final Set<Class<?>> mapped = new HashSet<>();
-		
+
 		resources.processClasses((cls) -> {
             loadMapping(context, mapped, cls, true);
 		});
 
         mapped.clear();
-		
+
     }
 
     public void loadMappings(final MappingConfigContext context, Class... classes) {
@@ -66,7 +67,13 @@ public class ClassMapper implements Mapper {
                 return;
             }
 
-            EntityMappingBuilder emb = mappingStrategy.createEntityMappingByClass(context, cls);
+            RestEntity re= cls.getAnnotation(RestEntity.class);
+            EntityMappingBuilder emb=null;
+            if(re!=null){
+            	emb=mappingStrategy.createRemoteEntityMappingByClass(context, cls);
+            }else{
+            	emb = mappingStrategy.createEntityMappingByClass(context, cls);
+            }
 
             ExtendedEntity a = cls.getAnnotation(ExtendedEntity.class);
             if(null != a) {
@@ -101,5 +108,5 @@ public class ClassMapper implements Mapper {
 
         return baseClass;
     }
-	
+
 }

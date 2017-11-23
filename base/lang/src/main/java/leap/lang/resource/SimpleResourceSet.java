@@ -33,6 +33,8 @@ import leap.lang.exception.NestedIOException;
 import leap.lang.io.IO;
 
 public class SimpleResourceSet extends ArrayIterable<Resource> implements ResourceSet {
+
+    public static SimpleResourceSet EMPTY = new SimpleResourceSet(new Resource[0]);
 	
 	protected Set<Class<?>> classes;
 	
