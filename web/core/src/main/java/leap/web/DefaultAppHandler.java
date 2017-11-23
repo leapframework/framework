@@ -24,6 +24,7 @@ import leap.core.validation.ValidationManager;
 import leap.lang.New;
 import leap.lang.Strings;
 import leap.lang.intercepting.State;
+import leap.lang.net.Urls;
 import leap.lang.time.StopWatch;
 import leap.web.action.ActionContext;
 import leap.web.action.ActionManager;
@@ -430,6 +431,11 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
                 }
 
                 ac.setRoute(route);
+
+                // decode path variable value
+                pathVariables.forEach((key, value) -> {
+                    pathVariables.put(key, Urls.decode(value));
+                });
                 ac.setPathParameters(pathVariables);
                 
                 // handle cors request.
