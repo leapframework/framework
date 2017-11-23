@@ -378,6 +378,10 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
             }
         }
         if(null != route){
+            // decode path variable value
+            pathVariables.forEach((key, value) -> {
+                pathVariables.put(key, Urls.decode(value));
+            });
             ac.setPathParameters(pathVariables);
         }
         return route;
