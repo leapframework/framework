@@ -276,6 +276,7 @@ public class RestdConfig {
     }
 
     public static class Operation implements RestdOperationDef {
+        private Object               source;
         private String               name;
         private String               type;
         private String               path;
@@ -285,6 +286,15 @@ public class RestdConfig {
         private MApiOperationBuilder metaOperation;
 
         private Map<String, Object> arguments = new LinkedHashMap<>();
+
+        @Override
+        public Object getSource() {
+            return source;
+        }
+
+        public void setSource(Object source) {
+            this.source = source;
+        }
 
         @Override
         public String getName() {

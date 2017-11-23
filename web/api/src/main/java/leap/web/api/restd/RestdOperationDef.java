@@ -16,12 +16,13 @@
 package leap.web.api.restd;
 
 import leap.lang.Named;
+import leap.lang.Sourced;
 import leap.lang.enums.Bool;
 import leap.web.api.meta.model.MApiOperationBuilder;
 
 import java.util.Map;
 
-public interface RestdOperationDef extends Named {
+public interface RestdOperationDef extends Named, Sourced {
 
     /**
      * Required. Returns the type of operation.
