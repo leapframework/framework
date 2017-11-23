@@ -72,7 +72,18 @@ public class DefaultSqlCommand extends AbstractSqlCommand {
         if(clauses.length == 1){
             return clauses[0].createUpdateStatement(context, params).executeUpdate(psHandler);
         }else{
-            throw new IllegalStateException("Two or more sql statements in a sql command not supported now");
+            //todo : check it
+            return context.getOrmContext().getDao().doTransaction((s) -> {
+                int result = 0;
+
+                for(SqlClause clause : clauses) {
+                    result += clause.createUpdateStatement(context, params).executeUpdate(psHandler);
+                }
+
+                return result;
+            });
+
+            //throw new IllegalStateException("Two or more sql statements in a sql command not supported now");
         }
     }
 
