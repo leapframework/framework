@@ -102,7 +102,7 @@ public class JdbcTypes {
         
         register(java.sql.Types.DATE,          DATE_TYPE_NAME,          JdbcTypeKind.Temporal,  Date.class, false, false);
         register(java.sql.Types.TIME,          TIME_TYPE_NAME,          JdbcTypeKind.Temporal,  Time.class, false, false);
-        register(java.sql.Types.TIMESTAMP,     TIMESTAMP_TYPE_NAME,     JdbcTypeKind.Temporal,  Timestamp.class, false, false);
+        register(java.sql.Types.TIMESTAMP,     TIMESTAMP_TYPE_NAME,     JdbcTypeKind.Temporal,  Timestamp.class, false, false, "datetime");
         
         register(java.sql.Types.BINARY,        BINARY_TYPE_NAME,        JdbcTypeKind.Binary,    byte[].class, true, false, "bytes");
         register(java.sql.Types.BLOB,          BLOB_TYPE_NAME,          JdbcTypeKind.Binary,    byte[].class,Blob.class, false, false);
