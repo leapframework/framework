@@ -114,11 +114,12 @@ public class DefaultDynaOrmFactory implements DynaOrmFactory {
             return createDynaContext(name, ds);
         }
 
+        DynaOrmContext context = createDynaContext(name, ds);
+
         if(registry.findContext(name) != null) {
+        	//registry.removeContext(name);
             throw new ObjectExistsException("The context '" + name + "' already exists in registry!");
         }
-
-        DynaOrmContext context = createDynaContext(name, ds);
 
         registry.registerContext(context);
 
@@ -132,5 +133,11 @@ public class DefaultDynaOrmFactory implements DynaOrmFactory {
             registry.removeContext(context.getName());
         }
     }
+
+	@Override
+	public DynaOrmContext existDynaContext(String name) {
+		DynaOrmContext registered =(DynaOrmContext) registry.findContext(name);
+		 return registered;
+	}
 
 }
