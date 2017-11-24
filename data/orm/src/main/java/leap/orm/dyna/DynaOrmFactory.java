@@ -66,4 +66,11 @@ public interface DynaOrmFactory {
      */
     void destroyDynaContext(DynaOrmContext context);
 
+    /**
+     * check the context is exists
+     * @param name
+     * @return
+     */
+    DynaOrmContext existDynaContext(String name);
+
 }
