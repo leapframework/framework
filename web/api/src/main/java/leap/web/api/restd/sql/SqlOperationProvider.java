@@ -47,7 +47,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.function.Function;
 
-public class SqlOperationProvider extends CrudOperation implements RestdOperationProvider {
+public class SqlOperationProvider extends ScriptOperationProvider implements RestdOperationProvider {
 
     public static final String TYPE = "sql";
     public static final String ARG_SQL_KEY = "sqlKey";
@@ -157,12 +157,8 @@ public class SqlOperationProvider extends CrudOperation implements RestdOperatio
             }
         }
 
-        for(MApiParameterBuilder p : mo.getParameters()) {
-            ArgumentBuilder arg = new ArgumentBuilder().setName(p.getName()).setRequired(p.getRequired());
-            arg.setType(String.class); //todo : type
-            //todo: location
-            action.addArgument(arg);
-        }
+        //create arguments.
+        createArguments(route, action, mo);
 
         action.setReturnType(ApiResponse.class);
         action.setExtension(mo);
