@@ -35,7 +35,7 @@ public class HandlerAction extends AbstractAction {
 
 	@Override
     public String toString() {
-	    return handler.getClass().getSimpleName() + ".handle";
+	    return handler.toString();
     }
 	
 }

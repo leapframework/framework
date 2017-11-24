@@ -16,6 +16,7 @@
 package leap.web.api.spec.swagger;
 
 import leap.core.annotation.Inject;
+import leap.web.Handler;
 import leap.web.Request;
 import leap.web.Response;
 import leap.web.api.Api;
@@ -47,10 +48,20 @@ public class SwaggerProcessor implements ApiConfigProcessor,ApiMetadataProcessor
 
         Routes routes = config.getContainerRoutes();
 
-        Route route = routes.create().get(getJsonSpecPath(config), (req, resp) ->
-                            handleJsonSpecRequest(context.getApi(), req, resp)).enableCors()
-                            .allowAnonymous()
-                            .build();
+        Route route = routes.create()
+                        .enableCors()
+                        .allowAnonymous()
+                        .get(getJsonSpecPath(config), new Handler() {
+                            @Override
+                            public void handle(Request request, Response response) throws Throwable {
+                                handleJsonSpecRequest(context.getApi(), request, response);
+                            }
+
+                            @Override
+                            public String toString() {
+                                return SwaggerProcessor.class.getSimpleName() + "(swagger.json)";
+                            }
+                        }).build();
 
         context.getApi().getConfigurator().addDynamicRoute(route, false);
     }

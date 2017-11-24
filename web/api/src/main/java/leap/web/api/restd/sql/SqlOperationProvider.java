@@ -150,9 +150,11 @@ public class SqlOperationProvider extends ScriptOperationProvider implements Res
                 }
                 MApiParameterBuilder p = new MApiParameterBuilder();
                 p.setName(param.getName());
-                p.setLocation(MApiParameter.Location.QUERY);
-                p.setType(MSimpleTypes.STRING);
                 p.setRequired(true);
+                p.setType(MSimpleTypes.STRING);
+
+                setDefaultLocation(route, p);
+
                 mo.addParameter(p);
             }
         }

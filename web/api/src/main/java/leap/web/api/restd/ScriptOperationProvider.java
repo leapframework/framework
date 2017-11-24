@@ -85,49 +85,52 @@ public abstract class ScriptOperationProvider extends CrudOperation {
     }
 
     protected void resolveArgumentLocation(RouteBuilder route, MApiParameterBuilder p, ArgumentBuilder arg) {
-        if (null != p.getLocation()) {
-            if (p.getLocation() == MApiParameter.Location.BODY) {
-                arg.setLocation(Argument.Location.REQUEST_BODY);
-                return;
-            }
+        setDefaultLocation(route, p);
 
-            if (p.getLocation() == MApiParameter.Location.QUERY) {
-                arg.setLocation(Argument.Location.QUERY_PARAM);
-                return;
-            }
+        if (p.getLocation() == MApiParameter.Location.BODY) {
+            arg.setLocation(Argument.Location.REQUEST_BODY);
+            return;
+        }
 
-            if (p.getLocation() == MApiParameter.Location.FORM) {
-                arg.setLocation(Argument.Location.REQUEST_PARAM);
-                return;
-            }
+        if (p.getLocation() == MApiParameter.Location.QUERY) {
+            arg.setLocation(Argument.Location.QUERY_PARAM);
+            return;
+        }
 
-            if (p.getLocation() == MApiParameter.Location.PATH) {
-                arg.setLocation(Argument.Location.PATH_PARAM);
-                return;
-            }
+        if (p.getLocation() == MApiParameter.Location.FORM) {
+            arg.setLocation(Argument.Location.REQUEST_PARAM);
+            return;
+        }
 
-            if (p.getLocation() == MApiParameter.Location.HEADER) {
-                arg.setLocation(Argument.Location.HEADER_PARAM);
-                return;
-            }
+        if (p.getLocation() == MApiParameter.Location.PATH) {
+            arg.setLocation(Argument.Location.PATH_PARAM);
+            return;
+        }
 
-            throw new IllegalStateException("Location '" + p.getLocation() + "' not implemented!");
-        } else {
+        if (p.getLocation() == MApiParameter.Location.HEADER) {
+            arg.setLocation(Argument.Location.HEADER_PARAM);
+            return;
+        }
+
+        throw new IllegalStateException("Location '" + p.getLocation() + "' not implemented!");
+    }
+
+    protected boolean setDefaultLocation(RouteBuilder route, MApiParameterBuilder p) {
+        if(null == p.getLocation()) {
             if (route.getPathTemplate().getTemplateVariables().contains(p.getName())) {
                 p.setLocation(MApiParameter.Location.PATH);
-                arg.setLocation(Argument.Location.PATH_PARAM);
-                return;
+                return true;
             }
 
             if(p.getType().isComplexType() || p.getType().isTypeRef() || p.getType().isDictionaryType()) {
                 p.setLocation(MApiParameter.Location.BODY);
-                arg.setLocation(Argument.Location.REQUEST_BODY);
-                return;
+                return true;
             }
 
             p.setLocation(MApiParameter.Location.QUERY);
-            arg.setLocation(Argument.Location.QUERY_PARAM);
+            return true;
         }
+        return false;
     }
 
 }
