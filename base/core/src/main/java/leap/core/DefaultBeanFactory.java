@@ -480,6 +480,11 @@ public class DefaultBeanFactory extends BeanFactoryInternal implements BeanFacto
     }
 
     @Override
+    public boolean initBean(Object bean) {
+        return beanContainer.initBean(bean);
+    }
+
+    @Override
     public boolean destroyBean(Object bean) {
         return beanContainer.destroyBean(bean);
     }

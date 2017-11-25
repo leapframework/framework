@@ -770,6 +770,11 @@ public class BeanContainer implements BeanFactory {
     }
 
     @Override
+    public boolean initBean(Object bean) {
+        return Try.throwUncheckedWithResult(() -> doInitBean(null, bean));
+    }
+
+    @Override
     public boolean destroyBean(Object bean) {
         return doDestroyBean(null, bean);
     }
@@ -833,6 +838,47 @@ public class BeanContainer implements BeanFactory {
 			destroyBeans();
 		}		
 	}
+
+    protected boolean doInitBean(@Nullable BeanDefinitionBase bd, Object bean) throws Throwable {
+        boolean init = false;
+
+        if(null != bd && null != bd.getInitMethod()){
+            Reflection.invokeMethod(bd.getInitMethod(), bean);
+            init = true;
+        }
+
+        if(!init) {
+            ReflectClass rc = ReflectClass.of(bean.getClass());
+            for (ReflectMethod m : rc.getMethods()) {
+                if (m.getParameters().length == 0 && m.isAnnotationPresent(Init.class)) {
+                    m.invoke(bean, Arrays2.EMPTY_OBJECT_ARRAY);
+                    init = true;
+                    break;
+                }
+            }
+        }
+
+        if(!init) {
+            if(bean instanceof Initializable) {
+                ((Initializable) bean).init();
+                init = true;
+            }
+        }
+
+        //null if post processors not resolved, see #resolveAfterLoading
+        if(null != bd && null != processors){
+            for(int i=0;i<processors.length;i++){
+                processors[i].postCreateBean(appContext, beanFactory, bd, bean);
+            }
+        }
+
+        if(bean instanceof PostCreateBean){
+            ((PostCreateBean) bean).postCreate(appContext.getBeanFactory());
+            init = true;
+        }
+
+        return init;
+    }
 
     protected boolean doDestroyBean(@Nullable  BeanDefinitionBase bd, Object bean) {
         if(null != bd) {
@@ -1244,32 +1290,7 @@ public class BeanContainer implements BeanFactory {
             doBeanInjection(bd,bean);
             doBeanInvokeMethods(bd,bean);
 
-            if(null != bd.getInitMethod()){
-                Reflection.invokeMethod(bd.getInitMethod(), bean);
-            }else{
-                ReflectClass rc = ReflectClass.of(bean.getClass());
-                for(ReflectMethod m : rc.getMethods()) {
-                    if(m.getParameters().length == 0 && m.isAnnotationPresent(Init.class)) {
-                        m.invoke(bean, Arrays2.EMPTY_OBJECT_ARRAY);
-                        break;
-                    }
-                }
-            }
-
-            //null if post processors not resolved, see #resolveAfterLoading
-            if(null != processors){
-                for(int i=0;i<processors.length;i++){
-                    processors[i].postCreateBean(appContext, beanFactory, bd, bean);
-                }
-            }
-
-            if(bean instanceof PostCreateBean){
-                ((PostCreateBean) bean).postCreate(appContext.getBeanFactory());
-            }
-
-            if(bean instanceof Initializable) {
-                ((Initializable) bean).init();
-            }
+            doInitBean(bd, bean);
 
             if(bean instanceof LoadableBean){
                 if(!((LoadableBean) bean).load(appContext.getBeanFactory())){

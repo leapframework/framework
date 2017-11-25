@@ -304,12 +304,17 @@ public interface BeanFactory extends BeanFactoryBase, AppContextInitializable {
 	boolean isSingleton(Class<?> type,String name) throws NoSuchBeanException;
 
     /**
-     * todo:
+     * todo: doc
+     */
+    boolean initBean(Object bean);
+
+    /**
+     * todo: doc
      */
     boolean destroyBean(Object bean);
 
     /**
-     * todo:
+     * todo: doc
      */
     Object resolveInjectValue(Class<?> type, Type genericType);
 
