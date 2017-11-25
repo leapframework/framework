@@ -224,6 +224,29 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     }
 
     @Override
+    public Set<String> getPropertyNames() {
+        Set<String> set = new LinkedHashSet<>();
+
+        for(AppConfigSupport support : preSupports) {
+            Set<String> names = support.getPropertyNames();
+            if(null != names) {
+                set.addAll(names);
+            }
+        }
+
+        set.addAll(properties.keySet());
+
+        for(AppConfigSupport support : postSupports) {
+            Set<String> names = support.getPropertyNames();
+            if(null != names) {
+                set.addAll(names);
+            }
+        }
+
+        return set;
+    }
+
+    @Override
     public List<SysPermissionDef> getPermissions() {
 	    return permissionsReadonly;
     }

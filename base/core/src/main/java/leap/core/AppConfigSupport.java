@@ -16,7 +16,14 @@
 
 package leap.core;
 
+import java.util.Set;
+
 public interface AppConfigSupport {
+
+    /**
+     * Returns all the property names.
+     */
+    Set<String> getPropertyNames();
 
     /**
      * Returns null if not exists.

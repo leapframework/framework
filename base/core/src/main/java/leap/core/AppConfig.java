@@ -297,8 +297,16 @@ public interface AppConfig extends PropertyGetter {
 
 	/**
 	 * Returns an immutable map contains all the configured properties.
+     *
+     * @deprecated use {@link #getPropertyNames()} instead, will be removed in 1.0
 	 */
+    @Deprecated
 	Map<String,String> getProperties();
+
+    /**
+     * Returns all the property names.
+     */
+    Set<String> getPropertyNames();
 	
 	/**
 	 * Returns all the resources configured in app configs.
