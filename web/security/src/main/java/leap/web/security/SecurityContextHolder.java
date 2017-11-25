@@ -16,6 +16,7 @@
 package leap.web.security;
 
 import leap.core.RequestContext;
+import leap.web.action.ActionContext;
 import leap.web.route.Route;
 import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.authz.AuthorizationContext;
@@ -36,6 +37,11 @@ public interface SecurityContextHolder extends AuthenticationContext, Authorizat
 		
 		return context;
 	}
+
+    /**
+     * Optional.
+     */
+    ActionContext getActionContext();
 
     /**
      * Required.

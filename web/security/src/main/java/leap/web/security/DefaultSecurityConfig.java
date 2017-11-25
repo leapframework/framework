@@ -44,6 +44,8 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
     protected boolean                  enabled                        = false;
     protected boolean                  crossContext                   = false;
     protected Boolean                  csrfEnabled                    = null;
+    protected boolean                  loginEnabled                   = true;
+    protected boolean                  logoutEnabled                  = true;
     protected boolean                  authenticateAnyRequests        = true;
     protected boolean                  authorizeAnyRequests           = false;
     protected int                      defaultAuthenticationExpires   = SecurityConstants.DEFAULT_AUTHENTICATION_EXPIRES;
@@ -346,6 +348,28 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
     @ConfigProperty
     public void setCookieDomain(String cookieDomain) {
         this.cookieDomain = cookieDomain;
+    }
+
+    @Override
+    public boolean isLoginEnabled() {
+        return loginEnabled;
+    }
+
+    @ConfigProperty
+    public SecurityConfigurator setLoginEnabled(boolean loginEnabled) {
+        this.loginEnabled = loginEnabled;
+        return this;
+    }
+
+    @Override
+    public boolean isLogoutEnabled() {
+        return logoutEnabled;
+    }
+
+    @ConfigProperty
+    public SecurityConfigurator setLogoutEnabled(boolean logoutEnabled) {
+        this.logoutEnabled = logoutEnabled;
+        return this;
     }
 
     public String getLoginUrl() {

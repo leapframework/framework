@@ -22,6 +22,7 @@ import leap.lang.Arrays2;
 import leap.lang.path.PathPattern;
 import leap.web.Request;
 import leap.web.route.Route;
+import leap.web.security.SecurityContextHolder;
 import leap.web.security.SecurityFailureHandler;
 import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.authz.AuthorizationContext;
@@ -77,7 +78,7 @@ public class MergedSecuredPath implements SecuredPath {
     }
 
     @Override
-    public boolean checkAuthentication(Request request, AuthenticationContext context) {
+    public boolean checkAuthentication(Request request, SecurityContextHolder context) {
         return merged.checkAuthentication(request, context);
     }
 

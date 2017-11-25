@@ -23,7 +23,9 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.path.PathPattern;
 import leap.web.Request;
+import leap.web.action.ActionContext;
 import leap.web.route.Route;
+import leap.web.security.SecurityContextHolder;
 import leap.web.security.SecurityFailureHandler;
 import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.authz.AuthorizationContext;
@@ -112,10 +114,21 @@ public class DefaultSecuredPath implements SecuredPath {
      * Returns true if the path allows the authentication.
      */
 	@Override
-    public boolean checkAuthentication(Request request, AuthenticationContext context) {
+    public boolean checkAuthentication(Request request, SecurityContextHolder context) {
 		if(isAllowAnonymous()) {
 			return true;
 		}
+
+        //check route's config
+        ActionContext ac = context.getActionContext();
+        if(null != ac && null != ac.getRoute()) {
+            Route route = ac.getRoute();
+
+            //allow anonymous
+            if(route.getAllowAnonymous() == Boolean.TRUE) {
+                return true;
+            }
+        }
 
         Authentication authc = context.getAuthentication();
 		

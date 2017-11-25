@@ -24,6 +24,7 @@ import leap.core.validation.Validation;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.web.Request;
+import leap.web.action.ActionContext;
 import leap.web.route.Route;
 import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.login.LoginContext;
@@ -46,6 +47,7 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 	protected final SecurityConfig    config;
 	protected final PermissionManager permissionManager;
 	protected final Request           request;
+    protected final ActionContext     actionContext;
 
 	protected SecuredPath   securedPath;
     protected LoginContext  loginContext;
@@ -58,9 +60,14 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
     private boolean handled;
 
 	public DefaultSecurityContextHolder(SecurityConfig config, PermissionManager permissionManager, Request request){
-		this.config            = config;
+        this(config, permissionManager, request, null);
+    }
+
+    public DefaultSecurityContextHolder(SecurityConfig config, PermissionManager permissionManager, Request request, ActionContext actionContext){
+        this.config            = config;
         this.permissionManager = permissionManager;
-		this.request           = request;
+        this.request           = request;
+        this.actionContext     = actionContext;
         request.setAttribute(CONTEXT_ATTRIBUTE_NAME, this);
         request.setAttribute(CONTEXT_HOLDER_ATTRIBUTE_NAME, this);
     }
@@ -70,7 +77,12 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 	    return request.getValidation();
     }
 
-	@Override
+    @Override
+    public ActionContext getActionContext() {
+        return actionContext;
+    }
+
+    @Override
     public SecurityConfig getSecurityConfig() {
 	    return config;
     }

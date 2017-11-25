@@ -121,8 +121,7 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 			}
 		}
 		
-		DefaultSecurityContextHolder context =
-                new DefaultSecurityContextHolder(config, perm, request);
+		DefaultSecurityContextHolder context = new DefaultSecurityContextHolder(config, perm, request, ac);
         context.setSecuredPath(resolveSecuredPath(request,response,context,ac.getRoute()));
 		return preHandleRequest(request, response, context);
     }
@@ -130,12 +129,12 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
     protected State preHandleRequest(Request request, Response response, DefaultSecurityContextHolder context) throws Throwable {
 
         //Handles request if login
-        if(handleLoginRequest(request, response, context)){
+        if(config.isLoginEnabled() && handleLoginRequest(request, response, context)){
             return State.INTERCEPTED;
         }
 
         //Handles request if logout.
-        if(handleLogoutRequest(request, response, context)) {
+        if(config.isLogoutEnabled() && handleLogoutRequest(request, response, context)) {
             return State.INTERCEPTED;
         }
         
@@ -149,8 +148,6 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
         if(!context.getAuthentication().isAuthenticated()) {
             CSRF.ignore(request);
         }
-
-        
 
         return State.CONTINUE;
     }

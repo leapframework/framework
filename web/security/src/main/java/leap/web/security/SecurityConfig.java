@@ -154,6 +154,11 @@ public interface SecurityConfig {
 	 * Optional.
 	 */
 	String getCookieDomain();
+
+    /**
+     * Default is true.
+     */
+    boolean isLoginEnabled();
 	
     /**
      * Returns the url for promote user login.
@@ -164,6 +169,11 @@ public interface SecurityConfig {
 	 * Required. Returns the action path for handling user's login authentication.
 	 */
 	String getLoginAction();
+
+    /**
+     * Default is true.
+     */
+    boolean isLogoutEnabled();
 	
 	/** 
 	 * Required. Returns the action path for handling user's logout request.
