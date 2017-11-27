@@ -184,6 +184,7 @@ public class RestdConfig {
 
         protected final String name;
 
+        protected String  path;
         protected Boolean anonymous;
         protected Boolean createOperationEnabled;
         protected Boolean updateOperationEnabled;
@@ -200,6 +201,14 @@ public class RestdConfig {
 
         public String getName() {
             return name;
+        }
+
+        public String getPath() {
+            return path;
+        }
+
+        public void setPath(String path) {
+            this.path = path;
         }
 
         public Boolean getAnonymous() {

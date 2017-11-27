@@ -22,7 +22,7 @@ public class DefaultRestdStrategy implements RestdStrategy {
 
     @Override
     public String getDefaultModelPath(String modelName) {
-        return Strings.lowerUnderscore(modelName);
+        return "/" + Strings.lowerUnderscore(modelName);
     }
 
 }
