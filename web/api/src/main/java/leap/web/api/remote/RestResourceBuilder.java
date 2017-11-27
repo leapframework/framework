@@ -61,9 +61,10 @@ public class RestResourceBuilder {
 		return res;
 	}
 
-	private String formatApiEndPoint(String apiEndPoint){
+	public static String formatApiEndPoint(String apiEndPoint){
 		if(apiEndPoint.contains("{context}")){
-			apiEndPoint=apiEndPoint.replace("{context}", Strings.trimStart(getContextPath(),'/'));
+			String contextPath=Request.tryGetCurrent().getServletRequest().getContextPath();
+			apiEndPoint=apiEndPoint.replace("{context}", Strings.trimStart(contextPath,'/'));
 			//apiEndPoint=apiEndPoint.replace("//", "/");
 		}
 		if(apiEndPoint.contains("~")){
@@ -79,10 +80,6 @@ public class RestResourceBuilder {
 			apiEndPoint=Strings.trimEnd(apiEndPoint,'/');
 		}
 		return apiEndPoint;
-	}
-
-	private static String getContextPath() {
-		return Request.tryGetCurrent().getServletRequest().getContextPath();
 	}
 
 	public static String curServerLocalIp(){
