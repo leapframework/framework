@@ -52,6 +52,13 @@ public class SwaggerConstants {
     public static final String FORMAT                = "format";
     public static final String ENUM                  = "enum";
     public static final String ARRAY                 = "array";
+    public static final String PATTERN               = "pattern";
+    public static final String MAX_LENGTH            = "maxLength";
+    public static final String MIN_LENGTH            = "minLength";
+    public static final String MAXIMUM               = "maximum";
+    public static final String MINIMUM               = "minimum";
+    public static final String EXCLUSIVE_MAXIMUM     = "exclusiveMaximum";
+    public static final String EXCLUSIVE_MINIMUM     = "exclusiveMinimum";
     public static final String ITEMS                 = "items";
     public static final String REF                   = "$ref";
     public static final String OBJECT                = "object";

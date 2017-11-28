@@ -577,13 +577,35 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
         }else{
             SwaggerType type = writeSimpleType(context, m, w, st);
 
+            //format
             if(null != type && null == type.fomrat()) {
                 w.propertyOptional(FORMAT, p.getFormat());
             }
         }
 
-        w.propertyOptional(ENUM, p.getEnumValues());
-	}
+        MApiValidation v = p.getValidation();
+        if(null != v) {
+            w.propertyOptional(PATTERN,    v.getPattern());
+            w.propertyOptional(MAX_LENGTH, v.getMaxLength());
+            w.propertyOptional(MIN_LENGTH, v.getMinLength());
+            w.propertyOptional(ENUM,       v.getEnumValues());
+
+            if(null != v.getMaximum()) {
+                w.property(MAXIMUM, v.getMaximum());
+                w.property(EXCLUSIVE_MAXIMUM, v.isExclusiveMaximum());
+            }
+
+            if(null != v.getMinimum()) {
+                w.property(MINIMUM, v.getMinimum());
+                w.property(EXCLUSIVE_MINIMUM, v.isExclusiveMinimum());
+            }
+        }
+
+        if(null == v || null == v.getEnumValues()) {
+            w.propertyOptional(ENUM, p.getEnumValues());
+        }
+    }
+
 
     protected void writeObjectType(WriteContext context, ApiMetadata m, JsonWriter w) {
         w.property(TYPE, OBJECT);
