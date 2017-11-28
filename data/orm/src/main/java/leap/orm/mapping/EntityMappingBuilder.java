@@ -43,6 +43,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
     protected boolean        autoCreateTable;
     protected boolean        autoGenerateColumns;
     protected Boolean        queryFilterEnabled;
+    protected boolean        autoValidate;
     protected boolean        remote=false;
     private RemoteSettings    remoteSettings;
 
@@ -215,6 +216,14 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 
     public void setQueryFilterEnabled(Boolean queryFilterEnabled) {
         this.queryFilterEnabled = queryFilterEnabled;
+    }
+
+    public boolean isAutoValidate() {
+        return autoValidate;
+    }
+
+    public void setAutoValidate(boolean autoValidate) {
+        this.autoValidate = autoValidate;
     }
 
     public boolean isRemote() {
@@ -442,6 +451,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
                                  relations,
                                  Builders.buildArray(relationProperties, new RelationProperty[0]),
                                  autoCreateTable,queryFilterEnabled == null ? false : queryFilterEnabled,
+                                 autoValidate,
                                  remote, remoteSettings,
                                  listeners.build());
     }

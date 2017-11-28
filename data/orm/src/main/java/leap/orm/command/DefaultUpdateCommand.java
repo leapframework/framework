@@ -20,6 +20,8 @@ import java.util.Map;
 
 import leap.core.exception.InvalidOptimisticLockException;
 import leap.core.exception.OptimisticLockException;
+import leap.core.validation.Errors;
+import leap.core.validation.ValidationException;
 import leap.lang.Args;
 import leap.lang.Arrays2;
 import leap.lang.convert.Converts;
@@ -32,6 +34,7 @@ import leap.orm.mapping.FieldMapping;
 import leap.orm.mapping.Mappings;
 import leap.orm.sql.SqlCommand;
 import leap.orm.sql.SqlFactory;
+import leap.orm.validation.EntityValidator;
 import leap.orm.value.EntityWrapper;
 
 public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements UpdateCommand {
@@ -186,6 +189,14 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
                 }
 			}
 		}
+
+        if(em.isAutoValidate()) {
+            EntityValidator validator = context.getEntityValidator();
+            Errors errors = validator.validate(entity, entity.getFieldNames());
+            if(!errors.isEmpty()) {
+                throw new ValidationException(errors);
+            }
+        }
 	}
 	
 	protected void prepareOptimisticLock(FieldMapping fm){

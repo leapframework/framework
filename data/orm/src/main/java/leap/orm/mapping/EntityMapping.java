@@ -64,6 +64,7 @@ public class EntityMapping extends ExtensibleBase {
     protected final RelationMapping[]  selfReferencingRelations;
     protected final EntityListeners    listeners;
     protected final boolean            queryFilterEnabled;
+    protected final boolean            autoValidate;
     protected final boolean            remote;
     private final RemoteSettings      remoteSettings;
 
@@ -84,7 +85,7 @@ public class EntityMapping extends ExtensibleBase {
                          List<RelationMapping> relationMappings,
                          RelationProperty[] relationProperties,
                          boolean autoCreateTable,
-                         boolean queryFilterEnabled, boolean remote, RemoteSettings remoteSettings,
+                         boolean queryFilterEnabled, boolean autoValidate, boolean remote, RemoteSettings remoteSettings,
                          EntityListeners listeners) {
 
 		Args.notEmpty(entityName,"entity name");
@@ -126,6 +127,7 @@ public class EntityMapping extends ExtensibleBase {
 	    this.optimisticLockField    = findOptimisticLockField();
         this.autoCreateTable        = autoCreateTable;
         this.queryFilterEnabled     = queryFilterEnabled;
+        this.autoValidate           = autoValidate;
         this.remote 				= remote;
         this.remoteSettings			=remoteSettings;
 
@@ -362,6 +364,13 @@ public class EntityMapping extends ExtensibleBase {
 
     public boolean isQueryFilterEnabled() {
         return queryFilterEnabled;
+    }
+
+    /**
+     * Returns is auto validates the entity if insert or update.
+     */
+    public boolean isAutoValidate() {
+        return autoValidate;
     }
 
     /**

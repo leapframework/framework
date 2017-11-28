@@ -26,6 +26,7 @@ import leap.orm.query.QueryFactory;
 import leap.orm.reader.EntityReader;
 import leap.orm.reader.RowReader;
 import leap.orm.sql.SqlFactory;
+import leap.orm.validation.EntityValidator;
 
 import javax.sql.DataSource;
 
@@ -80,6 +81,11 @@ public interface OrmContext extends MetadataContext, Named {
      * Required.
      */
 	RowReader getRowReader();
+
+    /**
+     * Required.
+     */
+    EntityValidator getEntityValidator();
 
     /**
      * Required.

@@ -42,6 +42,7 @@ import leap.orm.reader.EntityReader;
 import leap.orm.reader.RowReader;
 import leap.orm.sql.SqlFactory;
 import leap.orm.sql.SqlMetadata;
+import leap.orm.validation.EntityValidator;
 
 import javax.sql.DataSource;
 
@@ -60,6 +61,7 @@ public class DefaultDynaOrmFactory implements DynaOrmFactory {
     protected @Inject QueryFactory       queryFactory;
     protected @Inject EntityReader       entityReader;
     protected @Inject RowReader          rowReader;
+    protected @Inject EntityValidator    entityValidator;
     protected @Inject EntityEventHandler eventHandler;
 
     @Override
@@ -97,6 +99,7 @@ public class DefaultDynaOrmFactory implements DynaOrmFactory {
         context.setQueryFactory(queryFactory);
         context.setEntityReader(entityReader);
         context.setRowReader(rowReader);
+        context.setEntityValidator(entityValidator);
         context.setEventHandler(eventHandler);
 
         Dao dao = bf.inject(new DefaultDao(context));

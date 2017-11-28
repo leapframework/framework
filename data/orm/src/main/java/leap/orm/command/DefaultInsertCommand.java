@@ -16,6 +16,8 @@
 package leap.orm.command;
 
 import leap.core.jdbc.PreparedStatementHandler;
+import leap.core.validation.Errors;
+import leap.core.validation.ValidationException;
 import leap.db.Db;
 import leap.lang.Arrays2;
 import leap.lang.Strings;
@@ -29,6 +31,7 @@ import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
 import leap.orm.sql.SqlCommand;
 import leap.orm.sql.SqlFactory;
+import leap.orm.validation.EntityValidator;
 import leap.orm.value.EntityWrapper;
 
 import java.util.LinkedHashMap;
@@ -223,6 +226,14 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
                 }
             }
 		}
+
+        if(em.isAutoValidate()) {
+            EntityValidator validator = context.getEntityValidator();
+            Errors errors = validator.validate(entity);
+            if(!errors.isEmpty()) {
+                throw new ValidationException(errors);
+            }
+        }
 	}
 	
 	protected void setGeneratedValue(FieldMapping fm,Object value){
