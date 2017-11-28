@@ -400,8 +400,8 @@ public class BeanContainer implements BeanFactory {
 		Args.notEmpty(id,"bean id");
 
 		BeanDefinitionBase bd = findBeanOrAliasDefinition(id);
-		if(null == bd){
-			return null;
+		if(null != bd){
+			return (T)doGetBean(bd);
 		}
 
         for(BeanFactorySupport support : postSupports) {
@@ -411,7 +411,7 @@ public class BeanContainer implements BeanFactory {
             }
         }
 
-		return (T)doGetBean(bd);
+		return null;
     }
 
     @Override
