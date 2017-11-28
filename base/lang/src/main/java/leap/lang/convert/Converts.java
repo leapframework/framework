@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 import leap.lang.Args;
 import leap.lang.Classes;
@@ -86,6 +87,9 @@ public class Converts {
 		register(LocalDate.class,           new DateTimeConverters.LocalDateConverter());
         register(LocalTime.class,           new DateTimeConverters.LocalTimeConverter());
         register(LocalDateTime.class,       new DateTimeConverters.LocalDateTimeConverter());
+
+        //Pattern
+        register(Pattern.class, new PatternConverter());
 		
 		//Collection :  
 		register(Iterable.class,new CollectionConverters.ListConverter());

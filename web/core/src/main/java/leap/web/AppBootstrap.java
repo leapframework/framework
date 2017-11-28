@@ -111,7 +111,7 @@ public class AppBootstrap extends ServletContextInitializerBase implements Servl
 	}
 	
 	public AppConfig getAppConfig() {
-		return appContext.getConfig();
+		return null != appContext ? appContext.getConfig() : null;
 	}
 	
 	public BeanFactory getBeanFactory() {

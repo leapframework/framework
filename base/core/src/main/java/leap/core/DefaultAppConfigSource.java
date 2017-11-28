@@ -437,7 +437,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
                 StringWriter msg = new StringWriter();
                 PrintWriter writer = new PrintWriter(msg);
                 propertyPrinter.printProperties(this.properties.values(), writer);
-                log.debug("Print properties (excludes system) : \n\n{}",msg.toString());
+                log.debug("Print properties : \n\n{}",msg.toString());
             }
         }
 

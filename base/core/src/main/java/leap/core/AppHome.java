@@ -21,6 +21,8 @@ import leap.lang.resource.FileResource;
 
 /**
  * Indicates application's home directory.
+ *
+ * @deprecated may be removed in future.
  */
 public interface AppHome {
 	

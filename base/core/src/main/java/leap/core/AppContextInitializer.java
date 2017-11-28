@@ -36,6 +36,11 @@ public class AppContextInitializer {
 	private static ThreadLocal<AppConfig> initialAppConfig;
 	private static boolean				  initializing;
     private static boolean                testing;
+    private static boolean                instrumentDisabled;
+
+    public static void setInstrumentDisabled(boolean disabled) {
+        instrumentDisabled = disabled;
+    }
 
     public static boolean isTesting() {
         return testing;
@@ -78,11 +83,15 @@ public class AppContextInitializer {
 			config = cs.loadConfig(null, null);
 
 			initialAppConfig.set(config);
-            ClassLoader parent = Classes.getClassLoader(AppContextInitializer.class);
-            ClassLoader ctxCl  = Thread.currentThread().getContextClassLoader();
-            AppClassLoader appCl  = AppClassLoader.init(parent);
-            Thread.currentThread().setContextClassLoader(appCl);
-            appCl.load(config);
+
+            ClassLoader    ctxCl = Thread.currentThread().getContextClassLoader();
+            AppClassLoader appCl = null;
+            if(!instrumentDisabled) {
+                ClassLoader parent = Classes.getClassLoader(AppContextInitializer.class);
+                appCl = AppClassLoader.init(parent);
+                Thread.currentThread().setContextClassLoader(appCl);
+                appCl.load(config);
+            }
             try{
                 BeanFactoryInternal factory = createStandaloneAppFactory(config,externalAppFactory);
 
@@ -104,8 +113,10 @@ public class AppContextInitializer {
 
                 return context;
             }finally {
-                appCl.done();
-                Thread.currentThread().setContextClassLoader(ctxCl);
+                if(null != appCl) {
+                    appCl.done();
+                    Thread.currentThread().setContextClassLoader(ctxCl);
+                }
             }
 		}finally{
 			initialAppConfig.remove();
@@ -143,11 +154,16 @@ public class AppContextInitializer {
             config = cs.loadConfig(externalContext, initProperties);
 
             initialAppConfig.set(config);
-            ClassLoader parent = Classes.getClassLoader(AppContextInitializer.class);
-            ClassLoader ctxCl  = Thread.currentThread().getContextClassLoader();
-            AppClassLoader appCl  = AppClassLoader.init(parent);
-            Thread.currentThread().setContextClassLoader(appCl);
-            appCl.load(config);
+
+            ClassLoader    ctxCl = Thread.currentThread().getContextClassLoader();
+            AppClassLoader appCl = null;
+
+            if(!instrumentDisabled) {
+                ClassLoader parent = Classes.getClassLoader(AppContextInitializer.class);
+                appCl = AppClassLoader.init(parent);
+                Thread.currentThread().setContextClassLoader(appCl);
+                appCl.load(config);
+            }
             try {
                 BeanFactory factory = newBeanFactory.apply(config);
 
@@ -166,8 +182,10 @@ public class AppContextInitializer {
 
                 onAppContextinited.accept(context);
             }finally {
-                appCl.done();
-                Thread.currentThread().setContextClassLoader(ctxCl);
+                if(null != appCl) {
+                    appCl.done();
+                    Thread.currentThread().setContextClassLoader(ctxCl);
+                }
             }
 		}finally{
 			initialAppConfig.remove();

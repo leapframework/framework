@@ -1576,7 +1576,11 @@ public class BeanContainer implements BeanFactory {
 					}
 					
 					if(null == beanType || Object.class.equals(beanType)){
-						beanType = Types.getActualType(Types.getTypeArguments(genericType)[1]);
+                        Type[] types = Types.getTypeArguments(genericType);
+                        if(types.length != 2) {
+                            return null;
+                        }
+                        beanType = Types.getActualType(types[1]);
 					}
 					
 					injectedBean = factory.getNamedBeans(beanType);
