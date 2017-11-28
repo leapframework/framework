@@ -18,6 +18,7 @@ package leap.web.action;
 import leap.core.AppConfigException;
 import leap.core.annotation.Inject;
 import leap.core.validation.Validation;
+import leap.core.validation.ValidationException;
 import leap.lang.*;
 import leap.lang.convert.ConvertException;
 import leap.lang.http.HTTP;
@@ -160,17 +161,19 @@ public class DefaultActionManager implements ActionManager {
 		}catch(Throwable e){
             //Ignores successful response exception.
             if(e instanceof ResponseException) {
-                ResponseException re = (ResponseException)e;
+                ResponseException re = (ResponseException) e;
                 int s = re.getStatus();
                 execution.setStatus(HTTP.Status.valueOf(s));
                 if (s >= 200 && s <= 300) {
                     log.debug("Caught a ResponseException(status=2xx) while executing action, just throw it!");
                     throw e;
                 } else {
-                  log.info("Fail execute action {} : {}", context.getAction(), e.getMessage());
+                    log.info("Fail execute action {} : {}", context.getAction(), e.getMessage());
                 }
+            } else if(e instanceof ValidationException) {
+                log.info("Action '{}' validate failed : {}", context.getAction(), e.getMessage());
             } else {
-                log.error("Error execute action {} : {}", context.getAction(), e.getMessage(), e);
+                log.error("Action '{}' error : {}", context.getAction(), e.getMessage(), e);
             }
 
 			execution.setState(Execution.ExecutionState.FAILURE);
