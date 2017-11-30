@@ -146,12 +146,13 @@ public class Converts {
         Object v = doConvert(value, targetType, genericType, context);
 
         if(NOT_CONVERTED == v) {
-            throw new ConvertUnsupportedException(Strings.format("Cannot convert '{0}' to '{1}', value : {2}",value.getClass(),targetType.getName(),value.toString()));
+            String s = Strings.format("Can't convert value '{0}' from {1} to {2}",value.toString(),value.getClass(),targetType);
+            throw new ConvertUnsupportedException(s);
         }
 
         return (T)v;
     }
-	
+
 	public static <T> T tryConvert(Object value,Class<T> targetType, Type genericType) {
 		Object v = doConvert(value, targetType, genericType, null);
         

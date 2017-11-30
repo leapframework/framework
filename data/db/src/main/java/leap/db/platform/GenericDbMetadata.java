@@ -40,7 +40,9 @@ public class GenericDbMetadata implements DbMetadata,DbAware {
 	private final Object asyncSchemaReaderMonitor      = new Object();
 	
 	private Thread asyncSchemaReaderThread;
-	
+
+    protected final String           url;
+    protected final String           username;
     protected final String           productName;
     protected final String           productVersion;
     protected final int              productMajorVersion;
@@ -65,7 +67,9 @@ public class GenericDbMetadata implements DbMetadata,DbAware {
 		Args.notNull(dm,"DatabaseMetaData");
 		Args.notEmpty(defaultSchemaName,"default schema name");
 		Args.notNull(metadataReader,"metadata reader");
-		
+
+        this.url                              = dm.getURL();
+        this.username                         = dm.getUserName();
         this.productName                      = dm.getDatabaseProductName();
         this.productVersion                   = dm.getDatabaseProductVersion();
         this.productMajorVersion              = dm.getDatabaseMajorVersion();
@@ -89,7 +93,17 @@ public class GenericDbMetadata implements DbMetadata,DbAware {
 		this.log = this.db.getLog(this.getClass());
     }
 
-	@Override
+    @Override
+    public String getURL() {
+        return url;
+    }
+
+    @Override
+    public String getUsername() {
+        return username;
+    }
+
+    @Override
 	public String getProductName() {
 		return productName;
 	}

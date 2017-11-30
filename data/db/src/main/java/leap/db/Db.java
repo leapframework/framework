@@ -50,6 +50,11 @@ public interface Db extends Named , JdbcExecutor {
 	 * Returns a description string of this db.
 	 */
 	String getDescription();
+
+    /**
+     * Returns a description string of the underlying data source.
+     */
+    String getDataSourceDescription();
 	
 	/**
 	 * Returns the underlying db platform.

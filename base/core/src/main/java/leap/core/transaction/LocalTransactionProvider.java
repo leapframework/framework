@@ -15,14 +15,10 @@
  */
 package leap.core.transaction;
 
-import leap.core.ioc.AbstractReadonlyBean;
 import leap.core.transaction.TransactionDefinition.Isolation;
 import leap.core.transaction.TransactionDefinition.Propagation;
 import leap.lang.Args;
-import leap.lang.Exceptions;
 import leap.lang.exception.NestedSQLException;
-import leap.lang.jdbc.ConnectionCallback;
-import leap.lang.jdbc.ConnectionCallbackWithResult;
 import leap.lang.jdbc.JDBC;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -32,7 +28,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Stack;
 
-public class LocalTransactionProvider extends AbstractReadonlyBean implements TransactionProvider {
+public class LocalTransactionProvider extends AbstractTransactionProvider implements TransactionProvider {
 	
 	private static final Log log = LogFactory.get(LocalTransactionProvider.class);
 	
@@ -57,65 +53,6 @@ public class LocalTransactionProvider extends AbstractReadonlyBean implements Tr
     @Override
     public Transaction beginTransaction(TransactionDefinition td) {
         return getTransaction(null == td ? getRequiredDefinition() : td).begin();
-    }
-
-    @Override
-    public void execute(ConnectionCallback callback) {
-        Connection connection = null;
-        try{
-            connection = getConnection();
-            callback.execute(connection);
-        }catch(SQLException e){
-            Exceptions.wrapAndThrow(e);
-        }finally{
-            closeConnection(connection);
-        }
-    }
-
-    @Override
-    public <T> T executeWithResult(ConnectionCallbackWithResult<T> callback) {
-        Connection connection = null;
-        try{
-            connection = getConnection();
-            return callback.execute(connection);
-        }catch(SQLException e){
-            Exceptions.wrapAndThrow(e);
-            return null;
-        }finally{
-            closeConnection(connection);
-        }
-    }
-
-    @Override
-    public void doTransaction(TransactionCallback callback) {
-		getTransaction(false).execute(callback);
-    }
-
-	@Override
-    public <T> T doTransaction(TransactionCallbackWithResult<T> callback) {
-	    return getTransaction(false).executeWithResult(callback);
-    }
-	
-	@Override
-    public void doTransaction(TransactionCallback callback,boolean requiresNew) {
-		getTransaction(requiresNew).execute(callback);
-    }
-
-	@Override
-    public <T> T doTransaction(TransactionCallbackWithResult<T> callback, boolean requiresNew) {
-	    return getTransaction(requiresNew).executeWithResult(callback);
-    }
-	
-	@Override
-    public void doTransaction(TransactionCallback callback, TransactionDefinition td) {
-		Args.notNull(td,"transaction definition");
-		getTransaction(td).execute(callback);	    
-    }
-
-	@Override
-    public <T> T doTransaction(TransactionCallbackWithResult<T> callback, TransactionDefinition td) {
-		Args.notNull(td,"transaction definition");
-		return getTransaction(td).executeWithResult(callback);
     }
 
     public void setDefaultPropagation(Propagation defaultPropagation) {
@@ -147,14 +84,14 @@ public class LocalTransactionProvider extends AbstractReadonlyBean implements Tr
 	/**
 	 * Return a currently active transaction or create a new one.
 	 */
-    protected LocalTransaction getTransaction(boolean requiresNew) {
+    protected AbstractTransaction getTransaction(boolean requiresNew) {
     	return requiresNew ? getTransaction(getRequiresNewDefinition()) : getTransaction(getRequiredDefinition());
     }
     
 	/**
 	 * Return a currently active transaction or create a new one.
 	 */
-    protected LocalTransaction getTransaction(TransactionDefinition td) {
+    protected AbstractTransaction getTransaction(TransactionDefinition td) {
     	if(td.getPropagation() == Propagation.REQUIRES_NEW) {
     		log.debug("Force to Create a new Transaction");
     		LocalTransaction trans = new LocalTransaction(this,td);
@@ -189,19 +126,18 @@ public class LocalTransactionProvider extends AbstractReadonlyBean implements Tr
         return transaction.getConnection();
     }
 
-    protected boolean closeConnection(Connection connection) {
+    protected void closeConnection(Connection connection) {
 		if(null == connection){
-			return false;
+			return;
 		}
 		
 		LocalTransaction transaction = peekActiveTransaction();
 		if(null != transaction && connectionEquals(transaction, connection)){
-			return false;
+			return;
 		}
 		
 		log.debug("Returning JDBC Connection to DataSource");
 		returnConnectionToDataSource(connection);
-		return true;
     }
 	
 	protected LocalTransaction peekActiveTransaction() {
