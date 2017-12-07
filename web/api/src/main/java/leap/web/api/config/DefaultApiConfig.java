@@ -20,6 +20,7 @@ import leap.lang.meta.MComplexType;
 import leap.lang.naming.NamingStyle;
 import leap.lang.path.Paths;
 import leap.web.api.config.model.*;
+import leap.web.api.meta.ApiMetadataBuilder;
 import leap.web.api.meta.model.*;
 import leap.web.api.permission.ResourcePermissionsSet;
 import leap.web.api.route.ApiRoute;
@@ -81,6 +82,7 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     protected OAuthConfigImpl oauthConfig = new OAuthConfigImpl();
     protected RestdConfig restdConfig;
     protected Routes      containerRoutes;
+    protected ApiMetadataBuilder metadata;
 
 	public DefaultApiConfig(String name, String basePath, Object source) {
 		Args.notEmpty(name, "name");
@@ -503,6 +505,15 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
             restdConfig = new RestdConfig();
         }
         return this;
+    }
+
+    @Override
+    public ApiMetadataBuilder getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(ApiMetadataBuilder metadata) {
+        this.metadata = metadata;
     }
 
     @Override

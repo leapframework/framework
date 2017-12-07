@@ -432,7 +432,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
             w.startObject();
 
             w.property(NAME, tag.getName());
-            w.propertyOptional(DESCRIPTION, tag.descOrSummary());
+            w.propertyOptional(DESCRIPTION, tag.descOrSummaryOrTitle());
 
             w.endObject();
 
