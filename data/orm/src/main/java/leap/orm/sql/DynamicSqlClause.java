@@ -245,9 +245,10 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause,Sql
 				}
 			}
 
-			SqlSelect countSelect = new SqlSelect();
-
+            AstNode[] countNodes;
 			if(selects.size() == 1){
+                //remove order by
+                SqlSelect selectWithoutOrderBy = new SqlSelect();
 				SqlSelect select = (SqlSelect)sqls.sql.nodes()[0];
 				List<AstNode> nodes = new ArrayList<>();
 				for(AstNode node : select.getNodes()){
@@ -255,28 +256,32 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause,Sql
 						continue;
 					}
 
-					if(node instanceof SqlSelectList) {
-						nodes.add(new Text("count(*) "));
-					}else{
-						nodes.add(node);
-					}
+//					if(node instanceof SqlSelectList) {
+//						nodes.add(new Text("count(*) "));
+//					}else{
+//						nodes.add(node);
+//					}
+                    nodes.add(node);
 				}
 
-				countSelect.setDistinct(select.isDistinct());
-				countSelect.setTop(select.getTop());
-				countSelect.setAlias(select.getAlias());
-				countSelect.setNodes(nodes.toArray(new AstNode[nodes.size()]));
+                selectWithoutOrderBy.setDistinct(select.isDistinct());
+                selectWithoutOrderBy.setTop(select.getTop());
+                selectWithoutOrderBy.setAlias(select.getAlias());
+                selectWithoutOrderBy.setNodes(nodes.toArray(new AstNode[nodes.size()]));
 
+                countNodes = new AstNode[]{selectWithoutOrderBy};
 			}else{
-
-				List<AstNode> nodes = new ArrayList<>();
-				nodes.add(new SqlSelect());
-				nodes.add(new Text("SELECT count(*) FROM (\n\t\t"));
-				nodes.addAll(Arrays.asList(sqls.sql.nodes()));
-				nodes.add(new Text("\n\t\t) t"));
-				countSelect.setNodes(nodes.toArray(new AstNode[nodes.size()]));
-
+                countNodes = sqls.sql.nodes();
 			}
+
+            List<AstNode> nodes = new ArrayList<>();
+            nodes.add(new SqlSelect());
+            nodes.add(new Text("SELECT count(*) FROM (\n\t\t"));
+            nodes.addAll(Arrays.asList(countNodes));
+            nodes.add(new Text("\n\t\t) cnt"));
+
+            SqlSelect countSelect = new SqlSelect();
+            countSelect.setNodes(nodes.toArray(new AstNode[nodes.size()]));
 			sqls.sqlForCount = new Sql(sqls.sql.type(), new AstNode[]{countSelect});
 		}
 	}

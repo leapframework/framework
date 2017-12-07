@@ -564,7 +564,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 	@Override
     public long count() {
 		String sql = builder.buildCountSql();
-		SqlStatement statement = createCountStatement(this,sql);
+		SqlStatement statement = createQueryStatement(this,sql);
 	    return statement.executeQuery(ResultSetReaders.forScalarValue(Long.class, false));
     }
 	
@@ -1021,8 +1021,14 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 		
 		public String buildCountSql() {
 			sql = new StringBuilder();
-			
-			select().count().from().join().where().groupBy();
+
+            if(hasGroupBy()) {
+                sql.append("select count(*) from ( ");
+                select().columns().from().join().where().groupBy();
+                sql.append(" ) cnt");
+            }else{
+                select().count().from().join().where().groupBy();
+            }
 			
 			return sql.toString();
 		}
@@ -1225,6 +1231,10 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
 	        return this;
 		}
+
+        protected boolean hasGroupBy() {
+            return !Strings.isEmpty(groupBy);
+        }
 		
 		protected SqlBuilder groupBy() {
 	        if(!Strings.isEmpty(groupBy)){
