@@ -113,6 +113,11 @@ public interface CriteriaQuery<T> extends Query<T> {
     EntityMapping getEntityMapping();
 
     /**
+     * Select distinct ...
+     */
+    CriteriaQuery<T> distinct();
+
+    /**
      * Sets the selected fields(columns) in the CriteriaQuery result.
      * <p>
      * <p>

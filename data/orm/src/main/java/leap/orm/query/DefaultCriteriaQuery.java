@@ -56,6 +56,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     protected ArrayParams   whereParameters;
     protected StringBuilder joinByIdWhere;
     protected List          joinByIdArgs;
+    protected boolean       distinct;
 	protected String        groupBy;
 	protected String        having;
 
@@ -468,7 +469,13 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 	    return this;
     }
 
-	@Override
+    @Override
+    public CriteriaQuery<T> distinct() {
+        this.distinct = true;
+        return this;
+    }
+
+    @Override
     public CriteriaQuery<T> select(String... fields) {
 		if(null == fields || fields.length == 0){
 			builder.selects = null;
@@ -564,7 +571,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 	@Override
     public long count() {
 		String sql = builder.buildCountSql();
-		SqlStatement statement = createCountStatement(this,sql);
+		SqlStatement statement = createQueryStatement(this, sql, true);
 	    return statement.executeQuery(ResultSetReaders.forScalarValue(Long.class, false));
     }
 	
@@ -683,7 +690,12 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         }
 
         if(count) {
-            return clause.createCountStatement(qc, queryParams);
+            //Count query don't add the order by.
+            String tmpOrderBy = this.orderBy;
+            this.orderBy = null;
+            SqlStatement statement =  clause.createQueryStatement(qc, queryParams);
+            this.orderBy = tmpOrderBy;
+            return statement;
         }else{
             return clause.createQueryStatement(qc, queryParams);
         }
@@ -1021,8 +1033,14 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 		
 		public String buildCountSql() {
 			sql = new StringBuilder();
-			
-			select().count().from().join().where().groupBy();
+
+            if(distinct || hasGroupBy()) {
+                sql.append("select count(*) from ( ");
+                select().columns().from().join().where().groupBy();
+                sql.append(" ) cnt");
+            }else{
+                select().count().from().join().where().groupBy();
+            }
 			
 			return sql.toString();
 		}
@@ -1056,6 +1074,9 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 		
 		protected SqlBuilder select() {
 			sql.append("select");
+            if(distinct) {
+                sql.append(" distinct");
+            }
 			return this;
 		}
 		
@@ -1225,6 +1246,10 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
 	        return this;
 		}
+
+        protected boolean hasGroupBy() {
+            return !Strings.isEmpty(groupBy);
+        }
 		
 		protected SqlBuilder groupBy() {
 	        if(!Strings.isEmpty(groupBy)){

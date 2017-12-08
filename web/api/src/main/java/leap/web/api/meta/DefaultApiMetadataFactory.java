@@ -65,7 +65,10 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 
 	@Override
     public ApiMetadata createMetadata(Api api) {
-		ApiMetadataBuilder md = new ApiMetadataBuilder();
+		ApiMetadataBuilder md = api.getConfigurator().getMetadata();
+        if(null == md) {
+            md = new ApiMetadataBuilder();
+        }
 		
 		ApiMetadataContext context = createContext(api, md);
 

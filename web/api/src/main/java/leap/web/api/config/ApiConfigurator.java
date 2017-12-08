@@ -24,6 +24,7 @@ import leap.web.api.config.model.ModelConfig;
 import leap.web.api.config.model.OAuthConfig;
 import leap.web.api.config.model.ParamConfig;
 import leap.web.api.config.model.RestdConfig;
+import leap.web.api.meta.ApiMetadataBuilder;
 import leap.web.api.meta.model.*;
 import leap.web.route.Route;
 import leap.web.route.Routes;
@@ -242,4 +243,14 @@ public interface ApiConfigurator extends Extensible {
      * Returns the {@link RestdConfig} or null if restd is not enabled.
      */
     RestdConfig getRestdConfig();
+
+    /**
+     * Optional.
+     */
+    ApiMetadataBuilder getMetadata();
+
+    /**
+     * Sets {@link ApiMetadataBuilder}.
+     */
+    void setMetadata(ApiMetadataBuilder metadata);
 }

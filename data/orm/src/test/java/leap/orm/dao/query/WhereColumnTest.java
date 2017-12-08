@@ -170,7 +170,7 @@ public class WhereColumnTest extends OrmTestCase {
         new ECodeModel1("3").id("2").set("ecode","t2").create();
 
         long count =
-            dao.createSqlQuery("select * from ECodeModel t1 left join ECodeModel1 t2 on t1.id = t2.id")
+            dao.createSqlQuery("select t1.* from ECodeModel t1 left join ECodeModel1 t2 on t1.id = t2.id")
                .count();
 
         assertEquals(0, count);
@@ -188,7 +188,7 @@ public class WhereColumnTest extends OrmTestCase {
         new ECodeModel1("2").id("1").set("ecode","t2").create();
 
         String sql =
-            "select * from ECodeModel t1 " +
+            "select t1.* from ECodeModel t1 " +
             "inner join ECodeModel1 t2 on t1.id = t2.id " +
             "left join EcodeModel1 t3 on t1.id = t3.id";
 

@@ -18,6 +18,7 @@ package leap.web.api.meta.model;
 import java.util.Map;
 
 import leap.lang.Described;
+import leap.lang.Strings;
 
 public abstract class MApiNamedWithDesc extends MApiNamed implements Described {
 	
@@ -49,4 +50,11 @@ public abstract class MApiNamedWithDesc extends MApiNamed implements Described {
 	    return description;
     }
 
+    /**
+     * Returns the first not empty string of description, summary, or title.
+     */
+    public String descOrSummaryOrTitle() {
+        String s = descOrSummary();
+        return !Strings.isEmpty(s) ? s : title;
+    }
 }
