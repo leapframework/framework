@@ -571,7 +571,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 	@Override
     public long count() {
 		String sql = builder.buildCountSql();
-		SqlStatement statement = createQueryStatement(this,sql);
+		SqlStatement statement = createQueryStatement(this, sql, true);
 	    return statement.executeQuery(ResultSetReaders.forScalarValue(Long.class, false));
     }
 	
@@ -690,7 +690,12 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         }
 
         if(count) {
-            return clause.createCountStatement(qc, queryParams);
+            //Count query don't add the order by.
+            String tmpOrderBy = this.orderBy;
+            this.orderBy = null;
+            SqlStatement statement =  clause.createQueryStatement(qc, queryParams);
+            this.orderBy = tmpOrderBy;
+            return statement;
         }else{
             return clause.createQueryStatement(qc, queryParams);
         }

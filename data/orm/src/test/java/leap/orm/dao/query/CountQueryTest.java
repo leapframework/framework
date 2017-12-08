@@ -64,7 +64,7 @@ public class CountQueryTest extends OrmTestCase {
     @Test
     public void testCriteriaQueryCountWithDistinct() {
         CriteriaQuery<Owner> query = dao.createCriteriaQuery(Owner.class);
-        query.distinct().select("firstName");
+        query.distinct().select("firstName").orderBy("firstName asc");
         assertEquals(3, query.list().size());
         assertEquals(3, query.count());
     }
