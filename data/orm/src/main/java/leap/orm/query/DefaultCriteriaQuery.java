@@ -56,6 +56,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     protected ArrayParams   whereParameters;
     protected StringBuilder joinByIdWhere;
     protected List          joinByIdArgs;
+    protected boolean       distinct;
 	protected String        groupBy;
 	protected String        having;
 
@@ -468,7 +469,13 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 	    return this;
     }
 
-	@Override
+    @Override
+    public CriteriaQuery<T> distinct() {
+        this.distinct = true;
+        return this;
+    }
+
+    @Override
     public CriteriaQuery<T> select(String... fields) {
 		if(null == fields || fields.length == 0){
 			builder.selects = null;
@@ -1022,7 +1029,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 		public String buildCountSql() {
 			sql = new StringBuilder();
 
-            if(hasGroupBy()) {
+            if(distinct || hasGroupBy()) {
                 sql.append("select count(*) from ( ");
                 select().columns().from().join().where().groupBy();
                 sql.append(" ) cnt");
@@ -1062,6 +1069,9 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 		
 		protected SqlBuilder select() {
 			sql.append("select");
+            if(distinct) {
+                sql.append(" distinct");
+            }
 			return this;
 		}
 		
