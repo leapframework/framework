@@ -28,12 +28,13 @@ public class MComplexType extends MStructuralType implements MNamed {
 	protected final MComplexType baseType;
     protected final Class<?>     javaType;
 	protected final boolean		 _abstract;
+    protected final boolean      entity;
 
 	public MComplexType(String name, String title, String summary, String description, 
 						MComplexType baseType,
                         Class<?> javaType,
                         Collection<MProperty> properties,
-					    boolean isAbstract) {
+					    boolean isAbstract, boolean entity) {
 		super(summary, description, properties);
 		
 		Args.notEmpty(name,  "name");
@@ -43,6 +44,7 @@ public class MComplexType extends MStructuralType implements MNamed {
 		this.baseType  = baseType;
         this.javaType  = javaType;
 		this._abstract = isAbstract;
+        this.entity    = entity;
 	}
 	
 	@Override
@@ -81,7 +83,11 @@ public class MComplexType extends MStructuralType implements MNamed {
 		return _abstract;
 	}
 
-	public MComplexTypeRef createTypeRef() {
+    public boolean isEntity() {
+        return entity;
+    }
+
+    public MComplexTypeRef createTypeRef() {
 		return new MComplexTypeRef(name);
 	}
 }

@@ -447,6 +447,10 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
             w.property(TYPE, OBJECT);
         }
 
+        if(model.isEntity()) {
+            w.property(X_ENTITY, true);
+        }
+
         w.propertyOptional(TITLE, model.getTitle());
         w.propertyOptional(SUMMARY, model.getSummary());
         w.propertyOptional(DESCRIPTION, model.getDescription());

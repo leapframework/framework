@@ -30,6 +30,7 @@ public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> {
 
     protected String       baseName;
     protected MComplexType type;
+    protected boolean      entity;
 
     protected Set<Class<?>>                    javaTypes  = new LinkedHashSet<>();
     protected Map<String, MApiPropertyBuilder> properties = new LinkedHashMap<>();
@@ -48,6 +49,7 @@ public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> {
         this.title = type.getTitle();
         this.summary = type.getSummary();
         this.description = type.getDescription();
+        this.entity = type.isEntity();
 
         if(null != type.getJavaType()) {
             this.javaTypes.add(type.getJavaType());
@@ -56,6 +58,14 @@ public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> {
         for (MProperty mp : type.getProperties()) {
             addProperty(new MApiPropertyBuilder(mp));
         }
+    }
+
+    public boolean isEntity() {
+        return entity;
+    }
+
+    public void setEntity(boolean entity) {
+        this.entity = entity;
     }
 
     /**
@@ -91,7 +101,7 @@ public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> {
 
     @Override
     public MApiModel build() {
-        return new MApiModel(baseName, name, title, summary, description, javaTypes.toArray(Arrays2.EMPTY_CLASS_ARRAY),
+        return new MApiModel(entity, baseName, name, title, summary, description, javaTypes.toArray(Arrays2.EMPTY_CLASS_ARRAY),
                 Builders.buildArray(properties.values(), new MApiProperty[properties.size()]), attrs);
     }
 

@@ -359,6 +359,7 @@ public class SwaggerSpecReader implements ApiSpecReader {
         mm.setTitle(model.getString(TITLE));
         mm.setSummary(model.getString(SUMMARY));
         mm.setDescription(model.getString(DESCRIPTION));
+        mm.setEntity(model.getBoolean(X_ENTITY, false));
 
         Map<String,Object> properties = model.getMap(PROPERTIES);
         if(null != properties) {

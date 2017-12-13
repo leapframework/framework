@@ -62,6 +62,7 @@ public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactor
 		MComplexTypeBuilder ct = new MComplexTypeBuilder(type);
 
 		ct.setName(em.getEntityName());
+        ct.setEntity(true);
 
         if(null != type) {
             context.onComplexTypeCreating(type, ct.getName());
