@@ -16,25 +16,24 @@
 
 package leap.web.api.restd.crud;
 
-import leap.lang.Arrays2;
 import leap.lang.Strings;
 import leap.orm.dao.Dao;
 import leap.web.action.ActionParams;
 import leap.web.action.FuncActionBuilder;
 import leap.web.api.Api;
-import leap.web.api.config.ApiConfig;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.ApiResponse;
 import leap.web.api.mvc.params.DeleteOptions;
-import leap.web.api.orm.*;
+import leap.web.api.orm.ModelDeleteExecutor;
+import leap.web.api.orm.ModelExecutorContext;
+import leap.web.api.orm.SimpleModelExecutorContext;
+import leap.web.api.restd.RestdContext;
 import leap.web.api.restd.RestdModel;
 import leap.web.api.restd.RestdProcessor;
-import leap.web.api.restd.RestdContext;
 import leap.web.route.RouteBuilder;
 
-import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -67,6 +66,7 @@ public class DeleteOperation extends CrudOperation implements RestdProcessor {
 
         configure(context, model, action);
         route.setAction(action.build());
+        setCrudOperation(route, "delete");
 
         configure(context, model, route);
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));

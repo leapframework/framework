@@ -34,12 +34,26 @@ import leap.web.api.restd.RestdContext;
 import leap.web.api.restd.RestdModel;
 import leap.web.api.restd.RestdOperationBase;
 import leap.web.api.restd.RestdProcessor;
+import leap.web.route.RouteBuilder;
 
 import java.util.Map;
 
 public abstract class CrudOperation extends RestdOperationBase implements RestdProcessor {
 
     protected @Inject ModelExecutorFactory mef;
+
+    protected void setApiExtension(RouteBuilder route, String name, Object value) {
+        MApiExtension extension = route.getExtension(MApiExtension.class);
+        if(null == extension) {
+            extension = new MApiExtension();
+            route.setExtension(extension);
+        }
+        extension.setAttribute(name, value);
+    }
+
+    protected void setCrudOperation(RouteBuilder route, String operation) {
+        setApiExtension(route, "crud", operation);
+    }
 
     protected ArgumentBuilder addModelArgument(FuncActionBuilder action,RestdModel model) {
         ArgumentBuilder a = newModelArgument(model);

@@ -65,6 +65,7 @@ public class QueryOperation extends CrudOperation implements RestdProcessor {
 
         configure(context, model, action);
         route.setAction(action.build());
+        setCrudOperation(route, "query");
 
         configure(context, model, route);
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));

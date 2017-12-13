@@ -67,6 +67,7 @@ public class CountOperation extends CrudOperation implements RestdProcessor {
 
         configure(context, model, action);
         route.setAction(action.build());
+        setCrudOperation(route, "count");
 
         configure(context, model, route);
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
