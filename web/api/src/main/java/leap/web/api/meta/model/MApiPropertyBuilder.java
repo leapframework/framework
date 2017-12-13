@@ -27,6 +27,7 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
     protected Boolean      updatable;
     protected Boolean      sortable;
     protected Boolean      filterable;
+    protected MApiExtension extension;
 
     public MApiPropertyBuilder() {
 	    super();
@@ -112,12 +113,20 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
         this.filterable = filterable;
     }
 
+    public MApiExtension getExtension() {
+        return extension;
+    }
+
+    public void setExtension(MApiExtension extension) {
+        this.extension = extension;
+    }
+
     @Override
     public MApiProperty build() {
 	    return new MApiProperty(name, title, summary, description, metaProperty, beanProperty,
                                 type, format, discriminator, password, required,
                                 defaultValue, enumValues,
 	    					    null == validation ? null : validation.build(), attrs,
-                                creatable, updatable, sortable, filterable);
+                                creatable, updatable, sortable, filterable, extension);
     }
 }

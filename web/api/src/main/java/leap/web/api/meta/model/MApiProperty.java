@@ -30,13 +30,14 @@ public class MApiProperty extends MApiParameterBase {
     protected final Boolean      updatable;
     protected final Boolean      sortable;
     protected final Boolean      filterable;
+    protected final MApiExtension extension;
 
 	public MApiProperty(String name, String title, String summary, String description,
                         MProperty metaProperty,BeanProperty beanProperty,
                         MType type, String format, boolean discriminator, boolean password, Boolean required,
                         String defaultValue, String[] enumValues,
                         MApiValidation validation, Map<String, Object> attrs,
-                        Boolean creatable, Boolean updatable, Boolean sortable, Boolean filterable) {
+                        Boolean creatable, Boolean updatable, Boolean sortable, Boolean filterable, MApiExtension extension) {
 	    super(name, title, summary, description, type, format, false, password, required, defaultValue, enumValues, validation, attrs);
 
         this.discriminator = discriminator;
@@ -46,6 +47,7 @@ public class MApiProperty extends MApiParameterBase {
         this.updatable = updatable;
         this.sortable = sortable;
         this.filterable = filterable;
+        this.extension = extension;
     }
 
     public MProperty getMetaProperty() {
@@ -81,6 +83,10 @@ public class MApiProperty extends MApiParameterBase {
 
     public Boolean getFilterable() {
         return filterable;
+    }
+
+    public MApiExtension getExtension() {
+        return extension;
     }
 
     public boolean isCreatableExplicitly() {

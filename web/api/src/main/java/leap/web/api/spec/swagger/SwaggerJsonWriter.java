@@ -190,12 +190,24 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
         return Arrays2.isNotEmpty(profiles) ? profiles : null;
     }
 
+    private void writeExtension(JsonWriter w, MApiExtension extension) {
+        if(null != extension) {
+            extension.map().forEach((name, value) -> {
+                if(null != value) {
+                    w.property("x-" + name, value);
+                }
+            });
+        }
+    }
+
     protected void writeOperation(WriteContext context, ApiMetadata m, JsonWriter w, MApiPath p, MApiOperation o) {
 		w.startObject();
 
         if(null != o.getCorsEnabled()) {
             w.property(X_CORS, o.getCorsEnabled());
         }
+
+        writeExtension(w, o.getExtension());
 
         w.propertyOptional(TAGS, o.getTags());
         w.propertyOptional(SUMMARY, o.getSummary());
@@ -451,6 +463,8 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
             w.property(X_ENTITY, true);
         }
 
+        writeExtension(w, model.getExtension());
+
         w.propertyOptional(TITLE, model.getTitle());
         w.propertyOptional(SUMMARY, model.getSummary());
         w.propertyOptional(DESCRIPTION, model.getDescription());
@@ -508,6 +522,8 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
             for(MApiProperty p : model.getProperties()) {
                 w.property(propertyName(p.getName()), () -> {
                     w.startObject();
+
+                    writeExtension(w, p.getExtension());
 
                     writeParameterType(context, m, w, p);
 

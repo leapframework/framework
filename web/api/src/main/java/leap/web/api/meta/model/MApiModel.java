@@ -25,15 +25,17 @@ public class MApiModel extends MApiNamedWithDesc {
     protected final String         baseName;
     protected final Class<?>[]     javaTypes;
     protected final MApiProperty[] properties;
+    protected final MApiExtension  extension;
 
     public MApiModel(boolean entity, String baseName, String name, String title, String summary, String description,
-                     Class<?>[] javaTypes, MApiProperty[] properties, Map<String, Object> attrs) {
+                     Class<?>[] javaTypes, MApiProperty[] properties, Map<String, Object> attrs, MApiExtension extension) {
         super(name, title, summary, description, attrs);
 
         this.entity = entity;
         this.baseName = baseName;
         this.javaTypes = javaTypes;
         this.properties = properties;
+        this.extension = extension;
     }
 
     public boolean isEntity() {
@@ -73,5 +75,9 @@ public class MApiModel extends MApiNamedWithDesc {
             }
         }
         return null;
+    }
+
+    public MApiExtension getExtension() {
+        return extension;
     }
 }

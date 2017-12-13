@@ -31,6 +31,7 @@ public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> {
     protected String       baseName;
     protected MComplexType type;
     protected boolean      entity;
+    protected MApiExtension extension;
 
     protected Set<Class<?>>                    javaTypes  = new LinkedHashSet<>();
     protected Map<String, MApiPropertyBuilder> properties = new LinkedHashMap<>();
@@ -99,10 +100,18 @@ public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> {
         return properties.remove(name);
     }
 
+    public MApiExtension getExtension() {
+        return extension;
+    }
+
+    public void setExtension(MApiExtension extension) {
+        this.extension = extension;
+    }
+
     @Override
     public MApiModel build() {
         return new MApiModel(entity, baseName, name, title, summary, description, javaTypes.toArray(Arrays2.EMPTY_CLASS_ARRAY),
-                Builders.buildArray(properties.values(), new MApiProperty[properties.size()]), attrs);
+                Builders.buildArray(properties.values(), new MApiProperty[properties.size()]), attrs, extension);
     }
 
 }

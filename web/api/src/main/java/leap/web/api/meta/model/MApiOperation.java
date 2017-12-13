@@ -36,6 +36,7 @@ public class MApiOperation extends MApiNamedWithDesc {
     protected final boolean         allowClientOnly;
     protected final boolean         deprecated;
     protected final Boolean         corsEnabled;
+    protected final MApiExtension   extension;
 
     public MApiOperation(String id, String name, String title, String summary, String description,
                          HTTP.Method method,
@@ -50,7 +51,7 @@ public class MApiOperation extends MApiNamedWithDesc {
                          boolean allowClientOnly,
                          boolean deprecated,
                          Boolean cors,
-                         Map<String, Object> attrs) {
+                         Map<String, Object> attrs,MApiExtension extension) {
         super(name, title, summary, description, attrs);
 
         this.id = id;
@@ -66,6 +67,7 @@ public class MApiOperation extends MApiNamedWithDesc {
         this.allowClientOnly = allowClientOnly;
         this.deprecated = deprecated;
         this.corsEnabled = cors;
+        this.extension = extension;
     }
 
     /**
@@ -185,5 +187,9 @@ public class MApiOperation extends MApiNamedWithDesc {
      */
     public Boolean getCorsEnabled() {
         return corsEnabled;
+    }
+
+    public MApiExtension getExtension() {
+        return extension;
     }
 }
