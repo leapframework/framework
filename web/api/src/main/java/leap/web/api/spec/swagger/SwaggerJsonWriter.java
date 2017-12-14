@@ -30,7 +30,6 @@ import leap.web.api.meta.model.MApiParameter.Location;
 import leap.web.api.spec.ApiSpecContext;
 import leap.web.api.spec.JsonSpecWriter;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -610,6 +609,8 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
                 w.propertyOptional(FORMAT, p.getFormat());
             }
         }
+
+        w.propertyOptional(DEFAULT, p.getDefaultValue());
 
         MApiValidation v = p.getValidation();
         if(null != v) {

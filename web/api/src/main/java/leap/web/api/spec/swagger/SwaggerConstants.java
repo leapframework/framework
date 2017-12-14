@@ -52,6 +52,7 @@ public class SwaggerConstants {
     public static final String FORMAT                = "format";
     public static final String ENUM                  = "enum";
     public static final String ARRAY                 = "array";
+    public static final String DEFAULT               = "default";
     public static final String PATTERN               = "pattern";
     public static final String MAX_LENGTH            = "maxLength";
     public static final String MIN_LENGTH            = "minLength";

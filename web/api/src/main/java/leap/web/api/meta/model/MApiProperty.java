@@ -37,7 +37,7 @@ public class MApiProperty extends MApiParameterBase {
 	public MApiProperty(String name, String title, String summary, String description,
                         MProperty metaProperty,BeanProperty beanProperty,
                         MType type, String format, boolean identity, boolean unique, boolean discriminator, boolean password, Boolean required,
-                        String defaultValue, String[] enumValues,
+                        Object defaultValue, String[] enumValues,
                         MApiValidation validation, Map<String, Object> attrs,
                         Boolean creatable, Boolean updatable, Boolean sortable, Boolean filterable, MApiExtension extension) {
 	    super(name, title, summary, description, type, format, false, password, required, defaultValue, enumValues, validation, attrs);

@@ -24,7 +24,7 @@ public abstract class MApiParameterBaseBuilder<T extends MApiParameterBase> exte
 	protected Boolean               required;
     protected boolean               file;
     protected boolean               password;
-	protected String                defaultValue;
+	protected Object                defaultValue;
     protected String[]              enumValues;
 	protected MApiValidationBuilder validation;
 	
@@ -67,14 +67,14 @@ public abstract class MApiParameterBaseBuilder<T extends MApiParameterBase> exte
 	public void setRequired(Boolean required) {
 		this.required = required;
 	}
-	
-	public String getDefaultValue() {
-		return defaultValue;
-	}
 
-	public void setDefaultValue(String defaultValue) {
-		this.defaultValue = defaultValue;
-	}
+    public Object getDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(Object defaultValue) {
+        this.defaultValue = defaultValue;
+    }
 
     public String[] getEnumValues() {
         return enumValues;

@@ -27,13 +27,13 @@ public abstract class MApiParameterBase extends MApiNamedWithDesc {
     protected final boolean        file;
     protected final boolean        password;
 	protected final Boolean        required;
-	protected final String         defaultValue;
+	protected final Object         defaultValue;
     protected final String[]       enumValues;
 	protected final MApiValidation validation;
 
 	public MApiParameterBase(String name, String title, String summary, String description,
                              MType type, String format, boolean file, boolean password, Boolean required,
-                             String defaultValue, String[] enumValues, MApiValidation validation,
+                             Object defaultValue, String[] enumValues, MApiValidation validation,
                              Map<String, Object> attrs) {
 		super(name, title, summary, description, attrs);
 		
@@ -69,7 +69,7 @@ public abstract class MApiParameterBase extends MApiNamedWithDesc {
 		return required;
 	}
 
-	public String getDefaultValue() {
+	public Object getDefaultValue() {
 		return defaultValue;
 	}
 

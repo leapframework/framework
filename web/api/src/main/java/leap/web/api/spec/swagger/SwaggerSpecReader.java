@@ -241,14 +241,8 @@ public class SwaggerSpecReader implements ApiSpecReader {
 
         JsonObject p = JsonObject.of(map);
 
-        mp.setName(p.getString(NAME));
-        mp.setSummary(p.getString(SUMMARY));
-        mp.setDescription(p.getString(DESCRIPTION));
-        mp.setRequired(p.get(REQUIRED, Boolean.class));
+        readParameterBase(p, mp);
         mp.setLocation(readParameterIn(mp.getName(), p.getString(IN)));
-        mp.setType(readParameterType(p));
-
-        readFormat(p, mp);
 
         return mp;
     }
@@ -389,22 +383,41 @@ public class SwaggerSpecReader implements ApiSpecReader {
         return list;
     }
 
-    public MApiPropertyBuilder readProperty(String name, Map<String,Object> map) {
-        MApiPropertyBuilder mp = new MApiPropertyBuilder();
-
-        JsonObject p = JsonObject.of(map);
-
-        mp.setName(name);
+    protected void readParameterBase(JsonObject p, MApiParameterBaseBuilder mp) {
+        mp.setName(p.getString(NAME));
         mp.setTitle(p.getString(TITLE));
         mp.setSummary(p.getString(SUMMARY));
         mp.setDescription(p.getString(DESCRIPTION));
-        mp.setType(readType(p));
         mp.setRequired(p.get(REQUIRED, Boolean.class));
+        mp.setType(readParameterType(p));
+        mp.setDefaultValue(p.get(DEFAULT));
+
+        MApiValidationBuilder v = new MApiValidationBuilder();
+        v.setPattern(p.getString(PATTERN));
+        v.setMaxLength(p.getInteger(MAX_LENGTH));
+        v.setMinLength(p.getInteger(MIN_LENGTH));
+        v.setMaximum(p.get(MAXIMUM));
+        v.setExclusiveMaximum(p.getBoolean(EXCLUSIVE_MAXIMUM, v.isExclusiveMaximum()));
+        v.setMinimum(p.get(MINIMUM));
+        v.setExclusiveMinimum(p.getBoolean(EXCLUSIVE_MINIMUM, v.isExclusiveMinimum()));
 
         List<String> enumValues = p.getList(ENUM);
         if(null != enumValues) {
             mp.setEnumValues(enumValues.toArray(Arrays2.EMPTY_STRING_ARRAY));
         }
+
+        mp.setValidation(v);
+
+        readFormat(p, mp);
+    }
+
+    public MApiPropertyBuilder readProperty(String name, Map<String,Object> map) {
+        MApiPropertyBuilder mp = new MApiPropertyBuilder();
+
+        JsonObject p = JsonObject.of(map);
+
+        readParameterBase(p, mp);
+        mp.setName(name);
 
         //yaml read all values to string.
         mp.setIdentity(p.getBoolean(X_IDENTITY, false));
@@ -413,8 +426,6 @@ public class SwaggerSpecReader implements ApiSpecReader {
         mp.setFilterable(p.get(X_FILTERABLE, Boolean.class));
         mp.setCreatable(p.get(X_CREATABLE, Boolean.class));
         mp.setUpdatable(p.get(X_UPDATABLE, Boolean.class));
-
-        readFormat(p, mp);
 
         return mp;
     }
