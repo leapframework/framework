@@ -25,6 +25,8 @@ public class MApiProperty extends MApiParameterBase {
 
     protected final MProperty    metaProperty;
     protected final BeanProperty beanProperty;
+    protected final boolean      identity;
+    protected final boolean      unique;
     protected final boolean      discriminator;
     protected final Boolean      creatable;
     protected final Boolean      updatable;
@@ -34,12 +36,14 @@ public class MApiProperty extends MApiParameterBase {
 
 	public MApiProperty(String name, String title, String summary, String description,
                         MProperty metaProperty,BeanProperty beanProperty,
-                        MType type, String format, boolean discriminator, boolean password, Boolean required,
+                        MType type, String format, boolean identity, boolean unique, boolean discriminator, boolean password, Boolean required,
                         String defaultValue, String[] enumValues,
                         MApiValidation validation, Map<String, Object> attrs,
                         Boolean creatable, Boolean updatable, Boolean sortable, Boolean filterable, MApiExtension extension) {
 	    super(name, title, summary, description, type, format, false, password, required, defaultValue, enumValues, validation, attrs);
 
+        this.identity = identity;
+        this.unique = unique;
         this.discriminator = discriminator;
         this.metaProperty = metaProperty;
         this.beanProperty = beanProperty;
@@ -59,6 +63,14 @@ public class MApiProperty extends MApiParameterBase {
      */
     public BeanProperty getBeanProperty() {
         return beanProperty;
+    }
+
+    public boolean isIdentity() {
+        return identity;
+    }
+
+    public boolean isUnique() {
+        return unique;
     }
 
     public boolean isDiscriminator() {

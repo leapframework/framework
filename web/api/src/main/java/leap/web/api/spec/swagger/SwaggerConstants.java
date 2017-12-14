@@ -86,6 +86,8 @@ public class SwaggerConstants {
     public static final String X_CORS       = "x-cors";
 
     public static final String X_ENTITY     = "x-entity";
+    public static final String X_IDENTITY   = "x-identity";
+    public static final String X_UNIQUE     = "x-unique";
     public static final String X_CREATABLE  = "x-creatable";
     public static final String X_UPDATABLE  = "x-updatable";
     public static final String X_SORTABLE   = "x-sortable";

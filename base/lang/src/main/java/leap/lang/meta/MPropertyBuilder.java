@@ -21,6 +21,8 @@ public class MPropertyBuilder extends MNamedWithDescBuilder<MProperty> {
 
     protected MType        type;
     protected BeanProperty beanProperty;
+    protected boolean      identity;
+    protected boolean      unique;
     protected Boolean      required;
     protected String       defaultValue;
     protected String[]     enumValues;
@@ -49,6 +51,22 @@ public class MPropertyBuilder extends MNamedWithDescBuilder<MProperty> {
 
     public void setBeanProperty(BeanProperty beanProperty) {
         this.beanProperty = beanProperty;
+    }
+
+    public boolean isIdentity() {
+        return identity;
+    }
+
+    public void setIdentity(boolean identity) {
+        this.identity = identity;
+    }
+
+    public boolean isUnique() {
+        return unique;
+    }
+
+    public void setUnique(boolean unique) {
+        this.unique = unique;
     }
 
     public Boolean getRequired() {
@@ -157,7 +175,7 @@ public class MPropertyBuilder extends MNamedWithDescBuilder<MProperty> {
 
     @Override
     public MProperty build() {
-        return new MProperty(name, title, summary, description, type, beanProperty, required,
+        return new MProperty(name, title, summary, description, type, beanProperty, identity, unique, required,
                              defaultValue, enumValues, fixedLength, length, precision, scale,
                              discriminator, creatable, updatable, sortable, filterable, reference);
     }

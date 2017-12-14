@@ -539,6 +539,14 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 //                        w.property(READONLY, true);
 //                    }
 
+                    if(p.isIdentity()) {
+                        w.property(X_IDENTITY, true);
+                    }
+
+                    if(p.isUnique()) {
+                        w.property(X_UNIQUE, true);
+                    }
+
                     w.propertyOptional(X_CREATABLE,  p.getCreatable());
                     w.propertyOptional(X_UPDATABLE,  p.getUpdatable());
                     w.propertyOptional(X_SORTABLE,   p.getSortable());

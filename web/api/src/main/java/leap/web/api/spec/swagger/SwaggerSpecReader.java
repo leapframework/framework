@@ -407,6 +407,8 @@ public class SwaggerSpecReader implements ApiSpecReader {
         }
 
         //yaml read all values to string.
+        mp.setIdentity(p.getBoolean(X_IDENTITY, false));
+        mp.setUnique(p.getBoolean(X_UNIQUE, false));
         mp.setSortable(p.get(X_SORTABLE, Boolean.class));
         mp.setFilterable(p.get(X_FILTERABLE, Boolean.class));
         mp.setCreatable(p.get(X_CREATABLE, Boolean.class));

@@ -82,6 +82,8 @@ public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactor
                 p.setType(root.getMType(fm.getJavaType()));
             }
 
+            p.setIdentity(fm.isPrimaryKey());
+            p.setUnique(fm.getColumn().isUnique());
 			p.setLength(fm.getMaxLength());
 			p.setRequired(!fm.isNullable());
 			p.setPrecision(fm.getPrecision());

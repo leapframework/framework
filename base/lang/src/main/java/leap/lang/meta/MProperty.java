@@ -23,6 +23,8 @@ public class MProperty extends ImmutableMNamedWithDesc {
 
     protected final MType        type;
     protected final BeanProperty beanProperty;
+    protected final boolean      identity;
+    protected final boolean      unique;
     protected final Boolean      required;
     protected final String       defaultValue;
     protected final String[]     enumValues;
@@ -38,7 +40,7 @@ public class MProperty extends ImmutableMNamedWithDesc {
     protected final boolean      reference;
 
     public MProperty(String name, String title, String summary, String description,
-                     MType type, BeanProperty beanProperty,
+                     MType type, BeanProperty beanProperty, boolean identity, boolean unique,
                      Boolean required, String defaultValue, String[] enumValues,
                      boolean fixedLength,
                      Integer length, Integer precision, Integer scale,
@@ -51,6 +53,8 @@ public class MProperty extends ImmutableMNamedWithDesc {
 
         this.type = type;
         this.beanProperty = beanProperty;
+        this.identity = identity;
+        this.unique = unique;
         this.required = required;
         this.defaultValue = Strings.trimToNull(defaultValue);
         this.fixedLength = fixedLength;
@@ -75,6 +79,14 @@ public class MProperty extends ImmutableMNamedWithDesc {
      */
     public BeanProperty getBeanProperty() {
         return beanProperty;
+    }
+
+    public boolean isIdentity() {
+        return identity;
+    }
+
+    public boolean isUnique() {
+        return unique;
     }
 
     public Boolean getRequired() {

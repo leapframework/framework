@@ -22,6 +22,8 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
 
     protected MProperty    metaProperty;
     protected BeanProperty beanProperty;
+    protected boolean      identity;
+    protected boolean      unique;
     protected boolean      discriminator;
     protected Boolean      creatable;
     protected Boolean      updatable;
@@ -50,6 +52,8 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
 		this.defaultValue = mp.getDefaultValue();
         this.enumValues = mp.getEnumValues();
 		this.required =  mp.getRequired();
+        this.identity = mp.isIdentity();
+        this.unique = mp.isUnique();
         this.discriminator = mp.isDiscriminator();
         this.creatable = mp.getCreatable();
         this.updatable = mp.getUpdatable();
@@ -71,6 +75,22 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
 
     public void setBeanProperty(BeanProperty beanProperty) {
         this.beanProperty = beanProperty;
+    }
+
+    public boolean isIdentity() {
+        return identity;
+    }
+
+    public void setIdentity(boolean identity) {
+        this.identity = identity;
+    }
+
+    public boolean isUnique() {
+        return unique;
+    }
+
+    public void setUnique(boolean unique) {
+        this.unique = unique;
     }
 
     public boolean isDiscriminator() {
@@ -124,7 +144,7 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
     @Override
     public MApiProperty build() {
 	    return new MApiProperty(name, title, summary, description, metaProperty, beanProperty,
-                                type, format, discriminator, password, required,
+                                type, format, identity, unique, discriminator, password, required,
                                 defaultValue, enumValues,
 	    					    null == validation ? null : validation.build(), attrs,
                                 creatable, updatable, sortable, filterable, extension);
