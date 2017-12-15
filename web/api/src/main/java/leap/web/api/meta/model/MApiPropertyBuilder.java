@@ -25,10 +25,12 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
     protected boolean      identity;
     protected boolean      unique;
     protected boolean      discriminator;
+    protected boolean      reference;
     protected Boolean      creatable;
     protected Boolean      updatable;
     protected Boolean      sortable;
     protected Boolean      filterable;
+    protected Boolean      expandable;
     protected MApiExtension extension;
 
     public MApiPropertyBuilder() {
@@ -54,6 +56,7 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
 		this.required =  mp.getRequired();
         this.identity = mp.isIdentity();
         this.unique = mp.isUnique();
+        this.reference = mp.isReference();
         this.discriminator = mp.isDiscriminator();
         this.creatable = mp.getCreatable();
         this.updatable = mp.getUpdatable();
@@ -91,6 +94,14 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
 
     public void setUnique(boolean unique) {
         this.unique = unique;
+    }
+
+    public boolean isReference() {
+        return reference;
+    }
+
+    public void setReference(boolean reference) {
+        this.reference = reference;
     }
 
     public boolean isDiscriminator() {
@@ -133,6 +144,17 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
         this.filterable = filterable;
     }
 
+    /**
+     * For reference property.
+     */
+    public Boolean getExpandable() {
+        return expandable;
+    }
+
+    public void setExpandable(Boolean expandable) {
+        this.expandable = expandable;
+    }
+
     public MApiExtension getExtension() {
         return extension;
     }
@@ -144,9 +166,9 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
     @Override
     public MApiProperty build() {
 	    return new MApiProperty(name, title, summary, description, metaProperty, beanProperty,
-                                type, format, identity, unique, discriminator, password, required,
+                                type, format, identity, unique, reference, discriminator, password, required,
                                 defaultValue, enumValues,
 	    					    null == validation ? null : validation.build(), attrs,
-                                creatable, updatable, sortable, filterable, extension);
+                                creatable, updatable, sortable, filterable, expandable, extension);
     }
 }

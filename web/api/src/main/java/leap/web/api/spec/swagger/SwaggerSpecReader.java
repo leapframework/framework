@@ -426,6 +426,7 @@ public class SwaggerSpecReader implements ApiSpecReader {
         mp.setFilterable(p.get(X_FILTERABLE, Boolean.class));
         mp.setCreatable(p.get(X_CREATABLE, Boolean.class));
         mp.setUpdatable(p.get(X_UPDATABLE, Boolean.class));
+        mp.setExpandable(p.get(X_EXPANDABLE, Boolean.class));
 
         return mp;
     }

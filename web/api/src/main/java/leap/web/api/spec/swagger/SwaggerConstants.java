@@ -93,6 +93,7 @@ public class SwaggerConstants {
     public static final String X_UPDATABLE  = "x-updatable";
     public static final String X_SORTABLE   = "x-sortable";
     public static final String X_FILTERABLE = "x-filterable";
+    public static final String X_EXPANDABLE = "x-expandable";
 
 	
 	protected SwaggerConstants() {
