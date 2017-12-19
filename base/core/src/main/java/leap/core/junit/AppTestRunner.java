@@ -41,7 +41,12 @@ public class AppTestRunner extends BlockJUnit4ClassRunner {
 	static {
         log.info("Init app context by '{}'",AppTestRunner.class.getSimpleName());
         AppContextInitializer.markTesting();
-        AppContext.initStandalone();
+        try {
+            AppContext.initStandalone();
+        }catch (RuntimeException e) {
+            log.error("Error init app context : " + e.getMessage(), e);
+            throw e;
+        }
         factory = AppContext.current().getBeanFactory();
 	}
 

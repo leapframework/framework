@@ -17,6 +17,8 @@ package leap.webunit;
 
 import leap.core.AppContext;
 import leap.core.AppContextInitializer;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.lang.tools.DEV;
 import leap.webunit.client.OkTHttpClient;
 import leap.webunit.client.THttpClient;
@@ -33,6 +35,8 @@ import javax.servlet.ServletContext;
 import java.util.List;
 
 public class WebTestRunner extends BlockJUnit4ClassRunner {
+
+    private static final Log log = LogFactory.get(WebTestRunner.class);
 
     public static final String ROOT_CONTEXT_PATH = "/root";
 
@@ -53,7 +57,12 @@ public class WebTestRunner extends BlockJUnit4ClassRunner {
     protected static Class<?> init(Class<?> cls) {
         DEV.setCurrentTestClass(cls);
 
-        startServer();
+        try {
+            startServer();
+        }catch (RuntimeException e) {
+            log.error("Error start test web server : " + e.getMessage(), e);
+            throw e;
+        }
 
         return cls;
     }
