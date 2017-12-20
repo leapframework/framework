@@ -64,6 +64,16 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
         this.filterable = mp.getFilterable();
 	}
 
+    @Override
+    public void setDescription(String description) {
+        super.setDescription(description);
+    }
+
+    @Override
+    public void trySetDescription(String description) {
+        super.trySetDescription(description);
+    }
+
     public MProperty getMetaProperty() {
         return metaProperty;
     }

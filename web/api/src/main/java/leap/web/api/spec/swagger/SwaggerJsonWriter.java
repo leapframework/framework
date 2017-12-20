@@ -278,9 +278,10 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 		
 		w.property(NAME, p.getName())
          .propertyOptional(SUMMARY, p.getSummary())
-         .property(DESCRIPTION, nullToEmpty(Strings.firstNotEmpty(p.getDescription(),p.getSummary())))
-         .property(IN, SwaggerMappings.in(p.getLocation()))
-         .propertyOptional(REQUIRED, p.getRequired());
+         .property(DESCRIPTION, nullToEmpty(Strings.firstNotEmpty(p.getDescription(),p.getSummary(), p.getTitle())))
+         .property(IN, SwaggerMappings.in(p.getLocation()));
+
+        w.propertyOptional(REQUIRED, p.getRequired());
 
         try{
             if(Location.BODY == p.getLocation()) {
@@ -522,21 +523,15 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
                 w.property(propertyName(p.getName()), () -> {
                     w.startObject();
 
-                    writeExtension(w, p.getExtension());
-
+                    w.propertyOptional(TITLE, p.getTitle());
+                    w.property(DESCRIPTION, Strings.nullToEmpty(Strings.firstNotEmpty(p.getDescription(),p.getSummary())));
                     writeParameterType(context, m, w, p);
-
-                    if(Strings.equalsIgnoreCase(p.getTitle(), p.getName())) {
-                        w.propertyOptional(TITLE, p.getSummary());
-                        w.propertyOptional(DESCRIPTION,	 p.getDescription());
-                    }else{
-                        w.property(TITLE, p.getTitle());
-                        w.propertyOptional(DESCRIPTION,	Strings.firstNotEmpty(p.getDescription(),p.getSummary()));
-                    }
 
 //                    if(isReadonly(p)) {
 //                        w.property(READONLY, true);
 //                    }
+
+                    writeExtension(w, p.getExtension());
 
                     if(p.isIdentity()) {
                         w.property(X_IDENTITY, true);

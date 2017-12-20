@@ -98,9 +98,5 @@ public class ConfigDocProcessor implements ApiMetadataProcessor {
             p.trySetSummary(described.getSummary());
             p.trySetDescription(described.getDescription());
         }
-
-        if(!p.getName().equals(p.getTitle())) {
-            p.trySetDescription(p.getTitle());
-        }
     }
 }
