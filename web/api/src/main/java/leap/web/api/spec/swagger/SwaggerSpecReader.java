@@ -43,6 +43,16 @@ public class SwaggerSpecReader implements ApiSpecReader {
 
     private final List<String> HTTP_METHODS_LOWER_CASE = Arrays.asList("get", "put", "post", "delete", "options", "head", "patch");
 
+    protected boolean validate = true;
+
+    public boolean isValidate() {
+        return validate;
+    }
+
+    public void setValidate(boolean validate) {
+        this.validate = validate;
+    }
+
     @Override
     public ApiMetadataBuilder read(Reader reader) throws IOException {
         String content = IO.readString(reader).trim();
@@ -493,6 +503,9 @@ public class SwaggerSpecReader implements ApiSpecReader {
 
         String type = property.getString(TYPE);
         if(Strings.isEmpty(type)) {
+            if(!validate) {
+                return null;
+            }
             throw new InvalidSpecException("Invalid type in property : " + JSON.stringify(property.raw()));
         }
 
