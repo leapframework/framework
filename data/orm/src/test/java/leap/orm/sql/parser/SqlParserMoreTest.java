@@ -93,6 +93,11 @@ public class SqlParserMoreTest extends SqlParserTestCase {
         
         split("select * from t {?limit :count; nullable:true}");
     }
+
+    @Test
+    public void testUnderscoreColumn() {
+        assertParse("select t._col from table t");
+    }
 	
 	@Test
 	@Contextual
