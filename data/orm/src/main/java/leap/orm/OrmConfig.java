@@ -72,6 +72,14 @@ public interface OrmConfig {
 	boolean isModelCrossContext();
 
     /**
+     * Returns true if allow mapping class's simple name as entity name
+     *
+     * <p/>
+     * Default is false.
+     */
+    boolean isMappingClassSimpleName();
+
+    /**
      * Returns true if enables filter column(s).
      */
     default boolean isFilterColumnEnabled() {
