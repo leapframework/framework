@@ -36,8 +36,10 @@ import leap.orm.command.InsertCommand;
 import leap.orm.command.UpdateCommand;
 import leap.orm.enums.RemoteType;
 import leap.orm.mapping.EntityMapping;
+import leap.orm.mapping.EntityNotFoundException;
 import leap.orm.mapping.MappingNotFoundException;
 import leap.orm.mapping.Mappings;
+import leap.orm.model.Model;
 import leap.orm.query.CriteriaQuery;
 import leap.orm.query.EntityQuery;
 import leap.orm.query.Query;
@@ -124,6 +126,11 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 		return runInWrapperContext(em, (context)->{
 			return commandFactory().newInsertCommand(context.getDao(), context.getEntityMapping()).from(entity).execute();
 		});
+    }
+
+    @Override
+    public int insert(String entityName, Object entity) {
+        return insert(em(entityName), entity, null);
     }
 
     @Override
@@ -1006,7 +1013,14 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 	}
 
 	protected EntityMapping em(Class<?> type) throws MappingNotFoundException {
-		return ormContext.getMetadata().getEntityMapping(type);
+		EntityMapping em = ormContext.getMetadata().tryGetEntityMapping(type);
+        if(null == em && !Model.class.isAssignableFrom(type) && !ormContext.getMappingStrategy().isExplicitEntity(ormContext, type)) {
+            em = ormContext.getMetadata().tryGetEntityMapping(type.getSimpleName());
+        }
+        if(null == em) {
+            throw new EntityNotFoundException("No entity mapping to '" + type.getName() + " or '" + type.getSimpleName() + "'");
+        }
+        return em;
 	}
 
 	@Override

@@ -261,6 +261,11 @@ public abstract class Dao implements JdbcExecutor {
     /**
      * Inserts a new entity.
      */
+    public abstract int insert(String entityName, Object entity);
+
+    /**
+     * Inserts a new entity.
+     */
     public int insert(EntityMapping em, Object entity) {
         return insert(em, entity, null);
     }

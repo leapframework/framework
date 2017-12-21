@@ -122,6 +122,11 @@ public abstract class DaoWrapper extends Dao {
     }
 
     @Override
+    public int insert(String entityName, Object entity) {
+        return dao().insert(entityName, entity);
+    }
+
+    @Override
     public int insert(Class<?> entityClass, Object entity) throws MappingNotFoundException {
         return dao().insert(entityClass, entity);
     }
