@@ -22,6 +22,7 @@ import leap.web.action.ActionParams;
 import leap.web.action.FuncActionBuilder;
 import leap.web.api.Api;
 import leap.web.api.config.ApiConfig;
+import leap.web.api.config.ApiConfigException;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
@@ -49,13 +50,14 @@ public class QueryOperation extends CrudOperation implements RestdProcessor {
 
         String verb = "GET";
         String path = fullModelPath(c, model);
-        if(isOperationExists(context, verb, path)) {
-            return;
-        }
 
         Dao               dao    = context.getDao();
         FuncActionBuilder action = new FuncActionBuilder();
         RouteBuilder      route  = rm.createRoute(verb, path);
+
+        if(isOperationExists(context, route)) {
+            return;
+        }
 
         action.setName(Strings.lowerCamel("query", model.getName()));
         action.setFunction(new QueryFunction(context.getApi(), dao, model));
@@ -68,6 +70,7 @@ public class QueryOperation extends CrudOperation implements RestdProcessor {
         setCrudOperation(route, "query");
 
         configure(context, model, route);
+
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 

@@ -43,18 +43,24 @@ public abstract class RestdOperationBase {
     protected @Inject ApiFailureHandler       failureHandler;
     protected @Inject RestdOperationSupport[] supports;
 
-    protected boolean isOperationExists(RestdContext context, String verb, String path) {
+    protected boolean isOperationExists(RestdContext context, RouteBuilder route) {
         for(ApiRoute ar : context.getApiConfig().getApiRoutes()) {
-            Route route = ar.getRoute();
+            Route route1 = ar.getRoute();
 
-            if(verb.equalsIgnoreCase(route.getMethod()) &&
-                    route.getPathTemplate().getTemplate().equals(path)) {
+            if(route.getMethod().equalsIgnoreCase(route1.getMethod()) &&
+                    route.getPathTemplate().getTemplate().equals(route1.getPathTemplate().getTemplate())) {
+
+                route.setAction(route1.getAction());
+                route.setEnabled(false);
                 return true;
             }
         }
 
         for(RestdOperationSupport support : supports) {
-            if(support.isOperationExists(context, verb, path)) {
+            if(support.isOperationExists(context, route)) {
+                if(null == route.getEnabled()) {
+                    route.setEnabled(false);
+                }
                 return true;
             }
         }

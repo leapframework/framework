@@ -55,13 +55,14 @@ public class CreateOperation extends CrudOperation implements RestdProcessor {
 
         String verb = "POST";
         String path = fullModelPath(c, model);
-        if(isOperationExists(context, verb, path)) {
-            return;
-        }
 
         Dao               dao    = context.getDao();
         FuncActionBuilder action = new FuncActionBuilder();
         RouteBuilder      route  = rm.createRoute(verb, path);
+
+        if(isOperationExists(context, route)) {
+            return;
+        }
 
         action.setName(Strings.lowerCamel("create", model.getName()));
         action.setFunction(new CreateFunction(context.getApi(), dao, model));
@@ -73,6 +74,11 @@ public class CreateOperation extends CrudOperation implements RestdProcessor {
         setCrudOperation(route, "create");
 
         configure(context, model, route);
+
+        if(isOperationExists(context, route)) {
+            return;
+        }
+
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 

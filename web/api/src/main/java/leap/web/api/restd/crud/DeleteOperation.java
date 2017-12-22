@@ -49,13 +49,14 @@ public class DeleteOperation extends CrudOperation implements RestdProcessor {
 
         String verb = "DELETE";
         String path = fullModelPath(c, model) + getIdPath(model);
-        if(isOperationExists(context, verb, path)) {
-            return;
-        }
 
         Dao               dao    = context.getDao();
         FuncActionBuilder action = new FuncActionBuilder();
         RouteBuilder      route  = rm.createRoute(verb, path);
+
+        if(isOperationExists(context, route)) {
+            return;
+        }
 
         action.setName(Strings.lowerCamel("delete", model.getName()));
         action.setFunction(new DeleteFunction(context.getApi(), dao, model));
@@ -69,6 +70,7 @@ public class DeleteOperation extends CrudOperation implements RestdProcessor {
         setCrudOperation(route, "delete");
 
         configure(context, model, route);
+
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 

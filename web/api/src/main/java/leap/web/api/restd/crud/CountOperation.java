@@ -51,13 +51,14 @@ public class CountOperation extends CrudOperation implements RestdProcessor {
 
         String verb = "GET";
         String path = fullModelPath(c, model) + "/count";
-        if(isOperationExists(context, verb, path)) {
-            return;
-        }
 
         Dao               dao    = context.getDao();
         FuncActionBuilder action = new FuncActionBuilder();
         RouteBuilder      route  = rm.createRoute(verb, path);
+
+        if(isOperationExists(context, route)) {
+            return;
+        }
 
         action.setName(Strings.lowerCamel("count", model.getName()));
         action.setFunction(new CountFunction(context.getApi(), dao, model));

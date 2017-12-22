@@ -49,13 +49,14 @@ public class FindOperation extends CrudOperation implements RestdProcessor {
 
         String verb = "GET";
         String path = fullModelPath(c, model) + getIdPath(model);
-        if(isOperationExists(context, verb, path)) {
-            return;
-        }
 
         Dao               dao    = context.getDao();
         FuncActionBuilder action = new FuncActionBuilder();
         RouteBuilder      route  = rm.createRoute(verb, path);
+
+        if(isOperationExists(context, route)) {
+            return;
+        }
 
         action.setName(Strings.lowerCamel("find", model.getName()));
         action.setFunction(new FindFunction(context.getApi(), dao, model));

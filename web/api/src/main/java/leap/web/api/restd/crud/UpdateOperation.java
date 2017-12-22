@@ -53,13 +53,14 @@ public class UpdateOperation extends CrudOperation implements RestdProcessor {
 
         String verb = "PATCH";
         String path = fullModelPath(c, model) + getIdPath(model);
-        if(isOperationExists(context, verb, path)) {
-            return;
-        }
 
         Dao               dao    = context.getDao();
         FuncActionBuilder action = new FuncActionBuilder();
         RouteBuilder      route  = rm.createRoute(verb, path);
+
+        if(isOperationExists(context, route)) {
+            return;
+        }
 
         action.setName(Strings.lowerCamel("update", model.getName()));
         action.setFunction(new UpdateFunction(context.getApi(), dao, model));

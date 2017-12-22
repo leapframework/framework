@@ -16,9 +16,11 @@
 
 package leap.web.api.restd;
 
+import leap.web.route.RouteBuilder;
+
 public interface RestdOperationSupport {
 
-    default boolean isOperationExists(RestdContext context, String verb, String path) {
+    default boolean isOperationExists(RestdContext context, RouteBuilder route) {
         return false;
     }
 

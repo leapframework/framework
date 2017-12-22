@@ -184,12 +184,9 @@ public class SqlOperationProvider extends ScriptOperationProvider implements Res
 
         configure(ctx, model, route);
 
-        if (!od.isExplicitPrior() && isOperationExists(ctx, verb, path)) {
+        if (!od.isExplicitPrior() && isOperationExists(ctx, route)) {
             if(!od.isExplicitNotPrior()) {
                 throw new ApiConfigException("Sql operation '" + op.getName() + "' with path '" + path + "' already exists!");
-            }else{
-                //todo: log
-                route.setEnabled(false);
             }
         }
 
