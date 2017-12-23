@@ -80,6 +80,14 @@ public interface OrmConfig {
     boolean isMappingClassSimpleName();
 
     /**
+     * Returns true if the field at class must be declared explicitly.
+     *
+     * <p/>
+     * Default is false.
+     */
+    boolean isMappingFieldExplicitly();
+
+    /**
      * Returns true if enables filter column(s).
      */
     default boolean isFilterColumnEnabled() {

@@ -246,8 +246,8 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
     }
 
     @Override
-    public boolean isExplicitField(MetadataContext context,BeanProperty beanProperty) {
-	    return beanProperty.isAnnotationPresent(leap.orm.annotation.Column.class);
+    public boolean isExplicitField(MetadataContext context,BeanProperty bp) {
+	    return bp.isAnnotationPresent(leap.orm.annotation.Column.class) || bp.isAnnotationPresent(Id.class);
     }
 
 	@Override
@@ -470,7 +470,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 				emb.addRelationMapping(rmb);
 			}
 
-			if( isExplicitField(context,bp) || isConventionalField(context,bp)){
+			if( isExplicitField(context,bp) || (!context.getConfig().isMappingFieldExplicitly() && isConventionalField(context,bp))){
 				FieldMappingBuilder fmb = new FieldMappingBuilder();
 
                 fmb.setBeanProperty(bp);
