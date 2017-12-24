@@ -18,8 +18,11 @@ package leap.web.api.meta.model;
 import leap.lang.Arrays2;
 import leap.lang.Builders;
 import leap.lang.Strings;
+import leap.lang.beans.BeanProperty;
 import leap.lang.meta.MComplexType;
 import leap.lang.meta.MProperty;
+import leap.web.api.annotation.ApiModel;
+import leap.web.api.annotation.ApiProperty;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -52,11 +55,26 @@ public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> {
         this.description = type.getDescription();
         this.entity = type.isEntity();
 
+        boolean annotatedOnly = false;
+
         if(null != type.getJavaType()) {
             this.javaTypes.add(type.getJavaType());
+
+            ApiModel a = type.getJavaType().getAnnotation(ApiModel.class);
+            if(null != a) {
+                this.name = Strings.firstNotEmpty(a.name(), a.value(), this.name);
+                this.description = Strings.firstNotEmpty(a.desc(), this.description);
+                annotatedOnly = a.explicitProperties();
+            }
         }
 
         for (MProperty mp : type.getProperties()) {
+            if(annotatedOnly) {
+                BeanProperty bp = mp.getBeanProperty();
+                if(null != bp && !bp.isAnnotationPresent(ApiProperty.class)) {
+                    continue;
+                }
+            }
             addProperty(new MApiPropertyBuilder(mp));
         }
     }

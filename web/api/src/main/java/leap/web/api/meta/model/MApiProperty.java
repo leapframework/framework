@@ -29,6 +29,7 @@ public class MApiProperty extends MApiParameterBase {
     protected final boolean      unique;
     protected final boolean      reference;
     protected final boolean      discriminator;
+    protected final Boolean      readOnly;
     protected final Boolean      creatable;
     protected final Boolean      updatable;
     protected final Boolean      sortable;
@@ -41,7 +42,7 @@ public class MApiProperty extends MApiParameterBase {
                         MType type, String format, boolean identity, boolean unique, boolean reference,
                         boolean discriminator, boolean password, Boolean required,
                         Object defaultValue, String[] enumValues,
-                        MApiValidation validation, Map<String, Object> attrs,
+                        MApiValidation validation, Map<String, Object> attrs, Boolean readOnly,
                         Boolean creatable, Boolean updatable, Boolean sortable, Boolean filterable, Boolean expandable, MApiExtension extension) {
 	    super(name, title, summary, description, type, format, false, password, required, defaultValue, enumValues, validation, attrs);
 
@@ -57,6 +58,12 @@ public class MApiProperty extends MApiParameterBase {
         this.filterable = filterable;
         this.expandable = expandable;
         this.extension = extension;
+
+        if(isNotCreatableExplicitly() && isNotUpdatableExplicitly()) {
+            this.readOnly = true;
+        }else {
+            this.readOnly = null == readOnly ? false : readOnly;
+        }
     }
 
     public MProperty getMetaProperty() {
@@ -84,6 +91,10 @@ public class MApiProperty extends MApiParameterBase {
 
     public boolean isReference() {
         return reference;
+    }
+
+    public boolean isReadonly() {
+        return readOnly;
     }
 
     public Boolean getCreatable() {

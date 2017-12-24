@@ -527,9 +527,9 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
                     w.property(DESCRIPTION, Strings.nullToEmpty(Strings.firstNotEmpty(p.getDescription(),p.getSummary())));
                     writeParameterType(context, m, w, p);
 
-//                    if(isReadonly(p)) {
-//                        w.property(READONLY, true);
-//                    }
+                    if(p.isReadonly()) {
+                        w.property(READONLY, true);
+                    }
 
                     writeExtension(w, p.getExtension());
 
@@ -559,13 +559,9 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
     }
 
     protected boolean isRequired(MApiProperty p) {
-        return !isReadonly(p) && (null != p.getRequired() && p.getRequired());
+        return !p.isReadonly() && (null != p.getRequired() && p.getRequired());
     }
 
-    protected boolean isReadonly(MApiProperty p) {
-        return p.isNotCreatableExplicitly() && p.isNotUpdatableExplicitly();
-    }
-	
 	protected void writeParameterType(WriteContext context, ApiMetadata m, JsonWriter w, MApiParameterBase p) {
 		MType type = p.getType();
 

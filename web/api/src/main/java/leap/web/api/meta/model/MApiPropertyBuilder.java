@@ -15,8 +15,11 @@
  */
 package leap.web.api.meta.model;
 
+import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
+import leap.lang.enums.Bool;
 import leap.lang.meta.MProperty;
+import leap.web.api.annotation.ApiProperty;
 
 public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> {
 
@@ -26,6 +29,7 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
     protected boolean      unique;
     protected boolean      discriminator;
     protected boolean      reference;
+    protected Boolean      readOnly;
     protected Boolean      creatable;
     protected Boolean      updatable;
     protected Boolean      sortable;
@@ -62,6 +66,23 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
         this.updatable = mp.getUpdatable();
         this.sortable = mp.getSortable();
         this.filterable = mp.getFilterable();
+
+        if(null != beanProperty) {
+            ApiProperty a = beanProperty.getAnnotation(ApiProperty.class);
+            if(null != a) {
+                this.name = Strings.firstNotEmpty(a.name(), a.value(), this.name);
+
+                this.description = Strings.firstNotEmpty(a.desc(), this.description);
+
+                if(null == this.required) {
+                    this.required = a.required();
+                }
+
+                if(a.readOnly()) {
+                    this.readOnly = true;
+                }
+            }
+        }
 	}
 
     @Override
@@ -122,6 +143,14 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
         this.discriminator = discriminator;
     }
 
+    public Boolean getReadOnly() {
+        return readOnly;
+    }
+
+    public void setReadOnly(Boolean readOnly) {
+        this.readOnly = readOnly;
+    }
+
     public Boolean getCreatable() {
         return creatable;
     }
@@ -179,6 +208,6 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
                                 type, format, identity, unique, reference, discriminator, password, required,
                                 defaultValue, enumValues,
 	    					    null == validation ? null : validation.build(), attrs,
-                                creatable, updatable, sortable, filterable, expandable, extension);
+                                readOnly, creatable, updatable, sortable, filterable, expandable, extension);
     }
 }

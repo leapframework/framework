@@ -16,21 +16,20 @@
 
 package leap.web.api.annotation;
 
-import java.lang.annotation.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-/**
- * Provides additional information about Api models.
- */
-@Target({ElementType.TYPE})
+@Target({ElementType.FIELD,ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@Inherited
-public @interface ApiModel {
+public @interface ApiProperty {
 
     /**
-     * The name of api model.
+     * The name of api model's property.
      *
      * <p>
-     * By default, the class name is used.
+     * By default, the bean property name is used.
      */
     String value() default "";
 
@@ -40,13 +39,17 @@ public @interface ApiModel {
     String name() default "";
 
     /**
-     * The description of model.
+     * The description of property.
      */
-    String desc() default "";
+    String desc() default  "";
 
     /**
-     * If <code>true</code>, only the java properties annotated with {@link ApiProperty} will be model's properties.
+     * Specifies if the property is required or not.
      */
-    boolean explicitProperties() default false;
+    boolean required() default false;
 
+    /**
+     * Allows a property to be designated as read only.
+     */
+    boolean readOnly() default false;
 }
