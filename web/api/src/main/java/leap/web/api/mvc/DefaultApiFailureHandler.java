@@ -86,11 +86,6 @@ public class DefaultApiFailureHandler implements ApiFailureHandler {
             return true;
         }
 
-        if(e instanceof SecurityException) {
-            errorHandler.forbidden(response, e.getMessage());
-            return true;
-        }
-
         //jdk exceptions
         if(e instanceof NoSuchElementException) {
             errorHandler.notFound(response, e.getMessage());
@@ -99,11 +94,6 @@ public class DefaultApiFailureHandler implements ApiFailureHandler {
 
         if(e instanceof IllegalArgumentException) {
             errorHandler.badRequest(response, e.getMessage());
-            return true;
-        }
-
-        if(e instanceof java.lang.SecurityException) {
-            errorHandler.forbidden(response, e.getMessage());
             return true;
         }
 
