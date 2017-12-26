@@ -48,43 +48,8 @@ public class DefaultApiFailureHandler implements ApiFailureHandler {
         if(execution.hasException()) {
             Throwable e = execution.getException();
 
-            if(e instanceof ValidationException) {
-                Errors errors = ((ValidationException) e).getErrors();
-                handleValidationError(response, errors);
+            if(handleException(response, e)) {
                 return true;
-            }
-
-            if(e instanceof ResponseException) {
-                int code = ((ResponseException) e).getStatus();
-                HTTP.Status status = HTTP.Status.valueOf(code);
-
-                errorHandler.responseError(response, code, status.name() , e.getMessage());
-                return true;
-            }
-
-            if(e instanceof ObjectExistsException) {
-                errorHandler.badRequest(response, e.getMessage());
-                return true;
-            }
-
-            if(e instanceof ObjectNotFoundException) {
-                errorHandler.notFound(response, e.getMessage());
-                return true;
-            }
-
-            //jdk exceptions
-            if(e instanceof NoSuchElementException) {
-                errorHandler.notFound(response, e.getMessage());
-                return true;
-            }
-
-            if(e instanceof IllegalArgumentException) {
-                errorHandler.badRequest(response, e.getMessage());
-                return true;
-            }
-
-            if(e instanceof SecurityException) {
-                errorHandler.forbidden(response, e.getMessage());
             }
 
             //other exceptions.
@@ -94,6 +59,55 @@ public class DefaultApiFailureHandler implements ApiFailureHandler {
 
         errorHandler.internalServerError(response, "Execution failed.");
         return true;
+    }
+
+    protected boolean handleException(Response response, Throwable e) {
+        if(e instanceof ValidationException) {
+            Errors errors = ((ValidationException) e).getErrors();
+            handleValidationError(response, errors);
+            return true;
+        }
+
+        if(e instanceof ResponseException) {
+            int code = ((ResponseException) e).getStatus();
+            HTTP.Status status = HTTP.Status.valueOf(code);
+
+            errorHandler.responseError(response, code, status.name() , e.getMessage());
+            return true;
+        }
+
+        if(e instanceof ObjectExistsException) {
+            errorHandler.badRequest(response, e.getMessage());
+            return true;
+        }
+
+        if(e instanceof ObjectNotFoundException) {
+            errorHandler.notFound(response, e.getMessage());
+            return true;
+        }
+
+        if(e instanceof SecurityException) {
+            errorHandler.forbidden(response, e.getMessage());
+            return true;
+        }
+
+        //jdk exceptions
+        if(e instanceof NoSuchElementException) {
+            errorHandler.notFound(response, e.getMessage());
+            return true;
+        }
+
+        if(e instanceof IllegalArgumentException) {
+            errorHandler.badRequest(response, e.getMessage());
+            return true;
+        }
+
+        if(e instanceof java.lang.SecurityException) {
+            errorHandler.forbidden(response, e.getMessage());
+            return true;
+        }
+
+        return false;
     }
 
     protected void handleValidationError(Response response, Errors errors) {
