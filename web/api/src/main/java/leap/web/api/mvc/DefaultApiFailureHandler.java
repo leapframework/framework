@@ -17,6 +17,7 @@
 package leap.web.api.mvc;
 
 import leap.core.annotation.Inject;
+import leap.core.security.SecurityException;
 import leap.core.validation.Errors;
 import leap.core.validation.ValidationException;
 import leap.lang.NamedError;
@@ -28,6 +29,8 @@ import leap.web.Result;
 import leap.web.action.ActionContext;
 import leap.web.action.ActionExecution;
 import leap.web.exception.ResponseException;
+
+import java.util.NoSuchElementException;
 
 public class DefaultApiFailureHandler implements ApiFailureHandler {
 
@@ -69,6 +72,22 @@ public class DefaultApiFailureHandler implements ApiFailureHandler {
                 return true;
             }
 
+            //jdk exceptions
+            if(e instanceof NoSuchElementException) {
+                errorHandler.notFound(response, e.getMessage());
+                return true;
+            }
+
+            if(e instanceof IllegalArgumentException) {
+                errorHandler.badRequest(response, e.getMessage());
+                return true;
+            }
+
+            if(e instanceof SecurityException) {
+                errorHandler.forbidden(response, e.getMessage());
+            }
+
+            //other exceptions.
             errorHandler.internalServerError(response, e.getMessage());
             return true;
         }
