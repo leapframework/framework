@@ -86,11 +86,6 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
     }
 
     @Override
-    public QueryListResult queryList(QueryOptions options, Map<String, Object> filters){
-        return queryList(options,filters,null);
-    }
-
-    @Override
     public QueryListResult queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback) {
         //todo : validates the query options.
 
