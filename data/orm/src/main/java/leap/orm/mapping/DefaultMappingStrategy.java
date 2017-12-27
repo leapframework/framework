@@ -41,6 +41,7 @@ import leap.lang.logging.LogFactory;
 import leap.lang.meta.MSimpleType;
 import leap.lang.meta.MSimpleTypes;
 import leap.lang.meta.MType;
+import leap.lang.meta.MTypes;
 import leap.orm.Orm;
 import leap.orm.OrmConfig;
 import leap.orm.OrmConstants;
@@ -475,6 +476,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 
                 fmb.setBeanProperty(bp);
                 fmb.setJavaType(bp.getType());
+                fmb.setDataType(MTypes.getMType(bp.getType(), bp.getGenericType()));
 
 				preMappingField(context, emb, fmb);
 				postMappingField(context, emb, fmb);
@@ -786,6 +788,14 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
             fmb.setFieldName(context.getNamingStrategy().fieldName(bp.getName()));
         }
 
+        //column name
+        DbColumnBuilder c = fmb.getColumn();
+        if (Strings.isEmpty(c.getName())) {
+            c.setName(context.getNamingStrategy().fieldToColumnName(fmb.getFieldName()));
+        } else {
+            c.setName(context.getNamingStrategy().columnName(c.getName()));
+        }
+
         //auto mapping domain.
         if(null == fmb.getDomain()){
             leap.orm.annotation.Domain a = Classes.getAnnotation(fmb.getAnnotations(), leap.orm.annotation.Domain.class);
@@ -800,69 +810,56 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 
         //auto set length by id generator.
         if(null != fmb.getIdGenerator()) {
-            fmb.getColumn().trySetLength(fmb.getIdGenerator().getDefaultColumnLength());
+            c.trySetLength(fmb.getIdGenerator().getDefaultColumnLength());
         }
 
         if(null == fmb.getDataType()) {
-            Class<?> javaType = fmb.getJavaType();
-            if (null != javaType) {
-                TypeInfo ti = leap.lang.Types.getTypeInfo(javaType);
-
-                if (ti.isSimpleType()) {
-                    MSimpleType dataType = MSimpleTypes.forClass(javaType);
-                    if (null == dataType) {
-                        throw new MetadataException("Unsupported java type '" + javaType +
-                                "' in field '" + fmb.getBeanProperty().getName() + "', class '" + emb.getEntityClass().getName() + "'");
-                    }
-                    fmb.setDataType(dataType);
-                } else {
-                    //Found a serialize field.
-                    String format = fmb.getSerializeFormat();
-                    if (Strings.isEmpty(format)) {
-                        format = context.getConfig().getDefaultSerializer();
-                    }
-
-                    OrmConfig.SerializeConfig sc =
-                            context.getConfig().getSerializeConfig(format);
-
-                    DbColumnBuilder column = fmb.getColumn();
-                    column.trySetTypeCode(sc.getDefaultColumnType().getCode());
-                    column.trySetLength(sc.getDefaultColumnLength());
-
-                    FieldSerializer serializer =
-                            context.getAppContext().getBeanFactory().tryGetBean(FieldSerializer.class, format);
-
-                    if (null == serializer) {
-                        throw new AppConfigException("Bean '" + format + "' of type '" +
-                                FieldSerializer.class.getName() + "' must be exists!");
-                    }
-
-                    fmb.setSerializer(serializer);
-                }
+            if(null != bp) {
+                fmb.setDataType(MTypes.getMType(bp.getType(), bp.getGenericType()));
+            }else if(null != fmb.getJavaType()) {
+                fmb.setDataType(MTypes.getMType(fmb.getJavaType()));
             }
-        }
-
-        DbColumnBuilder c = fmb.getColumn();
-        if (Strings.isEmpty(c.getName())) {
-            c.setName(context.getNamingStrategy().fieldToColumnName(fmb.getFieldName()));
-        } else {
-            c.setName(context.getNamingStrategy().columnName(c.getName()));
         }
 
         MType dataType = fmb.getDataType();
-        if(null != dataType && dataType.isSimpleType()){
-            MSimpleType st = dataType.asSimpleType();
+        if(null != dataType) {
+            if(dataType.isSimpleType()) {
+                MSimpleType st = dataType.asSimpleType();
 
-            if(null == c.getTypeName()){
-                c.setTypeName(st.getJdbcType().getName());
+                if(null == c.getTypeName()){
+                    c.setTypeName(st.getJdbcType().getName());
+                }
+
+                c.trySetLength(st.getDefaultLength());
+                c.trySetPrecision(st.getDefaultPrecision());
+                c.trySetScale(st.getDefaultScale());
+            }else {
+                //Found a serialize field.
+                String format = fmb.getSerializeFormat();
+                if (Strings.isEmpty(format)) {
+                    format = context.getConfig().getDefaultSerializer();
+                }
+
+                OrmConfig.SerializeConfig sc =
+                        context.getConfig().getSerializeConfig(format);
+
+                DbColumnBuilder column = fmb.getColumn();
+                column.trySetTypeCode(sc.getDefaultColumnType().getCode());
+                column.trySetLength(sc.getDefaultColumnLength());
+
+                FieldSerializer serializer =
+                        context.getAppContext().getBeanFactory().tryGetBean(FieldSerializer.class, format);
+
+                if (null == serializer) {
+                    throw new AppConfigException("Bean '" + format + "' of type '" +
+                            FieldSerializer.class.getName() + "' must be exists!");
+                }
+
+                fmb.setSerializer(serializer);
             }
-
-            c.trySetLength(st.getDefaultLength());
-            c.trySetPrecision(st.getDefaultPrecision());
-            c.trySetScale(st.getDefaultScale());
         }
 
-        if(null == fmb.getNullable()) {
+        if(null == fmb.getNullable() && null != fmb.getJavaType()) {
             if(fmb.getJavaType().isPrimitive()) {
                 fmb.setNullable(false);
                 fmb.getColumn().setNullable(false);
