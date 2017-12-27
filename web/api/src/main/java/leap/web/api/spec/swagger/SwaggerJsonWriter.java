@@ -20,9 +20,11 @@ import leap.lang.Args;
 import leap.lang.Arrays2;
 import leap.lang.New;
 import leap.lang.Strings;
+import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.json.JsonWriter;
 import leap.lang.meta.*;
 import leap.web.Request;
+import leap.web.api.annotation.ApiModel;
 import leap.web.api.config.ApiConfigException;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.*;
@@ -454,7 +456,11 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 
 	protected void writeModel(WriteContext context, ApiMetadata m, JsonWriter w, MApiModel model) {
 		w.startObject();
+        writeModelWithinObject(context, m, w, model);
+		w.endObject();
+	}
 
+    protected void writeModelWithinObject(WriteContext context, ApiMetadata m, JsonWriter w, MApiModel model) {
         if(!model.hasBaseModel()) {
             w.property(TYPE, OBJECT);
         }
@@ -476,26 +482,24 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 
                 w.startArray();
 
-                    //item1 : the base model.
-                    w.startObject()
-                     .property(REF, ref(model.getBaseName()))
-                     .endObject();
+                //item1 : the base model.
+                w.startObject()
+                        .property(REF, ref(model.getBaseName()))
+                        .endObject();
 
-                    w.separator();
+                w.separator();
 
-                    //item2 : self
-                    w.startObject()
-                     .property(TYPE, OBJECT);
-                     writeModelProperties(context, m, w, model);
-                    w.endObject();
+                //item2 : self
+                w.startObject()
+                        .property(TYPE, OBJECT);
+                writeModelProperties(context, m, w, model);
+                w.endObject();
 
                 w.endArray();
 
             });
         }
-		
-		w.endObject();
-	}
+    }
 
     protected void writeModelProperties(WriteContext context, ApiMetadata m, JsonWriter w, MApiModel model) {
         for(MApiProperty p : model.getProperties()) {
@@ -587,6 +591,24 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 
         if(type.isDictionaryType()) {
             writeDictionaryType(context, m, w, type.asDictionaryType());
+            return;
+        }
+
+        if(type.isComplexType()){
+            MComplexType ct = type.asComplexType();
+            MApiModel model = null;
+            if(null != ct.getJavaType()) {
+                model = m.tryGetModel(ct.getJavaType());
+            }else {
+                model = m.tryGetModel(ct.getName());
+            }
+            if(null != model) {
+                writeRefType(context, m, w, ct.createTypeRef());
+            }else {
+                model = new MApiModelBuilder(ct).build();
+                w.property(TYPE, OBJECT);
+                writeModelProperties(context, m, w, model);
+            }
             return;
         }
 		
