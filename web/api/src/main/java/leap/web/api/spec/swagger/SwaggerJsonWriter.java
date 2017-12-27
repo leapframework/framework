@@ -315,7 +315,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 	protected void writeResponse(WriteContext context, ApiMetadata m, JsonWriter w, MApiResponse r) {
 		w.startObject();
 
-        w.propertyOptional(SUMMARY, r.getSummary());
+        //w.propertyOptional(SUMMARY, r.getSummary()); not standard
 		w.property(DESCRIPTION, nullToEmpty(Strings.firstNotEmpty(r.getDescription(), r.getSummary())));
 		
 		MType type = r.getType();
