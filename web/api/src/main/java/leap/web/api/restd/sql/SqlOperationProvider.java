@@ -182,7 +182,7 @@ public class SqlOperationProvider extends ScriptOperationProvider implements Res
         }
         route.setAction(action.build());
 
-        configure(ctx, model, route);
+        configure(ctx, model, route, mo);
 
         if (!od.isExplicitPrior() && isOperationExists(ctx, route)) {
             if(!od.isExplicitNotPrior()) {
