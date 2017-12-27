@@ -1013,18 +1013,7 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 	}
 
 	protected EntityMapping em(Class<?> type) throws MappingNotFoundException {
-        if(!ormContext.getConfig().isMappingClassSimpleName()) {
-            return ormContext.getMetadata().getEntityMapping(type);
-        }
-
-		EntityMapping em = ormContext.getMetadata().tryGetEntityMapping(type);
-        if(null == em) {
-            em = ormContext.getMetadata().tryGetEntityMapping(type.getSimpleName());
-        }
-        if(null == em) {
-            throw new EntityNotFoundException("No entity mapping to '" + type.getName() + " or '" + type.getSimpleName() + "'");
-        }
-        return em;
+        return ormContext.getMetadata().getEntityMapping(type);
 	}
 
 	@Override

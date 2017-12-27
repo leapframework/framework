@@ -15,7 +15,6 @@
  */
 package leap.orm.dao;
 
-import com.sun.org.apache.xpath.internal.operations.Or;
 import leap.core.annotation.Inject;
 import leap.core.transaction.TransactionCallback;
 import leap.core.transaction.TransactionStatus;

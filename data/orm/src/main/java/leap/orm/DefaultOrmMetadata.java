@@ -50,6 +50,7 @@ public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetad
 	protected final Map<String,SqlCommand>      keyToSqlCommands       = new ConcurrentHashMap<>();
 	protected final Map<String,SequenceMapping> nameToSequenceMappings = new ConcurrentHashMap<>();
 
+    protected OrmConfig   config;
     protected Domains     domains;
     protected SqlRegistry sqlRegistry;
 
@@ -64,6 +65,10 @@ public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetad
 
     public void setSqlRegistry(SqlRegistry sqlRegistry) {
         this.sqlRegistry = sqlRegistry;
+    }
+
+    public void setConfig(OrmConfig config) {
+        this.config = config;
     }
 
     @Override
@@ -99,9 +104,8 @@ public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetad
 	@Override
     public EntityMapping getEntityMapping(Class<?> entityClass) {
 		EntityMapping em = tryGetEntityMapping(entityClass);
-		
 		if(null == em){
-			throwEntityNotFound(entityClass);
+            throwEntityNotFound(entityClass);
 		}
 		
 	    return em;
@@ -164,7 +168,16 @@ public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetad
     public EntityMapping tryGetEntityMapping(Class<?> entityClass) {
 		Args.notNull(entityClass,"entity class");
 	    EntityMapping em = classToEntityMappings.get(entityClass);
-	    return null == em && Model.class.isAssignableFrom(entityClass) ? modelToEntityMappings.get(entityClass) : em;
+
+        if(null == em && Model.class.isAssignableFrom(entityClass)) {
+            em = modelToEntityMappings.get(entityClass);
+        }
+
+        if(null == em && config.isMappingClassSimpleName()){
+            em = tryGetEntityMapping(entityClass.getSimpleName());
+        }
+
+        return em;
     }
 	
 	@Override
