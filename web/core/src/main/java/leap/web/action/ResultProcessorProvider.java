@@ -16,8 +16,11 @@
 package leap.web.action;
 
 
+import leap.web.App;
+import leap.web.route.RouteBuilder;
+
 public interface ResultProcessorProvider {
 	
-	ResultProcessor tryGetResultProcessor(Action action);
+	ResultProcessor tryGetResultProcessor(App app, RouteBuilder route, Action action);
 
 }
