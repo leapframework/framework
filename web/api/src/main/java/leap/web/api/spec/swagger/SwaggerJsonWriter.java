@@ -20,11 +20,9 @@ import leap.lang.Args;
 import leap.lang.Arrays2;
 import leap.lang.New;
 import leap.lang.Strings;
-import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.json.JsonWriter;
 import leap.lang.meta.*;
 import leap.web.Request;
-import leap.web.api.annotation.ApiModel;
 import leap.web.api.config.ApiConfigException;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.*;
@@ -47,6 +45,13 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
         String defaultSecurity;
     }
 
+    protected boolean isIncluded(ApiSpecContext sc, String part) {
+        if(null == sc.getParts() || sc.getParts().isEmpty()) {
+            return true;
+        }
+        return sc.getParts().contains(part);
+    }
+
 	@Override
 	protected void write(ApiSpecContext sc, ApiMetadata m, JsonWriter w) {
 		Args.notNull(m, "metadata");
@@ -55,46 +60,65 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 		WriteContext context = new WriteContext();
 		
 		w.startObject();
-		
 		w.property(SWAGGER, "2.0");
-		
-		w.property(INFO, () -> {
-			w.startObject()
-			 .property(TITLE, m.getTitle())
-             .propertyOptional(SUMMARY, m.getSummary())
-			 .property(DESCRIPTION, nullToEmpty(m.getDescription()))
-			 .propertyOptional(TERMS_OF_SERVICE, m.getTermsOfService())
-			 .propertyOptional(CONTACT, m.getConcat())
-			 .propertyOptional(VERSION, m.getVersion())
-			 .endObject();
-		});
-		
-		w.propertyOptional(HOST, getHost(sc, m))
-		 .propertyOptional(BASE_PATH, sc.getContextPath() + Strings.nullToEmpty(m.getBasePath()))
-		 .propertyOptional(SCHEMES, m.getProtocols())
-		 .propertyOptional(CONSUMES, m.getConsumes())
-		 .propertyOptional(PRODUCES, m.getProduces());
-		
-		w.property(PATHS, () -> writePaths(context, m, w) )
-		 .property(DEFINITIONS, () -> writeDefinitions(context, m, w) );
+
+            w.property(INFO, () -> {
+                w.startObject()
+                    .property(TITLE, m.getTitle());
+
+                if(isIncluded(sc, INFO)) {
+                    w.propertyOptional(SUMMARY, m.getSummary())
+                            .property(DESCRIPTION, nullToEmpty(m.getDescription()))
+                            .propertyOptional(TERMS_OF_SERVICE, m.getTermsOfService())
+                            .propertyOptional(CONTACT, m.getConcat());
+                }
+
+                w.propertyOptional(VERSION, m.getVersion());
+                w.endObject();
+            });
+
+        w.propertyOptional(HOST, getHost(sc, m))
+        .propertyOptional(BASE_PATH, sc.getContextPath() + Strings.nullToEmpty(m.getBasePath()))
+        .propertyOptional(SCHEMES, m.getProtocols())
+        .propertyOptional(CONSUMES, m.getConsumes())
+        .propertyOptional(PRODUCES, m.getProduces());
+
+        if(isIncluded(sc, PATHS)) {
+            w.property(PATHS, () -> writePaths(context, m, w));
+        }
+
+        if(isIncluded(sc, DEFINITIONS)) {
+            w.property(DEFINITIONS, () -> writeDefinitions(context, m, w));
+        }
 
         if(!m.getResponses().isEmpty()) {
-            MApiResponse[] responses = m.getResponses().values().toArray(new MApiResponse[0]);
-            w.property(RESPONSES, () -> writeResponses(context, m, w, responses));
+            if(isIncluded(sc, RESPONSES)) {
+                MApiResponse[] responses = m.getResponses().values().toArray(new MApiResponse[0]);
+                w.property(RESPONSES, () -> writeResponses(context, m, w, responses));
+            }
         }
 
         if(!Arrays2.isEmpty(m.getSecurityDefs())) {
-            w.property(SECURITY_DEFINITIONS, () -> writeSecurityDefs(context, m, w));
-
-            writeDefaultSecurity(context, m, w);
+            if(isIncluded(sc, SECURITY_DEFINITIONS)) {
+                w.property(SECURITY_DEFINITIONS, () -> writeSecurityDefs(context, m, w));
+                writeDefaultSecurity(context, m, w);
+            }
         }
 
         if(!Arrays2.isEmpty(m.getTags())) {
-            w.property(TAGS, () -> writeTags(context, m, w));
+            if(isIncluded(sc, TAGS)) {
+                w.property(TAGS, () -> writeTags(context, m, w));
+            }
         }
 
 		w.endObject();
 	}
+
+    @Override
+    protected void writeModels(ApiSpecContext sc, ApiMetadata m, JsonWriter w) {
+        WriteContext context = new WriteContext();
+        writeDefinitions(context, m, w);
+    }
 
     protected String getHost(ApiSpecContext sc, ApiMetadata m) {
         String host = m.getHost();

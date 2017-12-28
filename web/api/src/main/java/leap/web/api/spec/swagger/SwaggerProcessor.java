@@ -16,6 +16,8 @@
 package leap.web.api.spec.swagger;
 
 import leap.core.annotation.Inject;
+import leap.lang.New;
+import leap.lang.Strings;
 import leap.web.Handler;
 import leap.web.Request;
 import leap.web.Response;
@@ -30,6 +32,9 @@ import leap.web.api.meta.ApiMetadataProcessor;
 import leap.web.api.spec.ApiSpecContext;
 import leap.web.route.Route;
 import leap.web.route.Routes;
+
+import java.util.Collections;
+import java.util.Set;
 
 public class SwaggerProcessor implements ApiConfigProcessor,ApiMetadataProcessor {
 	
@@ -69,9 +74,15 @@ public class SwaggerProcessor implements ApiConfigProcessor,ApiMetadataProcessor
     void handleJsonSpecRequest(Api api, Request req, Response resp) throws Throwable {
 		SwaggerJsonWriter w = new SwaggerJsonWriter();
 		w.setPropertyNamingStyle(api.getConfig().getPropertyNamingStyle());
-		
+
 		resp.setContentType(w.getContentType());
-		w.write(new ApiSpecContextImpl(req), api.getMetadata(), resp.getWriter());
+
+        String[] parts = req.getParameterValues("parts");
+        if(null != parts && parts.length == 1) {
+            parts = Strings.split(parts[0], ',');
+        }
+        Set<String> partsSet = null == parts ? Collections.emptySet() : New.hashSet(parts);
+        w.write(new ApiSpecContextImpl(req, partsSet), api.getMetadata(), resp.getWriter());
 	}
 	
 	protected String getJsonSpecPath(ApiConfig c) {
@@ -79,10 +90,12 @@ public class SwaggerProcessor implements ApiConfigProcessor,ApiMetadataProcessor
 	}
 
     private static final class ApiSpecContextImpl implements ApiSpecContext {
-        private final Request request;
+        private final Request     request;
+        private final Set<String> parts;
 
-        public ApiSpecContextImpl(Request request) {
+        public ApiSpecContextImpl(Request request,Set<String> parts) {
             this.request = request;
+            this.parts   = parts;
         }
 
         @Override
@@ -98,6 +111,11 @@ public class SwaggerProcessor implements ApiConfigProcessor,ApiMetadataProcessor
         @Override
         public String getContextPath() {
             return request.getContextPath();
+        }
+
+        @Override
+        public Set<String> getParts() {
+            return parts;
         }
     }
     
