@@ -63,6 +63,9 @@ public class ConfigDocProcessor implements ApiMetadataProcessor {
             ParamConfig wrapperParam = context.getConfig().getParam(p.getWrapperArgument().getType());
             if(null != wrapperParam) {
                 pc = wrapperParam.getWrappedParam(p.getArgument().getDeclaredName());
+                if(null == pc) {
+                    pc = wrapperParam.getWrappedParam(p.getName());
+                }
             }
         }
 
