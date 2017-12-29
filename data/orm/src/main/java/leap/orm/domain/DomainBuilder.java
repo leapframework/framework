@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 public class DomainBuilder implements Buildable<Domain> {
-	
+
 	protected Object       source;
 	protected String       name;
 	protected String       defaultColumnName;
@@ -42,15 +42,16 @@ public class DomainBuilder implements Buildable<Domain> {
 	protected Expression   updateValue;
     protected Boolean      filter;
     protected Expression   filterValue;
+    protected Expression   filterIfValue;
     protected IdGenerator  idGenerator;
 	protected Float        sortOrder;
 	protected boolean      unnamed;
     protected boolean	   autoMapping;
     protected boolean      override;
     protected List<String> aliases = new ArrayList<>();
-	
+
 	public DomainBuilder(){
-		
+
 	}
 
 	public DomainBuilder(Object source){
@@ -111,13 +112,17 @@ public class DomainBuilder implements Buildable<Domain> {
             this.filterValue = domain.getFilterValue();
         }
 
+        if(null==this.filterIfValue){
+        	this.filterIfValue=domain.getFilterIfValue();
+        }
+
         if(null == this.idGenerator) {
             this.idGenerator = domain.getIdGenerator();
         }
 
         return this;
     }
-	
+
 	public Object getSource() {
 		return source;
 	}
@@ -126,7 +131,7 @@ public class DomainBuilder implements Buildable<Domain> {
 		this.source = source;
 		return this;
 	}
-	
+
 	public String getName() {
 		return name;
 	}
@@ -135,7 +140,7 @@ public class DomainBuilder implements Buildable<Domain> {
 		this.name = name;
 		return this;
 	}
-	
+
 	public String getDefaultColumnName() {
         return defaultColumnName;
     }
@@ -198,7 +203,7 @@ public class DomainBuilder implements Buildable<Domain> {
 		this.defaultValue = defaultValue;
 		return this;
 	}
-	
+
 	public Boolean getInsert() {
 		return insert;
 	}
@@ -216,7 +221,7 @@ public class DomainBuilder implements Buildable<Domain> {
 		this.update = update;
 		return this;
 	}
-	
+
 	public Expression getInsertValue() {
 		return insertValue;
 	}
@@ -253,6 +258,11 @@ public class DomainBuilder implements Buildable<Domain> {
         return this;
     }
 
+    public DomainBuilder setFilterIfValue(Expression filterIfValue) {
+        this.filterIfValue = filterIfValue;
+        return this;
+    }
+
     public boolean isAutoMapping() {
 		return autoMapping;
 	}
@@ -261,7 +271,7 @@ public class DomainBuilder implements Buildable<Domain> {
 		this.autoMapping = autoMapping;
 		return this;
 	}
-	
+
     public Float getSortOrder() {
         return sortOrder;
     }
@@ -270,7 +280,7 @@ public class DomainBuilder implements Buildable<Domain> {
         this.sortOrder = sortOrder;
         return this;
     }
-    
+
     public boolean isUnnamed() {
         return unnamed;
     }
@@ -313,6 +323,6 @@ public class DomainBuilder implements Buildable<Domain> {
 	public Domain build() {
 		return new Domain(source, name, defaultColumnName, type, length, precision, scale,
 				 				  nullable, defaultValue,insert,insertValue, update,
-				 				  updateValue, filter, filterValue, sortOrder,autoMapping, idGenerator);
+				 				  updateValue, filter, filterValue,filterIfValue, sortOrder,autoMapping, idGenerator);
 	}
 }

@@ -24,7 +24,7 @@ import leap.orm.generator.IdGenerator;
 import java.util.regex.Pattern;
 
 public class Domain implements Sourced,Named {
-	
+
 	private final Object       source;
 	private final String       name;
 	private final String       defaultColumnName;
@@ -40,13 +40,14 @@ public class Domain implements Sourced,Named {
 	private final Expression   updateValue;
     private final Boolean      filter;
     private final Expression   filterValue;
+    private final Expression   filterIfValue;
 	private final Float        sortOrder;
     private final boolean      autoMapping;
     private final IdGenerator  idGenerator;
 
 	public Domain(Object source, String name, String defaultColumnName, JdbcType type, Integer length, Integer precision, Integer scale,
                   Boolean nullable, String defaultValue, Boolean insert, Expression insertValue, Boolean update,
-                   Expression updateValue, Boolean filter, Expression filterValue, Float sortOrder, boolean autoMapping, IdGenerator idGenerator) {
+                   Expression updateValue, Boolean filter, Expression filterValue,Expression filterIfValue, Float sortOrder, boolean autoMapping, IdGenerator idGenerator) {
 		Args.notEmpty(name,"name");
 		this.source = source;
 	    this.name = name;
@@ -63,11 +64,12 @@ public class Domain implements Sourced,Named {
 	    this.updateValue = updateValue;
         this.filter = filter;
         this.filterValue = filterValue;
+        this.filterIfValue=filterIfValue;
 	    this.sortOrder   = sortOrder;
         this.autoMapping = autoMapping;
         this.idGenerator = idGenerator;
     }
-	
+
 	@Override
 	public Object getSource() {
 		return source;
@@ -76,7 +78,7 @@ public class Domain implements Sourced,Named {
 	public String getName() {
 		return name;
 	}
-	
+
 	public String getDefaultColumnName() {
         return defaultColumnName;
     }
@@ -145,4 +147,8 @@ public class Domain implements Sourced,Named {
     public String toString() {
 		return "Domain : " + name;
     }
+
+	public Expression getFilterIfValue() {
+		return filterIfValue;
+	}
 }
