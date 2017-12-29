@@ -147,12 +147,12 @@ public class AnnotationDocProcessor implements ApiMetadataProcessor {
 
     protected void resolveDoc(ApiMetadataContext context, MNamedWithDescBuilder o, Doc a) {
         String summary = Strings.firstNotEmpty(a.summary(), a.value());
-        if(!Strings.isEmpty(summary)) {
+        if(Strings.isEmpty(o.getSummary()) && !Strings.isEmpty(summary)) {
             o.setSummary(docResolver.resolveDesc(summary));
         }
 
         String desc = a.desc();
-        if(!Strings.isEmpty(desc)) {
+        if(Strings.isEmpty(o.getDescription()) && !Strings.isEmpty(desc)) {
             o.setDescription(docResolver.resolveDesc(desc));
         }
     }
