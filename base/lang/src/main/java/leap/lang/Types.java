@@ -253,7 +253,8 @@ public class Types {
 
 		if (type instanceof GenericArrayType) {
 			// get raw component type
-			Class<?> rawComponentType = getActualType(((GenericArrayType) type).getGenericComponentType());
+			Type t = ((GenericArrayType) type).getGenericComponentType();
+			Class<?> rawComponentType = getActualType(t);
 
 			// create array type from raw component type and return its class
 			return Array.newInstance(rawComponentType, 0).getClass();

@@ -16,7 +16,10 @@
     </bean>
     <bean type="leap.core.params.ParamsFactory" class="leap.core.params.DefaultParamsFactory" primary="true"/>
     <bean type="leap.core.variable.VariableEnvironment" class="leap.core.variable.DefaultVariableEnvironment" primary="true"/>
-
+    
+    <!-- injector -->
+    <bean type="leap.core.ioc.BeanInjector" class="leap.core.ioc.ClassesFieldInjector"/>
+    
     <!--variable-->
     <bean name="now"               type="leap.core.variable.Variable" class="leap.core.variable.NowVariable"/>
     <bean name="timestamp"         type="leap.core.variable.Variable" class="leap.core.variable.TimestampVariable"/>
