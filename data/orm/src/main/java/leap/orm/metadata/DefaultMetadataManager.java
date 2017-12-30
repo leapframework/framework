@@ -52,6 +52,7 @@ public class DefaultMetadataManager implements OrmMetadataManager {
     protected @Inject @M SqlFactory  sqlFactory;
     protected @Inject @M Domains     domains;
     protected @Inject @M SqlRegistry sqlRegistry;
+    protected @Inject @M OrmConfig   config;
     
 	@Override
     public OrmMetadata createMetadata() {
@@ -59,6 +60,7 @@ public class DefaultMetadataManager implements OrmMetadataManager {
 
         md.setDomains(domains);
         md.setSqlRegistry(sqlRegistry);
+        md.setConfig(config);
 
         return md;
     }

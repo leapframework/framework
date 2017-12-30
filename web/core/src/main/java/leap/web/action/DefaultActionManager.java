@@ -373,7 +373,7 @@ public class DefaultActionManager implements ActionManager {
 		//Get external processor.
 		ResultProcessor processor;
 		for(ResultProcessorProvider provider : resultProcessorProviders){
-			if((processor = provider.tryGetResultProcessor(action)) != null){
+			if((processor = provider.tryGetResultProcessor(app, route, action)) != null){
 				return processor;
 			}
 		}

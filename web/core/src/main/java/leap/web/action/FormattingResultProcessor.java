@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import leap.lang.Arrays2;
+import leap.lang.Out;
+import leap.lang.intercepting.State;
 import leap.web.*;
 import leap.web.annotation.Produces;
 import leap.web.format.FormatManager;
@@ -28,13 +30,14 @@ import leap.web.route.RouteBuilder;
 import leap.web.view.View;
 
 public class FormattingResultProcessor extends AbstractResultProcessor implements ResultProcessor {
-	
+
 	protected final App    			 app;
 	protected final FormatManager	 formatManager;
 	protected final Action 			 action;
 	protected final View   		     view;
 	protected final ResponseFormat[] annotatedFormats;
 	protected final ResponseFormat[] supportedFormats;
+    protected final FormattingResultInterceptor[] interceptors;
 
 	public FormattingResultProcessor(App app, RouteBuilder route) {
 		this.app              = app;
@@ -42,7 +45,8 @@ public class FormattingResultProcessor extends AbstractResultProcessor implement
 		this.action           = route.getAction();
 		this.view             = null != route.getDefaultView() ? route.getDefaultView() : null;
 		this.annotatedFormats = getAnnotatedFormats(); 
-		this.supportedFormats = getSupportedFormats();	  
+		this.supportedFormats = getSupportedFormats();
+        this.interceptors     = app.factory().getBeans(FormattingResultInterceptor.class).toArray(new FormattingResultInterceptor[0]);
 	}
 	
 	@Override
@@ -60,22 +64,39 @@ public class FormattingResultProcessor extends AbstractResultProcessor implement
             }
         }
 
-		result.setReturnValue(returnValue);
+        if(interceptors.length > 0) {
+            Out<Object> out = new Out<>();
+            out.set(returnValue);
+
+            for (FormattingResultInterceptor interceptor : interceptors) {
+                if (State.isIntercepted(interceptor.preProcessReturnValue(context, result, out))) {
+                    return;
+                }
+            }
+
+            returnValue = out.getValue();
+        }
+
+        doProcessReturnValue(context, returnValue, result);
+    }
+
+    protected void doProcessReturnValue(ActionContext context, Object returnValue, Result result) throws Throwable {
+        result.setReturnValue(returnValue);
 
         if(returnValue instanceof Renderable) {
             ((Renderable) returnValue).render(context.getRequest(), context.getResponse());
             return;
         }
 
-		ResponseFormat format = resolveResponseFormat(context);
-		if(null == format){
-			format = formatManager.getDefaultResponseFormat();
-		}
+        ResponseFormat format = resolveResponseFormat(context);
+        if(null == format){
+            format = formatManager.getDefaultResponseFormat();
+        }
 
-		if(null == format && null != view){
-			result.render(view);
-			return;
-		}
+        if(null == format && null != view){
+            result.render(view);
+            return;
+        }
 
         result.render(format.getContent(context,returnValue));
     }

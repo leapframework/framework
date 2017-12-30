@@ -38,4 +38,15 @@ public interface ApiSpecWriter {
 	 */
 	void write(ApiSpecContext context, ApiMetadata m, Appendable out) throws IOException;
 
+    /**
+     * Writes the given api models to spec's format.
+     */
+    default void writeModels(ApiMetadata m, Appendable out) throws IOException {
+        writeModels(ApiSpecContext.EMPTY, m, out);
+    }
+
+    /**
+     * Writes the given api models to spec's format.
+     */
+    void writeModels(ApiSpecContext context, ApiMetadata m, Appendable out) throws IOException;
 }

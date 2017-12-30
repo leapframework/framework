@@ -88,10 +88,12 @@ public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataP
         //create models.
         MTypeContainer mtc = context.getMTypeContainer();
         for (RestdModel rm : restdContext.getModels()) {
-            MComplexType mtype = omf.getMType(mtc, oc, rm.getEntityMapping());
+            if(m.tryGetModel(rm.getName()) == null) {
+                MComplexType mtype = omf.getMType(mtc, oc, rm.getEntityMapping());
 
-            if(null == m.tryGetModel(rm.getEntityMapping().getEntityClass())) {
-                amf.tryAddModel(context, m, mtype);
+                if (null == m.tryGetModel(rm.getEntityMapping().getEntityClass())) {
+                    amf.tryAddModel(context, m, mtype);
+                }
             }
         }
 

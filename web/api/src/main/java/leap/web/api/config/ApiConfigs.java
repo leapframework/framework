@@ -112,11 +112,21 @@ public class ApiConfigs {
     }
 
     static void addParam(Set<ParamConfig> params, ParamConfig param) {
-        params.forEach(exists -> {
+        ParamConfig found = null;
+        for(ParamConfig exists : params) {
             if(exists.getKey().equals(param.getKey())) {
+                found = exists;
+                break;
+            }
+        }
+
+        if(null != found) {
+            if(param.isOverride()) {
+                params.remove(found);
+            }else {
                 throw new ApiConfigException("Found duplicated param '" + param.getKey() + "'");
             }
-        });
+        }
 
         params.add(param);
     }

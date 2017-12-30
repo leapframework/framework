@@ -46,9 +46,33 @@ public interface ModelQueryExecutor {
         return queryList(options, null);
     }
 
-    QueryListResult queryList(QueryOptions options, Map<String, Object> filters);
+    /**
+     * Query the records of model with the given filter fields.
+     */
+    default QueryListResult queryList(QueryOptions options, Map<String, Object> filters) {
+        return queryList(options, filters, null);
+    }
 
+    /**
+     * Query the records of model with the given filter fields.
+     *
+     * <p/>
+     * The callback will be invoked before executing the query.
+     */
     QueryListResult queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback);
 
+    /**
+     * Query the total count of records.
+     */
+    default QueryListResult count(CountOptions options) {
+        return count(options, null);
+    }
+
+    /**
+     * Query the total count of records.
+     *
+     * <p/>
+     * The callback will be invoked before executing the query.
+     */
     QueryListResult count(CountOptions options, Consumer<CriteriaQuery> callback);
 }

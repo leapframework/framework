@@ -223,6 +223,11 @@ public class AppFilter implements Filter {
 	        	chain.doFilter(request.getServletRequest(), espw);
 
 	        	if(espw.isError()) {
+
+                    if(response.isCommitted()) {
+                        return;
+                    }
+
 	        		if(!appHandler.handleError(request, response, espw.getErrorStatus(), espw.getErrorMessage())) {
 	        			espw.commitError();
 	        		}

@@ -56,5 +56,9 @@ public abstract class MApiNamed extends MApiObject implements MNamed {
     public String getTitle() {
 	    return title;
     }
-	
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName() + "(" + name + ")";
+    }
 }

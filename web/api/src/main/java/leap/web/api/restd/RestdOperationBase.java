@@ -29,6 +29,7 @@ import leap.web.annotation.ParamsWrapper;
 import leap.web.api.Apis;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.config.model.RestdConfig;
+import leap.web.api.meta.model.MApiOperationBuilder;
 import leap.web.api.mvc.ApiFailureHandler;
 import leap.web.api.route.ApiRoute;
 import leap.web.route.Route;
@@ -110,12 +111,20 @@ public abstract class RestdOperationBase {
     }
 
     protected void configure(RestdContext context, RestdModel model, RouteBuilder route) {
+        configure(context, model, route, null);
+    }
+
+    protected void configure(RestdContext context, RestdModel model, RouteBuilder route, MApiOperationBuilder mo) {
         RestdConfig c = context.getConfig();
 
         if(null != model) {
             if (c.isModelAnonymous(model.getName())) {
                 route.setAllowAnonymous(true);
             }
+        }
+
+        if(null != mo && mo.isAllowAnonymous()) {
+            route.setAllowAnonymous(true);
         }
 
         route.setAllowClientOnly(true);
