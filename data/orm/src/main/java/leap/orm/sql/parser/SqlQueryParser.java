@@ -295,6 +295,9 @@ abstract class SqlQueryParser extends SqlParser {
                 expect(Token.LPAREN).acceptText();
                 parseRestForClosingParen();
                 expect(Token.RPAREN).acceptText();
+            }else if(lexer.token().isOperator()){
+                acceptText();
+                parseNameExpr();
             }
         }else{
             parseSqlObjectName();
