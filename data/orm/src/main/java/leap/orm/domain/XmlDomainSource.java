@@ -68,6 +68,7 @@ public class XmlDomainSource implements DomainSource {
     private static final String COLUMN           = "column";
     private static final String ID_GENERATOR     = "id-generator";
     private static final String GENERATOR        = "generator";
+    private static final String FILTERED_IF                = "filtered-if";
 
     protected @Inject AppConfig   config;
     protected @Inject BeanFactory beanFactory;
@@ -80,23 +81,23 @@ public class XmlDomainSource implements DomainSource {
         }
 		loadDomains(new LoadContext(context), resources.search("domains"));
     }
-	
+
 	protected void loadDomains(LoadContext context, AppResource... resources){
 		for(int i=0;i<resources.length;i++){
             AppResource ar = resources[i];
 			Resource resource = ar.getResource();
-			
+
 			if(resource.isReadable() && resource.exists()){
 				XmlReader reader = null;
 				try{
 					String resourceUrl = resource.getURL().toString();
-					
+
 					if(context.resources.contains(resourceUrl)){
 						throw new AppConfigException("Cyclic importing detected, please check your config : " + resourceUrl);
 					}
 
 					context.resources.add(resourceUrl);
-					
+
 					reader = XML.createReader(resource);
 					reader.setPlaceholderResolver(config.getPlaceholderResolver());
 
@@ -113,30 +114,30 @@ public class XmlDomainSource implements DomainSource {
 			}
 		}
 	}
-	
+
 	protected void loadDomains(LoadContext context, Resource resource, XmlReader reader){
 		boolean foundValidRootElement = false;
-		
+
 		while(reader.next()){
 			if(reader.isStartElement(DOMAINS)){
 				foundValidRootElement = true;
-				
+
 				Boolean defaultOverrideAttribute = reader.resolveBooleanAttribute(DEFAULT_OVERRIDE);
 				if(null != defaultOverrideAttribute){
 					context.setDefaultOverride(defaultOverrideAttribute);
 				}
-				
+
 				while(reader.next()){
 					if(reader.isStartElement(IMPORT)){
 						boolean checkExistence    = reader.resolveBooleanAttribute(CHECK_EXISTENCE, true);
 						boolean override          = reader.resolveBooleanAttribute(DEFAULT_OVERRIDE, context.isDefaultOverride());
 						String importResourceName = reader.resolveRequiredAttribute(RESOURCE);
-						
+
 						Resource importResource = Resources.getResource(resource,importResourceName);
-						
+
 						if(null == importResource || !importResource.exists()){
 							if(checkExistence){
-								throw new DomainConfigException("the import resource '" + importResourceName + "' not exists");	
+								throw new DomainConfigException("the import resource '" + importResourceName + "' not exists");
 							}
 						}else{
                             LoadContext importContext = new LoadContext(context.domains);
@@ -145,7 +146,7 @@ public class XmlDomainSource implements DomainSource {
 						}
 						continue;
 					}
-					
+
 					if(reader.isStartElement(DOMAIN)){
 						readDomain(context, reader);
 						continue;
@@ -155,17 +156,17 @@ public class XmlDomainSource implements DomainSource {
                         readFieldMappings(context, reader);
                         continue;
                     }
-					
+
 				}
 				break;
 			}
 		}
-		
+
 		if(!foundValidRootElement){
 			throw new DomainConfigException("valid root element not found in file : " + resource.getClasspath());
 		}
 	}
-	
+
     protected void readDomain(LoadContext context, XmlReader reader) {
         DomainBuilder builder = readField(context, reader);
 
@@ -224,7 +225,7 @@ public class XmlDomainSource implements DomainSource {
 
         });
     }
-	
+
 	protected DomainBuilder readField(LoadContext context, XmlReader reader){
 		String  name         = reader.resolveAttribute(NAME);
         String  columnName   = reader.resolveAttribute(COLUMN);
@@ -242,6 +243,7 @@ public class XmlDomainSource implements DomainSource {
         String  filterValue  = reader.getAttribute(FILTERED_VALUE);
         String  idGenerator  = reader.getAttribute(ID_GENERATOR);
         String  generator    = reader.getAttribute(GENERATOR);
+        String  filteredIf     = reader.getAttribute(FILTERED_IF);
         boolean autoMapping  = reader.getBooleanAttribute(AUTO_MAPPING, false);
         Float sortOrder      = reader.getFloatAttribute(SORT_ORDER);
 		boolean override     = reader.resolveBooleanAttribute(OVERRIDE, context.isDefaultOverride());
@@ -250,7 +252,7 @@ public class XmlDomainSource implements DomainSource {
 		if(Strings.isEmpty(name)){
 			throw new DomainConfigException("The 'name' and 'type' attribute must be defined in domain, check the xml : " + reader.getCurrentLocation());
 		}
-		
+
 		JdbcType type = null;
 		if(!Strings.isEmpty(typeName)) {
 			type = JdbcTypes.tryForTypeName(typeName);
@@ -258,10 +260,11 @@ public class XmlDomainSource implements DomainSource {
 				throw new DomainConfigException("Jdbc type '" + typeName + "' not supported, check the xml : " + reader.getCurrentLocation());
 			}
 		}
-		
+
 		Expression insertValueExpression = null;
 		Expression updateValueExpression = null;
         Expression filterValueExpression = null;
+        Expression filteredIfExpression  = null;
 
         if(!Strings.isEmpty(generator)) {
             ValueGenerator generatorBean = beanFactory.tryGetBean(ValueGenerator.class, generator);
@@ -271,17 +274,21 @@ public class XmlDomainSource implements DomainSource {
             insertValueExpression = generatorBean;
             updateValueExpression = generatorBean;
         }
-		
+
 		if(!Strings.isEmpty(insertValue)){
-			insertValueExpression = EL.tryCreateValueExpression(insertValue);	
+			insertValueExpression = EL.tryCreateValueExpression(insertValue);
 		}
-		
+
 		if(!Strings.isEmpty(updateValue)){
 			updateValueExpression = EL.tryCreateValueExpression(updateValue);
 		}
 
         if(!Strings.isEmpty(filterValue)){
             filterValueExpression = EL.tryCreateValueExpression(filterValue);
+        }
+
+        if(!Strings.isEmpty(filteredIf)) {
+        	filteredIfExpression = EL.tryCreateValueExpression(filteredIf);
         }
 
         IdGenerator idGeneratorBean = null;
@@ -307,17 +314,18 @@ public class XmlDomainSource implements DomainSource {
 										.setUpdateValue(updateValueExpression)
                                         .setFilter(filter)
                                         .setFilterValue(filterValueExpression)
+                                        .setFilterIfValue(filteredIfExpression)
                                         .setSortOrder(sortOrder)
                                         .addAliases(readAlias(reader))
                                         .setAutoMapping(autoMapping)
                                         .setIdGenerator(idGeneratorBean)
                                         .setOverride(override);
 	}
-	
+
     protected List<String> readAlias(XmlReader reader) {
         return parseWords(reader.getAttribute(ALIAS));
     }
-	
+
 	protected List<String> parseWords(String words){
 		List<String> list = new ArrayList<String>();
 		if(!Strings.isEmpty(words)){
@@ -330,7 +338,7 @@ public class XmlDomainSource implements DomainSource {
 		}
 		return list;
 	}
-	
+
 	private final class LoadContext {
         private final Set<String> resources = new HashSet<>();
         private final Domains domains;
@@ -356,5 +364,5 @@ public class XmlDomainSource implements DomainSource {
             this.defaultOverride = originalDefaultOverride;
         }
 	}
-	
+
 }

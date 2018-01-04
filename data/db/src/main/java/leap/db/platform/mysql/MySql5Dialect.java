@@ -36,7 +36,7 @@ import leap.lang.value.Limit;
 public class MySql5Dialect extends GenericDbDialect {
 	
     /**
-     * the reserved sql keywords not defined in {@link SqlStandards#SQL92_RESERVED_WORDS}. <p/>
+     * the reserved sql keywords not defined in {@link leap.db.platform.GenericDbDialectBase#SQL92_RESERVED_WORDS}. <p/>
      * 
      * <p>
      * see：http://www.mysql.com/doc/en/Reserved_words.html.
