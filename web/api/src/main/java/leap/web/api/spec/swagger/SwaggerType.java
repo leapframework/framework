@@ -34,7 +34,7 @@ public enum SwaggerType {
 	private final String type;
 	private final String format;
 	
-	private SwaggerType(String type, String format) {
+	SwaggerType(String type, String format) {
 		this.type   = type;
 		this.format = format;
 	}
@@ -43,7 +43,7 @@ public enum SwaggerType {
 		return type;
 	}
 	
-	public String fomrat() {
+	public String format() {
 		return format;
 	}
 

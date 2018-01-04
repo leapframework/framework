@@ -646,7 +646,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
             SwaggerType type = writeSimpleType(context, m, w, st);
 
             //format
-            if(null != type && null == type.fomrat()) {
+            if(null != type && null == type.format()) {
                 w.propertyOptional(FORMAT, p.getFormat());
             }
         }
@@ -755,44 +755,51 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
         
 		throw new IllegalStateException("Unsupported type kind '" + type.getTypeKind() + "'");
 	}
+
+    public SwaggerType convertSimpleType(MSimpleType st) {
+        SwaggerType type = null;
+
+        MSimpleTypeKind k = st.getSimpleTypeKind();
+
+        if(k == MSimpleTypeKind.BIGINT) {
+            type = SwaggerType.LONG;
+        }else if(k == MSimpleTypeKind.BINARY) {
+            type = SwaggerType.BINARY;
+        }else if(k == MSimpleTypeKind.BOOLEAN) {
+            type = SwaggerType.BOOLEAN;
+        }else if(k == MSimpleTypeKind.BYTE) {
+            type = SwaggerType.BYTE;
+        }else if(k == MSimpleTypeKind.DATETIME) {
+            type = SwaggerType.DATETIME;
+        }else if(k == MSimpleTypeKind.TIME) {
+            type = SwaggerType.TIME;
+        }else if(k == MSimpleTypeKind.DECIMAL) {
+            type = SwaggerType.DOUBLE;
+        }else if(k == MSimpleTypeKind.DOUBLE) {
+            type = SwaggerType.DOUBLE;
+        }else if(k == MSimpleTypeKind.INTEGER) {
+            type = SwaggerType.INTEGER;
+        }else if(k == MSimpleTypeKind.SINGLE) {
+            type = SwaggerType.FLOAT;
+        }else if(k == MSimpleTypeKind.SMALLINT) {
+            type = SwaggerType.INTEGER;
+        }else if(k == MSimpleTypeKind.STRING) {
+            type = SwaggerType.STRING;
+        }
+
+        return type;
+    }
 	
 	protected SwaggerType writeSimpleType(WriteContext context, ApiMetadata m, JsonWriter w, MSimpleType st) {
-		SwaggerType type;
-		
-		MSimpleTypeKind k = st.getSimpleTypeKind();
-		
-		if(k == MSimpleTypeKind.BIGINT) {
-			type = SwaggerType.LONG;
-		}else if(k == MSimpleTypeKind.BINARY) {
-			type = SwaggerType.BINARY;
-		}else if(k == MSimpleTypeKind.BOOLEAN) {
-			type = SwaggerType.BOOLEAN;
-		}else if(k == MSimpleTypeKind.BYTE) {
-			type = SwaggerType.BYTE;
-		}else if(k == MSimpleTypeKind.DATETIME) {
-			type = SwaggerType.DATETIME;
-		}else if(k == MSimpleTypeKind.TIME) {
-			type = SwaggerType.TIME;
-		}else if(k == MSimpleTypeKind.DECIMAL) {
-			type = SwaggerType.DOUBLE;
-		}else if(k == MSimpleTypeKind.DOUBLE) {
-			type = SwaggerType.DOUBLE;
-		}else if(k == MSimpleTypeKind.INTEGER) {
-			type = SwaggerType.INTEGER;
-		}else if(k == MSimpleTypeKind.SINGLE) {
-			type = SwaggerType.FLOAT;
-		}else if(k == MSimpleTypeKind.SMALLINT) {
-			type = SwaggerType.INTEGER;
-		}else if(k == MSimpleTypeKind.STRING) {
-			type = SwaggerType.STRING;
-		}else{
-			throw new IllegalStateException("Unsupported type '" + k + "' in swagger");
+		SwaggerType type = convertSimpleType(st);
+		if(null == type) {
+			throw new IllegalStateException("Unsupported type '" + st + "' in swagger");
 		}
 		
 		w.property(TYPE, type.type());
 
-        if(null != type.fomrat()) {
-            w.property(FORMAT, type.fomrat());
+        if(null != type.format()) {
+            w.property(FORMAT, type.format());
         }
 
         return type;
