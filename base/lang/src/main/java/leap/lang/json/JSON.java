@@ -38,6 +38,12 @@ public class JSON {
     };
 
     /**
+     * Returns the {@link JsonBuilder} for build a json
+     */
+    public static JsonBuilder builder(){
+        return JsonBuilder.create();
+    }
+    /**
      * Returns the {@link JsonWriterCreator} for creating a new {@link JsonWriter}.
      */
     public static JsonWriterCreator writer() {
