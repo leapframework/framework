@@ -15,10 +15,7 @@
  */
 package leap.lang.convert;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 @SuppressWarnings({"rawtypes"})
@@ -37,7 +34,7 @@ public class CollectionConverters {
 
 		@Override
         protected Set newInstance(Class<?> targetType) {
-	        return new HashSet();
+	        return new LinkedHashSet();
         }
 		
 	}
