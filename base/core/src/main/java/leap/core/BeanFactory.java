@@ -251,6 +251,11 @@ public interface BeanFactory extends BeanFactoryBase, AppContextInitializable {
 	<T> Map<T,BeanDefinition> getBeansWithDefinition(Class<? super T> type) throws BeanException;
 
     /**
+     * todo:
+     */
+    <T> Map<T,BeanDefinition> createBeansWithDefinition(Class<? super T> type);
+
+    /**
      * Try init the bean (create instance) if not inited.
      *
      * <p/>

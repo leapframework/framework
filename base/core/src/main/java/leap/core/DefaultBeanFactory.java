@@ -406,6 +406,11 @@ public class DefaultBeanFactory extends BeanFactoryInternal implements BeanFacto
     }
 
     @Override
+    public <T> Map<T, BeanDefinition> createBeansWithDefinition(Class<? super T> type) {
+        return beanContainer.createBeansWithDefinition(type);
+    }
+
+    @Override
     public boolean tryInitBean(BeanDefinition bd) {
         if(null != externalFactory && externalFactory.tryInitBean(bd)) {
             return true;
