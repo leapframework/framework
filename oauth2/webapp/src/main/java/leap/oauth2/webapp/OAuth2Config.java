@@ -112,5 +112,4 @@ public interface OAuth2Config {
      * Returns the request of ignore access token resolved. 
      */
     RequestIgnore[] getIgnores();
-    
 }

@@ -26,4 +26,9 @@ public interface AccessTokenStore {
     void saveAccessToken(Request request, AuthenticationContext context, AccessToken at);
 
     AccessToken refreshAndSaveAccessToken(Request request, AuthenticationContext context, AccessToken old);
+    
+    AccessToken loadAccessTokenByClientCredentials(String clientId, String clientSecret);
+    
+    AccessToken refreshAccessToken(AccessToken old);
+    
 }

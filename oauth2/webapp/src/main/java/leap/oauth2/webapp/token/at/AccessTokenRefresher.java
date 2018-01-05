@@ -16,8 +16,6 @@
 
 package leap.oauth2.webapp.token.at;
 
-import leap.oauth2.webapp.token.at.AccessToken;
-
 public interface AccessTokenRefresher {
 
     AccessToken refreshAccessToken(AccessToken old);

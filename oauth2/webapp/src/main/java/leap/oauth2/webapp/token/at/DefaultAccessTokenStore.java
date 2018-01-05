@@ -21,6 +21,10 @@ import leap.core.annotation.Inject;
 import leap.web.Request;
 import leap.web.security.authc.AuthenticationContext;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * Simple save the access token in session.
  */
@@ -29,7 +33,10 @@ public class DefaultAccessTokenStore implements AccessTokenStore {
     private static final String KEY = AccessToken.class.getName();
 
     protected @Inject AccessTokenRefresher refresher;
+    protected @Inject AccessTokenFetcher fetcher;
 
+    protected Map<String, AccessToken> accessTokenPool = new ConcurrentHashMap<>();
+    
     @Override
     public AccessToken loadAccessToken(Request request, AuthenticationContext context) {
         Session session = request.getSession(false);
@@ -54,4 +61,24 @@ public class DefaultAccessTokenStore implements AccessTokenStore {
         return theNew;
     }
 
+    @Override
+    public AccessToken loadAccessTokenByClientCredentials(String clientId, String clientSecret) {
+        String key = clientId+":"+clientSecret;
+        AccessToken token = accessTokenPool.get(key);
+        if(token == null){
+            token = fetcher.fetchTokenByClientCredentials(clientId,clientSecret);
+            accessTokenPool.put(key,token);
+        }
+        if(token.isExpired()){
+            token = refreshAccessToken(token);
+            accessTokenPool.put(key,token);
+        }
+        return token;
+    }
+
+    @Override
+    public AccessToken refreshAccessToken(AccessToken old) {
+        AccessToken theNew = refresher.refreshAccessToken(old);
+        return theNew;
+    }
 }
