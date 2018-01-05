@@ -56,7 +56,7 @@ public class Converts {
 	
 	private static final Object NOT_CONVERTED = new Object();
 	
-	private static Converter     beanConverter  = new BeanConverter();
+	private static BeanConverter beanConverter  = new BeanConverter();
 	private static Converter     arrayConverter = new ArrayConverter();
 	private static Converter     enumConverter  = new EnumConverter();
 	private static ListConverter listConverter  = new ListConverter();
@@ -287,7 +287,7 @@ public class Converts {
 	}
 	
 	public static <T> T toBean(Map<String, ?> map,Class<T> beanClass) {
-		Out<T> out = new Out<T>();
+		Out<Object> out = new Out<>();
 		try {
 	        beanConverter.convertFrom(map, beanClass, null, out, null);
         } catch (ConvertException e){
@@ -295,8 +295,18 @@ public class Converts {
         } catch (Throwable e) {
         	throw new ConvertException(Strings.format("Error converting map to bean '{0}'",beanClass.getName()),e);
         }
-		return out.getValue();
+		return (T)out.getValue();
 	}
+
+    public static void toBean(Map map, Object bean) {
+        try {
+            beanConverter.convert(map, bean, null);
+        } catch (ConvertException e){
+            throw e;
+        } catch (Throwable e) {
+            throw new ConvertException(Strings.format("Error converting map to bean '{0}'",bean.getClass().getName()),e);
+        }
+    }
 	
 	public static String toString(Object value) {
 		if(null == value){

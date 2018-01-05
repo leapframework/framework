@@ -20,10 +20,13 @@ import leap.db.DbCommands;
 import leap.db.DbExecution;
 import leap.db.change.*;
 import leap.db.command.*;
+import leap.db.model.DbColumn;
+import leap.db.model.DbColumnBuilder;
 import leap.db.model.DbSchema;
 import leap.db.model.DbTable;
 import leap.lang.Collections2;
 import leap.lang.Error;
+import leap.lang.Strings;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.orm.dmo.Dmo;
@@ -33,6 +36,7 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class DefaultUpgradeSchemaCommand extends AbstractDmoCommand implements UpgradeSchemaCommand,Predicate<DbCommand> {
@@ -237,13 +241,34 @@ public class DefaultUpgradeSchemaCommand extends AbstractDmoCommand implements U
             return true;
         };
 
+        Function<SchemaChange, SchemaChange> changeProcessor = change -> {
+            //make column not null -> null if no default value for safe add column.
+            if(change instanceof AddColumnChange) {
+                AddColumnChange acc = (AddColumnChange)change;
+                DbColumn column = acc.getNewColumn();
+                if(!column.isNullable() && Strings.isEmpty(column.getDefaultValue())) {
+                    log.warn("Can't add not null column '{}.{}' without default value, change to null",
+                            acc.getTable().getName(), column.getName());
+                    DbColumnBuilder nullColumn = new DbColumnBuilder(column);
+                    nullColumn.setNullable(true);
+                    return new AddColumnChange(acc.getTable(), nullColumn.build());
+                }
+            }
+            return null;
+        };
+
         List<SchemaChanges> allChanges = compareChanges();
 
         List<String> scripts = new ArrayList<>();
         for(SchemaChanges changes : allChanges){
-            DbCommands changeCommands = changes.filter(changePredicate).getChangeCommands();
+
+            DbCommands changeCommands = changes.filter(changePredicate)
+                                               .process(changeProcessor)
+                                               .getChangeCommands();
+
             Collections2.addAll(scripts, changeCommands.filter(this).getExecutionScripts());
         }
+
         return scripts;
     }
 

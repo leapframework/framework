@@ -339,7 +339,7 @@ public class Beans {
 							}
 						}
 					}else{
-						throw new IllegalArgumentException("Invalid arrray property name '" + name + ", must be 'property[index]', i.e. 'values[0]'");
+						throw new IllegalArgumentException("Invalid array property name '" + name + ", must be 'property[index]', i.e. 'values[0]'");
 					}
 				}else if(isMap) {
 				    mapBean.put(name, entry.getValue());

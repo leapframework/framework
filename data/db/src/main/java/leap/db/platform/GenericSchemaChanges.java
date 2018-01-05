@@ -16,9 +16,9 @@
 package leap.db.platform;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import leap.db.DbCommands;
@@ -27,7 +27,6 @@ import leap.db.change.SchemaChange;
 import leap.db.change.SchemaChanges;
 import leap.lang.Args;
 import leap.lang.collection.ListEnumerable;
-import leap.lang.jdbc.ConnectionCallbackWithResult;
 import leap.lang.json.JsonWriter;
 
 public class GenericSchemaChanges extends ListEnumerable<SchemaChange> implements SchemaChanges {
@@ -62,6 +61,22 @@ public class GenericSchemaChanges extends ListEnumerable<SchemaChange> implement
 		}
 		
 		return filtered;
+    }
+
+    @Override
+    public SchemaChanges process(Function<SchemaChange, SchemaChange> processor) {
+        GenericSchemaChanges newChanges = new GenericSchemaChanges(db);
+
+        for(SchemaChange change : this){
+            SchemaChange processed = processor.apply(change);
+            if(null == processed) {
+                newChanges.add(change);
+            }else{
+                newChanges.add(processed);
+            }
+        }
+
+        return newChanges;
     }
 
     @Override

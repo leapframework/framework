@@ -24,23 +24,7 @@ import java.util.Map;
 
 public interface MTypeContext extends AttributeGetter,AttributeSetter {
 
-    MTypeContext DEFAULT = new MTypeContext() {
-        public Object getAttribute(String name) {
-            return null;
-        }
-        public void setAttribute(String name, Object value) {
-        }
-        public void onComplexTypeCreating(Class<?> type, String name) {
-        }
-        public void onComplexTypeCreated(Class<?> type, MComplexType ct) {
-        }
-        public String getCreatingComplexType(Class type) {
-            return null;
-        }
-        public boolean isComplexTypeCreatingOrCreated(Class type) {
-            return false;
-        }
-    };
+    MTypeContext DEFAULT = new SimpleMTypeContext();
 
     /**
      * Optional. Returns the root factory.
@@ -70,6 +54,11 @@ public interface MTypeContext extends AttributeGetter,AttributeSetter {
      * Returns the name of complex type if creating.
      */
     String getCreatingComplexType(Class type);
+
+    /**
+     * Returns the name of complex type if created.
+     */
+    MComplexType getCreatedComplexType(Class type);
 
     /**
      * Returns true if the type is creating or has been created.

@@ -79,7 +79,12 @@ public class DefaultBeanFactory extends BeanFactoryInternal implements BeanFacto
 	    return config;
     }
 
-	@Override
+    @Override
+    public void configure(Object bean, String prefix) {
+        beanContainer.configure(bean, prefix);
+    }
+
+    @Override
     public <T> T inject(T bean) throws BeanException {
 		Args.notNull(bean,"bean");
 		if(null != externalFactory){
@@ -403,6 +408,11 @@ public class DefaultBeanFactory extends BeanFactoryInternal implements BeanFacto
 			}
 			return map;
 		}
+    }
+
+    @Override
+    public <T> Map<T, BeanDefinition> createBeansWithDefinition(Class<? super T> type) {
+        return beanContainer.createBeansWithDefinition(type);
     }
 
     @Override

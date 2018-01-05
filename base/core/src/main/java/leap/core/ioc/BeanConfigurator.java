@@ -75,6 +75,31 @@ public class BeanConfigurator {
         return false;
     }
 
+    private void configureNested(Object bean, String keyPrefix, ReflectValued member, Configurable.Nested nested) {
+        String nestedPrefix = nested.prefix();
+
+        if(Strings.isEmpty(nestedPrefix)) {
+            nestedPrefix = Strings.lowerUnderscore(member.getName());
+            if(nestedPrefix.endsWith("_config")) {
+                nestedPrefix = Strings.removeEnd(nestedPrefix, "_config");
+            }
+        }
+
+        String fullKeyPrefix = keyPrefix(keyPrefix + nestedPrefix);
+        Object nestedBean    = member.getValue(bean);
+        BeanType nestedType;
+
+        if(null == nestedBean) {
+            nestedType = BeanType.of(member.getType());
+            nestedBean = nestedType.newInstance();
+            member.setValue(bean, nestedBean);
+        }else{
+            nestedType = BeanType.of(nestedBean.getClass());
+        }
+
+        configure(nestedBean, nestedType, fullKeyPrefix);
+    }
+
     public void configure(Object bean, BeanType bt, String keyPrefix) {
         keyPrefix = keyPrefix(keyPrefix);
 
@@ -83,28 +108,7 @@ public class BeanConfigurator {
         for(BeanProperty bp : bt.getProperties()){
             Configurable.Nested nested = bp.getAnnotation(Configurable.Nested.class);
             if(null != nested) {
-                String nestedPrefix = nested.prefix();
-
-                if(Strings.isEmpty(nestedPrefix)) {
-                    nestedPrefix = Strings.lowerUnderscore(bp.getName());
-                    if(nestedPrefix.endsWith("_config")) {
-                        nestedPrefix = Strings.removeEnd(nestedPrefix, "_config");
-                    }
-                }
-
-                String fullKeyPrefix = keyPrefix(keyPrefix + nestedPrefix);
-                Object nestedBean    = bp.getValue(bean);
-                BeanType nestedType;
-
-                if(null == nestedBean) {
-                    nestedType = BeanType.of(bp.getType());
-                    nestedBean = nestedType.newInstance();
-                    bp.setValue(bean, nestedBean);
-                }else{
-                    nestedType = BeanType.of(nestedBean.getClass());
-                }
-
-                configure(nestedBean, nestedType, fullKeyPrefix);
+                configureNested(bean, keyPrefix, bp, nested);
                 continue;
             }
 
@@ -143,6 +147,12 @@ public class BeanConfigurator {
                 continue;
             }
 
+            Configurable.Nested nested = field.getAnnotation(Configurable.Nested.class);
+            if(null != nested) {
+                configureNested(bean, keyPrefix, field, nested);
+                continue;
+            }
+
             ConfigProperty a = field.getAnnotation(ConfigProperty.class);
             if(null == a) {
                 continue;
@@ -157,6 +167,12 @@ public class BeanConfigurator {
             }
 
             if(m.getParameters().length == 1) {
+                Configurable.Nested nested = m.getAnnotation(Configurable.Nested.class);
+                if(null != nested) {
+                    configureNested(bean, keyPrefix, new MethodReflectValued(bean, m), nested);
+                    continue;
+                }
+
                 ConfigProperty a = m.getAnnotation(ConfigProperty.class);
                 if(null != a) {
                     doBeanConfigure(bean, new MethodReflectValued(bean, m), keyPrefix, a);

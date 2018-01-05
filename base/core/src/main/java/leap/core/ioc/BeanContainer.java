@@ -142,8 +142,13 @@ public class BeanContainer implements BeanFactory {
         this.xmlBeanDefinitionLoader.load(resources);
         return this;
     }
-	
-	@Override
+
+    @Override
+    public void configure(Object bean, String prefix) {
+        beanConfigurator.configure(bean, BeanType.of(bean.getClass()), prefix);
+    }
+
+    @Override
     public <T> T inject(T bean) throws BeanException {
 		try {
             BeanDefinitionBase bd = createBeanDefinition(bean.getClass());
@@ -742,7 +747,21 @@ public class BeanContainer implements BeanFactory {
 	    return beans;
     }
 
-	@Override
+    @Override
+    public <T> Map<T, BeanDefinition> createBeansWithDefinition(Class<? super T> type) {
+        Set<BeanDefinitionBase> typeSet = bds.beanTypeDefinitions.get(type);
+        Map<T, BeanDefinition> beans = new LinkedHashMap<>();
+
+        if(null != typeSet) {
+            for (BeanDefinitionBase bd : typeSet) {
+                beans.put((T) doCreateBean(bd), bd);
+            }
+        }
+
+        return beans;
+    }
+
+    @Override
     public boolean isSingleton(String beanId) throws NoSuchBeanException{
 		BeanDefinition bd = findBeanDefinition(beanId);
 		if(null == bd){

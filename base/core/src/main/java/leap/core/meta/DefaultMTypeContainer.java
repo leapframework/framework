@@ -112,6 +112,11 @@ public class DefaultMTypeContainer extends AbstractMTypeContainerCreator impleme
     }
 
     @Override
+    public MComplexType getCreatedComplexType(Class type) {
+        return complexTypes.get(type);
+    }
+
+    @Override
     public boolean isComplexTypeCreatingOrCreated(Class type) {
         return creatingComplexTypes.containsKey(type) || complexTypes.containsKey(type);
     }

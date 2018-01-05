@@ -39,6 +39,11 @@ public interface BeanFactory extends BeanFactoryBase, AppContextInitializable {
 	 */
 	AppConfig getAppConfig();
 
+    /**
+     * Configures the bean with the config key prefix.
+     */
+    void configure(Object bean, String prefix);
+
 	/**
 	 * Injects a not managed bean.
 	 * 
@@ -249,6 +254,11 @@ public interface BeanFactory extends BeanFactoryBase, AppContextInitializable {
 	 * The value of returned {@link Map} is the definition of bean.
 	 */
 	<T> Map<T,BeanDefinition> getBeansWithDefinition(Class<? super T> type) throws BeanException;
+
+    /**
+     * todo:
+     */
+    <T> Map<T,BeanDefinition> createBeansWithDefinition(Class<? super T> type);
 
     /**
      * Try init the bean (create instance) if not inited.

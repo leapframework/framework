@@ -221,6 +221,10 @@ public class DefaultBeanValidator implements BeanValidator {
 		List<ValidatedProperty> vps = new ArrayList<>();
 		
 		for(BeanProperty bp : bt.getProperties()){
+            if(!bp.isReadable()) {
+                continue;
+            }
+
 			Valid valid = bp.getAnnotation(Valid.class);
             if(null != valid && !valid.value()) {
                 continue;
