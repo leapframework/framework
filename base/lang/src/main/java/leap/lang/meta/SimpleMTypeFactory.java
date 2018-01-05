@@ -112,6 +112,16 @@ public class SimpleMTypeFactory extends AbstractMTypeFactory implements MTypeFac
             }
         }
 
+        MComplexType ct = context.getCreatedComplexType(type);
+        if(null != ct) {
+            return ct;
+        }
+
+        String creating = context.getCreatingComplexType(type);
+        if(null != creating) {
+            return new MComplexTypeRef(creating);
+        }
+
 		return createComplexType(context, type, root);
 	}
 

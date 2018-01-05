@@ -142,8 +142,13 @@ public class BeanContainer implements BeanFactory {
         this.xmlBeanDefinitionLoader.load(resources);
         return this;
     }
-	
-	@Override
+
+    @Override
+    public void configure(Object bean, String prefix) {
+        beanConfigurator.configure(bean, BeanType.of(bean.getClass()), prefix);
+    }
+
+    @Override
     public <T> T inject(T bean) throws BeanException {
 		try {
             BeanDefinitionBase bd = createBeanDefinition(bean.getClass());
