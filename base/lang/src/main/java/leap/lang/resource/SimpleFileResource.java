@@ -108,7 +108,7 @@ class SimpleFileResource extends AbstractResource implements FileResource {
     @Override
 	public SimpleFileResource createRelative(String relativePath) {
 		String pathToUse = Paths.normalize(Paths.applyRelative(this.path1, relativePath));
-		return new SimpleFileResource(pathToUse,relativePath);
+		return new SimpleFileResource(pathToUse);
 	}
 
 	@Override
