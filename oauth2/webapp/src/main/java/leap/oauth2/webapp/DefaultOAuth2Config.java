@@ -24,6 +24,7 @@ import leap.lang.Strings;
 import leap.lang.net.Urls;
 import leap.lang.path.AntPathPattern;
 import leap.lang.path.Paths;
+import leap.oauth2.webapp.token.at.AccessToken;
 import leap.oauth2.webapp.user.UserDetailsLookup;
 import leap.web.App;
 import leap.web.AppInitializable;
