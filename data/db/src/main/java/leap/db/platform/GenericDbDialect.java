@@ -180,7 +180,13 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 	@Override
     public String qualifySchemaObjectName(DbSchemaObjectName schemaObjectName) {
 		Args.notNull(schemaObjectName,"schema object name");
-	    return qualifySchemaObjectName(schemaObjectName.getCatalog(), schemaObjectName.getSchema(), schemaObjectName.getName());
+
+        String name = schemaObjectName.getName();
+        if(schemaObjectName.isQuoted()) {
+            name = quoteSchemaObjectName(name);
+        }
+
+	    return qualifySchemaObjectName(schemaObjectName.getCatalog(), schemaObjectName.getSchema(), name);
     }
 	
 	@Override
@@ -1306,7 +1312,11 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
         }
         
         return definition.toString();
-    }    
+    }
+
+    protected String quoteSchemaObjectName(String name) {
+        return getIdentifierQuoteString() + name + getIdentifierQuoteString();
+    }
 	
 	protected String doQuoteIdentifier(String identifier){
 		return getOpenQuoteString() + caseQuotedIdentifier(identifier) + getCloseQuoteString();
