@@ -91,7 +91,7 @@ class OkTHttpRequest extends THttpRequestBase<OkTHttpClient> {
                         response.getContentLength());
 
                 MimeType contentType = response.getContentType();
-                if(null != contentType && ContentTypes.isText(contentType.toString())) {
+                if(null != contentType && ContentTypes.isText(contentType.getMediaType())) {
                     log.debug("Content -> \n{}", Strings.abbreviate(response.getContent(), 200));
                 }
             }
