@@ -57,6 +57,7 @@
     <bean name="bcrypt" type="leap.core.security.crypto.PasswordEncoder" class="leap.core.security.crypto.bcrypt.BCryptPasswordEncoder" primary="true"/>
 
     <!-- validations -->
+    <init class="leap.core.validation.MPropertyConfigurator"/>
     <bean type="leap.core.validation.ValidationManager" class="leap.core.validation.DefaultValidationManager" primary="true"/>
     <bean type="leap.core.validation.BeanValidator" 	class="leap.core.validation.DefaultBeanValidator" primary="true"/>
 

@@ -6,8 +6,17 @@ import leap.lang.beans.BeanProperty;
 import leap.lang.meta.annotation.*;
 
 import java.lang.annotation.Annotation;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.BiConsumer;
 
 public abstract class AbstractMTypeFactory implements MTypeFactory {
+
+    protected static List<BiConsumer<BeanProperty,MPropertyBuilder>> propertyConfigurators = new CopyOnWriteArrayList<>();
+
+    public static void addPropertyConfigurator(BiConsumer<BeanProperty, MPropertyBuilder> c) {
+        propertyConfigurators.add(c);
+    }
 
     protected final void configureProperty(BeanProperty bp, MPropertyBuilder mp) {
 
@@ -65,7 +74,7 @@ public abstract class AbstractMTypeFactory implements MTypeFactory {
             mp.setUpdatable(updatable.value());
         }
 
-
+        propertyConfigurators.forEach(func -> func.accept(bp, mp));
     }
 
 }

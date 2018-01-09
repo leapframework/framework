@@ -27,7 +27,12 @@ public class MVoidType extends MType {
 	    super(summary, description);
     }
 
-	@Override
+    @Override
+    public String getName() {
+        return "void";
+    }
+
+    @Override
 	public MTypeKind getTypeKind() {
 		return MTypeKind.VOID;
 	}

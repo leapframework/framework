@@ -33,7 +33,12 @@ public class MCollectionType extends MType {
 	    this.elementType = elementType;
     }
 
-	@Override
+    @Override
+    public String getName() {
+        return elementType.getName() + "[]";
+    }
+
+    @Override
 	public MTypeKind getTypeKind() {
 		return MTypeKind.COLLECTION;
 	}

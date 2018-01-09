@@ -26,7 +26,12 @@ public class MUnresolvedTypeRef extends MTypeRef {
 	    super(summary, description, refTypeName, refTypeQName);
     }
 
-	@Override
+    @Override
+    public String getName() {
+        return refTypeName;
+    }
+
+    @Override
 	public MTypeKind getRefTypeKind() {
 		return MTypeKind.UNRESOLVED;
 	}

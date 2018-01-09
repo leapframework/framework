@@ -16,7 +16,9 @@
 package leap.lang.meta;
 
 
-public abstract class MType extends ImmutableMDescribed {
+import leap.lang.Named;
+
+public abstract class MType extends ImmutableMDescribed implements Named {
 
 	public MType(String summary, String description) {
 	    super(summary, description);
@@ -53,11 +55,18 @@ public abstract class MType extends ImmutableMDescribed {
 	}
 	
 	/**
-	 * Returns <code>true</cod> if this type is a complex type.
+	 * Returns <code>true</code> if this type is a complex type.
 	 */
 	public boolean isComplexType(){
 		return getTypeKind() == MTypeKind.COMPLEX;
 	}
+
+    /**
+     * Returns <code>true</code> if this type is a complex type of reference to a complex type.
+     */
+    public boolean isComplexTypeOrRef() {
+        return isComplexType() || (isTypeRef() && asTypeRef().getRefTypeKind() == MTypeKind.COMPLEX);
+    }
 
     /**
 	 * Returns <code>true</code> if this type is a reference type.
@@ -111,5 +120,10 @@ public abstract class MType extends ImmutableMDescribed {
      */
     public final MDictionaryType asDictionaryType() {
         return (MDictionaryType)this;
+    }
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName() + "(" + getName() + ")";
     }
 }
