@@ -41,4 +41,16 @@ public class DefaultAccessTokenFetcher extends DefaultCodeVerifier implements Ac
                 .addFormParam("grant_type", "client_credentials");
         return fetchAccessToken(request);
     }
+
+    @Override
+    public AccessToken fetchTokenByPassword(String clientId, String clientSecret, String username, String password) {
+        if(null == config.getTokenUrl()) {
+            throw new IllegalStateException("The tokenUrl must be configured");
+        }
+        HttpRequest request = client.request(config.getTokenUrl())
+                .addFormParam("grant_type", "password")
+                .addFormParam("username",username)
+                .addFormParam("password",password);
+        return fetchAccessToken(request);
+    }
 }
