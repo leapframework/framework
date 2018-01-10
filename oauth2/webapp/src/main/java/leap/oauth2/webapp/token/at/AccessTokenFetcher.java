@@ -23,4 +23,6 @@ package leap.oauth2.webapp.token.at;
  */
 public interface AccessTokenFetcher {
     AccessToken fetchTokenByClientCredentials(String clientId, String clientSecret);
+
+    AccessToken fetchTokenByPassword(String clientId, String clientSecret, String username, String password);
 }

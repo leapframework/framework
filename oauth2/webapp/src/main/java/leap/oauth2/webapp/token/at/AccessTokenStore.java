@@ -29,6 +29,8 @@ public interface AccessTokenStore {
     
     AccessToken loadAccessTokenByClientCredentials(String clientId, String clientSecret);
     
+    AccessToken loadAccessTokenByPassword(String clientId, String clientSecret, String username, String password);
+    
     AccessToken refreshAccessToken(AccessToken old);
     
 }

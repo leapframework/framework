@@ -64,18 +64,43 @@ public class DefaultAccessTokenStore implements AccessTokenStore {
     @Override
     public AccessToken loadAccessTokenByClientCredentials(String clientId, String clientSecret) {
         String key = clientId+":"+clientSecret;
-        AccessToken token = accessTokenPool.get(key);
+        AccessToken token = getAccessToken(key);
         if(token == null){
             token = fetcher.fetchTokenByClientCredentials(clientId,clientSecret);
-            accessTokenPool.put(key,token);
+            saveAccessToken(key,token);
         }
         if(token.isExpired()){
             token = refreshAccessToken(token);
-            accessTokenPool.put(key,token);
+            saveAccessToken(key,token);
         }
         return token;
     }
 
+    @Override
+    public AccessToken loadAccessTokenByPassword(String clientId, String clientSecret, String username,
+                                                 String password) {
+        String key = username+":"+password+":"+clientId+":"+password;
+        AccessToken token = getAccessToken(key);
+        if(token == null){
+            token = fetcher.fetchTokenByPassword(clientId,clientSecret,username,password);
+            saveAccessToken(key,token);
+        }
+        if(token.isExpired()){
+            token = refreshAccessToken(token);
+            saveAccessToken(key,token);
+        }
+        return token;
+    }
+
+    protected AccessToken getAccessToken(String key){
+        AccessToken token = accessTokenPool.get(key);
+        return token;
+    }
+    
+    protected void saveAccessToken(String key, AccessToken accessToken){
+        accessTokenPool.put(key,accessToken);
+    }
+    
     @Override
     public AccessToken refreshAccessToken(AccessToken old) {
         AccessToken theNew = refresher.refreshAccessToken(old);
