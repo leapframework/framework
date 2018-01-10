@@ -37,6 +37,11 @@ public abstract class ScriptOperationProvider extends CrudOperation {
             arg.setName(p.getName());
             arg.setRequired(p.getRequired());
 
+            //validators
+            if(null != p.getValidators() && !p.getValidators().isEmpty())  {
+                p.getValidators().forEach(arg::addValidator);
+            }
+
             //type
             resolveArgumentType(route, p, arg);
 

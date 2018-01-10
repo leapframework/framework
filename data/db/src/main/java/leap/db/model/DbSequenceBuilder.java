@@ -25,6 +25,7 @@ public class DbSequenceBuilder implements Buildable<DbSequence>,JsonParsable {
 	protected String  catalog;
 	protected String  schema;
 	protected String  name;
+    protected boolean quoted;
 	protected Long    minValue;
 	protected Long    maxValue;
 	protected Integer increment;
@@ -67,7 +68,15 @@ public class DbSequenceBuilder implements Buildable<DbSequence>,JsonParsable {
 		return this;
 	}
 
-	public Long getMinValue() {
+    public boolean isQuoted() {
+        return quoted;
+    }
+
+    public void setQuoted(boolean quoted) {
+        this.quoted = quoted;
+    }
+
+    public Long getMinValue() {
 		return minValue;
 	}
 
@@ -123,7 +132,7 @@ public class DbSequenceBuilder implements Buildable<DbSequence>,JsonParsable {
 
 	@Override
 	public DbSequence build() {
-		return new DbSequence(catalog, schema, name, minValue, maxValue, increment, start, cache, cycle);
+		return new DbSequence(catalog, schema, name, quoted, minValue, maxValue, increment, start, cache, cycle);
 	}
 
 	@Override
@@ -132,6 +141,7 @@ public class DbSequenceBuilder implements Buildable<DbSequence>,JsonParsable {
 		this.catalog   = o.getString("catalog");
 		this.schema    = o.getString("schema");
 		this.name      = o.getString("name");
+        this.quoted    = o.getBoolean("quoted", false);
 		this.minValue  = o.getLong("minValue");
 		this.maxValue  = o.getLong("maxValue");
 		this.increment = o.getInteger("increment");

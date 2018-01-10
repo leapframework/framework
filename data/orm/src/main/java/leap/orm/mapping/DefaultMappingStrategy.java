@@ -399,7 +399,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
     }
 
     @Override
-    public EntityMappingBuilder createEntityMappingByClass(MetadataContext context, Class<?> cls) {
+    public EntityMappingBuilder createEntityMappingByClass(MetadataContext context, Class<?> cls, boolean allowEmptyFields) {
 		Args.notNull(cls,"class");
 		Args.assertFalse(isExplicitNonEntity(context,cls),
 						  "The class '" + cls.getName() + "' was declared as not an entity type explicitly");
@@ -419,7 +419,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 		finalMappingEntity(context, emb);
 
 		//fields must be defined
-		if(emb.getFieldMappings().isEmpty()){
+		if(!allowEmptyFields && emb.getFieldMappings().isEmpty()){
 			throw new MetadataException("Entity's fields must not be empty in the java type '" + cls.getName() + "'");
 		}
 

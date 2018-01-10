@@ -91,7 +91,14 @@ public interface MappingStrategy {
 	/**
 	 * Returns a new {@link EntityMappingBuilder} holds all the mapping info mapped from a <code>class</code> to an entity type and the underlying db table.
 	 */
-	EntityMappingBuilder createEntityMappingByClass(MetadataContext context, Class<?> entityType) throws MetadataException;
+	default EntityMappingBuilder createEntityMappingByClass(MetadataContext context, Class<?> entityType) throws MetadataException {
+        return createEntityMappingByClass(context, entityType, false);
+    }
+
+    /**
+     * Returns a new {@link EntityMappingBuilder} holds all the mapping info mapped from a <code>class</code> to an entity type and the underlying db table.
+     */
+    EntityMappingBuilder createEntityMappingByClass(MetadataContext context, Class<?> entityType, boolean allowEmptyFields) throws MetadataException;
 	
     /**
      * Returns a new {@link EntityMappingBuilder} holds all the mapping info mapped from a <code>table</code> to an entity.

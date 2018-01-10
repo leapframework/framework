@@ -15,16 +15,16 @@
  */
 package leap.lang.json;
 
-import java.io.Reader;
-import java.lang.reflect.Array;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import leap.lang.New;
 import leap.lang.convert.ConvertContext;
 import leap.lang.convert.Converts;
+
+import java.io.Reader;
+import java.lang.reflect.Array;
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class JSON {
 	
@@ -251,5 +251,26 @@ public class JSON {
     public static <T> T[] decodeArray(Reader json, Class<T> componentType){
         T[] a = (T[])Array.newInstance(componentType, 0);
         return (T[])Converts.convert(parse(json).asArray(), a.getClass(), null, convertContext);
+    }
+
+    /**
+     * Converts the decoded json value to the given type.
+     */
+    public static <T> T convert(Object json, Class<T> type) {
+        return Converts.convert(json, type, convertContext);
+    }
+
+    /**
+     * Converts the decoded json value to the given type.
+     */
+    public static <T> T convert(Object json, Class<T> type, Type genericType) {
+        return Converts.convert(json, type, genericType, convertContext);
+    }
+
+    /**
+     * Returns the missing properties exists in map but not exists in the given type.
+     */
+    public static Set<String> checkMissingProperties(Class<?> type, Map map) {
+        return JsonDecoder.checkMissingProperties(type, map);
     }
 }

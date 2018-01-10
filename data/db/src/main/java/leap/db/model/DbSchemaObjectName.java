@@ -20,9 +20,10 @@ import leap.lang.json.JsonStringable;
 import leap.lang.json.JsonWriter;
 
 public class DbSchemaObjectName extends DbSchemaObject implements JsonStringable {
-	
-	protected final String qualifiedName;
-	
+
+    protected final boolean quoted;
+	protected final String  qualifiedName;
+
 	public DbSchemaObjectName(String name) {
 		this(null, null, name);
 	}
@@ -32,12 +33,20 @@ public class DbSchemaObjectName extends DbSchemaObject implements JsonStringable
     }
 
 	public DbSchemaObjectName(String catalog, String schema, String name) {
-		super(catalog,schema,name);
-		
-		this.qualifiedName = Strings.join(new String[]{catalog,schema,name},".",true);
+        this(catalog, schema, name, false);
     }
-	
-	public String getQualifiedName(){
+
+    public DbSchemaObjectName(String catalog, String schema, String name, boolean quoted) {
+        super(catalog,schema,name);
+        this.quoted        = quoted;
+        this.qualifiedName = Strings.join(new String[]{catalog,schema,name},".",true);
+    }
+
+    public boolean isQuoted() {
+        return quoted;
+    }
+
+    public String getQualifiedName(){
 		return qualifiedName;
 	}
 	
@@ -59,5 +68,9 @@ public class DbSchemaObjectName extends DbSchemaObject implements JsonStringable
 		writer.propertyOptional("catalog", catalog)
 		      .propertyOptional("schema", schema)
 		      .property("name", name);
+
+        if(quoted) {
+            writer.property("quoted", true);
+        }
 	}
 }

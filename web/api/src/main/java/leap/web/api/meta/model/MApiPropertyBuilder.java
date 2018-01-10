@@ -143,12 +143,20 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
         this.discriminator = discriminator;
     }
 
+    public boolean isReadonly() {
+        return (null != readOnly && readOnly) || ((null != creatable && !creatable) && (null != updatable && !updatable));
+    }
+
     public Boolean getReadOnly() {
         return readOnly;
     }
 
     public void setReadOnly(Boolean readOnly) {
         this.readOnly = readOnly;
+    }
+
+    public boolean isCreatetable() {
+        return null != creatable && creatable;
     }
 
     public Boolean getCreatable() {
@@ -159,12 +167,20 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
         this.creatable = creatable;
     }
 
+    public boolean isUpdatable() {
+        return null != updatable && updatable;
+    }
+
     public Boolean getUpdatable() {
         return updatable;
     }
 
     public void setUpdatable(Boolean updatable) {
         this.updatable = updatable;
+    }
+
+    public boolean isSortable() {
+        return null != sortable && sortable;
     }
 
     public Boolean getSortable() {
@@ -175,12 +191,20 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
         this.sortable = sortable;
     }
 
+    public boolean isFilterable() {
+        return null != filterable && filterable;
+    }
+
     public Boolean getFilterable() {
         return filterable;
     }
 
     public void setFilterable(Boolean filterable) {
         this.filterable = filterable;
+    }
+
+    public boolean isExpandable() {
+        return null != expandable && expandable;
     }
 
     /**

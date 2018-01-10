@@ -27,9 +27,9 @@ public class DbSequence extends DbSchemaObjectName implements JsonStringable {
 	protected final Integer cache;
 	protected final Boolean cycle;
 
-	public DbSequence(String catalog, String schema, String name,
+	public DbSequence(String catalog, String schema, String name, boolean quoted,
 					  Long minValue,Long maxValue, Integer increment, Long start, Integer cache, Boolean cycle) {
-	    super(catalog, schema, name);
+	    super(catalog, schema, name, quoted);
 	    
 	    this.minValue  = minValue;
 	    this.maxValue  = maxValue;
@@ -111,7 +111,7 @@ public class DbSequence extends DbSchemaObjectName implements JsonStringable {
 	    writer.startObject();
 
 	    writeName(writer);
-	    
+
 	    writer.propertyOptional("minValue", minValue)
 	    	  .propertyOptional("maxValue", maxValue)
 	    	  .propertyOptional("increment",increment)

@@ -15,7 +15,13 @@
  */
 package leap.lang.json;
 
+import leap.lang.Types;
+import leap.lang.beans.BeanProperty;
+import leap.lang.beans.BeanType;
+
 import java.io.Reader;
+import java.lang.reflect.Type;
+import java.util.*;
 
 class JsonDecoder {
     
@@ -29,5 +35,66 @@ class JsonDecoder {
     
     public Object decode(Reader reader){
         return new JsonParser(JsonParser.MODE_PERMISSIVE).parse(reader);
+    }
+
+    static Set<String> checkMissingProperties(Class<?> type, Map map) {
+        Set<String> set = new LinkedHashSet<>();
+
+        doCheckMissingProperties(set, "", type, null, map);
+
+        return set;
+    }
+
+    static void doCheckMissingProperties(Set<String> set, String prefix, Class<?> type, Type genericType, Map map) {
+        if(null == map || map.isEmpty()) {
+            return;
+        }
+
+        if(Map.class.isAssignableFrom(type)) {
+            if(null == genericType) {
+                return;
+            }
+
+            Class<?> valueType = Types.getActualTypeArguments(genericType)[1];
+            map.forEach((k, v) -> {
+                if(v instanceof Map) {
+                    String name = k.toString();
+
+                    doCheckMissingProperties(set, prefix + name + ".", valueType, null, (Map)v);
+                }
+            });
+        }else {
+            BeanType bt = BeanType.of(type);
+
+            map.forEach((k, v) -> {
+                if(null == v) {
+                    return;
+                }
+
+                String name = k.toString();
+
+                BeanProperty bp = bt.tryGetProperty(name);
+                if(bp == null) {
+                    set.add(prefix + name);
+                }else if(v instanceof Map) {
+                    doCheckMissingProperties(set, prefix + name + ".", bp.getType(), bp.getGenericType(), (Map)v);
+                }else if(v instanceof List) {
+                    List list = (List)v;
+                    if(list.isEmpty()) {
+                        return;
+                    }
+
+                    Class<?> elementType = bp.getElementType();
+                    for(int i=0;i< list.size();i++) {
+                        Object item = list.get(i);
+                        if(item instanceof Map) {
+                            String itemName = name + "[" + i + "]";
+                            doCheckMissingProperties(set, prefix + itemName + ".", elementType, null, (Map)item);
+                        }
+                    }
+                }
+            });
+        }
+
     }
 }
