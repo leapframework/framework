@@ -48,6 +48,10 @@ public abstract class ExtensibleBase implements Extensible {
         return (T)extensions.remove(type);
     }
 
+    public Map<Class<?>, Object> getExtensions() {
+        return extensions;
+    }
+
     protected final void putExtensions(Map<Class<?>, Object> extensions) {
         if(null != extensions) {
             this.extensions.putAll(extensions);

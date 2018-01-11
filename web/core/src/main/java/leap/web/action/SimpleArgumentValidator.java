@@ -27,6 +27,10 @@ public class SimpleArgumentValidator implements ArgumentValidator {
         this.validator = validator;
     }
 
+    public Validator getValidator() {
+        return validator;
+    }
+
     @Override
     public boolean validate(Validation validation, Argument arg, Object value, Out<Object> out) {
         if(validation.validate(arg.getName(), value, validator).hasErrors()){
