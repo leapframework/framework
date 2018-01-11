@@ -25,12 +25,14 @@ public interface ArgumentValidator {
      */
     @Deprecated
     default boolean validate(Validation validation, Argument arg, Object value) {
-        return validate(validation, arg, value, Out.empty());
+        return true;
     }
 
     /**
      * Returns <code>true</code> if validate success!
      */
-    boolean validate(Validation validation, Argument arg, Object value, Out<Object> out);
+    default boolean validate(Validation validation, Argument arg, Object value, Out<Object> out) {
+        return validate(validation, arg, value);
+    }
 
 }
