@@ -42,7 +42,8 @@ public abstract class RestdOperationBase {
     protected @Inject Apis                    apis;
     protected @Inject ValidationManager       validationManager;
     protected @Inject ApiFailureHandler       failureHandler;
-    protected @Inject RestdOperationSupport[] supports;
+    protected @Inject RestdOperationSupport[] operationSupports;
+    protected @Inject RestdArgumentSupport[]  argumentSupports;
 
     protected boolean isOperationExists(RestdContext context, RouteBuilder route) {
         for(ApiRoute ar : context.getApiConfig().getApiRoutes()) {
@@ -57,7 +58,7 @@ public abstract class RestdOperationBase {
             }
         }
 
-        for(RestdOperationSupport support : supports) {
+        for(RestdOperationSupport support : operationSupports) {
             if(support.isOperationExists(context, route)) {
                 if(null == route.getEnabled()) {
                     route.setEnabled(false);
@@ -84,11 +85,11 @@ public abstract class RestdOperationBase {
         return basePath.equals("/") ? path : basePath + path;
     }
 
-    protected ArgumentBuilder addArgument(FuncActionBuilder action, Class<?> type, String name) {
-        return addArgument(action, type, name, null);
+    protected ArgumentBuilder addArgument(RestdContext context, FuncActionBuilder action, Class<?> type, String name) {
+        return addArgument(context, action, type, name, null);
     }
 
-    protected ArgumentBuilder addArgument(FuncActionBuilder action, Class<?> type, String name, Boolean required) {
+    protected ArgumentBuilder addArgument(RestdContext context, FuncActionBuilder action, Class<?> type, String name, Boolean required) {
         ArgumentBuilder a = new ArgumentBuilder();
 
         a.setName(name);
@@ -103,6 +104,10 @@ public abstract class RestdOperationBase {
                     a.addWrappedArgument(wrapped);
                 }
             }
+        }
+
+        for(RestdArgumentSupport vs : argumentSupports) {
+            vs.processArgument(context, a);
         }
 
         action.addArgument(a);

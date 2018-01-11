@@ -16,12 +16,21 @@
 package leap.web.action;
 
 import leap.core.validation.Validation;
+import leap.lang.Out;
 
 public interface ArgumentValidator {
 
     /**
+     * @deprecated  use {@link #validate(Validation, Argument, Object, Out)} instead.
+     */
+    @Deprecated
+    default boolean validate(Validation validation, Argument arg, Object value) {
+        return validate(validation, arg, value, Out.empty());
+    }
+
+    /**
      * Returns <code>true</code> if validate success!
      */
-    boolean validate(Validation validation, Argument arg, Object value);
+    boolean validate(Validation validation, Argument arg, Object value, Out<Object> out);
 
 }

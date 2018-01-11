@@ -61,8 +61,8 @@ public class FindOperation extends CrudOperation implements RestdProcessor {
         action.setName(Strings.lowerCamel("find", model.getName()));
         action.setFunction(new FindFunction(context.getApi(), dao, model));
 
-        addIdArgument(action, model);
-        addArgument(action, QueryOptionsBase.class, "options");
+        addIdArgument(context, action, model);
+        addArgument(context, action, QueryOptionsBase.class, "options");
         addModelResponse(action, model);
 
         configure(context, model, action);

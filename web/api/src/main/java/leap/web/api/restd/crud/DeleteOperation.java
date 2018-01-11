@@ -61,8 +61,8 @@ public class DeleteOperation extends CrudOperation implements RestdProcessor {
         action.setName(Strings.lowerCamel("delete", model.getName()));
         action.setFunction(new DeleteFunction(context.getApi(), dao, model));
 
-        addIdArgument(action, model);
-        addArgument(action, DeleteOptions.class, "options");
+        addIdArgument(context, action, model);
+        addArgument(context, action, DeleteOptions.class, "options");
         addNoContentResponse(action, model);
 
         configure(context, model, action);

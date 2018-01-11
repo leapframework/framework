@@ -62,7 +62,7 @@ public class QueryOperation extends CrudOperation implements RestdProcessor {
         action.setName(Strings.lowerCamel("query", model.getName()));
         action.setFunction(new QueryFunction(context.getApi(), dao, model));
 
-        addArgument(action, QueryOptions.class, "options");
+        addArgument(context, action, QueryOptions.class, "options");
         addModelQueryResponse(action, model);
 
         configure(context, model, action);

@@ -348,10 +348,14 @@ public class DefaultActionManager implements ActionManager {
                 }
 
 				ArgumentValidator[] validators = argument.getValidators();
+                Out<Object> out = new Out<>();
 				for(int j=0;j<validators.length;j++){
 					ArgumentValidator v = validators[j];
-                    if(!v.validate(validation, argument, value)) {
+                    if(!v.validate(validation, argument, value, out)) {
                         break;
+                    }
+                    if(out.isPresent()) {
+                        value = out.get();
                     }
 				}
 				

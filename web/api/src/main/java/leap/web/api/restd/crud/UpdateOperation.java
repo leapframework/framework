@@ -64,8 +64,8 @@ public class UpdateOperation extends CrudOperation implements RestdProcessor {
 
         action.setName(Strings.lowerCamel("update", model.getName()));
         action.setFunction(new UpdateFunction(context.getApi(), dao, model));
-        addIdArgument(action, model);
-        addModelArgument(action, model);
+        addIdArgument(context, action, model);
+        addModelArgumentForUpdate(context, action, model);
         addNoContentResponse(action, model);
 
         configure(context, model, action);

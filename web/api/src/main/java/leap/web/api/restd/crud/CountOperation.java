@@ -63,7 +63,7 @@ public class CountOperation extends CrudOperation implements RestdProcessor {
         action.setName(Strings.lowerCamel("count", model.getName()));
         action.setFunction(new CountFunction(context.getApi(), dao, model));
 
-        addArgument(action, CountOptions.class, "options");
+        addArgument(context, action, CountOptions.class, "options");
         addModelCountResponse(action, model);
 
         configure(context, model, action);

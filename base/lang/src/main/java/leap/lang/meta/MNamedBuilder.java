@@ -49,4 +49,9 @@ public abstract class MNamedBuilder<T extends MObject> implements Buildable<T>, 
             this.title = title;
         }
     }
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName() + "(" + getName() + ")";
+    }
 }

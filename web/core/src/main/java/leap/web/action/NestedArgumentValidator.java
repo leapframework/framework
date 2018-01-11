@@ -17,6 +17,7 @@ package leap.web.action;
 
 import leap.core.validation.Validation;
 import leap.lang.Enumerables;
+import leap.lang.Out;
 import leap.lang.TypeInfo;
 import leap.core.validation.Valid;
 
@@ -36,7 +37,7 @@ public class NestedArgumentValidator implements ArgumentValidator {
     }
 
     @Override
-    public boolean validate(Validation validation, Argument arg, Object value) {
+    public boolean validate(Validation validation, Argument arg, Object value, Out<Object> out) {
         if(required && !validation.stateRequired(arg.getName(), value)) {
             return false;
         }
