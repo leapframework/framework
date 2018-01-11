@@ -183,6 +183,14 @@ public class BeanConfigurator {
         done.clear();
     }
 
+    protected String key(String prefix, String key) {
+        if(Strings.isEmpty(key) || key.equals(".")) {
+            return Strings.removeEnd(prefix, ".");
+        }else{
+            return prefix + key;
+        }
+    }
+
     protected void doBeanConfigure(Object bean, ReflectValued v, String keyPrefix, ConfigProperty a) {
 
         String defaultValue = null == a ? null : a.defaultValue();
@@ -195,7 +203,7 @@ public class BeanConfigurator {
 
             if(keys.length > 0) {
                 for(String key : keys) {
-                    if(doBeanConfigureByKey(bean, v, keyPrefix + key, defaultValue)) {
+                    if(doBeanConfigureByKey(bean, v, key(keyPrefix, key), defaultValue)) {
                         break;
                     }
                 }
