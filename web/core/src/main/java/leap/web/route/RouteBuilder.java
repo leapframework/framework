@@ -115,9 +115,8 @@ public class RouteBuilder extends ExtensibleBase implements RouteBase, Buildable
 		return action;
 	}
 
-	public RouteBuilder setAction(Action action) {
+	public void setAction(Action action) {
 		this.action = action;
-		return this;
 	}
 
 	public Integer getSuccessStatus() {

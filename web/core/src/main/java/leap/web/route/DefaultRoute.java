@@ -33,7 +33,6 @@ class DefaultRoute extends ExtensibleBase implements Sourced, Route {
 	protected final Object		 		source;
 	protected final String 		 		method;
 	protected final PathTemplate 		pathTemplate;
-	protected final Action		 		action;
 	protected final RequestFormat		requestFormat;
 	protected final ResponseFormat		responseFormat;
 	protected final View		 		defaultView;
@@ -44,6 +43,7 @@ class DefaultRoute extends ExtensibleBase implements Sourced, Route {
 	protected final Map<String, String> requiredParameters;
 
     protected boolean  enabled;
+    protected Action   action;
     protected Integer  successStatus;
     protected Boolean  corsEnabled;
     protected Boolean  csrfEnabled;
@@ -146,8 +146,14 @@ class DefaultRoute extends ExtensibleBase implements Sourced, Route {
     public Action getAction() {
 		return action;
 	}
-	
-	@Override
+
+    @Override
+    public void setAction(Action action) {
+        Args.notNull(action);
+        this.action = action;
+    }
+
+    @Override
     public FailureHandler[] getFailureHandlers() {
 	    return failureHandlers;
     }

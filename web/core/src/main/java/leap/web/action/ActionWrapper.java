@@ -148,4 +148,9 @@ public class ActionWrapper implements Action {
     public boolean isAnnotationPresent(Class<? extends Annotation> annotationType) {
         return action.isAnnotationPresent(annotationType);
     }
+
+    @Override
+    public String toString() {
+        return action.toString();
+    }
 }
