@@ -50,7 +50,7 @@ public interface HttpRequest {
     }
 
     /**
-     * Encodes the json value Sets the json content
+     * Encodes the json value to string and set body.
      */
     default HttpRequest json(Object o) {
         return setJson(JSON.encode(o, JsonSettings.MIN));
@@ -111,7 +111,7 @@ public interface HttpRequest {
     }
 
     /**
-     * Sets the json content type and body.
+     * Sets the encoded json as body.
      */
     default HttpRequest setJson(String json) {
         setContentType(ContentTypes.APPLICATION_JSON_UTF8);
