@@ -32,7 +32,7 @@ public class DefaultRestResource extends AbstractRestResource {
 		String op="";
 		HttpRequest request=httpClient.request(buildOperationPath(op))
 				.ajax()
-				.json(JSON.encode(obj, JsonSettings.MIN))
+				.setJson(JSON.encode(obj, JsonSettings.MIN))
 				.setMethod(Method.POST);
 		T val= send(entityClass, request, getAccessToken());
 		return val;
@@ -59,7 +59,7 @@ public class DefaultRestResource extends AbstractRestResource {
 
 		HttpRequest request=httpClient.request(buildOperationPath(op))
 				.ajax()
-				.json(JSON.encode(partial, JsonSettings.MIN))
+				.setJson(JSON.encode(partial, JsonSettings.MIN))
 				.setMethod(Method.PATCH);
 		send(null, request, getAccessToken());
 	}

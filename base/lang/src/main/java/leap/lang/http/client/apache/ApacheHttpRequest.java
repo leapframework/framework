@@ -159,7 +159,7 @@ public class ApacheHttpRequest implements HttpRequest {
     }
 
     @Override
-    public void send(HttpHandler handler) {
+    public void sendAsync(HttpHandler handler) {
         String url = buildRequestUrl();
         try {
             newRequest(url);

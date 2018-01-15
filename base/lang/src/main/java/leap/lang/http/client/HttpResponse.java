@@ -19,6 +19,8 @@ import leap.lang.Arrays2;
 import leap.lang.http.HTTP;
 import leap.lang.http.MimeType;
 import leap.lang.http.exception.HttpIOException;
+import leap.lang.json.JSON;
+import leap.lang.json.JsonValue;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,6 +42,13 @@ public interface HttpResponse {
      */
     default boolean isOk() {
         return getStatus() == HTTP.SC_OK;
+    }
+
+    /**
+     * Returns <code>true</code> if the response status is 2xx.
+     */
+    default boolean isSuccess() {
+        return is2xx();
     }
 
     /**
@@ -127,6 +136,13 @@ public interface HttpResponse {
     default String getCharset() {
         MimeType contentType = getContentType();
         return null == contentType ? null : contentType.getCharset();
+    }
+
+    /**
+     * Returns the response body as decoded json value.
+     */
+    default Object json() throws HttpIOException {
+        return JSON.decode(getString());
     }
     
     /**

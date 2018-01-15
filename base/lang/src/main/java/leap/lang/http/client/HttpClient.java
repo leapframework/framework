@@ -16,6 +16,7 @@
 package leap.lang.http.client;
 
 import leap.lang.Charsets;
+import leap.lang.path.Paths;
 
 import java.nio.charset.Charset;
 
@@ -41,5 +42,12 @@ public interface HttpClient {
      * Creates a new http request of the given url.
      */
     HttpRequest request(String url);
+
+    /**
+     * Creates a new http request of the given base url and relative path.
+     */
+    default HttpRequest request(String baseUrl, String path) {
+        return request(Paths.suffixWithoutSlash(baseUrl) + Paths.prefixWithSlash(path));
+    }
     
 }
