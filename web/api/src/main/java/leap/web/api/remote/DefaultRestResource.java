@@ -14,6 +14,7 @@ import leap.lang.json.JSON;
 import leap.lang.json.JsonSettings;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.oauth2.webapp.token.at.AccessToken;
 import leap.web.api.mvc.params.CountOptions;
 import leap.web.api.mvc.params.DeleteOptions;
 import leap.web.api.mvc.params.QueryOptions;
@@ -26,6 +27,20 @@ public class DefaultRestResource extends AbstractRestResource {
 	private String endpoint;
 
 	private RestOrmContext ormContext;
+
+	private AccessToken at;
+
+	@Override
+	protected AccessToken getAccessToken() {
+		if(at!=null){
+			return at;
+		}
+		return super.getAccessToken();
+	};
+
+	public void setAccessToken(AccessToken token){
+		this.at=token;
+	}
 
 	@Override
 	public <T> T insert(Class<T> entityClass, Object obj) {
