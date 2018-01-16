@@ -88,6 +88,20 @@ public interface HttpResponse {
      * @see HttpURLConnection#getResponseCode()
      */
     int getStatus();
+
+    /**
+     * Same as {@link #getHeader(String)}.
+     */
+    default String header(String name){
+        return getHeader(name);
+    }
+
+    /**
+     * Same as {@link #getHeaderValues(String)}
+     */
+    default String[] headers(String name) {
+        return getHeaderValues(name);
+    }
     
     /**
      * Returns the first header value of the name.
@@ -143,6 +157,13 @@ public interface HttpResponse {
      */
     default Object json() throws HttpIOException {
         return JSON.decode(getString());
+    }
+
+    /**
+     * Sames as {@link #getString()}.
+     */
+    default String body() {
+        return getString();
     }
     
     /**
