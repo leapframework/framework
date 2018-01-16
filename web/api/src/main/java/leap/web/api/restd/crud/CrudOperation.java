@@ -232,8 +232,4 @@ public abstract class CrudOperation extends RestdOperationBase implements RestdP
         return p;
     }
 
-    protected void configure(RestdContext context, RestdModel model, FuncActionBuilder action) {
-        action.setExtension(new MApiTag[]{new MApiTag(model.getName())});
-    }
-
 }

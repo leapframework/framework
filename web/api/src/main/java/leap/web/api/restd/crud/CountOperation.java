@@ -26,7 +26,6 @@ import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.ApiResponse;
 import leap.web.api.mvc.params.CountOptions;
-import leap.web.api.mvc.params.QueryOptions;
 import leap.web.api.orm.ModelExecutorContext;
 import leap.web.api.orm.ModelQueryExecutor;
 import leap.web.api.orm.QueryListResult;
@@ -66,11 +65,11 @@ public class CountOperation extends CrudOperation implements RestdProcessor {
         addArgument(context, action, CountOptions.class, "options");
         addModelCountResponse(action, model);
 
-        configure(context, model, action);
+        preConfigure(context, model, action);
         route.setAction(action.build());
         setCrudOperation(route, "count");
+        postConfigure(context, model, route);
 
-        configure(context, model, route);
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 

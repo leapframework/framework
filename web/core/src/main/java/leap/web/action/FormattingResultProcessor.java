@@ -31,12 +31,12 @@ import leap.web.view.View;
 
 public class FormattingResultProcessor extends AbstractResultProcessor implements ResultProcessor {
 
-	protected final App    			 app;
-	protected final FormatManager	 formatManager;
-	protected final Action 			 action;
-	protected final View   		     view;
-	protected final ResponseFormat[] annotatedFormats;
-	protected final ResponseFormat[] supportedFormats;
+	protected final App                           app;
+	protected final FormatManager                 formatManager;
+	protected final Action                        action;
+	protected final View                          view;
+	protected final ResponseFormat[]              specifiedFormats;
+	protected final ResponseFormat[]              supportedFormats;
     protected final FormattingResultInterceptor[] interceptors;
 
 	public FormattingResultProcessor(App app, RouteBuilder route) {
@@ -44,7 +44,7 @@ public class FormattingResultProcessor extends AbstractResultProcessor implement
 		this.formatManager    = app.factory().getBean(FormatManager.class);
 		this.action           = route.getAction();
 		this.view             = null != route.getDefaultView() ? route.getDefaultView() : null;
-		this.annotatedFormats = getAnnotatedFormats(); 
+		this.specifiedFormats = getSpecifiedFormats();
 		this.supportedFormats = getSupportedFormats();
         this.interceptors     = app.factory().getBeans(FormattingResultInterceptor.class).toArray(new FormattingResultInterceptor[0]);
 	}
@@ -102,7 +102,7 @@ public class FormattingResultProcessor extends AbstractResultProcessor implement
     }
 
 	protected boolean hasAnnotatedFormats() {
-		return null != annotatedFormats && annotatedFormats.length > 0;
+		return null != specifiedFormats && specifiedFormats.length > 0;
 	}
 
     protected ResponseFormat resolveResponseFormatOrDefault(ActionContext context) throws Throwable {
@@ -122,15 +122,15 @@ public class FormattingResultProcessor extends AbstractResultProcessor implement
 		}
 		
 		//Check is acceptable format
-		if(null != format && null != annotatedFormats){
-			if(!Arrays2.contains(annotatedFormats, format)){
+		if(null != format && null != specifiedFormats){
+			if(!Arrays2.contains(specifiedFormats, format)){
 				throw new FormatNotAcceptableException("The response format '" + format.getName() + "' not acceptable by action '" + action + "'");
 			}
 			return format;
 		}
 		
 		//Select an annotated format.
-		if(null == format && null != annotatedFormats){
+		if(null == format && null != specifiedFormats){
 			format = selectAnnotatedFormat(context);
 		}
 
@@ -140,9 +140,9 @@ public class FormattingResultProcessor extends AbstractResultProcessor implement
 	
 	protected ResponseFormat selectAnnotatedFormat(ActionContext context) throws Throwable {
 		if(hasAnnotatedFormats()){
-			ResponseFormat fmt = formatManager.selectResponseFormat(context.getRequest(), annotatedFormats);
+			ResponseFormat fmt = formatManager.selectResponseFormat(context.getRequest(), specifiedFormats);
 			if(null == fmt){
-				fmt = annotatedFormats[0];
+				fmt = specifiedFormats[0];
 			}
 			return fmt;
 		}else{
@@ -150,10 +150,15 @@ public class FormattingResultProcessor extends AbstractResultProcessor implement
 		}
 	}
 	
-	protected ResponseFormat[] getAnnotatedFormats() {
+	protected ResponseFormat[] getSpecifiedFormats() {
+        ResponseFormat[] formats = action.getProduces();
+        if(null != formats & formats.length > 0) {
+            return formats;
+        }
+
 		Produces produces = action.searchAnnotation(Produces.class);
 		if(null != produces){
-			ResponseFormat[] formats = new ResponseFormat[produces.value().length];
+			formats = new ResponseFormat[produces.value().length];
 			
 			for(int i=0;i<formats.length;i++){
 				formats[i] = formatManager.getResponseFormat(produces.value()[i]);

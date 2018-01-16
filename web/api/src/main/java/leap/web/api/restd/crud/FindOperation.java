@@ -21,12 +21,10 @@ import leap.orm.dao.Dao;
 import leap.web.action.ActionParams;
 import leap.web.action.FuncActionBuilder;
 import leap.web.api.Api;
-import leap.web.api.config.ApiConfig;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.ApiResponse;
-import leap.web.api.mvc.params.DeleteOptions;
 import leap.web.api.mvc.params.QueryOptionsBase;
 import leap.web.api.orm.*;
 import leap.web.api.restd.RestdContext;
@@ -65,11 +63,11 @@ public class FindOperation extends CrudOperation implements RestdProcessor {
         addArgument(context, action, QueryOptionsBase.class, "options");
         addModelResponse(action, model);
 
-        configure(context, model, action);
+        preConfigure(context, model, action);
         route.setAction(action.build());
         setCrudOperation(route, "find");
 
-        configure(context, model, route);
+        postConfigure(context, model, route);
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 

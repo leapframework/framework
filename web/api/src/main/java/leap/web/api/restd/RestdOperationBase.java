@@ -30,8 +30,11 @@ import leap.web.api.Apis;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.config.model.RestdConfig;
 import leap.web.api.meta.model.MApiOperationBuilder;
+import leap.web.api.meta.model.MApiTag;
 import leap.web.api.mvc.ApiFailureHandler;
 import leap.web.api.route.ApiRoute;
+import leap.web.format.RequestFormat;
+import leap.web.format.ResponseFormat;
 import leap.web.route.Route;
 import leap.web.route.RouteBuilder;
 import leap.web.route.RouteManager;
@@ -44,6 +47,8 @@ public abstract class RestdOperationBase {
     protected @Inject ApiFailureHandler       failureHandler;
     protected @Inject RestdOperationSupport[] operationSupports;
     protected @Inject RestdArgumentSupport[]  argumentSupports;
+    protected @Inject RequestFormat[]         supportedConsumes;
+    protected @Inject ResponseFormat[]        supportedProduces;
 
     protected boolean isOperationExists(RestdContext context, RouteBuilder route) {
         for(ApiRoute ar : context.getApiConfig().getApiRoutes()) {
@@ -115,11 +120,39 @@ public abstract class RestdOperationBase {
         return a;
     }
 
-    protected void configure(RestdContext context, RestdModel model, RouteBuilder route) {
-        configure(context, model, route, null);
+    protected void preConfigure(RestdContext context, RestdModel model, FuncActionBuilder action) {
+        action.setExtension(new MApiTag[]{new MApiTag(model.getName())});
     }
 
-    protected void configure(RestdContext context, RestdModel model, RouteBuilder route, MApiOperationBuilder mo) {
+    protected void postConfigure(RestdContext context, RestdModel model, RouteBuilder route) {
+        postConfigure(context, model, route, null);
+    }
+
+    protected void preConfigure(RestdContext context, RouteBuilder route, FuncActionBuilder action, MApiOperationBuilder mo) {
+        if(null == mo) {
+            return;
+        }
+
+        for(String consume : mo.getConsumes()) {
+            for(RequestFormat format : supportedConsumes) {
+                if(null != format.getPrimaryMimeType() && format.getPrimaryMimeType().getMediaType().equalsIgnoreCase(consume)) {
+                    action.addConsume(format);
+                    break;
+                }
+            }
+        }
+
+        for(String produce : mo.getProduces()) {
+            for(ResponseFormat format : supportedProduces) {
+                if(null != format.getPrimaryMimeType() && format.getPrimaryMimeType().getMediaType().equalsIgnoreCase(produce)) {
+                    action.addProduce(format);
+                    break;
+                }
+            }
+        }
+    }
+
+    protected void postConfigure(RestdContext context, RestdModel model, RouteBuilder route, MApiOperationBuilder mo) {
         RestdConfig c = context.getConfig();
 
         if(null != model) {
