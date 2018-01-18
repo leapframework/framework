@@ -79,12 +79,7 @@ public class WebAppFilterStarter extends XmlConfigReaderBase implements ServletC
             };
             Map<String, String> params = New.hashMap();
             params.putAll(Servlets.getInitParamsMap(sc));
-            
-            try {
-                bootstrap.bootApplication(sc, params);
-            } catch (ServletException e) {
-                throw new RuntimeException(e);
-            }
+            bootstrap.contextInitialized(sce);
         }
     }
 

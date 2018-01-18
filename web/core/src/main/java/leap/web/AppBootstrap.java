@@ -118,7 +118,7 @@ public class AppBootstrap extends ServletContextInitializerBase implements Servl
 		return beanFactory;
 	}
 	
-	public final void bootApplication(final ServletContext sc,final Map<String,String> initParams) throws ServletException {
+	protected final void bootApplication(final ServletContext sc,final Map<String,String> initParams) throws ServletException {
 		try {
             this.servletContext = sc;
 
