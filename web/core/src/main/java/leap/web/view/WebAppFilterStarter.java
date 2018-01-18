@@ -21,17 +21,22 @@ package leap.web.view;
 import leap.core.AppConfig;
 import leap.core.AppConfigException;
 import leap.core.config.reader.XmlConfigReaderBase;
+import leap.lang.New;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.lang.servlet.Servlets;
 import leap.lang.xml.XML;
 import leap.lang.xml.XmlReader;
+import leap.web.AppBootstrap;
 import leap.web.AppFilter;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
 import javax.servlet.FilterRegistration;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import javax.servlet.ServletException;
 import javax.servlet.annotation.WebListener;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,6 +44,9 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
+
+import static leap.web.AppBootstrap.BOOTSTRAP_ATTR_NAME;
 
 /**
  * web listener, load filter when web app starting
@@ -48,59 +56,46 @@ import java.util.List;
 public class WebAppFilterStarter extends XmlConfigReaderBase implements ServletContextListener {
     private static final Log log = LogFactory.get(WebAppFilterStarter.class);
 
-    public static final String AUTO_LOAD_FILTER_ELEMENT = "auto-load-filter";
-    public static final String FILTER_CLASS_ELEMENT = "filter-class";
-    public static final String FILTER_NAME_ELEMENT = "filter-name";
-    public static final String FILTER_URL_PATTERN_ELEMENT = "url-pattern";
-    public static final String FILTER_MATCH_AFTER_ELEMENT = "match-after";
-    public static final String DEFAULT_FILTER_NAME = "app";
+    public static final String AUTO_LOAD_FILTER_PROPERTY                 = "auto-load-appfilter";
+    public static final String DEFAULT_APP_FILTER_NAME                   = "app";
+    public static final boolean DEFAULT_AUTO_LOAD_FILTER                 = false;
+    public static final String[] DEFAULT_APP_FILTER_URL_PATTERNS         = {"/*"};
+    public static final boolean DEFAULT_APP_FILTER_MATCH_AFTER           = false;
+    public static final Class<? extends Filter> DEFAULT_APP_FILTER_CLASS = AppFilter.class;
+    
+    
     @Override
     public void contextInitialized(ServletContextEvent sce) {
-        try (InputStream is = this.getClass().getResourceAsStream("/conf/config.xml");
-             InputStreamReader reader = new InputStreamReader(is, AppConfig.DEFAULT_CHARSET)){
-            XmlReader xml = XML.createReader(reader);
-            if (xml.nextToStartElement(AUTO_LOAD_FILTER_ELEMENT)){
-                String filterName = DEFAULT_FILTER_NAME;
-                Class<? extends Filter> filterClass = AppFilter.class;
-                boolean matchAfter = false;
-                List<String> urlPattern = new ArrayList<>();
-                while (xml.nextWhileNotEnd(AUTO_LOAD_FILTER_ELEMENT)){
-                    if(xml.isStartElement(FILTER_CLASS_ELEMENT)){
-                        Class<?> c = Class.forName(xml.getElementTextAndEnd());
-                        if(!Filter.class.isAssignableFrom(c)){
-                            throw new AppConfigException(Filter.class.getName() + " is not assignable form " + c.getName());
-                        }
-                        continue;
-                    }
-                    if(xml.isStartElement(FILTER_NAME_ELEMENT)){
-                        filterName = xml.getElementTextAndEnd();
-                        continue;
-                    }
-                    if(xml.isStartElement(FILTER_URL_PATTERN_ELEMENT)){
-                        urlPattern.add(xml.getElementTextAndEnd());
-                        continue;
-                    }
-                    if(xml.isStartElement(FILTER_MATCH_AFTER_ELEMENT)){
-                        matchAfter = Boolean.parseBoolean(xml.getElementTextAndEnd());
-                        continue;
-                    }
+        ServletContext sc = sce.getServletContext();
+        AppBootstrap bootstrap = AppBootstrap.tryGet(sc);
+
+        if(null == bootstrap) {
+            bootstrap = new AppBootstrap(){
+                @Override
+                protected void onAppConfigReady(AppConfig config, Map<String, String> initParams) {
+                    initDynamicFilter(sc, config,initParams);
+                    super.onAppConfigReady(config, initParams);
                 }
-                if(urlPattern.size() <= 0){
-                    urlPattern.add("/*");
-                }
-                FilterRegistration.Dynamic dynamic = sce.getServletContext().addFilter(filterName, filterClass);
-                dynamic.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST),matchAfter,urlPattern.toArray(new String[urlPattern.size()]));
-            }else {
-                log.debug(AUTO_LOAD_FILTER_ELEMENT+" has not found in classpath:/conf/config.xml, skip auto load Filter");
+            };
+            Map<String, String> params = New.hashMap();
+            params.putAll(Servlets.getInitParamsMap(sc));
+            
+            try {
+                bootstrap.bootApplication(sc, params);
+            } catch (ServletException e) {
+                throw new RuntimeException(e);
             }
-        } catch (IOException e) {
-            log.warn("read classpath:/conf/config.xml error, skip WebAppFilterStarter",e);
-        } catch (ClassNotFoundException e) {
-            log.error(e);
-            throw new RuntimeException(e);
         }
     }
 
+    private void initDynamicFilter(ServletContext sc, AppConfig config, Map<String, String> initParams){
+        boolean autoLoadFilter = config.getBooleanProperty(AUTO_LOAD_FILTER_PROPERTY,DEFAULT_AUTO_LOAD_FILTER);
+        if(autoLoadFilter){
+            FilterRegistration.Dynamic dynamic = sc.addFilter(DEFAULT_APP_FILTER_NAME, DEFAULT_APP_FILTER_CLASS);
+            dynamic.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST),DEFAULT_APP_FILTER_MATCH_AFTER,DEFAULT_APP_FILTER_URL_PATTERNS);
+        }
+    }
+    
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
 

@@ -266,7 +266,9 @@ public class App implements AttributeAccessor {
 		this.config         = config;
 		initConfig();
 	}
+
 	
+
 	@Internal
 	final void onBeanFactoryReady(BeanFactory factory){
 		this.factory = factory;
@@ -312,7 +314,6 @@ public class App implements AttributeAccessor {
 		this.listeners.addAll(factory.getBeans(AppListener.class));
 		this.endpoints = factory.getBeans(Endpoint.class).toArray(new Endpoint[]{});
 	}
-	
 	private void notifyAppConfigure() throws Throwable {
 		for(AppListener listener : listeners){
 			try {
