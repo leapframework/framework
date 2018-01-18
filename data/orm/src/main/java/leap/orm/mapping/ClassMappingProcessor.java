@@ -145,7 +145,7 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
     }
 
     protected void mappingListenerByAnnotation(MetadataContext context, EntityMappingBuilder emb, Entity.Listener a) {
-        EntityListenersBuilder listeners = emb.listeners;
+        EntityListenersBuilder listeners = emb.listeners();
 
         Class<?> type  = a.type();
         Object   inst  = factory.getOrCreateBean(type);

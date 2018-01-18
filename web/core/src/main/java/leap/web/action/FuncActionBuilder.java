@@ -20,7 +20,10 @@ import leap.lang.Assert;
 import leap.lang.Buildable;
 import leap.lang.Builders;
 import leap.lang.ExtensibleBase;
+import leap.lang.asm.tree.analysis.Frame;
 import leap.lang.exception.ObjectExistsException;
+import leap.web.format.RequestFormat;
+import leap.web.format.ResponseFormat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +34,8 @@ public class FuncActionBuilder extends ExtensibleBase implements Buildable<FuncA
     protected String                         name;
     protected Class<?>                       returnType;
     protected List<ArgumentBuilder>          arguments = new ArrayList<>();
+    protected List<RequestFormat>            consumes = new ArrayList<>();
+    protected List<ResponseFormat>           produces = new ArrayList<>();
     protected Function<ActionParams, Object> function;
 
     public String getName() {
@@ -66,6 +71,30 @@ public class FuncActionBuilder extends ExtensibleBase implements Buildable<FuncA
         return this;
     }
 
+    public List<RequestFormat> getConsumes() {
+        return consumes;
+    }
+
+    public void addConsume(RequestFormat format) {
+        consumes.add(format);
+    }
+
+    public void setConsumes(List<RequestFormat> consumes) {
+        this.consumes = consumes;
+    }
+
+    public List<ResponseFormat> getProduces() {
+        return produces;
+    }
+
+    public void addProduce(ResponseFormat format) {
+        produces.add(format);
+    }
+
+    public void setProduces(List<ResponseFormat> produces) {
+        this.produces = produces;
+    }
+
     public Function<ActionParams, Object> getFunction() {
         return function;
     }
@@ -76,8 +105,11 @@ public class FuncActionBuilder extends ExtensibleBase implements Buildable<FuncA
 
     @Override
     public FuncAction build() {
-        FuncAction action =
-                new FuncAction(name, returnType, Builders.buildArray(arguments,new Argument[arguments.size()]), function);
+        FuncAction action = new FuncAction(name, returnType,
+                                           Builders.buildArray(arguments,new Argument[arguments.size()]),
+                                           consumes.toArray(Action.EMPTY_CONSUMES),
+                                           produces.toArray(Action.EMPTY_PRODUCES),
+                                           function);
 
         extensions.forEach(action::setExtension);
 

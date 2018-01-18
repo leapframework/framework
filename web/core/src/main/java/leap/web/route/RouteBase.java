@@ -34,6 +34,11 @@ public interface RouteBase {
     Action getAction();
 
     /**
+     * Replaces the action.
+     */
+    void setAction(Action action);
+
+    /**
      * Return the controller of {@link Action} or <code>null</code> if no controller
      */
     default Object getController(){

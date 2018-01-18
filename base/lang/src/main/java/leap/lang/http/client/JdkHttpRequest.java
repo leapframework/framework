@@ -168,7 +168,7 @@ class JdkHttpRequest implements HttpRequest {
     }
 
     @Override
-    public void send(HttpHandler handler) {
+    public void sendAsync(HttpHandler handler) {
         String connUrl = initConnUrl();
 
         handler.beforeRequest(this);

@@ -23,7 +23,6 @@ import leap.orm.dao.Dao;
 import leap.web.action.ActionParams;
 import leap.web.action.FuncActionBuilder;
 import leap.web.api.Api;
-import leap.web.api.config.ApiConfig;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
@@ -64,15 +63,15 @@ public class UpdateOperation extends CrudOperation implements RestdProcessor {
 
         action.setName(Strings.lowerCamel("update", model.getName()));
         action.setFunction(new UpdateFunction(context.getApi(), dao, model));
-        addIdArgument(action, model);
-        addModelArgument(action, model);
+        addIdArgument(context, action, model);
+        addModelArgumentForUpdate(context, action, model);
         addNoContentResponse(action, model);
 
-        configure(context, model, action);
+        preConfigure(context, model, action);
         route.setAction(action.build());
         setCrudOperation(route, "update");
 
-        configure(context, model, route);
+        postConfigure(context, model, route);
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 

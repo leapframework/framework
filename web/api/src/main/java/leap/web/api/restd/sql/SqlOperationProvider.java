@@ -29,21 +29,16 @@ import leap.orm.dao.Dao;
 import leap.orm.query.Query;
 import leap.orm.sql.SqlCommand;
 import leap.orm.sql.SqlMetadata;
-import leap.web.ResponseEntity;
 import leap.web.action.ActionParams;
-import leap.web.action.ArgumentBuilder;
 import leap.web.action.FuncActionBuilder;
 import leap.web.api.config.ApiConfigException;
 import leap.web.api.meta.model.MApiOperationBuilder;
-import leap.web.api.meta.model.MApiParameter;
 import leap.web.api.meta.model.MApiParameterBuilder;
 import leap.web.api.meta.model.MApiResponseBuilder;
 import leap.web.api.mvc.ApiResponse;
 import leap.web.api.restd.*;
-import leap.web.api.restd.crud.CrudOperation;
 import leap.web.route.RouteBuilder;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -178,11 +173,12 @@ public class SqlOperationProvider extends ScriptOperationProvider implements Res
         action.setFunction(new SqlFunction(od.getScriptPath(), op.key, dao, sc, returnType));
 
         if(null != model) {
-            configure(ctx, model, action);
+            preConfigure(ctx, model, action);
         }
-        route.setAction(action.build());
 
-        configure(ctx, model, route, mo);
+        preConfigure(ctx, route, action, mo);
+        route.setAction(action.build());
+        postConfigure(ctx, model, route, mo);
 
         if (!od.isExplicitPrior() && isOperationExists(ctx, route)) {
             if(!od.isExplicitNotPrior()) {

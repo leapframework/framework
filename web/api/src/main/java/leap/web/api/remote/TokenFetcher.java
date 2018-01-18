@@ -21,7 +21,7 @@ public class TokenFetcher extends DefaultCodeVerifier {
 	protected TokenExtractor tokenExtractor;
 
 	//客户端At到当前应用自身的Token映射
-	final static Cache<String, AccessToken> tokenMappings = CacheBuilder.newBuilder()
+	final static Cache<String, MappedAccessToken> tokenMappings = CacheBuilder.newBuilder()
 					.maximumSize(5000)
 					.expireAfterWrite(10, TimeUnit.HOURS).build();
 
@@ -39,11 +39,12 @@ public class TokenFetcher extends DefaultCodeVerifier {
 		return at;
 	}
 
-	private AccessToken mapToSelfToken(String clientAt){
-		AccessToken token=tokenMappings.getIfPresent(clientAt);
+	private MappedAccessToken mapToSelfToken(String clientAt){
+		MappedAccessToken token=tokenMappings.getIfPresent(clientAt);
 		if(token!=null){
 			if(token.isExpired()){
-				token=refreshAccessToken(token);
+				AccessToken at=refreshAccessToken(token);
+				token=new MappedAccessToken(clientAt, at);
 				tokenMappings.put(clientAt, token);
 			}
 			return token;
@@ -56,16 +57,17 @@ public class TokenFetcher extends DefaultCodeVerifier {
 	}
 
 
-	public AccessToken newAccessToken(String at) {
+	public MappedAccessToken newAccessToken(String token) {
 		if (null == config.getTokenUrl()) {
 			throw new IllegalStateException("The tokenUrl must be configured");
 		}
 
 		HttpRequest request = httpClient.request(config.getTokenUrl())
-				.addFormParam("grant_type", "token_client_credentials").addFormParam("access_token", at)
+				.addFormParam("grant_type", "token_client_credentials").addFormParam("access_token", token)
 				.setMethod(HTTP.Method.POST);
 
-		return fetchAccessToken(request);
+		AccessToken accessToken= fetchAccessToken(request);
+		return new MappedAccessToken(token, accessToken);
 	}
 
 	public AccessToken refreshAccessToken(AccessToken old) {
@@ -76,7 +78,13 @@ public class TokenFetcher extends DefaultCodeVerifier {
 		HttpRequest request = httpClient.request(config.getTokenUrl()).addFormParam("grant_type", "refresh_token")
 				.addFormParam("refresh_token", old.getRefreshToken()).setMethod(HTTP.Method.POST);
 
-		return fetchAccessToken(request);
+		AccessToken newAt= fetchAccessToken(request);
+		if(old instanceof MappedAccessToken){
+			MappedAccessToken mapped=new MappedAccessToken(((MappedAccessToken)old).getRawToken(), newAt);
+			tokenMappings.put(mapped.getRawToken(), mapped);
+			newAt=mapped;
+		}
+		return newAt;
 	}
 
 }

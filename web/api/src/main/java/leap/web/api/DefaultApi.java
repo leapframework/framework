@@ -1,12 +1,13 @@
 package leap.web.api;
 
+import leap.lang.ExtensibleBase;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.meta.ApiMetadata;
 
 import java.util.function.Consumer;
 
-public class DefaultApi implements Api {
+public class DefaultApi extends ExtensibleBase implements Api {
 
     protected final Consumer<Api>   creator;
     protected final ApiConfigurator configurator;

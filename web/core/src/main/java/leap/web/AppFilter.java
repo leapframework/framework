@@ -101,7 +101,15 @@ public class AppFilter implements Filter {
 
 	@Override
     public void doFilter(ServletRequest req, ServletResponse resp, final FilterChain chain) throws IOException, ServletException {
-        final RequestWrapper requestWrapper = new RequestWrapper((HttpServletRequest)req);
+        HttpServletRequest httpReq = (HttpServletRequest)req;
+        for(String ignoredPath : app.ignoredPaths()) {
+            if(httpReq.getRequestURI().startsWith(ignoredPath)) {
+                chain.doFilter(req, resp);
+                return;
+            }
+        }
+
+        final RequestWrapper requestWrapper = req instanceof RequestWrapper ? (RequestWrapper)req : new RequestWrapper(httpReq);
 
 		final DefaultResponse response = createResponse((HttpServletResponse)resp);
 		final DefaultRequest  request  = createRequest(requestWrapper, response);

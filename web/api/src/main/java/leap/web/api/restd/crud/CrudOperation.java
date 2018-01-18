@@ -23,17 +23,13 @@ import leap.lang.meta.MComplexTypeRef;
 import leap.lang.meta.MSimpleTypes;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
-import leap.web.App;
 import leap.web.action.Argument;
 import leap.web.action.ArgumentBuilder;
 import leap.web.action.FuncActionBuilder;
 import leap.web.api.meta.model.*;
 import leap.web.api.mvc.ApiResponse;
 import leap.web.api.orm.ModelExecutorFactory;
-import leap.web.api.restd.RestdContext;
-import leap.web.api.restd.RestdModel;
-import leap.web.api.restd.RestdOperationBase;
-import leap.web.api.restd.RestdProcessor;
+import leap.web.api.restd.*;
 import leap.web.route.RouteBuilder;
 
 import java.util.Map;
@@ -55,16 +51,36 @@ public abstract class CrudOperation extends RestdOperationBase implements RestdP
         setApiExtension(route, "crud", operation);
     }
 
-    protected ArgumentBuilder addModelArgument(FuncActionBuilder action,RestdModel model) {
+    protected ArgumentBuilder addModelArgumentForCreate(RestdContext context, FuncActionBuilder action, RestdModel model) {
         ArgumentBuilder a = newModelArgument(model);
+
+        for(RestdArgumentSupport vs : argumentSupports) {
+            vs.processModelArgumentForCreate(context, model, a);
+        }
 
         action.addArgument(a);
 
         return a;
     }
 
-    protected ArgumentBuilder addIdArgument(FuncActionBuilder action,RestdModel model) {
+    protected ArgumentBuilder addModelArgumentForUpdate(RestdContext context, FuncActionBuilder action, RestdModel model) {
+        ArgumentBuilder a = newModelArgument(model);
+
+        for(RestdArgumentSupport vs : argumentSupports) {
+            vs.processModelArgumentForUpdate(context, model, a);
+        }
+
+        action.addArgument(a);
+
+        return a;
+    }
+
+    protected ArgumentBuilder addIdArgument(RestdContext context, FuncActionBuilder action,RestdModel model) {
         ArgumentBuilder a = newIdArgument(model);
+
+        for(RestdArgumentSupport vs : argumentSupports) {
+            vs.processIdArgument(context, model, a);
+        }
 
         action.addArgument(a);
 
@@ -214,10 +230,6 @@ public abstract class CrudOperation extends RestdOperationBase implements RestdP
         p.setType(id.getDataType());
 
         return p;
-    }
-
-    protected void configure(RestdContext context, RestdModel model, FuncActionBuilder action) {
-        action.setExtension(new MApiTag[]{new MApiTag(model.getName())});
     }
 
 }

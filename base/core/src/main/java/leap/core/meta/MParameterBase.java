@@ -43,7 +43,7 @@ public abstract class MParameterBase extends ImmutableMNamedWithDesc {
 	
 	@Override
     public String toString() {
-		return "Paramster[name=" + name + ", type=" + type + "]"; 
+		return "Parameter[name=" + name + ", type=" + type + "]";
 	}
 
 	public static class Builder extends ImmutableMNamedWithDesc.Builder {

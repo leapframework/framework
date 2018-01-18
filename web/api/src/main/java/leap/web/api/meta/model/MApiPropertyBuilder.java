@@ -143,7 +143,7 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
         this.discriminator = discriminator;
     }
 
-    public boolean isReadonly() {
+    public boolean isReadOnly() {
         return (null != readOnly && readOnly) || ((null != creatable && !creatable) && (null != updatable && !updatable));
     }
 

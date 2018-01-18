@@ -60,6 +60,10 @@ public abstract class MApiParameterBaseBuilder<T extends MApiParameterBase> exte
         this.password = password;
     }
 
+    public boolean isRequired() {
+        return null != required && required;
+    }
+
     public Boolean getRequired() {
 		return required;
 	}

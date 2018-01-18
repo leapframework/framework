@@ -24,6 +24,11 @@ import leap.web.action.Argument;
 import java.io.IOException;
 
 public interface RequestFormat extends Named {
+
+    /**
+     * Returns the primary mime type of this format.
+     */
+    MimeType getPrimaryMimeType();
 	
 	/**
 	 * Returns <code>true</code> if this format supports the given action.

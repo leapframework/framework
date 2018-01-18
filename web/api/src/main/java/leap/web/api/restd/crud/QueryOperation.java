@@ -21,14 +21,11 @@ import leap.orm.dao.Dao;
 import leap.web.action.ActionParams;
 import leap.web.action.FuncActionBuilder;
 import leap.web.api.Api;
-import leap.web.api.config.ApiConfig;
-import leap.web.api.config.ApiConfigException;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.ApiResponse;
 import leap.web.api.mvc.params.QueryOptions;
-import leap.web.api.mvc.params.QueryOptionsBase;
 import leap.web.api.orm.*;
 import leap.web.api.restd.RestdContext;
 import leap.web.api.restd.RestdModel;
@@ -62,14 +59,14 @@ public class QueryOperation extends CrudOperation implements RestdProcessor {
         action.setName(Strings.lowerCamel("query", model.getName()));
         action.setFunction(new QueryFunction(context.getApi(), dao, model));
 
-        addArgument(action, QueryOptions.class, "options");
+        addArgument(context, action, QueryOptions.class, "options");
         addModelQueryResponse(action, model);
 
-        configure(context, model, action);
+        preConfigure(context, model, action);
         route.setAction(action.build());
         setCrudOperation(route, "query");
 
-        configure(context, model, route);
+        postConfigure(context, model, route);
 
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }

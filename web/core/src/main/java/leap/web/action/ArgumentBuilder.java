@@ -95,6 +95,28 @@ public class ArgumentBuilder extends ExtensibleBase implements Buildable<Argumen
         this.resolveValidators(validationManager);
 	}
 
+    public ArgumentBuilder(Argument a) {
+        this.name         = a.getName();
+        this.declaredName = a.getDeclaredName();
+        this.parameter    = a.getParameter();
+        this.type         = a.getType();
+        this.genericType  = a.getGenericType();
+        this.typeInfo     = a.getTypeInfo();
+        this.beanProperty = a.getBeanProperty();
+        this.required     = a.getRequired();
+        this.location     = a.getLocation();
+        this.annotations  = a.getAnnotations();
+        this.binder       = a.getBinder();
+
+        Collections2.addAll(this.validators, a.getValidators());
+
+        for(Argument wrappedArgument : a.getWrappedArguments()) {
+            this.addWrappedArgument(new ArgumentBuilder(wrappedArgument));
+        }
+
+        this.extensions.putAll(a.getExtensions());
+    }
+
 	public String getName() {
 		return name;
 	}

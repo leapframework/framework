@@ -15,6 +15,7 @@ import leap.lang.Strings;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.path.Paths;
+import leap.oauth2.webapp.token.at.AccessToken;
 import leap.orm.Orm;
 import leap.orm.OrmContext;
 import leap.orm.enums.RemoteType;
@@ -28,6 +29,7 @@ public class RestResourceBuilder {
 	private static String localIP;
 	private String endpoint;
 	private EntityMapping entityMapping;
+	private AccessToken accessToken;
 
 	public static RestResourceBuilder newBuilder(){
 		return new RestResourceBuilder();
@@ -35,6 +37,9 @@ public class RestResourceBuilder {
 
 	public RestResource build(){
 		DefaultRestResource res=AppContext.factory().inject(new DefaultRestResource());
+		if(accessToken!=null){
+			res.setAccessToken(accessToken);
+		}
 		if(entityMapping!=null){
 			RestDatasourceManager manager=getDataSourceManager();
 			RestDataSource ds=manager.tryGetDataSource(entityMapping.getRemoteSettings().getDataSource());
@@ -147,6 +152,15 @@ public class RestResourceBuilder {
 		}
 		EntityMapping em =orm.getMetadata().getEntityMapping(cls);
 		setEntityMapping(em);
+		return this;
+	}
+
+	public AccessToken getAccessToken() {
+		return accessToken;
+	}
+
+	public RestResourceBuilder setAccessToken(AccessToken accessToken) {
+		this.accessToken = accessToken;
 		return this;
 	}
 

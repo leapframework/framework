@@ -91,7 +91,7 @@ public class DefaultActionManager implements ActionManager {
     	eas.resultProcessor = getResultProcessor(route);
     	
     	//prepare formats
-    	eas.annotatedFormats = getAnnotatedFormats(route);
+    	eas.annotatedFormats = getSpecifiedFormats(route);
     	eas.supportedFormats = getSupportedFormats(route);
         eas.interceptors     = new ActionInterceptors(interceptors, route.getAction());
     }
@@ -348,10 +348,14 @@ public class DefaultActionManager implements ActionManager {
                 }
 
 				ArgumentValidator[] validators = argument.getValidators();
+                Out<Object> out = new Out<>();
 				for(int j=0;j<validators.length;j++){
 					ArgumentValidator v = validators[j];
-                    if(!v.validate(validation, argument, value)) {
+                    if(!v.validate(validation, argument, value, out)) {
                         break;
+                    }
+                    if(out.isPresent()) {
+                        value = out.get();
                     }
 				}
 				
@@ -557,13 +561,18 @@ public class DefaultActionManager implements ActionManager {
 		}
 	}
 	
-	protected RequestFormat[] getAnnotatedFormats(RouteBuilder route) {
+	protected RequestFormat[] getSpecifiedFormats(RouteBuilder route) {
 		Action action = route.getAction();
+        RequestFormat[] formats = action.getConsumes();
+        if(null != formats && formats.length > 0) {
+            return formats;
+        }
+
 		Consumes consumes = action.searchAnnotation(Consumes.class);
 		if(null == consumes){
 			return null;
 		}
-		RequestFormat[] formats = new RequestFormat[consumes.value().length];
+		formats = new RequestFormat[consumes.value().length];
 		for(int i=0;i<formats.length;i++){
 			String name = consumes.value()[i];
 			formats[i] = formatManager.tryGetRequestFormat(name);

@@ -17,6 +17,7 @@ package leap.web.action;
 
 import leap.core.validation.Validation;
 import leap.core.validation.Validator;
+import leap.lang.Out;
 
 public class SimpleArgumentValidator implements ArgumentValidator {
 
@@ -26,8 +27,12 @@ public class SimpleArgumentValidator implements ArgumentValidator {
         this.validator = validator;
     }
 
+    public Validator getValidator() {
+        return validator;
+    }
+
     @Override
-    public boolean validate(Validation validation, Argument arg, Object value) {
+    public boolean validate(Validation validation, Argument arg, Object value, Out<Object> out) {
         if(validation.validate(arg.getName(), value, validator).hasErrors()){
             return false;
         }

@@ -66,14 +66,14 @@ public class CreateOperation extends CrudOperation implements RestdProcessor {
 
         action.setName(Strings.lowerCamel("create", model.getName()));
         action.setFunction(new CreateFunction(context.getApi(), dao, model));
-        addModelArgument(action, model);
+        addModelArgumentForCreate(context, action, model);
         addModelResponse(action, model).setStatus(201);
 
-        configure(context, model, action);
+        preConfigure(context, model, action);
         route.setAction(action.build());
         setCrudOperation(route, "create");
 
-        configure(context, model, route);
+        postConfigure(context, model, route);
 
         if(isOperationExists(context, route)) {
             return;

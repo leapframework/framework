@@ -209,6 +209,11 @@ public interface NestedRoute extends Route {
     }
 
     @Override
+    default void setAction(Action action) {
+        //do nothing.
+    }
+
+    @Override
     default Object getController() {
         return null;
     }

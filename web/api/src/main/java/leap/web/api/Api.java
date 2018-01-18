@@ -1,11 +1,12 @@
 package leap.web.api;
 
+import leap.lang.Extensible;
 import leap.lang.Named;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.meta.ApiMetadata;
 
-public interface Api extends Named {
+public interface Api extends Named, Extensible {
 
     /**
      * Returns the base path of api.

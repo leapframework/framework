@@ -423,7 +423,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
     }
 
     public EntityListenersBuilder listeners() {
-        return listeners();
+        return listeners;
     }
 
     private String entity() {

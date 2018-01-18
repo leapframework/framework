@@ -20,7 +20,6 @@ import leap.web.api.Api;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.meta.ApiMetadata;
-import leap.web.route.Route;
 
 public class DefaultDynaApi implements DynaApi {
 
@@ -28,6 +27,21 @@ public class DefaultDynaApi implements DynaApi {
 
     public DefaultDynaApi(Api api) {
         this.api = api;
+    }
+
+    @Override
+    public <T> void setExtension(Class<T> type, Object extension) {
+        api.setExtension(type, extension);
+    }
+
+    @Override
+    public <T> T removeExtension(Class<?> type) {
+        return api.removeExtension(type);
+    }
+
+    @Override
+    public <T> T getExtension(Class<?> type) {
+        return api.getExtension(type);
     }
 
     @Override
