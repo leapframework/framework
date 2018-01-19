@@ -19,16 +19,33 @@
 package leap.orm.tested.model.keyword;
 
 import leap.orm.annotation.Column;
+import leap.orm.model.Model;
 import leap.orm.tested.model.base.EntityBase;
 
 /**
- * Created by kael on 2017/3/6.
+ * @author kael
  */
-public class KeyWordModel extends EntityBase {
+public class KeyWordModel extends Model {
+
+    @Column("id")
+    private Integer id;
+
     @Column("table")
     private String table;
+
     @Column("type")
     private String type;
+
+    @Column("when")
+    private String when;
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
     public String getTable() {
         return table;
@@ -44,5 +61,13 @@ public class KeyWordModel extends EntityBase {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getWhen() {
+        return when;
+    }
+
+    public void setWhen(String when) {
+        this.when = when;
     }
 }

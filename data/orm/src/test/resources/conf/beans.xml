@@ -9,7 +9,7 @@
         <property name="maxActive" 		 value="10"/>
         <property name="maxWait" 		 value="10000"/>
     </bean>    
-    
+
     <bean name="derby" type="javax.sql.DataSource" class="leap.db.cp.PooledDataSource">
         <property name="driverClassName" value="org.apache.derby.jdbc.EmbeddedDriver" />
         <property name="jdbcUrl"         value="jdbc:derby:target/derby/test;create=true" />

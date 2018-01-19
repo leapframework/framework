@@ -28,12 +28,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 class SqlSelectParser extends SqlQueryParser {
 	
-	protected static final Set<Token>  SELECT_ITEM_KEYWORDS = new HashSet<Token>();
-	
+	protected static final Set<Token> SELECT_KEYWORDS = new HashSet<Token>();
 	static {
-		SELECT_ITEM_KEYWORDS.add(Token.ORDER);
-		SELECT_ITEM_KEYWORDS.add(Token.GROUP);
-		SELECT_ITEM_KEYWORDS.add(Token.LIMIT);
+		SELECT_KEYWORDS.add(Token.ORDER);
+		SELECT_KEYWORDS.add(Token.GROUP);
+        SELECT_KEYWORDS.add(Token.LIMIT);
+        SELECT_KEYWORDS.add(Token.WHEN);
 	}
 
 	public SqlSelectParser(SqlParser parent) {
@@ -247,7 +247,7 @@ class SqlSelectParser extends SqlQueryParser {
 				}
 			}
 			expect(Token.RPAREN).acceptText();
-		}else if(lexer.isIdentifier() || (lexer.isKeyword() && SELECT_ITEM_KEYWORDS.contains(lexer.token()))){
+		}else if(lexer.isIdentifier() || (lexer.isKeyword() && SELECT_KEYWORDS.contains(lexer.token()))){
             parseNameExpr();
 		}else{
 			new SqlExprParser(this).parseExpr();

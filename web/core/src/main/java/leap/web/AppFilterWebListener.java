@@ -1,34 +1,27 @@
 /*
+ * Copyright 2018 the original author or authors.
  *
- *  * Copyright 2013 the original author or authors.
- *  *
- *  * Licensed under the Apache License, Version 2.0 (the "License");
- *  * you may not use this file except in compliance with the License.
- *  * You may obtain a copy of the License at
- *  *
- *  *      http://www.apache.org/licenses/LICENSE-2.0
- *  *
- *  * Unless required by applicable law or agreed to in writing, software
- *  * distributed under the License is distributed on an "AS IS" BASIS,
- *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  * See the License for the specific language governing permissions and
- *  * limitations under the License.
- *  
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
-package leap.web.view;
+package leap.web;
 
 import leap.core.AppConfig;
-import leap.core.AppConfigException;
 import leap.core.config.reader.XmlConfigReaderBase;
 import leap.lang.New;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.servlet.Servlets;
-import leap.lang.xml.XML;
-import leap.lang.xml.XmlReader;
-import leap.web.AppBootstrap;
-import leap.web.AppFilter;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
@@ -36,25 +29,17 @@ import javax.servlet.FilterRegistration;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebListener;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Map;
-
-import static leap.web.AppBootstrap.BOOTSTRAP_ATTR_NAME;
 
 /**
  * web listener, load filter when web app starting
  * @author kael.
  */
 @WebListener
-public class WebAppFilterStarter extends XmlConfigReaderBase implements ServletContextListener {
-    private static final Log log = LogFactory.get(WebAppFilterStarter.class);
+public class AppFilterWebListener extends XmlConfigReaderBase implements ServletContextListener {
+    private static final Log log = LogFactory.get(AppFilterWebListener.class);
 
     public static final String AUTO_LOAD_FILTER_PROPERTY                 = "auto-load-appfilter";
     public static final String DEFAULT_APP_FILTER_NAME                   = "app";

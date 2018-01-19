@@ -23,17 +23,34 @@ import leap.orm.tested.model.keyword.KeyWordModel;
 import org.junit.Test;
 
 /**
- * Created by kael on 2017/3/6.
+ * @author kael
  */
 public class KeyWordTest extends OrmTestCase {
+
     @Test
-    public void testKeyWordInsert(){
+    public void testKeyWordCrud(){
+
         KeyWordModel.deleteAll();
+
+        //create
         KeyWordModel keyWordModel = new KeyWordModel();
-        keyWordModel.setId(1);
         keyWordModel.setTable("table");
-        keyWordModel.setTable("type");
-        keyWordModel.create();
+        keyWordModel.setType("type");
+        keyWordModel.setWhen("when");
+        Object id = keyWordModel.create().id();
+
+        //find
+        keyWordModel = KeyWordModel.find(id);
+        assertEquals("when", keyWordModel.getWhen());
+
+        //query
+        KeyWordModel.where("when = ?", "when").first();
+
+        //update
+        keyWordModel.update();
+
+        //delete
+        keyWordModel.delete();
     }
     
 }
