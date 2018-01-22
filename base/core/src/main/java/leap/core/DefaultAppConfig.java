@@ -288,7 +288,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
         v = properties.get(name);
 
         if(null == v) {
-            for(AppConfigSupport support : preSupports) {
+            for(AppConfigSupport support : postSupports) {
                 if((v = support.getProperty(name)) != null) {
                     return v;
                 }
