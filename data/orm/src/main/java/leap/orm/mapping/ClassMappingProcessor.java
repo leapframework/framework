@@ -585,7 +585,8 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 			rmb.setType(RelationType.MANY_TO_MANY);
 			rmb.setName(a.name());
 			rmb.setTargetEntityType(targetEntityType);
-
+            rmb.setOptional(Boolean.TRUE);
+			
 			if(!a.joinEntityType().equals(void.class)){
 				rmb.setJoinEntityType(a.joinEntityType());
 			}
