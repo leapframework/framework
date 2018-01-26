@@ -160,9 +160,23 @@ public interface HttpResponse {
     }
 
     /**
+     * Same as {@link #json()}
+     */
+    default Object getJson() {
+        return json();
+    }
+
+    /**
      * Sames as {@link #getString()}.
      */
     default String body() {
+        return getString();
+    }
+
+    /**
+     * Same as {@link #getString()}.
+     */
+    default String getBody() {
         return getString();
     }
     
