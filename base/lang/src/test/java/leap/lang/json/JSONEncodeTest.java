@@ -89,14 +89,9 @@ public class JSONEncodeTest extends ConcurrentTestCase {
 	@Test
 	public void testSimpleBean() throws Exception {
 		assertEquals("{\"name\":\"xiaoming\",\"age\":100}", encode(new ParentBean("xiaoming",100)));
-		assertEquals("{\"key\":\"key\",\"name\":\"xiaoming\",\"age\":100}", encode(new ChildBean("xiaoming",100,"key")));
+		assertEquals("{\"name\":\"xiaoming\",\"age\":100,\"key\":\"key\"}", encode(new ChildBean("xiaoming",100,"key")));
 	}
 
-	@Test
-	public void test() {
-		System.out.println(encode(new ParentBean("ck", 28)));
-	}
-	
 	@Test
 	public void testJSONNamed() throws Exception {
 		String json = "{id:\"1\",name1:\"xx\"}";

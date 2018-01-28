@@ -974,6 +974,9 @@ public class JsonWriterImpl implements JsonWriter {
     protected JsonWriter bean(Object bean, JsonType type) {
         if(null == bean) {
             return null_();
+        }else if(bean instanceof JsonStringable) {
+            ((JsonStringable) bean).toJson(this);
+            return this;
         }else{
             startObject();
             properties(bean, false, type);

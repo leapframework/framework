@@ -39,6 +39,7 @@ public class BeanProperty implements Named,TypeInfoGetter,AnnotationsGetter,Refl
 	private Class<?> 	  type;
 	private Type          genericType;
 	private TypeInfo	  typeInfo;
+    private Class<?>      declaringClass;
 	private ReflectField  field;
 	private ReflectMethod getter;
 	private ReflectMethod setter;
@@ -48,7 +49,7 @@ public class BeanProperty implements Named,TypeInfoGetter,AnnotationsGetter,Refl
 	private boolean       _transient;
 	private Annotation[]  annotations = new Annotation[]{};
 	
-	protected BeanProperty(BeanType beanType,String name){
+	protected BeanProperty(BeanType beanType, String name){
 		this.name     = name;
 		this.beanType = beanType;
 	}
@@ -72,8 +73,16 @@ public class BeanProperty implements Named,TypeInfoGetter,AnnotationsGetter,Refl
 	public TypeInfo getTypeInfo() {
 		return typeInfo;
 	}
-	
-	public BeanType getBeanType(){
+
+    public Class<?> getDeclaringClass() {
+        return declaringClass;
+    }
+
+    protected void setDeclaringClass(Class<?> declaringClass) {
+        this.declaringClass = declaringClass;
+    }
+
+    public BeanType getBeanType(){
 		return beanType;
 	}
 	
