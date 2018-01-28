@@ -18,6 +18,7 @@ package leap.lang;
 import java.util.Map;
 
 import leap.junit.TestBase;
+import leap.lang.annotation.Order;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 
@@ -101,6 +102,15 @@ public class BeansTest extends TestBase {
         bt = BeanType.of(Bean3.class);
         assertEquals("p2", bt.getProperties()[0].getName());
         assertEquals("p1", bt.getProperties()[1].getName());
+
+        bt = BeanType.of(Bean4.class);
+        assertEquals("p1", bt.getProperties()[0].getName());
+        assertEquals("p2", bt.getProperties()[1].getName());
+
+        bt = BeanType.of(Bean5.class);
+        assertEquals("p3", bt.getProperties()[0].getName());
+        assertEquals("p1", bt.getProperties()[1].getName());
+        assertEquals("p2", bt.getProperties()[2].getName());
     }
 
     protected static class Bean0 {
@@ -137,6 +147,19 @@ public class BeansTest extends TestBase {
         public void setP1(String p1) {
             this.p1 = p1;
         }
+    }
+
+    protected static class Bean4 {
+
+        public String p2;
+
+        @Order(10)
+        public String p1;
+    }
+
+    protected static final class Bean5 extends Bean4 {
+        @Order(1)
+        public String p3;
     }
 	
 	protected static final class TestedBean {

@@ -27,6 +27,7 @@ import java.util.function.Predicate;
 import leap.lang.Args;
 import leap.lang.Arrays2;
 import leap.lang.Types;
+import leap.lang.annotation.Order;
 import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.reflect.ReflectClass;
 import leap.lang.reflect.ReflectException;
@@ -311,11 +312,20 @@ public class BeanType {
 			}
 		}
 
-        Comparator<BeanProperty> comparator = (o1, o2) -> {
+        Comparator<BeanProperty> comparator = (p1, p2) -> {
+            if(p1 == p2) {
+                return 0;
+            }
 
-            if(o1.getDeclaringClass().equals(o2.getDeclaringClass())) {
+            double o1 = getOrder(p1);
+            double o2 = getOrder(p2);
+            if(o1 != o2) {
+                return o1 < o2 ? -1 : 1;
+            }
+
+            if(p1.getDeclaringClass().equals(p2.getDeclaringClass())) {
                 return 1;
-            }else if(o1.getDeclaringClass().isAssignableFrom(o2.getDeclaringClass())) {
+            }else if(p1.getDeclaringClass().isAssignableFrom(p2.getDeclaringClass())) {
                 return -1;
             }
 
@@ -327,6 +337,11 @@ public class BeanType {
 		
 		return sorted.toArray(new BeanProperty[props.size()]);
 	}
+
+    private double getOrder(BeanProperty bp) {
+        Order a = bp.getAnnotation(Order.class);
+        return null == a ? Order.DEFAULT : a.value();
+    }
 	
 	private BeanProperty getOrCreatePropertyFor(Map<String, BeanProperty> props, String methodName,String prefix,Class<?> type){
 		String propName = methodName.substring(prefix.length());
