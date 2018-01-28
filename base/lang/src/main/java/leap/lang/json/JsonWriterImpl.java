@@ -909,6 +909,9 @@ public class JsonWriterImpl implements JsonWriter {
                 }
             }
 
+            JsonSetting jb = bean.getClass().getAnnotation(JsonSetting.class);
+            boolean ignoreNull = (null != jb && jb.ignoreNull().isPresent()) ? jb.ignoreNull().getValue() : this.isIgnoreNull();
+
             for(BeanProperty prop : beanType.getProperties()){
                 if(prop.isTransient()){
                     continue;
@@ -941,7 +944,7 @@ public class JsonWriterImpl implements JsonWriter {
                         propValue = prop.getValue(bean);
                     }
 
-                    if(null == propValue && isIgnoreNull()){
+                    if(null == propValue && ignoreNull){
                         continue;
                     }
 
