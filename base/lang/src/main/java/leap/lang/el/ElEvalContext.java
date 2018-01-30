@@ -28,7 +28,7 @@ public interface ElEvalContext extends ElContext {
 	Object resolveVariable(String name);
 	
 	/**
-	 * Returns <code>true</code> if the given variabel was resolved.
+	 * Returns <code>true</code> if the given variable was resolved.
 	 */
 	boolean isVariableResolved(String name);
 	

@@ -22,6 +22,8 @@ import java.util.Map;
 import leap.lang.Arrays2;
 import leap.lang.Enumerable;
 import leap.lang.Enumerables;
+import leap.lang.accessor.Getter;
+import leap.lang.accessor.ObjectPropertyGetter;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.reflect.ReflectClass;
@@ -156,25 +158,38 @@ public abstract class AbstractElEvalContext extends AbstractElContext implements
 	
 	@SuppressWarnings("rawtypes")
     protected Object resolveContextProperty(String name){
-		if(ctx instanceof Map){
-			Map map = (Map)ctx;
-			if(map.containsKey(name)){
-				Object v = map.get(name);
-				vars.put(name, v);
-				return v;
-			}
-		}else{
-			ElProperty p = resolveProperty(ctx.getClass(), name);
-			if(null != p){
-				try {
-	                Object v = p.getValue(this,ctx);
-	                vars.put(name, v);
-	                return v;
-	            } catch (Throwable e) {
-	            	throw new ElException("Error get value from property '" + name + "' in class '" + ctx.getClass() + "', " + e.getMessage(), e);
-	            }
-			}
-		}
+        if(null == ctx) {
+            return null;
+        }
+
+        Object o = ctx;
+    	if(o instanceof Map){
+    		return ((Map)o).get(name);
+    	}
+
+    	if(o instanceof ElPropertyResolver){
+    		return ((ElPropertyResolver) o).resolveProperty(name, this);
+    	}
+
+    	if(o instanceof ObjectPropertyGetter){
+    		return ((ObjectPropertyGetter) o).getProperty(name);
+    	}
+
+        if(o instanceof Getter) {
+            return ((Getter) o).get(name);
+        }
+
+        ElProperty p = resolveProperty(ctx.getClass(), name);
+        if(null != p){
+            try {
+                Object v = p.getValue(this,ctx);
+                vars.put(name, v);
+                return v;
+            } catch (Throwable e) {
+                throw new ElException("Error get value from property '" + name + "' in class '" + ctx.getClass() + "', " + e.getMessage(), e);
+            }
+        }
+
 		return null;
 	}
 
