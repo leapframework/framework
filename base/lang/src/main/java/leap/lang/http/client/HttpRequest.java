@@ -53,7 +53,7 @@ public interface HttpRequest {
      * Encodes the json value to string and set body.
      */
     default HttpRequest json(Object o) {
-        return setJson(JSON.encode(o, JsonSettings.MIN));
+        return setJson(JSON.encode(o));
     }
 
     /**
