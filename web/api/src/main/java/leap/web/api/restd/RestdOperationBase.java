@@ -33,6 +33,7 @@ import leap.web.api.meta.model.MApiOperationBuilder;
 import leap.web.api.meta.model.MApiTag;
 import leap.web.api.mvc.ApiFailureHandler;
 import leap.web.api.route.ApiRoute;
+import leap.web.api.spec.swagger.SwaggerConstants;
 import leap.web.format.RequestFormat;
 import leap.web.format.ResponseFormat;
 import leap.web.route.Route;
@@ -168,7 +169,7 @@ public abstract class RestdOperationBase {
         route.setAllowClientOnly(true);
         route.addFailureHandler(failureHandler);
 
-        JsonSettings settings = new JsonSettings.Builder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").build();
+        JsonSettings settings = new JsonSettings.Builder().setDateFormat(SwaggerConstants.DATE_TIME_FORMAT).build();
         route.setExtension(settings);
     }
 

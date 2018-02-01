@@ -17,6 +17,8 @@ package leap.web.api.spec.swagger;
 
 public class SwaggerConstants {
 
+    public static final String DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+
     public static final String SWAGGER               = "swagger";
     public static final String INFO                  = "info";
     public static final String NAME                  = "name";

@@ -34,7 +34,7 @@ public class TypesControllerTest extends WebTestBase {
 
         assertNotEmpty(s);
 
-        DateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+        DateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
         Date date = Dates.tryParse(s, format);
         assertNotNull(date);
     }
