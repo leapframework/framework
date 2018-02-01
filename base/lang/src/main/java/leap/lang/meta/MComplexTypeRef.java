@@ -21,7 +21,7 @@ public class MComplexTypeRef extends MTypeRef {
     private final Boolean partial;
 	
 	public MComplexTypeRef(String refTypeName) {
-	    this(refTypeName, false);
+	    this(refTypeName, (Boolean)null);
     }
 
     public MComplexTypeRef(String refTypeName, Boolean partial) {
@@ -30,7 +30,7 @@ public class MComplexTypeRef extends MTypeRef {
     }
 
 	public MComplexTypeRef(String refTypeName, String refTypeQName) {
-        this(refTypeName, refTypeQName, false);
+        this(refTypeName, refTypeQName, null);
     }
 
     public MComplexTypeRef(String refTypeName, String refTypeQName, Boolean partial) {
@@ -39,7 +39,7 @@ public class MComplexTypeRef extends MTypeRef {
     }
 
 	public MComplexTypeRef(String summary, String description, String refTypeName, String refTypeQName) {
-		this(summary, description, refTypeName, refTypeQName, false);
+		this(summary, description, refTypeName, refTypeQName, null);
 	}
 
     public MComplexTypeRef(String summary, String description, String refTypeName, String refTypeQName, Boolean partial) {
