@@ -27,6 +27,7 @@ public abstract class MApiParameterBaseBuilder<T extends MApiParameterBase> exte
 	protected Object                defaultValue;
     protected String[]              enumValues;
 	protected MApiValidationBuilder validation;
+    protected MApiExtension         extension;
 	
 	public MType getType() {
 		return type;
@@ -96,4 +97,18 @@ public abstract class MApiParameterBaseBuilder<T extends MApiParameterBase> exte
 		this.validation = validation;
 	}
 
+    public MApiExtension getExtension() {
+        return extension;
+    }
+
+    public MApiExtension getOrCreateExtention() {
+        if(null == extension) {
+            extension = new MApiExtension();
+        }
+        return extension;
+    }
+
+    public void setExtension(MApiExtension extension) {
+        this.extension = extension;
+    }
 }

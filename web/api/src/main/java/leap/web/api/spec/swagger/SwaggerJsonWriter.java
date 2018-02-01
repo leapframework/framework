@@ -309,6 +309,8 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 
         w.propertyOptional(REQUIRED, p.getRequired());
 
+        writeExtension(w, p.getExtension());
+
         try{
             if(Location.BODY == p.getLocation()) {
                 w.property(SCHEMA, () -> {

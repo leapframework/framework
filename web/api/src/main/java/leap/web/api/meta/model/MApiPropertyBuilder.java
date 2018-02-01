@@ -35,7 +35,6 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
     protected Boolean      sortable;
     protected Boolean      filterable;
     protected Boolean      expandable;
-    protected MApiExtension extension;
 
     public MApiPropertyBuilder() {
 	    super();
@@ -216,14 +215,6 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
 
     public void setExpandable(Boolean expandable) {
         this.expandable = expandable;
-    }
-
-    public MApiExtension getExtension() {
-        return extension;
-    }
-
-    public void setExtension(MApiExtension extension) {
-        this.extension = extension;
     }
 
     @Override
