@@ -123,6 +123,10 @@ public class DefaultAppConfigSource implements AppConfigSource {
         Map<String,String> env = System.getenv();
         if(null != env) {
             env.forEach((name, value) -> {
+                //converts all '_' -> '.' if the first character is lower case.
+                if(Character.isLowerCase(name.charAt(0))) {
+                    name = Strings.replace(name, '_', '.');
+                }
                 props.put(name, new SimpleAppProperty("<env>", name, value, true));
             });
         }
