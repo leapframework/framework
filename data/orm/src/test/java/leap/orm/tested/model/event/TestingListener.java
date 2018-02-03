@@ -30,6 +30,9 @@ public class TestingListener implements PreCreateListener,PreUpdateListener,PreD
     public static final int POST_UPDATE_NO_TRANS_WITH_ERROR = 3;
     public static final int POST_UPDATE_IN_TRANS_WITH_ERROR = 4;
 
+    public static Object lastUpdateId;
+    public static Object lastDeleteId;
+
     @PreCreate
     public void preCreateEntity(EntityWrapper entity) {
         entity.set("col1","Test1");
@@ -61,6 +64,7 @@ public class TestingListener implements PreCreateListener,PreUpdateListener,PreD
 
     @Override
     public void preUpdateEntity(UpdateEntityEvent e) {
+        lastUpdateId = e.getId();
         e.getEntity().set("col2", "UpdateCol2");
     }
 

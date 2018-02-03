@@ -30,10 +30,7 @@ import leap.orm.sql.parser.Lexer;
 import leap.orm.sql.parser.SqlParser;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
@@ -254,7 +251,14 @@ class SqlQueryFilterProcessor {
                 log.debug("Filter ( {} ) -> ( {} )", text, expr.toString());
             }
 
+            Map oldVars = stm.getVars();
+            if(null != vars) {
+                stm.setVars(vars);
+            }
+
             expr.buildStatement(context, sql, stm, params);
+
+            stm.setVars(oldVars);
         }
 
     }

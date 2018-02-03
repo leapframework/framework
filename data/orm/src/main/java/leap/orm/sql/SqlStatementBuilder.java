@@ -20,6 +20,7 @@ import leap.db.DbDialect;
 import leap.lang.Buildable;
 
 import java.util.List;
+import java.util.Map;
 
 public interface SqlStatementBuilder extends Appendable,Buildable<SqlStatement> {
 
@@ -46,6 +47,16 @@ public interface SqlStatementBuilder extends Appendable,Buildable<SqlStatement> 
 	 * Returns <code>true</code> if the target {@link SqlStatement} is a query.
 	 */
 	boolean isQuery();
+
+    /**
+     * Returns the vars for eval expression.
+     */
+    Map<String, Object> getVars();
+
+    /**
+     * Sets the vars for eval expression.
+     */
+    void setVars(Map<String, Object> vars);
 
     /**
      * Returns the sql text.

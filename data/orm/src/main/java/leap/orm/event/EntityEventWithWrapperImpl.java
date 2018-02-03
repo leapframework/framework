@@ -18,15 +18,23 @@ package leap.orm.event;
 
 import leap.orm.OrmContext;
 import leap.orm.mapping.EntityMapping;
+import leap.orm.mapping.Mappings;
 import leap.orm.value.EntityWrapper;
 
 public class EntityEventWithWrapperImpl extends EntityEventBase implements CreateEntityEvent,UpdateEntityEvent {
 
     private final EntityWrapper entity;
+    private final Object        id;
 
-    public EntityEventWithWrapperImpl(OrmContext context, EntityMapping em, EntityWrapper entity) {
+    public EntityEventWithWrapperImpl(OrmContext context, EntityMapping em, EntityWrapper entity, Object id) {
         super(context, em);
         this.entity  = entity;
+        this.id      = null == id ? Mappings.getId(em, entity) : id;
+    }
+
+    @Override
+    public Object getId() {
+        return id;
     }
 
     @Override

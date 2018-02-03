@@ -43,8 +43,13 @@ public class DefaultFindCommand<T> extends AbstractEntityDaoCommand implements F
 		this.idParameters = context.getParameterStrategy().createIdParameters(context, em, id);
 		this.checkNotFound = checkNotFound;
 	}
-	
-	@Override
+
+    @Override
+    public boolean isFind() {
+        return true;
+    }
+
+    @Override
     public Limit getLimit() {
 	    return null;
     }

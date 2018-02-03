@@ -38,6 +38,13 @@ public interface SqlContext extends SqlLanguage.Options {
     }
 
     /**
+     * Returns true if current sql execution is {@link SqlCommand#FIND_COMMAND_NAME} .
+     */
+    default boolean isFind() {
+        return false;
+    }
+
+    /**
      * Returns the {@link OrmContext}.
      */
 	OrmContext getOrmContext();
