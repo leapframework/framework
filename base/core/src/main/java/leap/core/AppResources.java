@@ -396,11 +396,13 @@ public class AppResources {
         }
 
         // conf-local/{filename}
+        /*
         if(dev) {
             for(String filename : filenames) {
                 patterns.add(CP_APP_PREFIX + PROFILE_SEPARATOR + "local/" + filename);
             }
         }
+        */
     }
 
     private AppResource[] searchResources(String[] patterns, String name, String suffix){
