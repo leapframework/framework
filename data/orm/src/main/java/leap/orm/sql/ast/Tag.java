@@ -26,6 +26,7 @@ import leap.orm.sql.parser.Lexer;
 import leap.orm.sql.parser.SqlParser;
 
 import java.io.IOException;
+import java.util.Map;
 
 public class Tag extends DynamicNode implements SqlTag {
 
@@ -34,9 +35,10 @@ public class Tag extends DynamicNode implements SqlTag {
     protected final String  name;
     protected final String  content;
 
-    protected Object             executionObject;
-    protected ExpressionLanguage el;
-    protected SqlTagProcessor    processor;
+    protected Map<String, Object> vars;
+    protected Object              executionObject;
+    protected ExpressionLanguage  el;
+    protected SqlTagProcessor     processor;
 
     public Tag(String name, String content) {
         this.name = name;
@@ -49,6 +51,16 @@ public class Tag extends DynamicNode implements SqlTag {
 
     public String getContent() {
         return content;
+    }
+
+    @Override
+    public Map<String, Object> getVars() {
+        return vars;
+    }
+
+    @Override
+    public void setVars(Map<String, Object> vars) {
+        this.vars = vars;
     }
 
     @Override

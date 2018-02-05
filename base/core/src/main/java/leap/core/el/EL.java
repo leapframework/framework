@@ -294,11 +294,22 @@ public class EL {
 	 * Once evaluated, the resulting String is then coerced to the expected type.
 	 */
 	public static CompositeExpression createCompositeExpression(String s) {
-		return parseCompositeExpression(getAppDefaultExpressionLanguage(), s);
+		return createCompositeExpression(getAppDefaultExpressionLanguage(), s);
 	}
 
-
-	private static CompositeExpression parseCompositeExpression(ExpressionLanguage language, String str){
+    /**
+     * Parses a composite expression to an {@link Expression} object using the default {@link ElParseContext}.
+     *
+     * <p>
+     *
+     * For example, the composite expression “${firstName} ${lastName}”
+     * is composed of three EL expressions: eval-expression “${firstName}”,
+     * literal- expression “ “, and eval-expression “${lastName}”.
+     *
+     * <p>
+     * Once evaluated, the resulting String is then coerced to the expected type.
+     */
+	public static CompositeExpression createCompositeExpression(ExpressionLanguage language, String str){
 		if(null == str){
 			return CompositeExpression.NULL;
 		}

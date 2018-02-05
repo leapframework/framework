@@ -16,6 +16,8 @@
 
 package leap.orm.sql;
 
+import java.util.Map;
+
 public interface SqlTag {
 
     /**
@@ -27,6 +29,16 @@ public interface SqlTag {
      * Returns the content of name.
      */
     String getContent();
+
+    /**
+     * Returns the vars for eval expression.
+     */
+    Map<String, Object> getVars();
+
+    /**
+     * Sets the vars for eval expression.
+     */
+    void setVars(Map<String, Object> vars);
 
     /**
      * Returns the execution object.

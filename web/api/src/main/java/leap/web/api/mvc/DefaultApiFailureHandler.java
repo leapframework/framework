@@ -97,6 +97,11 @@ public class DefaultApiFailureHandler implements ApiFailureHandler {
             return true;
         }
 
+        if(e instanceof  UnsupportedOperationException) {
+            errorHandler.responseError(response, HTTP.SC_NOT_IMPLEMENTED, e.getMessage());
+            return true;
+        }
+
         return false;
     }
 
