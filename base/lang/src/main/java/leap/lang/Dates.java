@@ -23,7 +23,9 @@ import java.text.ParsePosition;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
+import java.time.temporal.TemporalQueries;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -34,7 +36,7 @@ import java.util.Date;
  */
 public class Dates {
 
-    private static final LocalDate LD_1970_01_01 = LocalDate.parse("1970-01-01", DateFormats.DATE_FORMATTER);
+    private static final LocalDate LD_1970_01_02 = LocalDate.parse("1970-01-02", DateFormats.DATE_FORMATTER);
     private static final LocalTime LT_00_00_00   = LocalTime.of(0, 0, 0);
 
     /**
@@ -170,30 +172,15 @@ public class Dates {
             throw new IllegalArgumentException("Date and Patterns must not be null");
         }
 
-        DateTimeFormatter parser = null;
-        for (String parsePattern : patterns) {
+        for (String pattern : patterns) {
+            leap.lang.time.DateFormat format = DateFormats.getFormat1(pattern);
+            if(!format.matches(string)) {
+                continue;
+            }
 
-            String pattern = parsePattern;
+            DateTimeFormatter formatter = format.getFormatter();
 
-//            // LANG-530 - need to make sure 'ZZ' output doesn't get passed to SimpleDateFormat
-//            if (parsePattern.endsWith("ZZ")) {
-//                pattern = pattern.substring(0, pattern.length() - 1);
-//            }
-
-            parser = DateFormats.getFormatter(pattern);
-
-//            String str2 = string;
-//            // LANG-530 - need to make sure 'ZZ' output doesn't hit SimpleDateFormat as it will IllegalArgumentException
-//            if (parsePattern.endsWith("ZZ")) {
-//                str2 = string.replaceAll("([-+][0-9][0-9]):([0-9][0-9])$", "$1$2");
-//            }
-//            if (str2.endsWith("Z")) {
-//                // RFC 3339:https://xml2rfc.tools.ietf.org/public/rfc/html/rfc3339.html#anchor14
-//                int index = string.lastIndexOf("Z");
-//                str2 = string.substring(0, index) + "+0000";
-//            }
-
-            Date date = tryParse(parser, string, new ParsePosition(0));
+            Date date = tryParse(formatter, string, new ParsePosition(0));
             if (null != date) {
                 return date;
             }
@@ -252,30 +239,24 @@ public class Dates {
         }
 
         if (ta != null && (null == pp || pp.getIndex() == s.length())) {
-            Instant instant;
+            Instant instant = null;
             try {
-                instant = Instant.from(ta);
+                if(ta.isSupported(ChronoField.INSTANT_SECONDS) && ta.isSupported(ChronoField.NANO_OF_SECOND)) {
+                    instant = Instant.from(ta);
+                }
             } catch (DateTimeException e) {
-                LocalDate ld = null;
-                LocalTime lt = null;
+            }
 
-                try {
-                    ld = LocalDate.from(ta);
-                }catch (DateTimeException e1) {
-
-                }
-                try {
-                    lt = LocalTime.from(ta);
-                }catch (DateTimeException e1) {
-
-                }
+            if(null == instant) {
+                LocalDate ld = ta.query(TemporalQueries.localDate());
+                LocalTime lt = ta.query(TemporalQueries.localTime());
 
                 if(ld == null && lt == null) {
                     throw new IllegalArgumentException("Invalid date time '" + s + "'");
                 }
 
                 if(ld == null) {
-                    ld = LD_1970_01_01;
+                    ld = LD_1970_01_02;
                 }
 
                 if(lt == null) {

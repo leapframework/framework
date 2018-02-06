@@ -17,6 +17,7 @@ package leap.lang.convert;
 
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.text.ParsePosition;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -59,14 +60,26 @@ public class DateConverterTest extends TestCase{
         Time d = Converts.convert("01:59:50", Time.class);
         assertNotNull(d);
 
-//        StopWatch sw = StopWatch.startNew();
-//        for(int i=0;i<10000;i++) {
-//            //Dates.parse("01:59:50", DateFormats.TIME_PATTERN);
-//            //Converts.convert("01:59:50", Date.class);
-//            DateTimeFormatter.ofPattern(DateFormats.TIME_PATTERN).withZone(ZoneId.systemDefault()).parse("01:59:50");
-//
-//        }
-//        System.out.println(sw.getElapsedMilliseconds());
+        int count = 100000;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DateFormats.TIME_PATTERN).withZone(ZoneId.systemDefault());
+
+        StopWatch sw = StopWatch.startNew();
+        for(int i=0;i<count;i++) {
+            Converts.convert("01:59:50", Date.class);
+        }
+        System.out.println("Converts.convert : " + sw.getElapsedMilliseconds());
+
+        sw = StopWatch.startNew();
+        for(int i=0;i<count;i++) {
+            Dates.parse("01:59:50");
+        }
+        System.out.println("Dates.parse : " + sw.getElapsedMilliseconds());
+
+        sw = StopWatch.startNew();
+        for(int i=0;i<count;i++) {
+            formatter.parse("01:59:50");
+        }
+        System.out.println("Formatter.parse : " + sw.getElapsedMilliseconds());
 
         assertEquals("01:59:50", Converts.toString(d));
     }

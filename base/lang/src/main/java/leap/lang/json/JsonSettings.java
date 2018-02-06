@@ -199,12 +199,7 @@ public class JsonSettings {
 
         @Deprecated
         public Builder setDateFormat(String dateFormat) {
-            return setDateFormat(dateFormat, null);
-        }
-
-        @Deprecated
-        public Builder setDateFormat(String dateFormat, String zone) {
-            this.dateFormat = null == dateFormat ? null : DateFormats.getFormat(dateFormat, zone);
+            this.dateFormat = null == dateFormat ? null : DateFormats.getFormat(dateFormat);
             return this;
         }
 

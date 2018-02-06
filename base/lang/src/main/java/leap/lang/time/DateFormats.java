@@ -21,7 +21,6 @@ import leap.lang.Strings;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.text.DateFormat;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -34,9 +33,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class DateFormats {
 	
-	private static final Map<String,  DateFormat> patternFormats  = new ConcurrentHashMap<String,  DateFormat>();
-	private static final Map<Class<?>,String>     defaultPatterns = new ConcurrentHashMap<Class<?>,String>();
-    private static final Map<String, DateTimeFormatter> formatters = new ConcurrentHashMap<>();
+	private static final Map<String, java.text.DateFormat> patternFormats  = new ConcurrentHashMap<String, java.text.DateFormat>();
+	private static final Map<Class<?>,String>              defaultPatterns = new ConcurrentHashMap<Class<?>,String>();
+
+    private static final Map<String, DateFormat> formatters = new ConcurrentHashMap<>();
 
     public static final String DATE_PATTERN          = "yyyy-MM-dd";
 	public static final String TIME_PATTERN          = "HH:mm:ss";
@@ -75,13 +75,13 @@ public class DateFormats {
     	patternFormats.put(ISO8601_DATE_PATTERN1, new ConcurrentDateFormat(ISO8601_DATE_PATTERN1));
         patternFormats.put(ISO8601_DATE_PATTERN2, new ConcurrentDateFormat(ISO8601_DATE_PATTERN2));
 
-        formatters.put(DATE_PATTERN,          DATE_FORMATTER);
-        formatters.put(TIME_PATTERN,          TIME_FORMATTER);
-        formatters.put(DATETIME_PATTERN,      DATETIME_FORMATTER);
-        formatters.put(TIMESTAMP_PATTERN,     TIMESTAMP_FORMATTER);
-        formatters.put(RFC3339_DATE_PATTERN,  DateTimeFormatter.ofPattern(RFC3339_DATE_PATTERN).withZone(ZoneId.of("GMT")));
-        formatters.put(ISO8601_DATE_PATTERN1, DateTimeFormatter.ofPattern(ISO8601_DATE_PATTERN1).withZone(ZoneId.of("GMT")));
-        formatters.put(ISO8601_DATE_PATTERN2, DateTimeFormatter.ofPattern(ISO8601_DATE_PATTERN2).withZone(ZoneId.of("GMT")));
+        formatters.put(DATE_PATTERN,          new DateFormatImpl(DATE_FORMATTER, DATE_PATTERN.length()));
+        formatters.put(TIME_PATTERN,          new DateFormatImpl(TIME_FORMATTER, TIME_PATTERN.length()));
+        formatters.put(DATETIME_PATTERN,      new DateFormatImpl(DATETIME_FORMATTER, DATETIME_PATTERN.length()));
+        formatters.put(TIMESTAMP_PATTERN,     new DateFormatImpl(TIMESTAMP_FORMATTER, TIMESTAMP_PATTERN.length()));
+        formatters.put(RFC3339_DATE_PATTERN,  new DateFormatImpl(DateTimeFormatter.ofPattern(RFC3339_DATE_PATTERN).withZone(ZoneId.of("GMT")),  DATETIME_PATTERN.length(), -1));
+        formatters.put(ISO8601_DATE_PATTERN1, new DateFormatImpl(DateTimeFormatter.ofPattern(ISO8601_DATE_PATTERN1).withZone(ZoneId.of("GMT")), DATETIME_PATTERN.length(), -1));
+        formatters.put(ISO8601_DATE_PATTERN2, new DateFormatImpl(DateTimeFormatter.ofPattern(ISO8601_DATE_PATTERN2).withZone(ZoneId.of("GMT")), DATETIME_PATTERN.length(), -1));
 
         defaultPatterns.put(Timestamp.class,       TIMESTAMP_PATTERN);
     	defaultPatterns.put(Time.class, 	       TIME_PATTERN);
@@ -101,8 +101,9 @@ public class DateFormats {
 	 * @param pattern the pattern to format date/time.
 	 * @return the formatter using the pattern.  
 	 */
-	public static DateFormat getFormat(String pattern) {
-        DateFormat format = patternFormats.get(pattern);
+    @Deprecated
+	public static java.text.DateFormat getFormat(String pattern) {
+        java.text.DateFormat format = patternFormats.get(pattern);
         
         if(null == format){
         	format = new ConcurrentDateFormat(pattern);
@@ -113,56 +114,54 @@ public class DateFormats {
         return format;
 	}
 
-    public static DateFormat getFormat(String pattern, String zone) {
-        if(Strings.isEmpty(zone)) {
-            return getFormat(pattern);
-        }
-        String key = pattern + "$$$" + zone;
-        DateFormat format = patternFormats.get(key);
-
-        if(null == format){
-            format = new ConcurrentDateFormat(pattern, TimeZone.getTimeZone(zone));
-            patternFormats.put(pattern,format);
-        }
-
-        return format;
-    }
-	
 	/**
 	 * get a date/time formatter using the pattern of the supplied type.
 	 * the type can be {@link Timestamp}, {@link Time}, {@link Date}, {@link java.util.Date}.
 	 * @param type the type to represent the pattern.
 	 * @return the formatter using the pattern.
 	 */
-	public static DateFormat getFormat(Class<?> type) {
+    @Deprecated
+	public static java.text.DateFormat getFormat(Class<?> type) {
 		return getFormat(getPattern(type));
 	}
 
-    public static DateTimeFormatter getFormatter(String pattern) {
-        DateTimeFormatter format = formatters.get(pattern);
+    public static DateFormat getFormat1(String pattern) {
+        DateFormat format = formatters.get(pattern);
         if(null != format) {
             return format;
         }else {
-            return getFormatter(pattern, ZoneId.systemDefault());
+            return getFormat1(pattern, ZoneId.systemDefault());
         }
     }
 
-    public static DateTimeFormatter getFormatter(String pattern, String zone) {
-        return getFormatter(pattern, Strings.isEmpty(zone) ? ZoneId.systemDefault() : ZoneId.of(zone));
+    public static DateFormat getFormat1(String pattern, String zone) {
+        return getFormat1(pattern, Strings.isEmpty(zone) ? ZoneId.systemDefault() : ZoneId.of(zone));
     }
 
-    public static DateTimeFormatter getFormatter(String pattern, ZoneId zoneId) {
+    public static DateFormat getFormat1(String pattern, ZoneId zoneId) {
         Args.notNull(zoneId);
 
         String key = pattern + "$$$" + zoneId.getId();
-        DateTimeFormatter format = formatters.get(key);
+        DateFormat format = formatters.get(key);
 
         if(null == format){
-            format = DateTimeFormatter.ofPattern(pattern).withZone(zoneId);
+            format = new DateFormatImpl(DateTimeFormatter.ofPattern(pattern).withZone(zoneId));
             formatters.put(key,format);
         }
 
         return format;
+    }
+
+    public static DateTimeFormatter getFormatter(String pattern) {
+        return getFormat1(pattern).getFormatter();
+    }
+
+    public static DateTimeFormatter getFormatter(String pattern, String zone) {
+        return getFormat1(pattern, zone).getFormatter();
+    }
+
+    public static DateTimeFormatter getFormatter(String pattern, ZoneId zoneId) {
+        return getFormat1(pattern, zoneId).getFormatter();
     }
 
     public static DateTimeFormatter getFormatter(Class<?> type) {
