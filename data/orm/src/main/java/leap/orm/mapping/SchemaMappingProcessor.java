@@ -26,12 +26,15 @@ public class SchemaMappingProcessor extends MappingProcessorAdapter {
 
 	@Override
     public void postMappingEntity(MetadataContext context, EntityMappingBuilder emb) throws MetadataException {
+		if(!context.getConfig().isReadDbSchema()) return;
+
 		String entityName = emb.getEntityName();
 		
 		DbSchema schema = context.getDb().getMetadata().getSchema(emb.getTableCatalog(),emb.getTableSchema());
-		DbTable  table  = null;
+		if(null == schema) return;
 		
 		//find matched table name in db schema
+		DbTable  table;
 		if(!emb.isTableNameDeclared()){
 			table = findTableOf(context, entityName, schema);
 		}else{
