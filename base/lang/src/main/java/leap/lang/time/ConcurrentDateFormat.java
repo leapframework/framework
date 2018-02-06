@@ -52,6 +52,12 @@ public class ConcurrentDateFormat extends DateFormat {
         this.format = new SimpleDateFormat(pattern);
         this.format.setLenient(false);
     }
+
+    public ConcurrentDateFormat(String pattern, TimeZone zone){
+        this.format = new SimpleDateFormat(pattern);
+        this.format.setLenient(false);
+        this.format.setTimeZone(zone);
+    }
     
     @Override
     public synchronized Object clone() {

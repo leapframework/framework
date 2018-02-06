@@ -173,7 +173,11 @@ public class JsonSettings {
         }
 
         public Builder setDateFormat(String dateFormat) {
-            this.dateFormat = null == dateFormat ? null : DateFormats.getFormat(dateFormat);
+            return setDateFormat(dateFormat, null);
+        }
+
+        public Builder setDateFormat(String dateFormat, String zone) {
+            this.dateFormat = null == dateFormat ? null : DateFormats.getFormat(dateFormat, zone);
             return this;
         }
 

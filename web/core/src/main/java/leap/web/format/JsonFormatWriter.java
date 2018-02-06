@@ -117,7 +117,7 @@ public class JsonFormatWriter implements FormatWriter,ActionInitializable {
                     .setIgnoreNull(ignoreNull)
                     .setIgnoreEmpty(ignoreEmpty)
                     .setNamingStyle(ns)
-                    .setDateFormat(dateFormat)
+                    .setDateFormat(dateFormat, a.gmt() ? "GMT" : null)
 					.setNullToEmptyString(nullToEmptyString)
                     .build();
 	}

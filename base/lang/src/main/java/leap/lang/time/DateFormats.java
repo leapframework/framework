@@ -15,11 +15,14 @@
  */
 package leap.lang.time;
 
+import leap.lang.Strings;
+
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -88,6 +91,21 @@ public class DateFormats {
         
         return format;
 	}
+
+    public static DateFormat getFormat(String pattern, String zone) {
+        if(Strings.isEmpty(zone)) {
+            return getFormat(pattern);
+        }
+        String key = pattern + "$$$" + zone;
+        DateFormat format = patternFormats.get(key);
+
+        if(null == format){
+            format = new ConcurrentDateFormat(pattern, TimeZone.getTimeZone(zone));
+            patternFormats.put(pattern,format);
+        }
+
+        return format;
+    }
 	
 	/**
 	 * get a date/time formatter using the pattern of the supplied type.

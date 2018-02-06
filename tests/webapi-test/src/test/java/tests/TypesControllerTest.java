@@ -24,6 +24,7 @@ import org.junit.Test;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 public class TypesControllerTest extends WebTestBase {
@@ -37,6 +38,8 @@ public class TypesControllerTest extends WebTestBase {
         DateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
         Date date = Dates.tryParse(s, format);
         assertNotNull(date);
+
+        assertTrue(new Date().getTime() - 5 * 60 * 60 * 1000 > date.getTime());
     }
 
     @Test

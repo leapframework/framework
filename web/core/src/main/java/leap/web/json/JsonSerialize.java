@@ -36,4 +36,8 @@ public @interface JsonSerialize {
 
     String dateFormat() default "";
 
+    /**
+     * Formats the {@link java.util.Date} with gmt time zone.
+     */
+    boolean gmt() default false;
 }
