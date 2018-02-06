@@ -61,8 +61,8 @@ public class DateFormats {
     public static final ConcurrentDateFormat DATETIME_FORMAT  = new ConcurrentDateFormat(DATETIME_PATTERN);
     public static final ConcurrentDateFormat TIMESTAMP_FORMAT = new ConcurrentDateFormat(TIMESTAMP_PATTERN);
 
-    public static final DateTimeFormatter DATE_FORMATTER      = DateTimeFormatter.ofPattern(DATE_PATTERN).withZone(ZoneId.systemDefault());
-    public static final DateTimeFormatter TIME_FORMATTER      = DateTimeFormatter.ofPattern(TIME_PATTERN).withZone(ZoneId.systemDefault());
+    public static final DateTimeFormatter DATE_FORMATTER      = getFormatter(DATE_PATTERN).withZone(ZoneId.systemDefault());
+    public static final DateTimeFormatter TIME_FORMATTER      = getFormatter(TIME_PATTERN).withZone(ZoneId.systemDefault());
     public static final DateTimeFormatter DATETIME_FORMATTER  = DateTimeFormatter.ofPattern(DATETIME_PATTERN).withZone(ZoneId.systemDefault());
     public static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern(TIMESTAMP_PATTERN).withZone(ZoneId.systemDefault());
 
@@ -79,9 +79,9 @@ public class DateFormats {
         formatters.put(TIME_PATTERN,          TIME_FORMATTER);
         formatters.put(DATETIME_PATTERN,      DATETIME_FORMATTER);
         formatters.put(TIMESTAMP_PATTERN,     TIMESTAMP_FORMATTER);
-        formatters.put(RFC3339_DATE_PATTERN,  DateTimeFormatter.ofPattern(RFC3339_DATE_PATTERN).withZone(ZoneId.systemDefault()));
-        formatters.put(ISO8601_DATE_PATTERN1, DateTimeFormatter.ofPattern(ISO8601_DATE_PATTERN1).withZone(ZoneId.systemDefault()));
-        formatters.put(ISO8601_DATE_PATTERN2, DateTimeFormatter.ofPattern(ISO8601_DATE_PATTERN2).withZone(ZoneId.systemDefault()));
+        formatters.put(RFC3339_DATE_PATTERN,  DateTimeFormatter.ofPattern(RFC3339_DATE_PATTERN).withZone(ZoneId.of("GMT")));
+        formatters.put(ISO8601_DATE_PATTERN1, DateTimeFormatter.ofPattern(ISO8601_DATE_PATTERN1).withZone(ZoneId.of("GMT")));
+        formatters.put(ISO8601_DATE_PATTERN2, DateTimeFormatter.ofPattern(ISO8601_DATE_PATTERN2).withZone(ZoneId.of("GMT")));
 
         defaultPatterns.put(Timestamp.class,       TIMESTAMP_PATTERN);
     	defaultPatterns.put(Time.class, 	       TIME_PATTERN);
@@ -139,7 +139,12 @@ public class DateFormats {
 	}
 
     public static DateTimeFormatter getFormatter(String pattern) {
-        return getFormatter(pattern, ZoneId.systemDefault());
+        DateTimeFormatter format = formatters.get(pattern);
+        if(null != format) {
+            return format;
+        }else {
+            return getFormatter(pattern, ZoneId.systemDefault());
+        }
     }
 
     public static DateTimeFormatter getFormatter(String pattern, String zone) {

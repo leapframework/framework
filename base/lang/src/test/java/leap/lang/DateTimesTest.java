@@ -101,6 +101,6 @@ public class DateTimesTest extends TestBase {
         String s = "2018-02-06T12:31:53.240Z";
 
         Date date = Dates.parse(s);
-        assertEquals("2018-02-06 12:31:53", Dates.format(date, DateFormats.DATETIME_PATTERN));
+        assertEquals("2018-02-06 20:31:53", Dates.format(date, DateFormats.DATETIME_PATTERN));
     }
 }
