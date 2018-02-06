@@ -31,6 +31,7 @@ import java.text.DateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
@@ -46,6 +47,7 @@ public class JsonWriterImpl implements JsonWriter {
     private final JsonSettings settings;
     private final Appendable   out;
     private final DateFormat   dateFormat;
+    private final DateTimeFormatter dateFormatter;
 	private final boolean      detectCyclicReferences;
 	private final boolean	   ignoreCyclicReferences;
 	private final int		   maxDepth;
@@ -64,6 +66,7 @@ public class JsonWriterImpl implements JsonWriter {
         this.settings               = settings;
 	    this.out 			        = out;
         this.dateFormat             = settings.getDateFormat();
+        this.dateFormatter          = settings.getDateFormatter();
 	    this.detectCyclicReferences = detectCyclicReferences;
 	    this.ignoreCyclicReferences = ignoreCyclicReferences;
 	    this.maxDepth				= depth <= 0 ? MAX_DEPTH : maxDepth;
@@ -607,8 +610,10 @@ public class JsonWriterImpl implements JsonWriter {
         try {
             if(null == date) {
                 out.append(NULL_STRING);
-            }else if(null != dateFormat){
-				out.append(DOUBLE_QUOTE).append(dateFormat.format(date)).append(DOUBLE_QUOTE);
+            }else if(null != dateFormatter) {
+                out.append(DOUBLE_QUOTE).append(dateFormatter.format(date.toInstant())).append(DOUBLE_QUOTE);
+            }else if(null != dateFormat) {
+                out.append(DOUBLE_QUOTE).append(dateFormat.format(date)).append(DOUBLE_QUOTE);
             }else{
                 out.append(String.valueOf(date.getTime()));
             }
@@ -996,8 +1001,8 @@ public class JsonWriterImpl implements JsonWriter {
             if(null == a) {
                 value((Date)value);
             }else{
-                DateFormat dateFormat = DateFormats.getFormat(a.value());
-                value(dateFormat.format((Date)value));
+                DateTimeFormatter formatter = DateFormats.getFormatter(a.value());
+                value(formatter.format(((Date)value).toInstant()));
             }
 
             return true;

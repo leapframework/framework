@@ -24,6 +24,8 @@ import org.junit.Test;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -35,7 +37,7 @@ public class TypesControllerTest extends WebTestBase {
 
         assertNotEmpty(s);
 
-        DateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneId.systemDefault());
         Date date = Dates.tryParse(s, format);
         assertNotNull(date);
 

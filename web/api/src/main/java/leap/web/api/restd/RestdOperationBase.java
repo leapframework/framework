@@ -169,7 +169,7 @@ public abstract class RestdOperationBase {
         route.setAllowClientOnly(true);
         route.addFailureHandler(failureHandler);
 
-        JsonSettings settings = new JsonSettings.Builder().setDateFormat(SwaggerConstants.DATE_TIME_FORMAT, "GMT").build();
+        JsonSettings settings = new JsonSettings.Builder().setDateFormatter(SwaggerConstants.DATE_TIME_FORMAT, "GMT").build();
         route.setExtension(settings);
     }
 

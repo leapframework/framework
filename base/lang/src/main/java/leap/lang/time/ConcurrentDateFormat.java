@@ -32,8 +32,11 @@ import java.util.TimeZone;
  * 
  * <p/>
  * 
- * This implementation simply to add {@code synchronized} keywork in all methods.
+ * This implementation simply to add {@code synchronized} keyword in all methods.
+ *
+ * @deprecated use {@link java.time.format.DateTimeFormatter} instead.
  */
+@Deprecated
 public class ConcurrentDateFormat extends DateFormat {
 
     private static final long serialVersionUID = -1237664759165921526L;

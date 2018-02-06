@@ -85,7 +85,7 @@ public class JsonFormatWriter implements FormatWriter,ActionInitializable {
                             .setIgnoreNull(defaultJsonConfig.isDefaultSerializationIgnoreNull())
                             .setIgnoreEmpty(defaultJsonConfig.isDefaultSerializationIgnoreEmpty())
                             .setNamingStyle(defaultJsonConfig.getDefaultNamingStyle())
-                            .setDateFormat(defaultJsonConfig.getDefaultDateFormat())
+                            .setDateFormatter(defaultJsonConfig.getDefaultDateFormat())
                             .build();
 		}
 		return defaultJsonSettings;
@@ -117,7 +117,7 @@ public class JsonFormatWriter implements FormatWriter,ActionInitializable {
                     .setIgnoreNull(ignoreNull)
                     .setIgnoreEmpty(ignoreEmpty)
                     .setNamingStyle(ns)
-                    .setDateFormat(dateFormat, a.gmt() ? "GMT" : null)
+                    .setDateFormatter(dateFormat, a.gmt() ? "GMT" : null)
 					.setNullToEmptyString(nullToEmptyString)
                     .build();
 	}
