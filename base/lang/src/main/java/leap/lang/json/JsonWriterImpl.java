@@ -28,6 +28,7 @@ import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.sql.Time;
 import java.text.DateFormat;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -611,7 +612,16 @@ public class JsonWriterImpl implements JsonWriter {
             if(null == date) {
                 out.append(NULL_STRING);
             }else if(null != dateFormatter) {
-                out.append(DOUBLE_QUOTE).append(dateFormatter.format(date.toInstant())).append(DOUBLE_QUOTE);
+				try {
+					Instant instant = date.toInstant();
+					out.append(DOUBLE_QUOTE).append(dateFormatter.format(instant)).append(DOUBLE_QUOTE);
+				} catch (Exception e) {
+					if(null != dateFormat){
+						out.append(DOUBLE_QUOTE).append(dateFormat.format(date)).append(DOUBLE_QUOTE);
+					}else {
+						out.append(String.valueOf(date.getTime()));
+					}
+				}
             }else if(null != dateFormat) {
                 out.append(DOUBLE_QUOTE).append(dateFormat.format(date)).append(DOUBLE_QUOTE);
             }else{
