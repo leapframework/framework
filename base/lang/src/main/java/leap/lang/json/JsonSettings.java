@@ -38,7 +38,7 @@ public class JsonSettings {
     private final boolean           nullToEmptyString;
     private final NamingStyle       namingStyle;
     private final DateFormat        dateFormat;
-    private final DateTimeFormatter dateFormatter;
+    private final DateTimeFormatter dateTimeFormatter;
 
     public JsonSettings(boolean keyQuoted, boolean ignoreNull, boolean ignoreFalse,
                         boolean ignoreEmptyString, boolean ignoreEmptyArray,
@@ -56,13 +56,13 @@ public class JsonSettings {
         this.ignoreEmptyArray  = ignoreEmptyArray;
 		this.namingStyle       = namingStyle;
         this.dateFormat        = dateFormat;
-        this.dateFormatter     = null;
+        this.dateTimeFormatter = null;
         this.nullToEmptyString = nullToEmptyString;
 	}
 
     public JsonSettings(boolean keyQuoted, boolean ignoreNull, boolean ignoreFalse,
                         boolean ignoreEmptyString, boolean ignoreEmptyArray, boolean nullToEmptyString,
-                        NamingStyle namingStyle, DateFormat dateFormat, DateTimeFormatter dateFormatter) {
+                        NamingStyle namingStyle, DateFormat dateFormat, DateTimeFormatter dateTimeFormatter) {
         this.keyQuoted         = keyQuoted;
         this.ignoreNull        = ignoreNull;
         this.ignoreFalse       = ignoreFalse;
@@ -70,7 +70,7 @@ public class JsonSettings {
         this.ignoreEmptyArray  = ignoreEmptyArray;
         this.namingStyle       = namingStyle;
         this.dateFormat        = dateFormat;
-        this.dateFormatter     = dateFormatter;
+        this.dateTimeFormatter = dateTimeFormatter;
         this.nullToEmptyString = nullToEmptyString;
     }
 
@@ -103,8 +103,8 @@ public class JsonSettings {
         return dateFormat;
     }
 
-    public DateTimeFormatter getDateFormatter() {
-        return dateFormatter;
+    public DateTimeFormatter getDateTimeFormatter() {
+        return dateTimeFormatter;
     }
 
     public boolean isNullToEmptyString() {
@@ -121,7 +121,7 @@ public class JsonSettings {
         private boolean     nullToEmptyString = false;
         private NamingStyle namingStyle = NamingStyles.RAW;
         private DateFormat  dateFormat  = null;
-        private DateTimeFormatter dateFormatter;
+        private DateTimeFormatter dateTimeFormatter;
 
         public Builder() {
 	        super();
@@ -203,20 +203,23 @@ public class JsonSettings {
             return this;
         }
 
-        public DateTimeFormatter getDateFormatter() {
-            return dateFormatter;
+        public DateTimeFormatter getDateTimeFormatter() {
+            return dateTimeFormatter;
         }
 
-        public Builder setDateFormatter(String dateFormat) {
-            this.dateFormatter = dateFormatter;
+        public Builder setDateTimeFormatter(DateTimeFormatter formatter) {
+            this.dateTimeFormatter = formatter;
             return this;
         }
 
-        public Builder setDateFormatter(String dateFormat, String zone) {
-            this.dateFormatter = null == dateFormat ? null : DateFormats.getFormatter(dateFormat, zone);
-            return this;
+        public Builder setDateTimeFormatter(String pattern) {
+            return setDateTimeFormatter(pattern, null);
         }
 
+        public Builder setDateTimeFormatter(String pattern, String zone) {
+            this.dateTimeFormatter = null == pattern ? null : DateFormats.getFormatter(pattern, zone);
+            return this;
+        }
 
         public boolean isNullToEmptyString() {
             return nullToEmptyString;
@@ -236,14 +239,14 @@ public class JsonSettings {
             this.nullToEmptyString = settings.nullToEmptyString;
             this.namingStyle = settings.namingStyle;
             this.dateFormat = settings.dateFormat;
-            this.dateFormatter = settings.dateFormatter;
+            this.dateTimeFormatter = settings.dateTimeFormatter;
             return this;
         }
 
         public JsonSettings build(){
 			return new JsonSettings(keyQuoted, ignoreNull, ignoreFalse,
                                     ignoreEmptyString, ignoreEmptyArray, nullToEmptyString,
-                                    namingStyle, dateFormat, dateFormatter);
+                                    namingStyle, dateFormat, dateTimeFormatter);
 		}
 
     }
