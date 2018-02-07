@@ -18,6 +18,7 @@ package leap.orm.mapping;
 import leap.core.AppConfig;
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
+import leap.core.annotation.Transactional;
 import leap.core.ioc.PostCreateBean;
 import leap.core.metamodel.ReservedMetaFieldName;
 import leap.core.validation.annotations.NotEmpty;
@@ -149,7 +150,7 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 
         Class<?> type  = a.type();
         Object   inst  = factory.getOrCreateBean(type);
-        boolean  trans = a.transactional();
+        boolean  trans = a.transactional() || type.isAnnotationPresent(Transactional.class);
 
         //create
         if(PreCreateListener.class.isAssignableFrom(type)) {

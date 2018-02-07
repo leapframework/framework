@@ -16,6 +16,7 @@
 
 package leap.orm.event;
 
+import leap.core.annotation.Transactional;
 import leap.lang.Buildable;
 
 import java.util.*;
@@ -29,6 +30,55 @@ public class EntityListenersBuilder implements Buildable<EntityListeners> {
     protected final Map<PreDeleteListener,  Boolean> preDeleteListeners  = new LinkedHashMap<>();
     protected final Map<PostDeleteListener, Boolean> postDeleteListeners = new LinkedHashMap<>();
     protected final Set<PostLoadListener>            postLoadListeners   = new LinkedHashSet<>();
+
+    public EntityListenersBuilder addPreCreateListeners(PreCreateListener... listeners) {
+        for(PreCreateListener listener : listeners) {
+            addPreCreateListener(listener, listener.getClass().isAnnotationPresent(Transactional.class));
+        }
+        return this;
+    }
+
+    public EntityListenersBuilder addPostCreateListeners(PostCreateListener... listeners) {
+        for(PostCreateListener listener : listeners) {
+            addPostCreateListener(listener, listener.getClass().isAnnotationPresent(Transactional.class));
+        }
+        return this;
+    }
+
+    public EntityListenersBuilder addPreUpdateListeners(PreUpdateListener... listeners) {
+        for(PreUpdateListener listener : listeners) {
+            addPreUpdateListener(listener, listener.getClass().isAnnotationPresent(Transactional.class));
+        }
+        return this;
+    }
+
+    public EntityListenersBuilder addPostUpdateListeners(PostUpdateListener... listeners) {
+        for(PostUpdateListener listener : listeners) {
+            addPostUpdateListener(listener, listener.getClass().isAnnotationPresent(Transactional.class));
+        }
+        return this;
+    }
+
+    public EntityListenersBuilder addPreDeleteListeners(PreDeleteListener... listeners) {
+        for(PreDeleteListener listener : listeners) {
+            addPreDeleteListener(listener, listener.getClass().isAnnotationPresent(Transactional.class));
+        }
+        return this;
+    }
+
+    public EntityListenersBuilder addPostDeleteListeners(PostDeleteListener... listeners) {
+        for(PostDeleteListener listener : listeners) {
+            addPostDeleteListener(listener, listener.getClass().isAnnotationPresent(Transactional.class));
+        }
+        return this;
+    }
+
+    public EntityListenersBuilder addPostLoadListeners(PostLoadListener... listeners) {
+        for(PostLoadListener listener : listeners) {
+            addPostLoadListener(listener);
+        }
+        return this;
+    }
 
     public EntityListenersBuilder addPreCreateListener(PreCreateListener listener, boolean transactional) {
         preCreateListeners.put(listener, transactional);
