@@ -29,8 +29,13 @@ import leap.lang.value.Page;
 import leap.orm.OrmContext;
 import leap.orm.OrmMetadata;
 import leap.orm.dao.Dao;
+import leap.orm.event.EntityEventWithWrapperImpl;
+import leap.orm.event.EntityListeners;
+import leap.orm.event.LoadEntityEventImpl;
+import leap.orm.event.PostLoadListener;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.sql.SqlLanguage;
+import leap.orm.value.EntityWrapper;
 
 import java.util.HashMap;
 import java.util.List;
@@ -202,12 +207,28 @@ public abstract class AbstractQuery<T> implements Query<T>,QueryContext {
 
 	@Override
     public QueryResult<T> result() {
-	    return executeQuery(this);
+	    return executeResult(null);
     }
 	
 	@Override
     public QueryResult<T> result(Limit limit) {
-	    return null == limit ? executeQuery(this) : executeQuery(new LimitQueryContext(limit));
+	    return executeResult(limit);
+    }
+
+    protected QueryResult<T> executeResult(Limit limit) {
+        QueryResult result = null == limit ? executeQuery(this) : executeQuery(new LimitQueryContext(limit));
+
+        if(null != em) {
+            if(null != em.getListeners() && em.getListeners().hasLoadListeners()) {
+                PostLoadListener[] listeners = em.getListeners().getPostLoadListeners();
+                LoadEntityEventImpl event = new LoadEntityEventImpl(this, em, result.list(), false);
+                for(PostLoadListener listener : listeners) {
+                    listener.postLoadEntity(event);
+                }
+            }
+        }
+
+        return result;
     }
 
 	@Override

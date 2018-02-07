@@ -21,10 +21,15 @@ import leap.core.jdbc.ResultSetReader;
 import leap.lang.params.Params;
 import leap.lang.value.Limit;
 import leap.orm.dao.Dao;
+import leap.orm.event.LoadEntityEventImpl;
+import leap.orm.event.PostLoadListener;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.query.QueryContext;
 import leap.orm.reader.ResultSetReaders;
 import leap.orm.sql.SqlCommand;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class DefaultFindCommand<T> extends AbstractEntityDaoCommand implements FindCommand<T>,QueryContext {
 	
@@ -68,6 +73,16 @@ public class DefaultFindCommand<T> extends AbstractEntityDaoCommand implements F
 	    if(null == result && checkNotFound) {
 	        throw new RecordNotFoundException("Record not found for the id '" + id + "'");
 	    }
+
+        if(null != result && null != em.getListeners() && em.getListeners().hasLoadListeners()) {
+            List list = new ArrayList();
+            list.add(result);
+
+            LoadEntityEventImpl event = new LoadEntityEventImpl(this, em, list, true);
+            for(PostLoadListener listener : em.getListeners().getPostLoadListeners()) {
+                listener.postLoadEntity(event);
+            }
+        }
 	    
 	    return result;
     }

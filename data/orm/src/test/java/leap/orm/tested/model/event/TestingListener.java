@@ -23,7 +23,7 @@ import leap.orm.value.EntityWrapper;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class TestingListener implements PreCreateListener,PreUpdateListener,PreDeleteListener {
+public class TestingListener implements PreCreateListener,PreUpdateListener,PreDeleteListener,PostLoadListener {
 
     public static final int POST_CREATE_NO_TRANS_WITH_ERROR = 1;
     public static final int POST_CREATE_IN_TRANS_WITH_ERROR = 2;
@@ -32,6 +32,8 @@ public class TestingListener implements PreCreateListener,PreUpdateListener,PreD
 
     public static Object lastUpdateId;
     public static Object lastDeleteId;
+
+    public static LoadEntityEvent lastLoadEntityEvent;
 
     @PreCreate
     public void preCreateEntity(EntityWrapper entity) {
@@ -79,6 +81,21 @@ public class TestingListener implements PreCreateListener,PreUpdateListener,PreD
     public void postUpdateNoTransWithError(EventModel m, TransactionStatus ts) {
         if(m.getTestType() == POST_UPDATE_IN_TRANS_WITH_ERROR) {
             throw new RuntimeException("error");
+        }
+    }
+
+    @Override
+    public void postLoadEntity(LoadEntityEvent e) {
+        lastLoadEntityEvent = e;
+
+        for(LoadEntityEvent.Row row : e) {
+            String col2 = row.getEntity().get("col3");
+            if(null == col2) {
+                row.getEntity().set("col3", "_ok");
+            }else {
+                row.getEntity().set("col3", col2 + "_" + "ok");
+            }
+            row.getEntity().set("col4", "extra");
         }
     }
 

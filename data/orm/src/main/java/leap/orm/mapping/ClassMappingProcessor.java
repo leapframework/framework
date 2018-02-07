@@ -180,7 +180,7 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 
         //load
         if(PostLoadListener.class.isAssignableFrom(type)) {
-            listeners.addPostLoadListener((PostLoadListener)inst, trans);
+            listeners.addPostLoadListener((PostLoadListener)inst);
         }
 
         ReflectClass c = ReflectClass.of(type);
@@ -228,7 +228,7 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 
             if(m.isAnnotationPresent(PostLoad.class)) {
                 ReflectLoadEntityListener listener = new ReflectLoadEntityListener(inst, m);
-                listeners.addPostLoadListener(listener, listener.isTransactional());
+                listeners.addPostLoadListener(listener);
                 continue;
             }
         }
