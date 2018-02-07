@@ -773,6 +773,8 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
             type = SwaggerType.BYTE;
         }else if(k == MSimpleTypeKind.DATETIME) {
             type = SwaggerType.DATETIME;
+        }else if(k == MSimpleTypeKind.DATE) {
+            type = SwaggerType.DATE;
         }else if(k == MSimpleTypeKind.TIME) {
             type = SwaggerType.TIME;
         }else if(k == MSimpleTypeKind.DECIMAL) {
