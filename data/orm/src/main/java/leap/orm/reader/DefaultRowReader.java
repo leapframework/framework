@@ -149,7 +149,7 @@ public class DefaultRowReader implements RowReader {
 
 			bp = beanType.tryGetProperty(name, true);
 			
-			if(null != bp){
+			if(null != bp && bp.isWritable()){
 				bp.setValue(bean, dialect.getColumnValue(rs, i+1, column.columnType));
 			}
 		}
