@@ -53,7 +53,7 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     protected Set<String> 	 removalModelNamePrefixes    = new HashSet<String>();
     protected Set<String> 	 removalModelNamePrefixesImv = Collections.unmodifiableSet(removalModelNamePrefixes);
 
-    protected Set<ApiRoute> routes    = new HashSet<>();
+    protected Set<ApiRoute> routes    = new LinkedHashSet<>();
     protected Set<ApiRoute> routesImv = Collections.unmodifiableSet(routes);
 
     protected Map<String, MApiPermission> permissions    = new LinkedHashMap<>();
