@@ -18,6 +18,7 @@ package leap.lang;
 
 import leap.lang.time.DateFormats;
 
+import java.sql.Time;
 import java.text.DateFormat;
 import java.text.ParsePosition;
 import java.time.*;
@@ -75,13 +76,15 @@ public class Dates {
      * @return the formatted date string.
      */
     public static String format(Date date) {
-        Instant instant;
-        try {
-            instant = date.toInstant();
-        } catch (UnsupportedOperationException e) {
-            instant = Instant.ofEpochMilli(date.getTime());
+        if(date instanceof java.sql.Date){
+            LocalDate ld = ((java.sql.Date) date).toLocalDate();
+            return ld.format(DateFormats.getFormatter(date.getClass()));
+        }else if(date instanceof java.sql.Time){
+            return ((Time) date).toLocalTime().format(DateFormats.getFormatter(date.getClass()));
+        }else {
+            Instant instant = date.toInstant();
+            return DateFormats.getFormatter(date.getClass()).format(instant);
         }
-        return DateFormats.getFormatter(date.getClass()).format(instant);
     }
 
     /**
@@ -92,13 +95,15 @@ public class Dates {
      * @return the formatted date/time string.
      */
     public static String format(Date date, String pattern) {
-        Instant instant;
-        try {
-            instant = date.toInstant();
-        } catch (UnsupportedOperationException e) {
-            instant = Instant.ofEpochMilli(date.getTime());
+        if(date instanceof java.sql.Date){
+            LocalDate ld = ((java.sql.Date) date).toLocalDate();
+            return ld.format(DateFormats.getFormatter(pattern));
+        }else if(date instanceof java.sql.Time){
+            return ((Time) date).toLocalTime().format(DateFormats.getFormatter(pattern));
+        }else {
+            Instant instant = date.toInstant();
+            return DateFormats.getFormatter(pattern).format(instant);
         }
-        return DateFormats.getFormatter(pattern).format(instant);
     }
 
     /**
