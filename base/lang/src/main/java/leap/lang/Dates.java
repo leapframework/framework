@@ -75,7 +75,13 @@ public class Dates {
      * @return the formatted date string.
      */
     public static String format(Date date) {
-        return DateFormats.getFormatter(date.getClass()).format(date.toInstant());
+        Instant instant;
+        try {
+            instant = date.toInstant();
+        } catch (UnsupportedOperationException e) {
+            instant = Instant.ofEpochMilli(date.getTime());
+        }
+        return DateFormats.getFormatter(date.getClass()).format(instant);
     }
 
     /**
@@ -86,7 +92,13 @@ public class Dates {
      * @return the formatted date/time string.
      */
     public static String format(Date date, String pattern) {
-        return DateFormats.getFormatter(pattern).format(date.toInstant());
+        Instant instant;
+        try {
+            instant = date.toInstant();
+        } catch (UnsupportedOperationException e) {
+            instant = Instant.ofEpochMilli(date.getTime());
+        }
+        return DateFormats.getFormatter(pattern).format(instant);
     }
 
     /**
