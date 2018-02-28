@@ -20,11 +20,13 @@ package leap.web.api.orm;
 
 import leap.core.value.Record;
 import leap.core.value.SimpleRecord;
-import leap.lang.Arrays2;
 import leap.lang.Strings;
 import leap.lang.convert.Converts;
 import leap.orm.enums.RemoteType;
-import leap.orm.mapping.*;
+import leap.orm.mapping.EntityMapping;
+import leap.orm.mapping.FieldMapping;
+import leap.orm.mapping.RelationMapping;
+import leap.orm.mapping.RelationProperty;
 import leap.orm.query.CriteriaQuery;
 import leap.orm.query.PageResult;
 import leap.web.Params;
@@ -45,13 +47,19 @@ import java.util.function.Consumer;
 
 public class DefaultModelQueryExecutor extends ModelExecutorBase implements ModelQueryExecutor {
 
-    protected final ModelAndMapping modelAndMapping;
+    protected final ModelAndMapping   modelAndMapping;
+    protected final ModelQueryHandler handler;
 
     protected String[] excludedFields;
 
     public DefaultModelQueryExecutor(ModelExecutorContext context) {
+        this(context, null);
+    }
+
+    public DefaultModelQueryExecutor(ModelExecutorContext context, ModelQueryHandler handler) {
         super(context);
         this.modelAndMapping = new ModelAndMapping(am, em);
+        this.handler = handler;
     }
 
     @Override
@@ -62,6 +70,10 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
     @Override
     public QueryOneResult queryOne(Object id, QueryOptionsBase options) {
+        if(null != handler) {
+            handler.processQueryOneOptions(context, id, options);
+        }
+
         Record record;
 
         CriteriaQuery<Record> query = dao.createCriteriaQuery(em).whereById(id);
@@ -71,7 +83,15 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             query.selectExclude(excludedFields);
         }
 
+        if(null != handler) {
+            handler.preQueryOne(context, id, query);
+        }
+
         record = query.firstOrNull();
+
+        if(null != handler && null != record) {
+            handler.postQueryOne(context, id, record);
+        }
 
         if(null != record && null != options) {
             Expand[] expands = ExpandParser.parse(options.getExpand());
@@ -87,93 +107,96 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
     @Override
     public QueryListResult queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback) {
-        //todo : validates the query options.
+        if(null == options) {
+            options = new QueryOptions();
+        }
+
+        if(null != handler) {
+            handler.processQueryListOptions(context, options);
+        }
 
         CriteriaQuery<Record> query = dao.createCriteriaQuery(em);
 
         long count = -1;
         List<Record> list;
-        if(null == options) {
 
-            if(callback != null){
-                callback.accept(query);
-            }
+        if(!Strings.isEmpty(options.getOrderBy())) {
+            applyOrderBy(query, options.getOrderBy());
+        }
 
-            query.selectExclude(excludedFields);
-
-            list = query.limit(ac.getMaxPageSize()).list();
-
+        if(!Strings.isEmpty(options.getSelect())) {
+            applySelect(query, options.getSelect());
         }else{
-            if(!Strings.isEmpty(options.getOrderBy())) {
-                applyOrderBy(query, options.getOrderBy());
-            }
+            query.selectExclude(excludedFields);
+        }
 
-            if(!Strings.isEmpty(options.getSelect())) {
-                applySelect(query, options.getSelect());
-            }else{
-                query.selectExclude(excludedFields);
-            }
+        Map<String, ModelAndMapping> joinedModels = null;
 
-            Map<String, ModelAndMapping> joinedModels = null;
+        if(!Strings.isEmpty(options.getJoins())) {
+            Join[] joins = JoinParser.parse(options.getJoins());
 
-            if(!Strings.isEmpty(options.getJoins())) {
-                Join[] joins = JoinParser.parse(options.getJoins());
+            Set<String> relations = new HashSet<>();
 
-                Set<String> relations = new HashSet<>();
+            joinedModels = new HashMap<>(joins.length);
 
-                joinedModels = new HashMap<>(joins.length);
+            for(Join join : joins) {
 
-                for(Join join : joins) {
-
-                    if(relations.contains(join.getRelation().toLowerCase())) {
-                        throw new BadRequestException("Duplicated join relation '" + join.getRelation() + "'");
-                    }
-
-                    if(joinedModels.containsKey(join.getAlias().toLowerCase())) {
-                        throw new BadRequestException("Duplicated join alias '" + join.getAlias() + "'");
-                    }
-
-                    if(join.getAlias().equalsIgnoreCase(query.alias())) {
-                        throw new BadRequestException("Alias '" + query.alias() + "' is reserved, please use another one");
-                    }
-
-                    RelationProperty rp = em.tryGetRelationProperty(join.getRelation());
-                    if(null == rp) {
-                        throw new BadRequestException("No relation '" + join.getRelation() + "' in model '" + am.getName());
-                    }
-
-                    if(rp.isOptional()) {
-                        query.leftJoin(rp.getTargetEntityName(), rp.getRelationName(), join.getAlias());
-                    }else{
-                        query.join(rp.getTargetEntityName(), rp.getRelationName(), join.getAlias());
-                    }
-
-                    relations.add(join.getRelation().toLowerCase());
-
-                    ModelAndMapping joinedModel = lookupModelAndMapping(rp.getTargetEntityName());
-                    if(null == joinedModel) {
-                        throw new BadRequestException("The joined model '" + rp.getTargetEntityName() + "' of relation '" + join.getRelation() + "' not found");
-                    }
-                    joinedModels.put(join.getAlias().toLowerCase(), joinedModel);
+                if(relations.contains(join.getRelation().toLowerCase())) {
+                    throw new BadRequestException("Duplicated join relation '" + join.getRelation() + "'");
                 }
+
+                if(joinedModels.containsKey(join.getAlias().toLowerCase())) {
+                    throw new BadRequestException("Duplicated join alias '" + join.getAlias() + "'");
+                }
+
+                if(join.getAlias().equalsIgnoreCase(query.alias())) {
+                    throw new BadRequestException("Alias '" + query.alias() + "' is reserved, please use another one");
+                }
+
+                RelationProperty rp = em.tryGetRelationProperty(join.getRelation());
+                if(null == rp) {
+                    throw new BadRequestException("No relation '" + join.getRelation() + "' in model '" + am.getName());
+                }
+
+                if(rp.isOptional()) {
+                    query.leftJoin(rp.getTargetEntityName(), rp.getRelationName(), join.getAlias());
+                }else{
+                    query.join(rp.getTargetEntityName(), rp.getRelationName(), join.getAlias());
+                }
+
+                relations.add(join.getRelation().toLowerCase());
+
+                ModelAndMapping joinedModel = lookupModelAndMapping(rp.getTargetEntityName());
+                if(null == joinedModel) {
+                    throw new BadRequestException("The joined model '" + rp.getTargetEntityName() + "' of relation '" + join.getRelation() + "' not found");
+                }
+                joinedModels.put(join.getAlias().toLowerCase(), joinedModel);
             }
+        }
 
-            applyFilters(query, options.getParams(), options.getFilters(), joinedModels, filters);
+        applyFilters(query, options.getParams(), options, joinedModels, filters);
 
-            if(callback != null){
-                callback.accept(query);
-            }
+        if(callback != null){
+            callback.accept(query);
+        }
 
-            PageResult result = query.pageResult(options.getPage(ac.getDefaultPageSize()));
+        if(null != handler) {
+            handler.preQueryList(context, query);
+        }
 
-            list = result.list();
+        PageResult result = query.pageResult(options.getPage(ac.getDefaultPageSize()));
 
-            if(!list.isEmpty()) {
-                Expand[] expands = ExpandParser.parse(options.getExpand());
-                if(expands.length > 0) {
-                	for(Expand expand : expands) {
-                        expand( expand,list);
-                    }
+        list = result.list();
+
+        if(null != handler) {
+            handler.postQueryList(context, list);
+        }
+
+        if(!list.isEmpty()) {
+            Expand[] expands = ExpandParser.parse(options.getExpand());
+            if(expands.length > 0) {
+                for(Expand expand : expands) {
+                    expand( expand,list);
                 }
             }
         }
@@ -187,10 +210,12 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
     @Override
     public QueryListResult count(CountOptions options, Consumer<CriteriaQuery> callback) {
-
         CriteriaQuery<Record> query = dao.createCriteriaQuery(em);
 
-        applyFilters(query, null, options.getFilters(), null, null);
+        QueryOptions queryOptions = new QueryOptions();
+        queryOptions.setFilters(options.getFilters());
+
+        applyFilters(query, null, queryOptions, null, null);
 
         if(callback != null){
             callback.accept(query);
@@ -578,9 +603,21 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         query.select(fields.toArray(new String[fields.size()]));
     }
 
-    protected void applyFilters(CriteriaQuery query, Params params, String expr, Map<String, ModelAndMapping> jms, Map<String, Object> fields) {
+    protected void applyFilters(CriteriaQuery query, Params params, QueryOptions options, Map<String, ModelAndMapping> jms, Map<String, Object> fields) {
         StringBuilder where = new StringBuilder();
-        List<Object> args = new ArrayList<>();
+        List<Object>  args  = new ArrayList<>();
+
+        if(null != handler) {
+            handler.preProcessQueryListWhere(context, options, where, args);
+        }
+
+        //view
+        if(!Strings.isEmpty(options.getViewId()) && null == handler) {
+            throw new BadRequestException("'viewId' not supported");
+        }
+        if(null != handler) {
+            handler.handleQueryListView(context, options.getViewId(), where, args);
+        }
 
         //fields
         if(null != fields && !fields.isEmpty()) {
@@ -645,9 +682,9 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             }
         }
 
-        //expr
-        if(!Strings.isEmpty(expr)) {
-            Filters filters = FiltersParser.parse(expr);
+        //filters
+        if(!Strings.isEmpty(options.getFilters())) {
+            Filters filters = FiltersParser.parse(options.getFilters());
 
             FiltersParser.Node[] nodes = filters.nodes();
             if(nodes.length > 0) {
@@ -711,6 +748,10 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                     where.append(")");
                 }
             }
+        }
+
+        if(null != handler) {
+            handler.postProcessQueryListWhere(context, options, where, args);
         }
 
         if(where.length() > 0) {

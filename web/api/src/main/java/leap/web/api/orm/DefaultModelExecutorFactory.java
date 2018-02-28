@@ -16,26 +16,33 @@
 
 package leap.web.api.orm;
 
+import leap.core.annotation.Inject;
+
 public class DefaultModelExecutorFactory implements ModelExecutorFactory {
+
+    protected @Inject ModelQueryHandler  queryHandler;
+    protected @Inject ModelCreateHandler createHandler;
+    protected @Inject ModelUpdateHandler updateHandler;
+    protected @Inject ModelDeleteHandler deleteHandler;
 
     @Override
     public ModelCreateExecutor newCreateExecutor(ModelExecutorContext context) {
-        return new DefaultModelCreateExecutor(context);
+        return new DefaultModelCreateExecutor(context, createHandler);
     }
 
     @Override
     public ModelUpdateExecutor newUpdateExecutor(ModelExecutorContext context) {
-        return new DefaultModelUpdateExecutor(context);
+        return new DefaultModelUpdateExecutor(context, updateHandler);
     }
 
     @Override
     public ModelDeleteExecutor newDeleteExecutor(ModelExecutorContext context) {
-        return new DefaultModelDeleteExecutor(context);
+        return new DefaultModelDeleteExecutor(context, deleteHandler);
     }
 
     @Override
     public ModelQueryExecutor newQueryExecutor(ModelExecutorContext context) {
-        return new DefaultModelQueryExecutor(context);
+        return new DefaultModelQueryExecutor(context, queryHandler);
     }
 
 }

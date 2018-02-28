@@ -261,5 +261,10 @@ public class OkTHttpClient extends THttpClientBase {
         public boolean isHttpOnly() {
             return false;
         }
+
+        @Override
+        public String toString() {
+            return cookie.toString();
+        }
     }
 }

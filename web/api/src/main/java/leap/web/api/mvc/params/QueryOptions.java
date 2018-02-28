@@ -30,6 +30,7 @@ public class QueryOptions extends QueryOptionsBase {
     protected @QueryParam("offset")      Integer offset;  //0-based
     protected @QueryParam("total")       boolean total;
     protected @QueryParam("orderby")     String  orderBy;
+    protected @QueryParam("viewId")      String  viewId;
     protected @QueryParam("filters")     String  filters;
     protected @QueryParam("joins")       String  joins;
 
@@ -79,6 +80,14 @@ public class QueryOptions extends QueryOptionsBase {
 
     public void setOrderBy(String orderBy) {
         this.orderBy = orderBy;
+    }
+
+    public String getViewId() {
+        return viewId;
+    }
+
+    public void setViewId(String viewId) {
+        this.viewId = viewId;
     }
 
     public String getFilters() {
