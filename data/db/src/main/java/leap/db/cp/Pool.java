@@ -16,6 +16,7 @@
 package leap.db.cp;
 
 import leap.lang.Args;
+import leap.lang.Classes;
 import leap.lang.Strings;
 import leap.lang.jdbc.JDBC;
 import leap.lang.logging.Log;
@@ -26,6 +27,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLTimeoutException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
@@ -37,8 +39,10 @@ import static leap.db.cp.PooledConnection.*;
 
 class Pool {
 	private static final Log log = LogFactory.get(Pool.class);
-	
-	private static final AtomicInteger poolCounter = new AtomicInteger();
+
+    static final String FRAMEWORK_PACKAGE = Classes.getPackageName(PooledConnection.class) + ".";
+
+    private static final AtomicInteger poolCounter = new AtomicInteger();
 	
 	private final PoolFactory                 factory;
 	private final PoolConfig                  config;
@@ -163,10 +167,29 @@ class Pool {
         }
 
 		//Timeout
-		log.warn("[{}] Borrowing connection timeout",getName());
+        log.error("[{}] Borrowing connection timeout. [{}]", getName(), getStateInfo());
+        printConnections();
 		throw new SQLTimeoutException("Timeout after " + (System.currentTimeMillis() - start) + "ms of borrowing a connection");
 	}
-	
+
+    protected void printConnections() {
+        if(log.isInfoEnabled()) {
+            int maxPrint = 5;
+            int count = 0;
+            for (PooledConnection conn : syncPool.connections()) {
+                count++;
+                if (count == maxPrint) {
+                    break;
+                }
+                if (conn.isActive()) {
+                    log.info("connection busy duration {}ms\n{}",
+                            conn.getBusyDurationMs(),
+                            new StackTraceStringBuilder(conn.getStackTraceOnOpen()).toString());
+                }
+            }
+        }
+    }
+
 	public boolean isClose() {
 		return closed;
 	}
