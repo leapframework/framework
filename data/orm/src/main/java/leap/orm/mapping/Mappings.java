@@ -15,9 +15,9 @@
  */
 package leap.orm.mapping;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
+import leap.lang.Beans;
 import leap.lang.Objects2;
 import leap.lang.Strings;
 import leap.lang.accessor.Getter;
@@ -52,6 +52,7 @@ public class Mappings {
         return getId(em, attributes::get);
 	}
 
+
     public static Object getId(EntityMapping em, Getter getter) {
         String[] keyNames = em.getKeyFieldNames();
         if(keyNames.length == 1){
@@ -67,6 +68,32 @@ public class Mappings {
             id.put(keyNames[i], getter.get(keyNames[i]));
         }
         return id;
+    }
+
+    public static Object[] getIdArgs(EntityMapping em, Object id) {
+        if(id instanceof Object[]) {
+            return (Object[])id;
+        }
+
+        if(id instanceof Collection) {
+            return ((Collection)id).toArray();
+        }
+
+        if(em.getKeyColumnNames().length > 1) {
+            Map map;
+            if(id instanceof Map) {
+                map = (Map)id;
+            }else {
+                map = Beans.toMap(id);
+            }
+            List<Object> args = new ArrayList<>();
+            for(String name : em.getKeyFieldNames()) {
+                args.add(map.get(name));
+            }
+            return args.toArray();
+        }else {
+            return new Object[]{id};
+        }
     }
 	
 	public static String getIdToString(EntityMapping em , Map<String, Object> attributes){

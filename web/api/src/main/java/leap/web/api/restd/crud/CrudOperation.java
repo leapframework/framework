@@ -21,18 +21,23 @@ import leap.lang.Strings;
 import leap.lang.meta.MCollectionType;
 import leap.lang.meta.MComplexTypeRef;
 import leap.lang.meta.MSimpleTypes;
+import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
+import leap.web.action.ActionParams;
 import leap.web.action.Argument;
 import leap.web.action.ArgumentBuilder;
 import leap.web.action.FuncActionBuilder;
+import leap.web.api.Api;
 import leap.web.api.meta.model.*;
 import leap.web.api.mvc.ApiResponse;
 import leap.web.api.orm.ModelExecutorFactory;
 import leap.web.api.restd.*;
 import leap.web.route.RouteBuilder;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 public abstract class CrudOperation extends RestdOperationBase implements RestdProcessor {
 
@@ -75,16 +80,16 @@ public abstract class CrudOperation extends RestdOperationBase implements RestdP
         return a;
     }
 
-    protected ArgumentBuilder addIdArgument(RestdContext context, FuncActionBuilder action,RestdModel model) {
-        ArgumentBuilder a = newIdArgument(model);
+    protected void addIdArguments(RestdContext context, FuncActionBuilder action, RestdModel model) {
+        for(FieldMapping id : model.getEntityMapping().getKeyFieldMappings()) {
+            ArgumentBuilder a = newIdArgument(model, id);
 
-        for(RestdArgumentSupport vs : argumentSupports) {
-            vs.processIdArgument(context, model, a);
+            for (RestdArgumentSupport vs : argumentSupports) {
+                vs.processIdArgument(context, model, a);
+            }
+
+            action.addArgument(a);
         }
-
-        action.addArgument(a);
-
-        return a;
     }
 
     protected MApiResponseBuilder addModelResponse(FuncActionBuilder action, RestdModel model) {
@@ -181,16 +186,14 @@ public abstract class CrudOperation extends RestdOperationBase implements RestdP
         return p;
     }
 
-    protected ArgumentBuilder newIdArgument(RestdModel model) {
+    protected ArgumentBuilder newIdArgument(RestdModel model, FieldMapping id) {
         ArgumentBuilder a = new ArgumentBuilder();
-
-        FieldMapping id = model.getEntityMapping().getKeyFieldMappings()[0];
 
         a.setName(id.getFieldName());
         a.setLocation(Argument.Location.PATH_PARAM);
         a.setType(id.getJavaType());
         a.setRequired(true);
-        a.setExtension(newIdParameter(model));
+        a.setExtension(newIdParameter(model, id));
 
         return a;
     }
@@ -218,18 +221,46 @@ public abstract class CrudOperation extends RestdOperationBase implements RestdP
         }
     }
 
-    private MApiParameterBuilder newIdParameter(RestdModel model) {
-
-        //todo : check id fields.
-        FieldMapping id = model.getEntityMapping().getKeyFieldMappings()[0];
-
+    private MApiParameterBuilder newIdParameter(RestdModel model, FieldMapping id) {
         MApiParameterBuilder p = new MApiParameterBuilder();
         p.setName(id.getFieldName());
         p.setLocation(MApiParameter.Location.PATH);
         p.setRequired(true);
         p.setType(id.getDataType());
-
         return p;
+    }
+
+    protected abstract static class CrudFunction implements Function<ActionParams, Object> {
+        protected final Api        api;
+        protected final Dao        dao;
+        protected final RestdModel model;
+        protected final EntityMapping em;
+
+        protected final int idLen;
+
+        protected CrudFunction(Api api, Dao dao, RestdModel model) {
+            this.api = api;
+            this.dao = dao;
+            this.model = model;
+            this.em = model.getEntityMapping();
+            this.idLen = em.getKeyFieldMappings().length;
+        }
+
+        protected final Object id(ActionParams params) {
+            if(idLen > 1) {
+                Map id = new HashMap(idLen);
+                for(int i=0;i<idLen;i++) {
+                    id.put(em.getKeyFieldNames()[i], params.get(i));
+                }
+                return id;
+            }else {
+                return params.get(0);
+            }
+        }
+
+        protected final Map record(ActionParams params) {
+            return params.get(idLen);
+        }
     }
 
 }
