@@ -32,6 +32,7 @@ import leap.lang.logging.LogFactory;
 import leap.oauth2.webapp.OAuth2InternalServerException;
 import leap.oauth2.webapp.OAuth2Config;
 import leap.oauth2.webapp.OAuth2ResponseException;
+import leap.oauth2.webapp.Oauth2InvalidTokenException;
 
 import java.util.Map;
 import java.util.Objects;
@@ -75,7 +76,9 @@ public class DefaultTokenInfoLookup implements TokenInfoLookup {
                 if(Strings.isEmpty(error)) {
                     return createTokenInfo(map);
                 }else{
-                    if(!response.is2xx()){
+                    if(response.getStatus() == HTTP.SC_UNAUTHORIZED){
+                        throw new Oauth2InvalidTokenException(response.getStatus(),error, Objects.toString(map.get("error_description")));
+                    }else if(!response.is2xx()){
                         throw new OAuth2ResponseException(response.getStatus(),error, Objects.toString(map.get("error_description")));
                     }else {
                         throw new OAuth2InternalServerException("Auth server response error '" + error + "' : " + map.get("error_description"));

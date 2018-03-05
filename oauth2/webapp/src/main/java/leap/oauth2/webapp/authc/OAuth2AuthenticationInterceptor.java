@@ -25,6 +25,7 @@ import leap.lang.logging.LogFactory;
 import leap.oauth2.webapp.OAuth2Config;
 import leap.oauth2.webapp.OAuth2ErrorHandler;
 import leap.oauth2.webapp.OAuth2ResponseException;
+import leap.oauth2.webapp.Oauth2InvalidTokenException;
 import leap.oauth2.webapp.token.Token;
 import leap.oauth2.webapp.token.TokenExtractor;
 import leap.web.Request;
@@ -82,6 +83,11 @@ public class OAuth2AuthenticationInterceptor implements SecurityInterceptor {
             errorHandler.handleInvalidToken(request, response, e.getMessage());
             return State.INTERCEPTED;
         } catch (OAuth2ResponseException e) {
+            if (e instanceof Oauth2InvalidTokenException){
+                if(null != context.getSecuredPath() && context.getSecuredPath().isAllowAnonymous()){
+                    return State.CONTINUE;
+                }
+            }
             errorHandler.responseError(request, response, e.getStatus(), e.getError(), e.getMessage());
             return State.INTERCEPTED;
         } catch (Throwable e) {
