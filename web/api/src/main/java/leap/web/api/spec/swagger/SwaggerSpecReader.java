@@ -511,8 +511,8 @@ public class SwaggerSpecReader implements ApiSpecReader {
         return new MComplexTypeRef(ref);
     }
 
-    protected MCollectionType readCollectionType(JsonObject items) {
-        return new MCollectionType(readType(items));
+    protected MCollectionType readCollectionType(JsonObject items, SwaggerExtension ex) {
+        return new MCollectionType(readType(items, ex));
     }
 
     protected MType readType(JsonObject property) {
@@ -543,7 +543,7 @@ public class SwaggerSpecReader implements ApiSpecReader {
         }
 
         if(type.equals(ARRAY)) {
-            return readCollectionType(property.getObject(ITEMS));
+            return readCollectionType(property.getObject(ITEMS), ex);
         }
 
         String format = property.getString(FORMAT);
