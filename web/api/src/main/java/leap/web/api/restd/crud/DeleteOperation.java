@@ -61,7 +61,7 @@ public class DeleteOperation extends CrudOperation implements RestdProcessor {
         action.setName(Strings.lowerCamel("delete", model.getName()));
         action.setFunction(new DeleteFunction(context.getApi(), dao, model));
 
-        addIdArgument(context, action, model);
+        addIdArguments(context, action, model);
         addArgument(context, action, DeleteOptions.class, "options");
         addNoContentResponse(action, model);
 
@@ -74,15 +74,10 @@ public class DeleteOperation extends CrudOperation implements RestdProcessor {
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 
-    private final class DeleteFunction implements Function<ActionParams, Object> {
-        private final Api        api;
-        private final Dao        dao;
-        private final RestdModel model;
+    private final class DeleteFunction extends CrudFunction {
 
         public DeleteFunction(Api api, Dao dao, RestdModel model) {
-            this.api = api;
-            this.dao = dao;
-            this.model = model;
+            super(api, dao, model);
         }
 
         @Override
@@ -93,8 +88,8 @@ public class DeleteOperation extends CrudOperation implements RestdProcessor {
             ModelExecutorContext context = new SimpleModelExecutorContext(api, am, dao, model.getEntityMapping());
             ModelDeleteExecutor executor = mef.newDeleteExecutor(context);
 
-            Object        id      = params.get(0);
-            DeleteOptions options = params.get(1);
+            Object        id      = id(params);
+            DeleteOptions options = params.get(idLen);
 
             if(executor.deleteOne(id, options).success) {
                 return ApiResponse.NO_CONTENT;

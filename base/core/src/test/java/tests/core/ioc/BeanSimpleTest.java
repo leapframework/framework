@@ -52,7 +52,27 @@ public class BeanSimpleTest extends CoreTestCase {
 		
 		List<TBeanType2> list2 = beanFactory.getBeans(TBeanType2.class, "a");
 		assertEquals(2, list2.size());
+
+        List<TBeanType2> list2_1 = beanFactory.getBeans(TBeanType2.class, "a");
+        for(int i=0;i<list2_1.size();i++) {
+            assertSame(list2.get(i), list2_1.get(i));
+        }
 	}
+
+    @Test
+    public void testBeanListWithNonSingleton(){
+        List<TBeanType3> list1 = beanFactory.getBeans(TBeanType3.class);
+        List<TBeanType3> list2 = beanFactory.getBeans(TBeanType3.class);
+        assertEquals(list1.size(), list2.size());
+        assertNotSame(list1.get(0), list2.get(0));
+        assertSame(list1.get(1), list2.get(1));
+
+        list1 = beanFactory.getBeans(TBeanType3.class, "a");
+        list2 = beanFactory.getBeans(TBeanType3.class, "a");
+        assertEquals(list1.size(), list2.size());
+        assertSame(list1.get(0), list2.get(0));
+        assertNotSame(list1.get(1), list2.get(1));
+    }
 
     @Test
     public void testNonSingleton() {

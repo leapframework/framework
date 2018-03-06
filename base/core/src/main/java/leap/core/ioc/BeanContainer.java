@@ -626,28 +626,7 @@ public class BeanContainer implements BeanFactory {
 	@Override
     public <T> List<T> getBeans(Class<? super T> type) throws BeanException {
         String key = type.getName();
-
-        List<T> beans = (List<T>)typedBeansMap.get(key);
-
-        if(null == beans){
-            beans = new ArrayList<T>();
-            BeanListDefinition bld = beanListDefinitions.get(key);
-            if(null != bld){
-                for(ValueDefinition vd : bld.getValues()){
-                    Object bean = doCreateBean(vd);
-                    if(!type.isAssignableFrom(bean.getClass())){
-                        throw new BeanDefinitionException("The bean list's element must be instance of '" + type.getName() + "' in '" + bld.getSource() + "'");
-                    }
-                    beans.add((T)bean);
-                }
-            }else{
-                Map<T, BeanDefinition> bds = getBeansWithDefinition(type);
-                bds.keySet().forEach(beans::add);
-            }
-            typedBeansMap.put(key, beans);
-        }
-
-        return beans;
+        return doGetBeans(type, key, false, null);
     }
 
     public <T> List<T> getBeans(Class<? super T> type, String qualifier, boolean orEmpty) throws BeanException {
@@ -665,13 +644,23 @@ public class BeanContainer implements BeanFactory {
 
         String key = null == qualifier ? type.getName() : type.getName() + "$" + qualifier;
 
+        return doGetBeans(type, key, true, qualifier);
+    }
+
+    protected  <T> List<T> doGetBeans(Class<? super T> type, String key, boolean hasQualifier, String qualifier) throws BeanException {
         List<T> beans = (List<T>)typedBeansMap.get(key);
 
+        boolean cache = true;
         if(null == beans){
-            beans = new ArrayList<T>();
+            beans = new ArrayList<>();
             BeanListDefinition bld = beanListDefinitions.get(key);
             if(null != bld){
                 for(ValueDefinition vd : bld.getValues()){
+                    Object v = vd.getDefinedValue();
+                    if(v instanceof BeanDefinition && !((BeanDefinition)v).isSingleton()) {
+                        cache = false;
+                    }
+
                     Object bean = doCreateBean(vd);
                     if(!type.isAssignableFrom(bean.getClass())){
                         throw new BeanDefinitionException("The bean list's element must be instance of '" + type.getName() + "' in '" + bld.getSource() + "'");
@@ -684,19 +673,26 @@ public class BeanContainer implements BeanFactory {
                 for(Entry<T, BeanDefinition> entry : bds.entrySet()){
                     BeanDefinition bd = entry.getValue();
 
-                    if(Strings.isEmpty(qualifier) && bd.getQualifiers().isEmpty()) {
-                        beans.add(entry.getKey());
-                    }else if(bd.getQualifiers().contains(qualifier)){
+                    if(!bd.isSingleton()) {
+                        cache = false;
+                    }
+
+                    if(hasQualifier) {
+                        if (null == qualifier || bd.getQualifiers().contains(qualifier)) {
+                            beans.add(entry.getKey());
+                        }
+                    }else {
                         beans.add(entry.getKey());
                     }
                 }
             }
 
-            typedBeansMap.put(key, beans);
+            if(cache) {
+                typedBeansMap.put(key, beans);
+            }
         }
         return beans;
     }
-
 
 	@Override
     @SuppressWarnings("unchecked")
@@ -730,18 +726,22 @@ public class BeanContainer implements BeanFactory {
 		
 		if(null == beans){
 			beans = new LinkedHashMap<>(5);
-			
+
+            boolean cache = true;
+
 			Set<BeanDefinitionBase> typeSet = bds.beanTypeDefinitions.get(type);
 			if(null != typeSet){
 				for(BeanDefinitionBase bd : typeSet){
-					if(!bd.isSingleton()){
-						throw new BeanDefinitionException("The bean '" + bd.getName() + "' must be singleton, cannot cache the named beans for type '" + type.getName() + "'");
-					}
+                    if(!bd.isSingleton()) {
+                        cache = false;
+                    }
 					beans.put((T)doGetBean(bd),bd);
 				}
 			}
-			
-			typedInstances.put(type, Collections.unmodifiableMap(beans));
+
+            if(cache) {
+                typedInstances.put(type, Collections.unmodifiableMap(beans));
+            }
 		}
 		
 	    return beans;
@@ -1751,7 +1751,7 @@ public class BeanContainer implements BeanFactory {
 		if(definedValue instanceof BeanReference){
 			return doGetBeanReferenceInstance((BeanReference)definedValue);
 		}else if(definedValue instanceof BeanDefinitionBase){
-			return doBeanCreation((BeanDefinitionBase)definedValue);
+			return doGetBean((BeanDefinitionBase)definedValue);
 		}
 		
 		throw new IllegalStateException("The value definition must be bean reference or bean definition");

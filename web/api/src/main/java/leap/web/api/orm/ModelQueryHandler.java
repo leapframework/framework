@@ -25,22 +25,40 @@ import java.util.List;
 
 public interface ModelQueryHandler {
 
-    void processQueryOneOptions(ModelExecutorContext context, Object id, QueryOptionsBase options);
+    default void processQueryOneOptions(ModelExecutorContext context, Object id, QueryOptionsBase options) {
 
-    void preQueryOne(ModelExecutorContext context, Object id, CriteriaQuery<Record> query);
+    }
 
-    void postQueryOne(ModelExecutorContext context, Object id, Record record);
+    default void preQueryOne(ModelExecutorContext context, Object id, CriteriaQuery<Record> query) {
 
-    void processQueryListOptions(ModelExecutorContext context, QueryOptions options);
+    }
 
-    void preProcessQueryListWhere(ModelExecutorContext context, QueryOptions options, StringBuilder where, List<Object> args);
+    default void postQueryOne(ModelExecutorContext context, Object id, Record record) {
 
-    void handleQueryListView(ModelExecutorContext context, String viewId, StringBuilder where, List<Object> args);
+    }
 
-    void postProcessQueryListWhere(ModelExecutorContext context, QueryOptions options, StringBuilder where, List<Object> args);
+    default void processQueryListOptions(ModelExecutorContext context, QueryOptions options) {
 
-    void preQueryList(ModelExecutorContext context, CriteriaQuery<Record> query);
+    }
 
-    void postQueryList(ModelExecutorContext context, List<Record> list);
+    default void preProcessQueryListWhere(ModelExecutorContext context, QueryOptions options, StringBuilder where, List<Object> args) {
+
+    }
+
+    default void handleQueryListView(ModelExecutorContext context, String viewId, StringBuilder where, List<Object> args) {
+
+    }
+
+    default void postProcessQueryListWhere(ModelExecutorContext context, QueryOptions options, StringBuilder where, List<Object> args){
+
+    }
+
+    default void preQueryList(ModelExecutorContext context, CriteriaQuery<Record> query) {
+
+    }
+
+    default void postQueryList(ModelExecutorContext context, List<Record> list) {
+
+    }
 
 }

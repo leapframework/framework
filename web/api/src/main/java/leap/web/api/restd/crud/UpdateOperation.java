@@ -63,7 +63,7 @@ public class UpdateOperation extends CrudOperation implements RestdProcessor {
 
         action.setName(Strings.lowerCamel("update", model.getName()));
         action.setFunction(new UpdateFunction(context.getApi(), dao, model));
-        addIdArgument(context, action, model);
+        addIdArguments(context, action, model);
         addModelArgumentForUpdate(context, action, model);
         addNoContentResponse(action, model);
 
@@ -75,15 +75,10 @@ public class UpdateOperation extends CrudOperation implements RestdProcessor {
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 
-    private final class UpdateFunction implements Function<ActionParams, Object> {
-        private final Api        api;
-        private final Dao        dao;
-        private final RestdModel model;
+    private final class UpdateFunction extends CrudFunction implements Function<ActionParams, Object> {
 
         public UpdateFunction(Api api, Dao dao, RestdModel model) {
-            this.api = api;
-            this.dao = dao;
-            this.model = model;
+            super(api, dao, model);
         }
 
         @Override
@@ -91,10 +86,10 @@ public class UpdateOperation extends CrudOperation implements RestdProcessor {
             ApiMetadata amd = api.getMetadata();
             MApiModel   am  = amd.getModel(model.getName());
 
-            Object             id     = params.get(0);
-            Map<String,Object> record = params.get(1);
+            Object             id     = id(params);
+            Map<String,Object> record = record(params);
 
-            ModelExecutorContext context  = new SimpleModelExecutorContext(api, am, dao, model.getEntityMapping());
+            ModelExecutorContext context  = new SimpleModelExecutorContext(api, am, dao, em);
             ModelUpdateExecutor  executor = mef.newUpdateExecutor(context);
 
             if(Arrays2.isNotEmpty(validators)) {

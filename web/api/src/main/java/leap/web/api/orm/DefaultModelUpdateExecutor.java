@@ -101,6 +101,10 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
             handler.preUpdateProperties(context, id, properties);
         }
 
+        if(properties.isEmpty()) {
+            throw new BadRequestException("No update properties");
+        }
+
         UpdateCommand update =
                 dao.cmdUpdate(em.getEntityName()).withId(id).from(properties);
 
