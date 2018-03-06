@@ -215,7 +215,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
                     } else {
                         int routeState = routeAndExecuteAction(request, response, router, ac);
 
-                        if (routeState == ROUTE_STATE_HANLDED) {
+                        if (routeState == ROUTE_STATE_HANDLED) {
                             handled = true;
                         } else if (routeState == ROUTE_STATE_NOT_HANDLED) {
 
@@ -389,8 +389,8 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 
     //0 : not handled , 1: handled 2 : end
     private static final int ROUTE_STATE_NOT_HANDLED = 0;
-    private static final int ROUTE_STATE_HANLDED = 1;
-    private static final int ROUTE_STATE_END = 2;
+    private static final int ROUTE_STATE_HANDLED     = 1;
+    private static final int ROUTE_STATE_END         = 2;
 
     protected boolean handleCorePreflightRequest(Request request,
                                                  Response response,
@@ -405,18 +405,25 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
         if (!Strings.isEmpty(ac.getPath())) {
             Enumeration<String> methods = request.getServletRequest().getHeaders(REQUEST_HEADER_ACCESS_CONTROL_REQUEST_METHOD);
             Route route = null;
-            while (methods.hasMoreElements()){
-                String method = methods.nextElement();
-                route = router.match(method, ac.getPath(), request.getParameters(), New.hashMap());
-                if(null != route){
-                    break;
+
+            try {
+                while (methods.hasMoreElements()) {
+                    String method = methods.nextElement();
+                    route = router.match(method, ac.getPath(), request.getParameters(), New.hashMap());
+                    if (null != route) {
+                        break;
+                    }
                 }
-            }
-            if(null == route){
-                route = router.match(null, ac.getPath(), request.getParameters(), New.hashMap());
-            }
-            if (null == route) {
-                return false;
+                if (null == route) {
+                    route = router.match(null, ac.getPath(), request.getParameters(), New.hashMap());
+                }
+                if (null == route) {
+                    return false;
+                }
+            }catch (RuntimeException e) {
+                if(!e.getMessage().contains("Ambiguous")) {
+                    throw e;
+                }
             }
 
             handler.preHandle(request, response);
@@ -451,7 +458,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
                 if (route.isCorsEnabled() || (webConfig.isCorsEnabled() && !route.isCorsDisabled())) {
                     if (webConfig.getCorsHandler().preHandle(request, response).isIntercepted()) {
                         log.debug("Request was intercepted by cors handler");
-                        return ROUTE_STATE_HANLDED;
+                        return ROUTE_STATE_HANDLED;
                     }
                 }
                 
@@ -462,7 +469,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
                 }
 
                 if (State.isIntercepted(interceptors.handleRoute(request, response, ac.getRoute(), ac))) {
-                    return ROUTE_STATE_HANLDED;
+                    return ROUTE_STATE_HANDLED;
                 }
 
                 Result result = new Result();
@@ -470,7 +477,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 
                 executeAndRenderAction(request, response, ac, result);
 
-                return ROUTE_STATE_HANLDED;
+                return ROUTE_STATE_HANDLED;
             }
         }
 
@@ -494,7 +501,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
         DefaultActionContext ac = newActionContext(request, response);
         ac.setPath(actionPath);
 
-        if (ROUTE_STATE_HANLDED == routeAndExecuteAction(request, response, router, ac)) {
+        if (ROUTE_STATE_HANDLED == routeAndExecuteAction(request, response, router, ac)) {
             return true;
         }
 
