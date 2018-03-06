@@ -353,6 +353,10 @@ public class SwaggerSpecReader implements ApiSpecReader {
     }
 
     public MApiModelBuilder readModel(String name, Map<String,Object> map) {
+        return readModel(name, map, SwaggerExtension.NOP);
+    }
+
+    public MApiModelBuilder readModel(String name, Map<String,Object> map, SwaggerExtension ex) {
         MApiModelBuilder mm = new MApiModelBuilder();
 
         JsonObject model = JsonObject.of(map);
@@ -367,7 +371,7 @@ public class SwaggerSpecReader implements ApiSpecReader {
 
         Map<String,Object> properties = model.getMap(PROPERTIES);
         if(null != properties) {
-            List<MApiPropertyBuilder> list = readProperties(properties, requiredProperties);
+            List<MApiPropertyBuilder> list = readProperties(properties, requiredProperties, ex);
             list.forEach(mm::addProperty);
         }
 
@@ -379,9 +383,13 @@ public class SwaggerSpecReader implements ApiSpecReader {
     }
 
     public List<MApiPropertyBuilder> readProperties(Map<String,Object> properties, List<String> requiredProperties) {
+        return readProperties(properties, requiredProperties, SwaggerExtension.NOP);
+    }
+
+    public List<MApiPropertyBuilder> readProperties(Map<String,Object> properties, List<String> requiredProperties, SwaggerExtension ex) {
         List<MApiPropertyBuilder> list = new ArrayList<>();
         properties.forEach((propName, propMap) -> {
-            MApiPropertyBuilder p = readProperty(propName, (Map<String,Object>)propMap);
+            MApiPropertyBuilder p = readProperty(propName, (Map<String,Object>)propMap, ex);
 
             if(null != requiredProperties && requiredProperties.contains(p.getName())) {
                 p.setRequired(true);
@@ -394,12 +402,16 @@ public class SwaggerSpecReader implements ApiSpecReader {
     }
 
     protected void readParameterBase(JsonObject p, MApiParameterBaseBuilder mp) {
+        readParameterBase(p, mp, SwaggerExtension.NOP);
+    }
+
+    protected void readParameterBase(JsonObject p, MApiParameterBaseBuilder mp, SwaggerExtension ex) {
         mp.setName(p.getString(NAME));
         mp.setTitle(p.getString(TITLE));
         mp.setSummary(p.getString(SUMMARY));
         mp.setDescription(p.getString(DESCRIPTION));
         mp.setRequired(p.get(REQUIRED, Boolean.class));
-        mp.setType(readParameterType(p));
+        mp.setType(readParameterType(p, ex));
         mp.setDefaultValue(p.get(DEFAULT));
 
         MApiValidationBuilder v = new MApiValidationBuilder();
@@ -422,11 +434,15 @@ public class SwaggerSpecReader implements ApiSpecReader {
     }
 
     public MApiPropertyBuilder readProperty(String name, Map<String,Object> map) {
+        return readProperty(name, map, SwaggerExtension.NOP);
+    }
+
+    public MApiPropertyBuilder readProperty(String name, Map<String,Object> map, SwaggerExtension ex) {
         MApiPropertyBuilder mp = new MApiPropertyBuilder();
 
         JsonObject p = JsonObject.of(map);
 
-        readParameterBase(p, mp);
+        readParameterBase(p, mp, ex);
         mp.setName(name);
 
         //yaml read all values to string.
@@ -478,11 +494,15 @@ public class SwaggerSpecReader implements ApiSpecReader {
     }
 
     protected MType readParameterType(JsonObject p) {
+        return readParameterType(p, SwaggerExtension.NOP);
+    }
+
+    protected MType readParameterType(JsonObject p, SwaggerExtension ex) {
         JsonObject schema = p.getObject(SCHEMA);
         if(null != schema) {
-            return readType(schema);
+            return readType(schema, ex);
         }else{
-            return readType(p);
+            return readType(p, ex);
         }
     }
 
@@ -496,6 +516,10 @@ public class SwaggerSpecReader implements ApiSpecReader {
     }
 
     protected MType readType(JsonObject property) {
+        return readType(property, SwaggerExtension.NOP);
+    }
+
+    protected MType readType(JsonObject property, SwaggerExtension ex) {
         String ref = property.getString(REF);
         if(!Strings.isEmpty(ref)) {
             return readRefType(ref);
@@ -507,6 +531,11 @@ public class SwaggerSpecReader implements ApiSpecReader {
                 return null;
             }
             throw new InvalidSpecException("Invalid type in property : " + JSON.stringify(property.raw()));
+        }
+
+        MType mtype = null != ex ? ex.readType(type) : null;
+        if(null != mtype) {
+            return mtype;
         }
 
         if(type.equals(OBJECT)) {
