@@ -46,6 +46,7 @@ import leap.lang.Strings;
 import leap.lang.Valued;
 import leap.lang.convert.CollectionConverters.ListConverter;
 import leap.lang.meta.MSimpleType;
+import leap.lang.reflect.Reflection;
 import leap.lang.value.Null;
 
 @SuppressWarnings({"unchecked","rawtypes"})
@@ -165,8 +166,8 @@ public class Converts {
 	
 	protected static <T> Object doConvert(Object value,Class<T> targetType, Type genericType, ConvertContext context) {
 		Args.notNull(targetType,"targetType");
-		
-		if(!CharSequence.class.isAssignableFrom(targetType)){
+
+		if(!CharSequence.class.isAssignableFrom(targetType) && !StringParsable.class.isAssignableFrom(targetType)){
 			value = trimToNull(value);	
 		}
         
