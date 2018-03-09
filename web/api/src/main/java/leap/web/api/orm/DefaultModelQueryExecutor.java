@@ -267,7 +267,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         	localFieldName=inverseRm.getJoinFields()[0].getReferencedFieldName();
         	referredFieldName=inverseRm.getJoinFields()[0].getLocalFieldName();
         }else if(rm.isManyToMany()){
-        	throw new RuntimeException("Unsupport remote entity expand when relation type is many-to-many");
+        	throw new RuntimeException("Unsupported remote entity expand when relation type is many-to-many");
         }else{
             localFieldName= rm.getJoinFields()[0].getLocalFieldName();
             referredFieldName=rm.getJoinFields()[0].getReferencedFieldName();
@@ -737,7 +737,11 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                         continue;
                     }
 
-                    if(op == FiltersParser.Token.IN) {
+                    //env
+                    if(value.endsWith("()")) {
+                        String expr = "#{env." + value.substring(0, value.length() - 2) + "}";
+                        applyFieldFilterExpr(where, args, alias, modelAndProp.field, expr, sqlOperator);
+                    }else if(op == FiltersParser.Token.IN) {
                         applyFieldFilterIn(where, args, alias, modelAndProp.field, Strings.split(value, ','));
                     }else{
                         applyFieldFilter(where, args, alias, modelAndProp.field, value, sqlOperator);
@@ -816,6 +820,10 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
     protected void applyFieldFilter(StringBuilder where, List<Object> args, String alias, FieldMapping fm, Object value, String op) {
         where.append(alias).append('.').append(fm.getFieldName()).append(' ').append(op).append(" ?");
         args.add(Converts.convert(value, fm.getJavaType()));
+    }
+
+    protected void applyFieldFilterExpr(StringBuilder where, List<Object> args, String alias, FieldMapping fm, String expr, String op) {
+        where.append(alias).append('.').append(fm.getFieldName()).append(' ').append(op).append(" ").append(expr);
     }
 
     protected void applyFieldFilterIn(StringBuilder where, List<Object> args, String alias, FieldMapping fm, String[] values) {

@@ -178,6 +178,13 @@ public class FiltersParser extends ParserBase {
                 error("Invalid character \"'\", should use \"''\" instead");
             }
 
+            if(ch == '(' && charAt(pos+1) == ')') {
+                nextChar();
+                nextChar();
+                end = pos;
+                break;
+            }
+
             if(quoted) {
                 if(eof()) {
                     error("Unclosed string value");
