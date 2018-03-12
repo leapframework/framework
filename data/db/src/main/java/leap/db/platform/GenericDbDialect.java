@@ -531,8 +531,7 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 					 					   SchemaChangeContext.class, change.getClass(), List.class);
 			 
 			 if(null == method){
-				 throw new UnsupportedChangeException("Change type '" + change.getClass().getName() + 
-						 							  "' not supported by '" + this.getClass().getSimpleName() + "' yet");
+				 throw new UnsupportedChangeException("Unsupported change '" + change.getClass().getSimpleName() + "'", change);
 			 }
 			 
 			 schemaChangeMethods.put(change.getClass(), method);
