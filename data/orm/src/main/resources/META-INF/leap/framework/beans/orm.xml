@@ -55,7 +55,9 @@
 	<bean type="leap.orm.sql.SqlReader"  class="leap.orm.sql.XmlSqlReader"/>
 
     <!-- sql languages -->
-    <bean name="dynamic" type="leap.orm.sql.SqlLanguage"  class="leap.orm.sql.DynamicSqlLanguage" primary="true"/>
+    <bean name="dynamic" type="leap.orm.sql.SqlLanguage"  class="leap.orm.sql.DynamicSqlLanguage" primary="true">
+        <additional-type-def type="leap.core.AppReloadListener"/>
+    </bean>
     
     <bean name="dynamic:smart" type="leap.orm.sql.SqlLanguage" class="leap.orm.sql.DynamicSqlLanguage">
         <property name="mode" value="smart"/>

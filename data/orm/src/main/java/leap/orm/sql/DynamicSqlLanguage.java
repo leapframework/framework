@@ -15,6 +15,7 @@
  */
 package leap.orm.sql;
 
+import leap.core.AppReloadListener;
 import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
 import leap.core.annotation.Inject;
@@ -32,7 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Configurable(prefix="orm.dynamicSQL")
-public class DynamicSqlLanguage implements SqlLanguage {
+public class DynamicSqlLanguage implements SqlLanguage,AppReloadListener {
 	
 	private static final Log log = LogFactory.get(DynamicSqlLanguage.class);
 	
@@ -42,8 +43,15 @@ public class DynamicSqlLanguage implements SqlLanguage {
 	private Cache<String, List<Sql>> cache = new SimpleLRUCache<>();
 
     private Cache<String, List<DynamicSql.ExecutionSqls>> executionCache = new SimpleLRUCache<>();
-	
-	@ConfigProperty
+
+    @Override
+    public void postAppReload() {
+        log.info("App reload, clear all cache");
+        cache.clear();
+        executionCache.clear();
+    }
+
+    @ConfigProperty
 	public void setMode(String mode) {
 	    if("simple".equals(mode)) {
 	        smart = false;
