@@ -96,7 +96,7 @@ public class DefaultTokenInfoLookup implements TokenInfoLookup {
         details.setClientId((String)map.remove("client_id"));
         details.setUserId((String)map.remove("user_id"));
         details.setCreated(System.currentTimeMillis());
-        details.setExpiresIn(((Integer)map.remove("expires_in")) * 1000);
+        details.setExpiresIn(((Integer)map.remove("expires_in")));
         details.setScope((String)map.remove("scope"));
 
         return details;
