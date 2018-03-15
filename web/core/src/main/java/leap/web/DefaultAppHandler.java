@@ -509,8 +509,6 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
     }
 
     protected boolean handleNoAction(Request request, Response response, Router router, String path) throws Throwable {
-
-
         if (response.isHandled()) {
             return true;
         }
@@ -521,6 +519,10 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 
         if (router.handleNotFound(request, response, path)) {
             return true;
+        }
+
+        if(!config.isAllowViewAction()) {
+            return false;
         }
 
         View view = request.getViewSource().getView(path, request.getLocale());
