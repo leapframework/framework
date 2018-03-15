@@ -193,6 +193,7 @@ public class RestdConfig {
 
         protected final String name;
 
+        protected String  title;
         protected String  path;
         protected Boolean anonymous;
         protected Boolean createOperationEnabled;
@@ -211,6 +212,14 @@ public class RestdConfig {
 
         public String getName() {
             return name;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
         }
 
         public String getPath() {
