@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.leapframework</groupId>
 		<artifactId>tests</artifactId>
-		<version>0.6.8b-SNAPSHOT</version>
+		<version>0.6.8b</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>core-test-profile1</artifactId>
