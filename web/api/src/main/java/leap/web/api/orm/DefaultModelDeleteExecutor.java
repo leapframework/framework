@@ -44,11 +44,21 @@ public class DefaultModelDeleteExecutor extends ModelExecutorBase implements Mod
             }
         }
 
+        DeleteOneResult result;
         if(!options.isCascadeDelete()) {
-            return new DeleteOneResult(dao.delete(em, id) > 0);
+            result = new DeleteOneResult(dao.delete(em, id) > 0);
         }else{
-            return new DeleteOneResult(dao.cascadeDelete(em, id));
+            result = new DeleteOneResult(dao.cascadeDelete(em, id));
         }
+
+        if(null != handler) {
+            DeleteOneResult r = handler.postDeleteRecore(context, id, options, result);
+            if (null != r) {
+                result = r;
+            }
+        }
+
+        return result;
     }
 
 }

@@ -197,6 +197,16 @@ public interface ApiConfig extends Named,Titled,Described,Extensible {
      */
     int getDefaultPageSize();
 
+    /**
+     * Returns the max expand.
+     */
+    int getMaxExpand();
+
+    /**
+     * Returns the expand limit.
+     */
+    int getExpandLimit();
+
 	/**
 	 * Returns the base package of this api.
 	 */

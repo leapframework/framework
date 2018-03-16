@@ -113,7 +113,7 @@ public class CreateOperation extends CrudOperation implements RestdProcessor {
             CreateOneResult result = executor.createOne(record);
 
             Record r = dao.find(model.getEntityMapping(), result.id);
-            r.put("__id", result.id);
+            r.put("$id", result.id);
 
             return ApiResponse.created(r);
         }

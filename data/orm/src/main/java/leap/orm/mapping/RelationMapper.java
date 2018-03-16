@@ -172,7 +172,7 @@ public class RelationMapper implements Mapper {
 			return;
 		}
 
-		throw new MappingConfigException("Relation type '" + type + "' defines at entity '" + emb.getEntityName() + "' does not supports now");
+		//throw new MappingConfigException("Relation type '" + type + "' defines at entity '" + emb.getEntityName() + "' does not supports now");
 	}
 
 	protected void processManyToOneMapping(MappingConfigContext context,EntityMappingBuilder emb,RelationMappingBuilder rmb) {
