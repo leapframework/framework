@@ -18,6 +18,7 @@ package leap.web.api.restd;
 
 import leap.core.annotation.Inject;
 import leap.core.validation.ValidationManager;
+import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.json.JsonSettings;
@@ -122,7 +123,12 @@ public abstract class RestdOperationBase {
     }
 
     protected void preConfigure(RestdContext context, RestdModel model, FuncActionBuilder action) {
-        action.setExtension(new MApiTag[]{new MApiTag(model.getName())});
+        RestdConfig.Model m = context.getConfig().getModel(model.getName());
+        if(null != m && !Strings.isEmpty(m.getTitle())) {
+            action.setExtension(new MApiTag[]{new MApiTag(model.getName(), m.getTitle())});
+        }else {
+            action.setExtension(new MApiTag[]{new MApiTag(model.getName())});
+        }
     }
 
     protected void postConfigure(RestdContext context, RestdModel model, RouteBuilder route) {
