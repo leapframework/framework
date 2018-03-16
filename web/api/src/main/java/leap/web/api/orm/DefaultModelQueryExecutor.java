@@ -345,12 +345,12 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         	Object fk = record.get(localFieldName);
         	List<Record> fieldToRecords=referredRecords.get(fk);
         	if(rp.isMany()) {
-                record.put(rp.getName(),fieldToRecords);
+                record.put(rp.getName(),null == fieldToRecords ? Collections.emptyList() : fieldToRecords);
             }else{
             	if(fieldToRecords!=null && fieldToRecords.size()>0){
             		record.put(rp.getName(),fieldToRecords.get(0));
             	}else{
-            		record.put(rp.getName(), null);
+            		record.put(rp.getName(), Collections.emptyList());
             	}
             }
 		}
@@ -416,8 +416,10 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         //根据引用字段值，对所有查询出来的被引用数据，进行分组
         Map<Object,List<Record>> referredRecords=new HashMap<>();
         for (Record referred :resultList ) {
-        	Object fkVal=null;
-        	List<Record> fieldToValList=null;
+
+            Object fkVal;
+        	List<Record> fieldToValList;
+
         	if(rm.isManyToMany()){
         		fkVal=referred.remove(referredFieldName);
         		if(fkVal==null){
@@ -444,12 +446,12 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         	Object fk = record.get(localFieldName);
         	List<Record> fieldToRecords=referredRecords.get(fk);
         	if(rp.isMany()) {
-                record.put(rp.getName(),fieldToRecords);
+                record.put(rp.getName(),null == fieldToRecords ? Collections.emptyList() : fieldToRecords);
             }else{
             	if(fieldToRecords!=null && fieldToRecords.size()>0){
             		record.put(rp.getName(),fieldToRecords.get(0));
             	}else{
-            		record.put(rp.getName(), null);
+            		record.put(rp.getName(), Collections.emptyList());
             	}
             }
 		}
