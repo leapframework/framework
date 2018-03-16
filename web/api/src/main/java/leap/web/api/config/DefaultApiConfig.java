@@ -50,6 +50,8 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     protected NamingStyle    propertyNamingStyle;
     protected int            maxPageSize                 = MAX_PAGE_SIZE;
     protected int            defaultPageSize             = DEFAULT_PAGE_SIZE;
+    protected int            maxExpand                   = MAX_EXPAND;
+    protected int            expandLimit                 = EXPAND_LIMIT;
     protected Set<String> 	 removalModelNamePrefixes    = new HashSet<String>();
     protected Set<String> 	 removalModelNamePrefixesImv = Collections.unmodifiableSet(removalModelNamePrefixes);
 
@@ -419,6 +421,26 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     @Override
     public ApiConfigurator setDefaultPageSize(int size) {
         this.defaultPageSize = size;
+        return this;
+    }
+
+    @Override
+    public int getMaxExpand() {
+        return maxExpand;
+    }
+
+    public ApiConfigurator setMaxExpand(int maxExpand) {
+        this.maxExpand = maxExpand;
+        return this;
+    }
+
+    @Override
+    public int getExpandLimit() {
+        return expandLimit;
+    }
+
+    public ApiConfigurator setExpandLimit(int expandLimit) {
+        this.expandLimit = expandLimit;
         return this;
     }
 

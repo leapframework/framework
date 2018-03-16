@@ -195,8 +195,13 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         if(!list.isEmpty()) {
             Expand[] expands = ExpandParser.parse(options.getExpand());
             if(expands.length > 0) {
+
+                if(list.size() > ac.getMaxExpand()) {
+                    throw new BadRequestException("The result size " + list.size() + " exceed max expand " + ac.getMaxExpand() + ", please decrease your page_size");
+                }
+
                 for(Expand expand : expands) {
-                    expand( expand,list);
+                    expand( expand, list);
                 }
             }
         }
@@ -227,7 +232,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
     }
 
     protected void expand(Expand expand, List<Record> records) {
-    	if(records==null || records.size()==0){
+    	if(records == null || records.size() == 0){
     		return;
     	}
 
@@ -236,14 +241,17 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         if(null == ap) {
             throw new BadRequestException("The expand property '" + name + "' not exists!");
         }
+
         RelationProperty rp = em.tryGetRelationProperty(name);
         if(null == rp) {
             throw new BadRequestException("Property '" + name + "' cannot be expanded");
         }
+
         EntityMapping targetEm=dao.getOrmContext().getMetadata().tryGetEntityMapping(rp.getTargetEntityName());
         if(targetEm==null){
-        	throw new BadRequestException("can't find relation entity:"+rp.getTargetEntityName());
+        	throw new IllegalStateException("Can't find target entity '" + rp.getTargetEntityName() + "'");
         }
+
         if(targetEm.isRemote() && RemoteType.rest.equals(targetEm.getRemoteSettings().getRemoteType())){
         	expandByRest(expand, records, rp);
         }else{
@@ -253,21 +261,23 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
     private void expandByRest(Expand expand, List<Record> records, RelationProperty rp){
     	RelationMapping rm = em.getRelationMapping(rp.getRelationName());
-		QueryOptions queryOptions=new QueryOptions();
-		queryOptions.setLimit(200);
 		EntityMapping targetEm=this.md.getEntityMapping(rm.getTargetEntityName());
-		RestResource resource=RestResourceBuilder.newBuilder()
-				.setEntityMapping(targetEm)
-				.build();
+
+        QueryOptions opts =new QueryOptions();
+        opts.setLimit(ac.getExpandLimit() + 1);
+
+        RestResource resource = RestResourceBuilder.newBuilder().setEntityMapping(targetEm).build();
 
         //根据不同类型的关系，计算引用的源字段、被引用字段
-        String localFieldName="",referredFieldName="";
+        String localFieldName;
+        String referredFieldName;
+
         if(rm.isOneToMany()){
         	RelationMapping inverseRm= this.md.getEntityMapping(rm.getJoinEntityName()).getRelationMapping(rm.getInverseRelationName());
         	localFieldName=inverseRm.getJoinFields()[0].getReferencedFieldName();
         	referredFieldName=inverseRm.getJoinFields()[0].getLocalFieldName();
         }else if(rm.isManyToMany()){
-        	throw new RuntimeException("Unsupported remote entity expand when relation type is many-to-many");
+        	throw new BadRequestException("Unsupported remote entity expand when relation type is many-to-many");
         }else{
             localFieldName= rm.getJoinFields()[0].getLocalFieldName();
             referredFieldName=rm.getJoinFields()[0].getReferencedFieldName();
@@ -289,16 +299,20 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         	filters.append(fk.toString());
         	filters.append(",");
 		}
-        queryOptions.setFilters(Strings.format("{0} in {1}", referredFieldName,Strings.trimEnd(filters.toString(), ',')+"'"));
+        opts.setFilters(Strings.format("{0} in {1}", referredFieldName,Strings.trimEnd(filters.toString(), ',')+"'"));
+
         //构造expand时，要返回引用记录的字段
         if(Strings.isNotEmpty(expand.getSelect())) {
         	 if(expand.getSelect().contains(referredFieldName)){
-        		 queryOptions.setSelect(expand.getSelect());
+        		 opts.setSelect(expand.getSelect());
 	       	 }else{
-	       		queryOptions.setSelect(expand.getSelect()+","+referredFieldName);
+	       		opts.setSelect(expand.getSelect()+","+referredFieldName);
 	       	 }
         }
-        RestQueryListResult<Map> resultList= resource.queryList(Map.class, queryOptions);
+        RestQueryListResult<Map> resultList= resource.queryList(Map.class, opts);
+        if(resultList.getCount() > ac.getExpandLimit()) {
+            throw new BadRequestException("Expanded records of '" + rp.getName() + "' exceed max limit " + ac.getExpandLimit());
+        }
 
         //根据引用字段值，对所有查询出来的被引用数据，进行分组
         Map<Object,List<Record>> referredRecords=new HashMap<>();
@@ -340,17 +354,18 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             	}
             }
 		}
-
     }
 
 	private void expandByDb(Expand expand, List<Record> records, RelationProperty rp) {
-		RelationMapping rm = em.getRelationMapping(rp.getRelationName());
-		CriteriaQuery<Record> expandQuery =dao.createCriteriaQuery(rp.getTargetEntityName());
+		RelationMapping       rm          = em.getRelationMapping(rp.getRelationName());
+		CriteriaQuery<Record> expandQuery = dao.createCriteriaQuery(rp.getTargetEntityName()).limit(ac.getExpandLimit() + 1);
 
         //根据不同类型的关系，计算引用的源字段、被引用字段
-        String localFieldName="",referredFieldName="";
+        String localFieldName;
+        String referredFieldName;
+
         if(rm.isOneToMany()){
-        	RelationMapping inverseRm= this.md.getEntityMapping(rm.getJoinEntityName()).getRelationMapping(rm.getInverseRelationName());
+        	RelationMapping inverseRm= this.md.getEntityMapping(rm.getTargetEntityName()).getRelationMapping(rm.getInverseRelationName());
         	localFieldName=inverseRm.getJoinFields()[0].getReferencedFieldName();
         	referredFieldName=inverseRm.getJoinFields()[0].getLocalFieldName();
         }else if(rm.isManyToMany()){
@@ -394,6 +409,9 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 	       	 }
         }
         List<Record> resultList= expandQuery.list();
+        if(resultList.size() > ac.getExpandLimit()) {
+            throw new BadRequestException("Expanded records of '" + rp.getName() + "' exceed max limit " + ac.getExpandLimit());
+        }
 
         //根据引用字段值，对所有查询出来的被引用数据，进行分组
         Map<Object,List<Record>> referredRecords=new HashMap<>();
