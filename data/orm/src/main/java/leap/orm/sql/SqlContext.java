@@ -22,6 +22,16 @@ import leap.orm.OrmContext;
 import leap.orm.mapping.EntityMapping;
 
 public interface SqlContext extends SqlLanguage.Options {
+
+    /**
+     * Returns current query sql or null.
+     */
+    Sql getQuerySql();
+
+    /**
+     * Sets current query sql.
+     */
+    void setQuerySql(Sql sql);
     
     /**
      * Returns the {@link DbDialect}.

@@ -53,6 +53,16 @@ public class DefaultSqlStatement implements SqlStatement,BatchSqlStatement,SqlEx
 	}
 
     @Override
+    public Sql getQuerySql() {
+        return sql;
+    }
+
+    @Override
+    public void setQuerySql(Sql sql) {
+
+    }
+
+    @Override
     public OrmContext getOrmContext() {
         return context.getOrmContext();
     }
@@ -94,6 +104,7 @@ public class DefaultSqlStatement implements SqlStatement,BatchSqlStatement,SqlEx
 
 	@Override
     public <T> T executeQuery(ResultSetReader<T> reader) throws NestedSQLException {
+        context.setQuerySql(sql);
 		return context.getJdbcExecutor().executeQuery(sqlString, args, argTypes, wrap(reader));
     }
 

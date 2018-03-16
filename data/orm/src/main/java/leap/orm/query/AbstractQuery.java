@@ -34,9 +34,11 @@ import leap.orm.event.EntityListeners;
 import leap.orm.event.LoadEntityEventImpl;
 import leap.orm.event.PostLoadListener;
 import leap.orm.mapping.EntityMapping;
+import leap.orm.sql.Sql;
 import leap.orm.sql.SqlLanguage;
 import leap.orm.value.EntityWrapper;
 
+import java.sql.SQLClientInfoException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +61,8 @@ public abstract class AbstractQuery<T> implements Query<T>,QueryContext {
 	protected String orderBy;
 	protected String groupBy;
 	protected String having;
+
+    private Sql querySql;
 	
 	protected AbstractQuery(Dao dao, Class<T> targetType){
 		this(dao,targetType,null);
@@ -71,6 +75,16 @@ public abstract class AbstractQuery<T> implements Query<T>,QueryContext {
 		this.targetType = targetType;
 		this.em 		= entityMapping;
 	}
+
+    @Override
+    public Sql getQuerySql() {
+        return querySql;
+    }
+
+    @Override
+    public void setQuerySql(Sql sql) {
+        querySql = sql;
+    }
 
     @Override
     public Boolean getQueryFilterEnabled() {
@@ -267,12 +281,24 @@ public abstract class AbstractQuery<T> implements Query<T>,QueryContext {
 	protected class LimitQueryContext implements QueryContext {
 		
 		private final Limit limit;
-		
+
+        private Sql sql;
+
 		public LimitQueryContext(Limit limit) {
 			this.limit = limit;
 		}
-		
-		@Override
+
+        @Override
+        public Sql getQuerySql() {
+            return sql;
+        }
+
+        @Override
+        public void setQuerySql(Sql sql) {
+            this.sql = sql;
+        }
+
+        @Override
         public EntityMapping getPrimaryEntityMapping() {
 	        return em;
         }

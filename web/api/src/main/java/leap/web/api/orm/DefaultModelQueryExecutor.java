@@ -350,7 +350,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             	if(fieldToRecords!=null && fieldToRecords.size()>0){
             		record.put(rp.getName(),fieldToRecords.get(0));
             	}else{
-            		record.put(rp.getName(), Collections.emptyList());
+            		record.put(rp.getName(), null);
             	}
             }
 		}
@@ -378,6 +378,8 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             referredFieldName=rm.getJoinFields()[0].getReferencedFieldName();
         }
 
+        String referredFieldAlias = rm.getTargetEntityName() + "_" + referredFieldName;
+
         //获取所有被引用记录的id
         Set<Object> fks=new HashSet<>();
         for (Record record : records) {
@@ -399,13 +401,16 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         //构造expand时，要返回引用记录的字段
         if(Strings.isEmpty(expand.getSelect())) {
         	 if(rm.isManyToMany()){
-        		 expandQuery.select("*",Strings.format("_jt_.{0} as {0}",referredFieldName));
-        	 }
+        		 expandQuery.select("*",Strings.format("_jt_.{0} as {1}",referredFieldName, referredFieldAlias));
+        	 }else {
+                 referredFieldAlias = referredFieldName;
+             }
         }else{
         	if(rm.isManyToMany()){
-       		 	applySelect(expandQuery, expand.getSelect(),Strings.format("_jt_.{0} as {0}",referredFieldName));
+       		 	applySelect(expandQuery, expand.getSelect(),Strings.format("_jt_.{0} as {1}",referredFieldName, referredFieldAlias));
 	       	 }else{
-	       		 applySelect(expandQuery, expand.getSelect(),referredFieldName);
+                applySelect(expandQuery, expand.getSelect(),referredFieldName);
+                referredFieldAlias = referredFieldName;
 	       	 }
         }
         List<Record> resultList= expandQuery.list();
@@ -421,15 +426,15 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         	List<Record> fieldToValList;
 
         	if(rm.isManyToMany()){
-        		fkVal=referred.remove(referredFieldName);
+        		fkVal=referred.remove(referredFieldAlias);
         		if(fkVal==null){
-        			fkVal=referred.remove(referredFieldName.toUpperCase());
+        			fkVal=referred.remove(referredFieldAlias.toUpperCase());
         		}
         		if(fkVal==null){
-        			fkVal=referred.remove(referredFieldName.toLowerCase());
+        			fkVal=referred.remove(referredFieldAlias.toLowerCase());
         		}
         	}else{
-        		fkVal=referred.get(referredFieldName);
+        		fkVal=referred.get(referredFieldAlias);
         	}
 
 			if(referredRecords.containsKey(fkVal)){
@@ -451,7 +456,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             	if(fieldToRecords!=null && fieldToRecords.size()>0){
             		record.put(rp.getName(),fieldToRecords.get(0));
             	}else{
-            		record.put(rp.getName(), Collections.emptyList());
+            		record.put(rp.getName(), null);
             	}
             }
 		}

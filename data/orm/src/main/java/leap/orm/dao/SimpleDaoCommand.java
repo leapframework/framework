@@ -28,6 +28,7 @@ import leap.orm.mapping.EntityMapping;
 import leap.orm.model.ModelRegistry;
 import leap.orm.query.Query;
 import leap.orm.query.QueryContext;
+import leap.orm.sql.Sql;
 import leap.orm.sql.SqlCommand;
 import leap.orm.sql.SqlContext;
 
@@ -38,9 +39,21 @@ public class SimpleDaoCommand implements DaoCommand,SqlContext,QueryContext {
     private final Dao        dao_;
     private final SqlCommand cmd;
 
+    private Sql querySql;
+
     public SimpleDaoCommand(Dao dao, SqlCommand cmd) {
         this.dao_ = dao;
         this.cmd = cmd;
+    }
+
+    @Override
+    public Sql getQuerySql() {
+        return querySql;
+    }
+
+    @Override
+    public void setQuerySql(Sql sql) {
+        this.querySql = sql;
     }
 
     @Override
