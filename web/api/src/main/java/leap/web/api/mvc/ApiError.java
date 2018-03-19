@@ -28,6 +28,9 @@ public final class ApiError implements JsonStringable, Renderable {
     public String code;
     public String message;
 
+    public ApiError(){
+    }
+
     public ApiError(String message) {
         this.message = message;
     }
@@ -61,4 +64,19 @@ public final class ApiError implements JsonStringable, Renderable {
         return toJson();
     }
 
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
 }

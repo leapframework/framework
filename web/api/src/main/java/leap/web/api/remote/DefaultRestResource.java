@@ -10,6 +10,7 @@ import leap.lang.Strings;
 import leap.lang.http.ContentTypes;
 import leap.lang.http.HTTP.Method;
 import leap.lang.http.client.HttpRequest;
+import leap.lang.http.client.HttpResponse;
 import leap.lang.json.JSON;
 import leap.lang.json.JsonSettings;
 import leap.lang.logging.Log;
@@ -123,7 +124,7 @@ public class DefaultRestResource extends AbstractRestResource {
 	        	out.accept(new RestQueryListResult<T>(list, count));
 	        	return;
 	        }
-	        throw new RuntimeException("REMOTE_SERVICE_INVOKE_FAILED");
+	        throw new RestResourceInvokeException(response);
 		});
 		if(out.isEmpty()){
 			return null;

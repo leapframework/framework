@@ -2,6 +2,7 @@ package leap.web.api.remote;
 
 import java.util.Map;
 
+import leap.lang.http.client.HttpResponse;
 import leap.web.api.mvc.params.CountOptions;
 import leap.web.api.mvc.params.DeleteOptions;
 import leap.web.api.mvc.params.QueryOptions;
@@ -36,4 +37,6 @@ public interface RestResource {
      default <T> RestQueryListResult<T> queryList(Class<T> entityClass,QueryOptions options) {
         return queryList(entityClass,options, null);
     }
+
+    HttpResponse getResponse();
 }
