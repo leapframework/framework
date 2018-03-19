@@ -15,10 +15,7 @@
  */
 package leap.lang.reflect;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -234,16 +231,28 @@ public class Reflection {
 	 */
     public static List<Method> getMethods(Class<?> clazz){
         List<Method> methods = new ArrayList<Method>();
+
+        for(Method method : clazz.getMethods()) {
+            methods.add(method);
+        }
         
         for (Class<?> search = clazz; search != null; search = search.getSuperclass()) {
             for(Method method : search.getDeclaredMethods()){
+                if(Modifier.isPublic(method.getModifiers())) {
+                    continue;
+                }
+
+                if(methods.contains(method)) {
+                    continue;
+                }
+
                 //ignore synthetic method
                 if(!method.isSynthetic()){
                     methods.add(method) ;
                 }
             }
         }
-        
+
         return methods;
     }
     
@@ -252,15 +261,25 @@ public class Reflection {
 	 */
     public static List<Method> getMethods(Class<?> clazz,String name){
         List<Method> methods = new ArrayList<Method>();
-        
+
+        for(Method method : clazz.getMethods()) {
+            if(method.getName().equals(name)) {
+                methods.add(method);
+            }
+        }
+
         for (Class<?> search = clazz; search != null; search = search.getSuperclass()) {
             for(Method method : search.getDeclaredMethods()){
-                if(method.getName().equals(name)){
+                if(Modifier.isPublic(method.getModifiers())) {
+                    continue;
+                }
+
+                if(method.getName().equals(name) && !methods.contains(method)){
                     methods.add(method) ;
                 }
             }
         }
-        
+
         return methods;
     }    
 	
@@ -464,9 +483,6 @@ public class Reflection {
 	 * Invoke the specified {@link Method} against the supplied target object with no Args. The target object can
 	 * be <code>null</code> when invoking a static {@link Method}.
 	 * 
-	 * <p>
-	 * Thrown exceptions are handled via a call to {@link #handleReflectionException}.
-	 * 
 	 * @param method the method to invoke
 	 * @param target the target object to invoke the method on
 	 * @return the invocation result, if any
@@ -479,9 +495,6 @@ public class Reflection {
 	/**
 	 * Invoke the specified {@link Method} against the supplied target object with the supplied Args. The target
 	 * object can be <code>null</code> when invoking a static {@link Method}.
-	 * 
-	 * <p>
-	 * Thrown exceptions are handled via a call to {@link #handleReflectionException}.
 	 * 
 	 * @param method the method to invoke
 	 * @param target the target object to invoke the method on
@@ -505,7 +518,7 @@ public class Reflection {
 	 * specified {@link Object target object}. In accordance with {@link Field#get(Object)}
 	 * semantics, the returned value is automatically wrapped if the underlying field
 	 * has a primitive type.
-	 * <p>Thrown exceptions are handled via a call to {@link #handleReflectionException(Exception)}.
+     *
 	 * @param field the field to get
 	 * @param target the target object from which to get the field
 	 * @return the field's current value

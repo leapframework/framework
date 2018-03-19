@@ -70,7 +70,7 @@ public abstract class AbstractDateConverter<T> extends AbstractConverter<T> {
 
 	@Override
     public String convertToString(T value) throws Throwable {
-	    return DateFormats.getFormat(value.getClass()).format((Date)value);
+	    return DateFormats.getFormatter(value.getClass()).format(((Date)value).toInstant());
     }
 	
 	public void setPattern(String pattern){

@@ -18,10 +18,21 @@ package leap.orm.sql.parser;
 import leap.orm.sql.Sql;
 import leap.orm.sql.ast.*;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
 abstract class SqlQueryParser extends SqlParser {
+
+    protected static final Set<Token> WHERE_KEYWORDS = new HashSet<>();
+    static {
+        WHERE_KEYWORDS.add(Token.WHEN);
+        WHERE_KEYWORDS.add(Token.TOP);
+        WHERE_KEYWORDS.add(Token.COUNT);
+        WHERE_KEYWORDS.add(Token.DELETE);
+        WHERE_KEYWORDS.add(Token.END);
+    }
 
 	public SqlQueryParser(SqlParser parent) {
 		super(parent);
@@ -185,11 +196,6 @@ abstract class SqlQueryParser extends SqlParser {
             return true;
         }
 
-        if(token == Token.IDENTIFIER){
-            parseSqlObjectName();
-            return true;
-        }
-
         if(token == Token.AND) {
             acceptNode();
             return true;
@@ -197,6 +203,16 @@ abstract class SqlQueryParser extends SqlParser {
 
         if(token == Token.EQ) {
             acceptNode();
+            return true;
+        }
+
+        if(token == Token.IDENTIFIER){
+            parseSqlObjectName();
+            return true;
+        }
+
+        if(token.isKeyword() && WHERE_KEYWORDS.contains(token)) {
+            parseSqlObjectName();
             return true;
         }
 

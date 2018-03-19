@@ -28,7 +28,7 @@ import java.util.Map;
  * <p>
  * Note : the implementation must guarantee case insensitive.
  */
-public interface Params extends Emptiable,NamedGetter {
+public interface Params extends Emptiable, NamedGetter {
 	
 	/**
 	 * Returns an readonly empty params.

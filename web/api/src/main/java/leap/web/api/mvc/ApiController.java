@@ -22,6 +22,7 @@ import leap.web.annotation.Produces;
 import leap.web.annotation.Restful;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.ApiMetadata;
+import leap.web.api.spec.swagger.SwaggerConstants;
 import leap.web.json.JsonSerialize;
 import leap.core.security.annotation.AllowClientOnly;
 
@@ -30,7 +31,7 @@ import leap.core.security.annotation.AllowClientOnly;
 @AllowClientOnly
 @Restful
 @Failure(handler = ApiFailureHandler.class)
-@JsonSerialize(dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+@JsonSerialize(dateFormat = SwaggerConstants.DATE_TIME_FORMAT, gmt = true)
 public abstract class ApiController {
 
     protected ApiConfig   apiConfig;

@@ -70,7 +70,7 @@ public class MApiParameterBuilder extends MApiParameterBaseBuilder<MApiParameter
 	    return new MApiParameter(name, title, summary, description, type, format,
                                  file, password, location, required,
                                  defaultValue, enumValues,
-                                 null == validation ? null : validation.build(), attrs);
+                                 null == validation ? null : validation.build(), extension, attrs);
     }
 
 }

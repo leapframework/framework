@@ -1,13 +1,5 @@
 package leap.web.api.remote;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
 import leap.core.annotation.Inject;
 import leap.lang.Out;
 import leap.lang.Strings;
@@ -30,10 +22,17 @@ import leap.web.api.mvc.params.QueryOptions;
 import leap.web.api.mvc.params.QueryOptionsBase;
 import leap.web.api.remote.json.TypeReference;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
 
 public abstract class AbstractRestResource implements RestResource {
 	private final Log log=LogFactory.get(AbstractRestResource.class);
-
 
 	@Inject
 	protected HttpClient httpClient;
@@ -41,6 +40,14 @@ public abstract class AbstractRestResource implements RestResource {
 	@Inject
 	protected TokenFetcher tokenFetcher;
 
+	private HttpResponse httpResponse;
+	private Consumer<HttpRequest> preSendHandler;
+	private Consumer<HttpResponse> postSendHandler;
+
+	@Override
+	public HttpResponse getResponse() {
+		return httpResponse;
+	}
 
 	protected AccessToken getAccessToken(){
 		Request request=Request.tryGetCurrent();
@@ -76,7 +83,10 @@ public abstract class AbstractRestResource implements RestResource {
 		if(at!=null){
 			request.addHeader(Headers.AUTHORIZATION, OAuth2Constants.BEARER+" "+at.getToken());
 		}
-
+		httpResponse = null;
+		if(this.preSendHandler!=null){
+			preSendHandler.accept(request);
+		}
         HttpResponse response = request.send();
 
         if(response.getStatus()==HTTP.SC_UNAUTHORIZED && at!=null){
@@ -85,8 +95,12 @@ public abstract class AbstractRestResource implements RestResource {
         	request.addHeader(Headers.AUTHORIZATION, OAuth2Constants.BEARER+" "+at.getToken());
         	response = request.send();
         }
-
+		httpResponse=response;
         consumer.accept(response);
+
+		if(this.postSendHandler!=null){
+			postSendHandler.accept(response);
+		}
 	}
 
 	/**
@@ -199,4 +213,19 @@ public abstract class AbstractRestResource implements RestResource {
 		return request;
 	}
 
+	public Consumer<HttpRequest> getPreSendHandler() {
+		return preSendHandler;
+	}
+
+	public void setPreSendHandler(Consumer<HttpRequest> preSendHandler) {
+		this.preSendHandler = preSendHandler;
+	}
+
+	public Consumer<HttpResponse> getPostSendHandler() {
+		return postSendHandler;
+	}
+
+	public void setPostSendHandler(Consumer<HttpResponse> postSendHandler) {
+		this.postSendHandler = postSendHandler;
+	}
 }

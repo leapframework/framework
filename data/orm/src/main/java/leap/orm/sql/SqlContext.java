@@ -22,6 +22,16 @@ import leap.orm.OrmContext;
 import leap.orm.mapping.EntityMapping;
 
 public interface SqlContext extends SqlLanguage.Options {
+
+    /**
+     * Returns current query sql or null.
+     */
+    Sql getQuerySql();
+
+    /**
+     * Sets current query sql.
+     */
+    void setQuerySql(Sql sql);
     
     /**
      * Returns the {@link DbDialect}.
@@ -35,6 +45,13 @@ public interface SqlContext extends SqlLanguage.Options {
      */
     default Db db() {
         return getOrmContext().getDb();
+    }
+
+    /**
+     * Returns true if current sql execution is {@link SqlCommand#FIND_COMMAND_NAME} .
+     */
+    default boolean isFind() {
+        return false;
     }
 
     /**

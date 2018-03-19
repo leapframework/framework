@@ -68,4 +68,13 @@ public class FiltersParserTest extends TestBase {
             assertContains(e.getMessage(), "Invalid character \"'\"");
         }
     }
+
+    @Test
+    public void testEnvExpr() {
+        Filters filters = FiltersParser.parse("name eq name() and gender eq 'm'");
+        assertEquals("name()", filters.nodes()[2].literal());
+
+        filters = FiltersParser.parse("gender eq 'm' and name eq user.name()");
+        assertEquals("user.name()", filters.nodes()[6].literal());
+    }
 }

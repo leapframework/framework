@@ -41,6 +41,7 @@ import leap.orm.sql.parser.SqlParser;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -391,7 +392,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                     .append("=?");
         }
 
-        return where(s.toString(), id);
+        return where(s.toString(), Mappings.getIdArgs(em, id));
     }
 
     @Override

@@ -16,8 +16,11 @@
 
 package leap.orm.event;
 
-import leap.orm.value.EntityWrapper;
-
 public interface UpdateEntityEvent extends EntityEventWithWrapper {
+
+    /**
+     * Required. Returns the id of entity to be updated.
+     */
+    Object getId();
 
 }

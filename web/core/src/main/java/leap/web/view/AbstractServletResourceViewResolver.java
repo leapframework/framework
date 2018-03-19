@@ -76,11 +76,11 @@ public abstract class AbstractServletResourceViewResolver extends AbstractViewRe
 					break;
 				}
 			}
-			
-			if(null == resource){
-				return null;
-			}
 		}
+
+        if(null == resource || !resource.exists()){
+            return null;
+        }
 
 		return loadView(prefix, suffix, viewName, locale, resource.getPathWithinContext(), resource);
     }

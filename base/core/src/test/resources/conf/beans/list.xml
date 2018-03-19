@@ -19,5 +19,13 @@
 	    <bean type="tested.beans.TBeanType2" class="tested.beans.TBean"/>
 	    <bean type="tested.beans.TBeanType2" class="tested.beans.TBean"/>
     </bean-list>
-    
+
+    <bean type="tested.beans.TBeanType3" class="tested.beans.TBean" singleton="false"/>
+    <bean type="tested.beans.TBeanType3" class="tested.beans.TBean"/>
+
+    <bean-list type="tested.beans.TBeanType3" qualifier="a">
+        <bean type="tested.beans.TBeanType3" class="tested.beans.TBean"/>
+        <bean type="tested.beans.TBeanType3" class="tested.beans.TBean" singleton="false"/>
+    </bean-list>
+
 </beans>

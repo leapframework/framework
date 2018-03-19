@@ -17,6 +17,7 @@
 package leap.web.api.restd.crud;
 
 import leap.core.annotation.Inject;
+import leap.core.value.Record;
 import leap.lang.Arrays2;
 import leap.lang.Strings;
 import leap.orm.dao.Dao;
@@ -111,7 +112,10 @@ public class CreateOperation extends CrudOperation implements RestdProcessor {
 
             CreateOneResult result = executor.createOne(record);
 
-            return ApiResponse.created(dao.find(model.getEntityMapping(), result.id));
+            Record r = dao.find(model.getEntityMapping(), result.id);
+            r.put("$id", result.id);
+
+            return ApiResponse.created(r);
         }
 
         @Override

@@ -43,6 +43,7 @@ import leap.orm.model.Model;
 import leap.orm.query.CriteriaQuery;
 import leap.orm.query.EntityQuery;
 import leap.orm.query.Query;
+import leap.orm.sql.Sql;
 import leap.orm.sql.SqlCommand;
 import leap.orm.sql.SqlContext;
 import leap.orm.sql.SqlNotFoundException;
@@ -1040,7 +1041,20 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 	}
 
 	protected class SimpleSqlContext implements SqlContext {
-		@Override
+
+        private Sql querySql;
+
+        @Override
+        public Sql getQuerySql() {
+            return querySql;
+        }
+
+        @Override
+        public void setQuerySql(Sql sql) {
+            querySql = sql;
+        }
+
+        @Override
         public OrmContext getOrmContext() {
 	        return DefaultDao.this.getOrmContext();
         }

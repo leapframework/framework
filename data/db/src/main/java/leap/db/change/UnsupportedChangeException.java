@@ -21,20 +21,14 @@ public class UnsupportedChangeException extends DbException {
 
 	private static final long serialVersionUID = -6272128591258535951L;
 
-	public UnsupportedChangeException() {
-		
-	}
+    private final SchemaChange change;
 
-	public UnsupportedChangeException(String message) {
+	public UnsupportedChangeException(String message, SchemaChange change) {
 		super(message);
+        this.change = change;
 	}
 
-	public UnsupportedChangeException(Throwable cause) {
-		super(cause);
-	}
-
-	public UnsupportedChangeException(String message, Throwable cause) {
-		super(message, cause);
-	}
-
+    public SchemaChange getChange() {
+        return change;
+    }
 }

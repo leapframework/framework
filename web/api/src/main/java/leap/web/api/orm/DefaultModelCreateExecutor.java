@@ -25,11 +25,9 @@ import leap.lang.Enumerable;
 import leap.lang.Enumerables;
 import leap.lang.New;
 import leap.orm.command.InsertCommand;
-import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.RelationMapping;
 import leap.orm.mapping.RelationProperty;
-import leap.web.api.meta.model.MApiModel;
 import leap.web.api.meta.model.MApiProperty;
 import leap.web.api.mvc.params.Partial;
 import leap.web.exception.BadRequestException;
@@ -38,15 +36,27 @@ import java.util.*;
 
 public class DefaultModelCreateExecutor extends ModelExecutorBase implements ModelCreateExecutor {
 
-    public DefaultModelCreateExecutor(ModelExecutorContext context) {
+    protected final ModelCreateHandler handler;
+
+    public DefaultModelCreateExecutor(ModelExecutorContext context, ModelCreateHandler handler) {
         super(context);
+        this.handler = handler;
     }
 
     @Override
     public CreateOneResult createOne(Object request, Object id, Map<String, Object> extraProperties) {
+        if(null != handler) {
+            Object r = handler.processCreationParams(context, request);
+            if(null != r) {
+                request = r;
+            }
+        }
+
         Map<String,Object> properties;
         if(request instanceof Partial) {
             properties = ((Partial) request).getProperties();
+        }else if(request instanceof Map) {
+            properties = (Map)request;
         }else{
             properties = Beans.toMap(request);
         }
@@ -57,6 +67,10 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
 
         if(null != extraProperties) {
             properties.putAll(extraProperties);
+        }
+
+        if(null != handler) {
+            handler.processCreationRecord(context, properties);
         }
 
         Map<RelationProperty, Object[]> relationProperties = new LinkedHashMap<>();
@@ -108,17 +122,21 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
             throw new ValidationException(errors);
         }
 
+        if(null != handler) {
+            handler.preCreateRecord(context, properties);
+        }
+
         InsertCommand insert = dao.cmdInsert(em.getEntityName()).from(properties);
         if(null != id) {
             insert.withId(id);
         }
 
         if(relationProperties.isEmpty()) {
-            insert.execute();
+            executeInsert(insert);
         }else{
 
             dao.doTransaction((conn) -> {
-                insert.execute();
+                executeInsert(insert);
 
                 for(Map.Entry<RelationProperty, Object[]> entry : relationProperties.entrySet()) {
                     //valid for many-to-many only ?
@@ -158,6 +176,13 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
         }
 
         return new CreateOneResult(insert.id());
+    }
+
+    protected void executeInsert(InsertCommand insert) {
+        insert.execute();
+        if(null != handler) {
+            handler.postCreateRecord(context, insert.id());
+        }
     }
 
 }

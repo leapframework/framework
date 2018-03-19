@@ -16,7 +16,9 @@ package leap.lang.json;
  */
 
 
-import leap.lang.*;
+import leap.lang.Arrays2;
+import leap.lang.Enums;
+import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.codec.Base64;
@@ -27,10 +29,11 @@ import java.io.IOException;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.sql.Time;
-import java.text.DateFormat;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
@@ -41,14 +44,13 @@ public class JsonWriterImpl implements JsonWriter {
     
     static final char[] HEX_CHARS = new char[]{
         '0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'
-    }; 
+    };
 
     private final JsonSettings settings;
     private final Appendable   out;
-    private final DateFormat   dateFormat;
-	private final boolean      detectCyclicReferences;
-	private final boolean	   ignoreCyclicReferences;
-	private final int		   maxDepth;
+    private final boolean      detectCyclicReferences;
+    private final boolean      ignoreCyclicReferences;
+    private final int          maxDepth;
 
 	private boolean							startProperty;
 	private int							    depth;
@@ -63,7 +65,6 @@ public class JsonWriterImpl implements JsonWriter {
 
         this.settings               = settings;
 	    this.out 			        = out;
-        this.dateFormat             = settings.getDateFormat();
 	    this.detectCyclicReferences = detectCyclicReferences;
 	    this.ignoreCyclicReferences = ignoreCyclicReferences;
 	    this.maxDepth				= depth <= 0 ? MAX_DEPTH : maxDepth;
@@ -589,6 +590,19 @@ public class JsonWriterImpl implements JsonWriter {
         }
         return this;
     }
+
+    public JsonWriter value(java.sql.Date date) {
+        try {
+            if(null == date) {
+                out.append(NULL_STRING);
+            }else{
+                value(date.toLocalDate());
+            }
+        } catch (IOException e) {
+            wrapAndThrow(e);
+        }
+        return this;
+    }
     
 	public JsonWriter value(Time time) {
         try {
@@ -607,10 +621,23 @@ public class JsonWriterImpl implements JsonWriter {
         try {
             if(null == date) {
                 out.append(NULL_STRING);
-            }else if(null != dateFormat){
-				out.append(DOUBLE_QUOTE).append(dateFormat.format(date)).append(DOUBLE_QUOTE);
-            }else{
-                out.append(String.valueOf(date.getTime()));
+            }else {
+                if(date instanceof Time) {
+                    return value((Time)date);
+                }
+
+                if(date instanceof java.sql.Date) {
+                    return value((java.sql.Date)date);
+                }
+
+                if(null != settings.getDateTimeFormatter()) {
+                    Instant instant = Instant.ofEpochMilli(date.getTime());
+                    out.append(DOUBLE_QUOTE).append(settings.getDateTimeFormatter().format(instant)).append(DOUBLE_QUOTE);
+                }else if(null != settings.getDateFormat()) {
+                    out.append(DOUBLE_QUOTE).append(settings.getDateFormat().format(date)).append(DOUBLE_QUOTE);
+                }else {
+                    out.append(String.valueOf(date.getTime()));
+                }
             }
         } catch (IOException e) {
         	wrapAndThrow(e);
@@ -909,6 +936,9 @@ public class JsonWriterImpl implements JsonWriter {
                 }
             }
 
+            JsonSetting jb = bean.getClass().getAnnotation(JsonSetting.class);
+            boolean ignoreNull = (null != jb && jb.ignoreNull().isPresent()) ? jb.ignoreNull().getValue() : this.isIgnoreNull();
+
             for(BeanProperty prop : beanType.getProperties()){
                 if(prop.isTransient()){
                     continue;
@@ -941,7 +971,7 @@ public class JsonWriterImpl implements JsonWriter {
                         propValue = prop.getValue(bean);
                     }
 
-                    if(null == propValue && isIgnoreNull()){
+                    if(null == propValue && ignoreNull){
                         continue;
                     }
 
@@ -974,6 +1004,9 @@ public class JsonWriterImpl implements JsonWriter {
     protected JsonWriter bean(Object bean, JsonType type) {
         if(null == bean) {
             return null_();
+        }else if(bean instanceof JsonStringable) {
+            ((JsonStringable) bean).toJson(this);
+            return this;
         }else{
             startObject();
             properties(bean, false, type);
@@ -990,8 +1023,8 @@ public class JsonWriterImpl implements JsonWriter {
             if(null == a) {
                 value((Date)value);
             }else{
-                DateFormat dateFormat = DateFormats.getFormat(a.value());
-                value(dateFormat.format((Date)value));
+                DateTimeFormatter formatter = DateFormats.getFormatter(a.value());
+                value(formatter.format(((Date)value).toInstant()));
             }
 
             return true;

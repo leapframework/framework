@@ -16,6 +16,7 @@
 
 package leap.orm.event;
 
+import leap.lang.New;
 import leap.orm.OrmTestCase;
 import leap.orm.tested.model.event.EventModel;
 import leap.orm.tested.model.event.TestingListener;
@@ -36,6 +37,22 @@ public class UpdateEntityEventTest extends OrmTestCase {
         assertEquals(m1.getCol2(), m2.getCol2());
 
         m1.delete();
+    }
+
+    @Test
+    public void testPreUpdateWithId() {
+        EventModel m1 = new EventModel();
+        m1.create();
+
+        Object id = m1.id();
+
+        TestingListener.lastUpdateId = null;
+        dao.update(m1.getEntityMapping(), id, New.hashMap("col1", "col1"));
+        assertEquals(id, TestingListener.lastUpdateId);
+
+        TestingListener.lastUpdateId = null;
+        dao.update(m1);
+        assertEquals(id, TestingListener.lastUpdateId);
     }
 
     @Test

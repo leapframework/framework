@@ -79,7 +79,7 @@ public class DefaultAccessTokenStore implements AccessTokenStore {
     @Override
     public AccessToken loadAccessTokenByPassword(String clientId, String clientSecret, String username,
                                                  String password) {
-        String key = username+":"+password+":"+clientId+":"+password;
+        String key = username+":"+password+":"+clientId+":"+clientSecret;
         AccessToken token = getAccessToken(key);
         if(token == null){
             token = fetcher.fetchTokenByPassword(clientId,clientSecret,username,password);

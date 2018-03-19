@@ -39,6 +39,7 @@ public class DefaultOrmConfig implements OrmConfig,PostConfigureBean,BeanFactory
 
     protected boolean     autoCreateTables           = false;
     protected boolean     autoMappingTables          = false;
+    protected boolean     readDbSchema               = true;
 	protected boolean     autoGenerateColumns        = false;
 	protected boolean     autoGenerateOptimisticLock = false;
 	protected boolean     modelCrossContext          = false;
@@ -73,6 +74,16 @@ public class DefaultOrmConfig implements OrmConfig,PostConfigureBean,BeanFactory
     @ConfigProperty
     public void setAutoCreateTables(boolean autoCreateTables) {
         this.autoCreateTables = autoCreateTables;
+    }
+
+    @Override
+    public boolean isReadDbSchema() {
+        return readDbSchema;
+    }
+
+    @ConfigProperty
+    public void setReadDbSchema(boolean readDbSchema) {
+        this.readDbSchema = readDbSchema;
     }
 
     @Override

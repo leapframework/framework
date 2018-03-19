@@ -179,10 +179,11 @@ public class AppResources {
         Resources.scan(config.getProfiled(new String[]{CP_PROFILE_LOCATION})).forEach(this::add);
 
         //load local resources(only for development profile).
+        /*
         if(dev) {
             Resources.scan(CP_LOCAL_LOCATION).forEach(this::add);
         }
-
+        */
         if(log.isDebugEnabled()) {
             for(AppResource ar : sortedResources) {
 
@@ -396,11 +397,13 @@ public class AppResources {
         }
 
         // conf-local/{filename}
+        /*
         if(dev) {
             for(String filename : filenames) {
                 patterns.add(CP_APP_PREFIX + PROFILE_SEPARATOR + "local/" + filename);
             }
         }
+        */
     }
 
     private AppResource[] searchResources(String[] patterns, String name, String suffix){

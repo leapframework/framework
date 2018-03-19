@@ -22,6 +22,7 @@ import java.util.Set;
 
 import leap.lang.Args;
 import leap.lang.Beans;
+import leap.lang.accessor.Getter;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.beans.DynaBean;
@@ -34,7 +35,7 @@ import leap.orm.model.Model;
 /**
  * Wraps an entity object (may be a {@link Map}, an {@link Entity} or a bean).
  */
-public abstract class EntityWrapper implements EntityBase, ParamsGetter {
+public abstract class EntityWrapper implements EntityBase, ParamsGetter, Getter {
 	
 	/**
 	 * Wraps the given entity object to a {@link EntityWrapper} object.

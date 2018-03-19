@@ -29,9 +29,16 @@ import leap.lang.value.Page;
 import leap.orm.OrmContext;
 import leap.orm.OrmMetadata;
 import leap.orm.dao.Dao;
+import leap.orm.event.EntityEventWithWrapperImpl;
+import leap.orm.event.EntityListeners;
+import leap.orm.event.LoadEntityEventImpl;
+import leap.orm.event.PostLoadListener;
 import leap.orm.mapping.EntityMapping;
+import leap.orm.sql.Sql;
 import leap.orm.sql.SqlLanguage;
+import leap.orm.value.EntityWrapper;
 
+import java.sql.SQLClientInfoException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +61,8 @@ public abstract class AbstractQuery<T> implements Query<T>,QueryContext {
 	protected String orderBy;
 	protected String groupBy;
 	protected String having;
+
+    private Sql querySql;
 	
 	protected AbstractQuery(Dao dao, Class<T> targetType){
 		this(dao,targetType,null);
@@ -66,6 +75,16 @@ public abstract class AbstractQuery<T> implements Query<T>,QueryContext {
 		this.targetType = targetType;
 		this.em 		= entityMapping;
 	}
+
+    @Override
+    public Sql getQuerySql() {
+        return querySql;
+    }
+
+    @Override
+    public void setQuerySql(Sql sql) {
+        querySql = sql;
+    }
 
     @Override
     public Boolean getQueryFilterEnabled() {
@@ -202,12 +221,28 @@ public abstract class AbstractQuery<T> implements Query<T>,QueryContext {
 
 	@Override
     public QueryResult<T> result() {
-	    return executeQuery(this);
+	    return executeResult(null);
     }
 	
 	@Override
     public QueryResult<T> result(Limit limit) {
-	    return null == limit ? executeQuery(this) : executeQuery(new LimitQueryContext(limit));
+	    return executeResult(limit);
+    }
+
+    protected QueryResult<T> executeResult(Limit limit) {
+        QueryResult result = null == limit ? executeQuery(this) : executeQuery(new LimitQueryContext(limit));
+
+        if(null != em) {
+            if(null != em.getListeners() && em.getListeners().hasLoadListeners()) {
+                PostLoadListener[] listeners = em.getListeners().getPostLoadListeners();
+                LoadEntityEventImpl event = new LoadEntityEventImpl(this, em, result.list(), false);
+                for(PostLoadListener listener : listeners) {
+                    listener.postLoadEntity(event);
+                }
+            }
+        }
+
+        return result;
     }
 
 	@Override
@@ -246,12 +281,24 @@ public abstract class AbstractQuery<T> implements Query<T>,QueryContext {
 	protected class LimitQueryContext implements QueryContext {
 		
 		private final Limit limit;
-		
+
+        private Sql sql;
+
 		public LimitQueryContext(Limit limit) {
 			this.limit = limit;
 		}
-		
-		@Override
+
+        @Override
+        public Sql getQuerySql() {
+            return sql;
+        }
+
+        @Override
+        public void setQuerySql(Sql sql) {
+            this.sql = sql;
+        }
+
+        @Override
         public EntityMapping getPrimaryEntityMapping() {
 	        return em;
         }

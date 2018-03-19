@@ -20,6 +20,7 @@ import leap.db.Db;
 import leap.orm.OrmContext;
 import leap.orm.OrmMetadata;
 import leap.orm.dao.Dao;
+import leap.orm.sql.Sql;
 import leap.orm.sql.SqlContext;
 
 public abstract class AbstractDaoCommand implements SqlContext {
@@ -29,6 +30,8 @@ public abstract class AbstractDaoCommand implements SqlContext {
 	protected final OrmMetadata metadata;
 	protected final Db			db;
 
+    private Sql querySql;
+
 	protected AbstractDaoCommand(Dao dao){
 		this.dao      = dao;
 		this.context  = dao.getOrmContext();
@@ -36,7 +39,17 @@ public abstract class AbstractDaoCommand implements SqlContext {
 		this.db		  = context.getDb();
 	}
 
-	@Override
+    @Override
+    public Sql getQuerySql() {
+        return querySql;
+    }
+
+    @Override
+    public void setQuerySql(Sql sql) {
+        this.querySql = sql;
+    }
+
+    @Override
     public OrmContext getOrmContext() {
 	    return dao.getOrmContext();
     }

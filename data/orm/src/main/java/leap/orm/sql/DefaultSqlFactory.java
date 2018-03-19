@@ -472,6 +472,8 @@ public class DefaultSqlFactory implements SqlFactory {
     public String createSelectColumns(MetadataContext context, EntityMapping em, String alias) {
         StringBuilder s = new StringBuilder();
 
+        DbDialect dialect = context.getDb().getDialect();
+
         int index = 0;
 
         for(FieldMapping fm : em.getFieldMappings()){
@@ -483,7 +485,7 @@ public class DefaultSqlFactory implements SqlFactory {
                 s.append(alias).append('.');
             }
 
-            s.append(fm.getColumnName());
+            s.append(dialect.quoteIdentifier(fm.getColumnName()));
 
             index++;
         }

@@ -20,18 +20,14 @@ import static leap.lang.Beans.IS_PREFIX;
 import static leap.lang.Beans.SETTER_PREFIX;
 
 import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
 import leap.lang.Args;
 import leap.lang.Arrays2;
 import leap.lang.Types;
+import leap.lang.annotation.Order;
 import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.reflect.ReflectClass;
 import leap.lang.reflect.ReflectException;
@@ -198,7 +194,7 @@ public class BeanType {
 	}
 	
 	private BeanProperty[] initProperties(){
-		Map<String, BeanProperty> props = new LinkedHashMap<String, BeanProperty>();
+		Map<String, BeanProperty> props = new LinkedHashMap<>();
 		
 		Set<Method> methods = new HashSet<Method>();
 		
@@ -222,7 +218,8 @@ public class BeanType {
 				prop.setType(field.getType());
 				prop.setGenericType(field.getGenericType());
 				prop.setTypeInfo(Types.getTypeInfo(field.getType(), field.getGenericType()));
-				
+				prop.setDeclaringClass(field.getDeclaringClass());
+
 				prop.setField(field);
 
 				prop.setGetter(field.getGetter());
@@ -263,6 +260,7 @@ public class BeanType {
 						BeanProperty prop = getOrCreatePropertyFor(props,methodName,SETTER_PREFIX,m.getParameterTypes()[0]);
 						
 						if(null != prop){
+                            prop.setDeclaringClass(m.getDeclaringClass());
 							prop.setSetter(rm);
 							prop.setWritable(rm.isPublic());
 							
@@ -282,6 +280,7 @@ public class BeanType {
 						BeanProperty prop = getOrCreatePropertyFor(props, methodName, GETTER_PREFIX, m.getReturnType());
 
 						if(null != prop){
+                            prop.setDeclaringClass(m.getDeclaringClass());
 							prop.setGetter(rm);
 							prop.setReadable(rm.isPublic());
 							if(null == prop.getGenericType()){
@@ -299,6 +298,7 @@ public class BeanType {
 						BeanProperty prop = getOrCreatePropertyFor(props, methodName, IS_PREFIX, m.getReturnType());
 						
 						if(null != prop && !prop.hasGetter()){
+                            prop.setDeclaringClass(m.getDeclaringClass());
 							prop.setGetter(rm);
 							prop.setReadable(rm.isPublic());
 							if(null == prop.getGenericType()){
@@ -311,9 +311,37 @@ public class BeanType {
 				}
 			}
 		}
+
+        Comparator<BeanProperty> comparator = (p1, p2) -> {
+            if(p1 == p2) {
+                return 0;
+            }
+
+            double o1 = getOrder(p1);
+            double o2 = getOrder(p2);
+            if(o1 != o2) {
+                return o1 < o2 ? -1 : 1;
+            }
+
+            if(p1.getDeclaringClass().equals(p2.getDeclaringClass())) {
+                return 1;
+            }else if(p1.getDeclaringClass().isAssignableFrom(p2.getDeclaringClass())) {
+                return -1;
+            }
+
+            return 1;
+        };
+
+        TreeSet<BeanProperty> sorted = new TreeSet<>(comparator);
+        sorted.addAll(props.values());
 		
-		return props.values().toArray(new BeanProperty[props.size()]);
+		return sorted.toArray(new BeanProperty[props.size()]);
 	}
+
+    private double getOrder(BeanProperty bp) {
+        Order a = bp.getAnnotation(Order.class);
+        return null == a ? Order.DEFAULT : a.value();
+    }
 	
 	private BeanProperty getOrCreatePropertyFor(Map<String, BeanProperty> props, String methodName,String prefix,Class<?> type){
 		String propName = methodName.substring(prefix.length());

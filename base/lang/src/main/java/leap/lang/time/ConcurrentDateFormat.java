@@ -32,8 +32,11 @@ import java.util.TimeZone;
  * 
  * <p/>
  * 
- * This implementation simply to add {@code synchronized} keywork in all methods.
+ * This implementation simply to add {@code synchronized} keyword in all methods.
+ *
+ * @deprecated use {@link java.time.format.DateTimeFormatter} instead.
  */
+@Deprecated
 public class ConcurrentDateFormat extends DateFormat {
 
     private static final long serialVersionUID = -1237664759165921526L;
@@ -51,6 +54,12 @@ public class ConcurrentDateFormat extends DateFormat {
     public ConcurrentDateFormat(String pattern){
         this.format = new SimpleDateFormat(pattern);
         this.format.setLenient(false);
+    }
+
+    public ConcurrentDateFormat(String pattern, TimeZone zone){
+        this.format = new SimpleDateFormat(pattern);
+        this.format.setLenient(false);
+        this.format.setTimeZone(zone);
     }
     
     @Override

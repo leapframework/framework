@@ -23,17 +23,14 @@ import leap.lang.logging.LogFactory;
 import leap.lang.params.Params;
 import leap.orm.OrmConfig;
 import leap.orm.mapping.EntityMapping;
-import leap.orm.mapping.RelationMapper;
+import leap.orm.mapping.FieldMapping;
 import leap.orm.metadata.MetadataContext;
 import leap.orm.sql.ast.*;
 import leap.orm.sql.parser.Lexer;
 import leap.orm.sql.parser.SqlParser;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
@@ -209,9 +206,7 @@ class SqlQueryFilterProcessor {
     private void addQueryFilter(List<AstNode> nodes, EntityMapping em, String alias) {
         processed = true;
 
-        String content = em.getEntityName();
-
-        Tag tag = new QfTag(config.getTagName(), content, config.getAlias(), alias);
+        Tag tag = new QfTag(em, config.getTagName(), em.getEntityName(), config.getAlias(), alias);
         tag.prepare(context, sql);
 
         nodes.add(tag);
@@ -221,11 +216,13 @@ class SqlQueryFilterProcessor {
 
         private static final Log log = LogFactory.get(QfTag.class);
 
-        private final String qfAlias;
-        private final String emAlias;
+        private final EntityMapping em;
+        private final String        qfAlias;
+        private final String        emAlias;
 
-        public QfTag(String name, String content, String qfAlias, String emAlias) {
+        public QfTag(EntityMapping em, String name, String content, String qfAlias, String emAlias) {
             super(name, content);
+            this.em      = em;
             this.qfAlias = qfAlias;
             this.emAlias = emAlias;
         }
@@ -245,6 +242,12 @@ class SqlQueryFilterProcessor {
                     SqlObjectName objectName = (SqlObjectName)node;
                     if(null == objectName.getSecondaryName() && Strings.equalsIgnoreCase(qfAlias, objectName.getFirstName())) {
                         objectName.setFirstName(emAlias);
+
+                        FieldMapping fm = em.tryGetFieldMapping(objectName.getLastName());
+                        if(null != fm) {
+                            objectName.setLastName(fm.getColumnName());
+                        }
+
                         replaced = true;
                     }
                 }
@@ -254,7 +257,14 @@ class SqlQueryFilterProcessor {
                 log.debug("Filter ( {} ) -> ( {} )", text, expr.toString());
             }
 
+            Map oldVars = stm.getVars();
+            if(null != vars) {
+                stm.setVars(vars);
+            }
+
             expr.buildStatement(context, sql, stm, params);
+
+            stm.setVars(oldVars);
         }
 
     }

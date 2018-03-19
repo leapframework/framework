@@ -177,6 +177,15 @@ public class RestdConfig {
         return true;
     }
 
+    public boolean allowModelOperation(String name, String operation) {
+        Model model = getModel(name);
+        if(null != model) {
+            return model.isEnabled(operation);
+        }else {
+            return false;
+        }
+    }
+
     /**
      * The configuration of restd model.
      */
@@ -184,6 +193,7 @@ public class RestdConfig {
 
         protected final String name;
 
+        protected String  title;
         protected String  path;
         protected Boolean anonymous;
         protected Boolean createOperationEnabled;
@@ -193,6 +203,7 @@ public class RestdConfig {
         protected Boolean queryOperationEnabled;
         protected Boolean countOperationEnabled;
 
+        protected Map<String, Boolean>   enables    = new LinkedHashMap<>();
         protected Map<String, Operation> operations = new LinkedHashMap<>();
 
         public Model(String name) {
@@ -201,6 +212,14 @@ public class RestdConfig {
 
         public String getName() {
             return name;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
         }
 
         public String getPath() {
@@ -265,6 +284,23 @@ public class RestdConfig {
 
         public void setCountOperationEnabled(Boolean countOperationEnabled) {
             this.countOperationEnabled = countOperationEnabled;
+        }
+
+        public Map<String, Boolean> getEnables() {
+            return enables;
+        }
+
+        public boolean isEnabled(String name) {
+            Boolean b = enables.get(name);
+            return null != b && b;
+        }
+
+        public Boolean getEnable(String name) {
+            return enables.get(name);
+        }
+
+        public void setEnable(String name, Boolean enabled) {
+            enables.put(name, enabled);
         }
 
         public Map<String, Operation> getOperations() {

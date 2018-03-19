@@ -24,8 +24,10 @@
     <bean name="now"               type="leap.core.variable.Variable" class="leap.core.variable.NowVariable"/>
     <bean name="timestamp"         type="leap.core.variable.Variable" class="leap.core.variable.TimestampVariable"/>
     <bean name="currentTimeMillis" type="leap.core.variable.Variable" class="leap.core.variable.CurrentTimeMillisVariable"/>
-    <bean name="uuid"              type="leap.core.variable.Variable" class="leap.core.variable.UUIDVariable"/>
     <bean name="user"              type="leap.core.variable.Variable" class="leap.core.variable.UserVariable"/>
+    <bean name="uuid"              type="leap.core.variable.Variable" class="leap.core.variable.UUIDVariable"/>
+    <bean name="short_uuid"        type="leap.core.variable.Variable" class="leap.core.variable.ShortUUIDVariable"/>
+    <bean name="short_id"          type="leap.core.variable.Variable" class="leap.core.variable.ShortIDVariable"/>
 
     <bean type="leap.core.cache.CacheManager" class="leap.core.cache.DefaultCacheManager" primary="true">
         <register-bean-factory target-type="leap.core.cache.Cache"/>

@@ -59,6 +59,7 @@ public class DefaultWebConfig implements WebConfig,WebConfigurator,PostCreateBea
 	protected @R boolean formatParameterEnabled = true;
 	protected @R boolean actionExtensionEnabled = true;
 	protected @R boolean corsEnabled            = false;
+    protected @R boolean allowViewAction        = true;
 	protected @N String  cookieDomain           = null;
 
     protected @Inject @M AppConfig       config;
@@ -156,6 +157,11 @@ public class DefaultWebConfig implements WebConfig,WebConfigurator,PostCreateBea
 	public boolean isAutoTrimParameters() {
 		return autoTrimParameters;
 	}
+
+    @Override
+    public boolean isAllowViewAction() {
+        return allowViewAction;
+    }
 
     @Override
     public String getHomeControllerName() {
@@ -269,8 +275,14 @@ public class DefaultWebConfig implements WebConfig,WebConfigurator,PostCreateBea
 		this.autoTrimParameters = eanbled;
 		return this;
 	}
-	
-	@ConfigProperty
+
+    @ConfigProperty
+    public WebConfigurator setAllowViewAction(boolean allowViewAction) {
+        this.allowViewAction = allowViewAction;
+        return this;
+    }
+
+    @ConfigProperty
 	public WebConfigurator setCookieDomain(String cookieDomain) {
 		this.cookieDomain = cookieDomain;
 		return this;

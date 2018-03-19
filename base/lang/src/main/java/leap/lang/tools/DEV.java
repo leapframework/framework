@@ -94,6 +94,12 @@ public class DEV {
 	        	if(dir.createRelative("../../../../../target/classes").exists()){
 	        		return  dir.createRelative("../../../../../");
 	        	}
+	        	
+	        	//project
+				//  /target/{finalDirectory}/WEB-INF
+				if(dir.createRelative("../../../target/classes").exists()){
+					return  dir.createRelative("../../../");
+				}
 	        }
 	        
 	        return null;

@@ -111,6 +111,13 @@ public interface WebConfig {
     boolean isAutoTrimParameters();
 
     /**
+     * Is allows access the view from browser directly.
+     *
+     * Defaults is <code>true</code>.
+     */
+    boolean isAllowViewAction();
+
+    /**
      * Returns <code>true</code> if allow action extension(s) in request path, such as <code>.do</code>.
      *
      * <p/>

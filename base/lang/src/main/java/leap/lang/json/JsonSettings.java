@@ -20,6 +20,7 @@ import leap.lang.naming.NamingStyles;
 import leap.lang.time.DateFormats;
 
 import java.text.DateFormat;
+import java.time.format.DateTimeFormatter;
 
 public class JsonSettings {
 	
@@ -29,20 +30,22 @@ public class JsonSettings {
 												  .setIgnoreEmpty(true)
 												  .setIgnoreNull(true).build();
 
-    private final boolean     keyQuoted;
-    private final boolean     ignoreNull;
-    private final boolean     ignoreFalse;
-    private final boolean     ignoreEmptyString;
-    private final boolean     ignoreEmptyArray;
-    private final boolean     nullToEmptyString;
-    private final NamingStyle namingStyle;
-    private final DateFormat  dateFormat;
+    private final boolean           keyQuoted;
+    private final boolean           ignoreNull;
+    private final boolean           ignoreFalse;
+    private final boolean           ignoreEmptyString;
+    private final boolean           ignoreEmptyArray;
+    private final boolean           nullToEmptyString;
+    private final NamingStyle       namingStyle;
+    private final DateFormat        dateFormat;
+    private final DateTimeFormatter dateTimeFormatter;
 
     public JsonSettings(boolean keyQuoted, boolean ignoreNull, boolean ignoreFalse,
                         boolean ignoreEmptyString, boolean ignoreEmptyArray,
                         NamingStyle namingStyle, DateFormat dateFormat) {
         this(keyQuoted, ignoreNull, ignoreFalse, ignoreEmptyString, ignoreEmptyArray, false, namingStyle, dateFormat);
     }
+
     public JsonSettings(boolean keyQuoted, boolean ignoreNull, boolean ignoreFalse,
                         boolean ignoreEmptyString, boolean ignoreEmptyArray, boolean nullToEmptyString,
                         NamingStyle namingStyle, DateFormat dateFormat) {
@@ -53,8 +56,24 @@ public class JsonSettings {
         this.ignoreEmptyArray  = ignoreEmptyArray;
 		this.namingStyle       = namingStyle;
         this.dateFormat        = dateFormat;
+        this.dateTimeFormatter = null;
         this.nullToEmptyString = nullToEmptyString;
 	}
+
+    public JsonSettings(boolean keyQuoted, boolean ignoreNull, boolean ignoreFalse,
+                        boolean ignoreEmptyString, boolean ignoreEmptyArray, boolean nullToEmptyString,
+                        NamingStyle namingStyle, DateFormat dateFormat, DateTimeFormatter dateTimeFormatter) {
+        this.keyQuoted         = keyQuoted;
+        this.ignoreNull        = ignoreNull;
+        this.ignoreFalse       = ignoreFalse;
+        this.ignoreEmptyString = ignoreEmptyString;
+        this.ignoreEmptyArray  = ignoreEmptyArray;
+        this.namingStyle       = namingStyle;
+        this.dateFormat        = dateFormat;
+        this.dateTimeFormatter = dateTimeFormatter;
+        this.nullToEmptyString = nullToEmptyString;
+    }
+
 	public boolean isKeyQuoted() {
 		return keyQuoted;
 	}
@@ -79,8 +98,13 @@ public class JsonSettings {
 		return this.namingStyle;
 	}
 
+    @Deprecated
     public DateFormat getDateFormat() {
         return dateFormat;
+    }
+
+    public DateTimeFormatter getDateTimeFormatter() {
+        return dateTimeFormatter;
     }
 
     public boolean isNullToEmptyString() {
@@ -97,6 +121,7 @@ public class JsonSettings {
         private boolean     nullToEmptyString = false;
         private NamingStyle namingStyle = NamingStyles.RAW;
         private DateFormat  dateFormat  = null;
+        private DateTimeFormatter dateTimeFormatter;
 
         public Builder() {
 	        super();
@@ -172,8 +197,27 @@ public class JsonSettings {
             return dateFormat;
         }
 
+        @Deprecated
         public Builder setDateFormat(String dateFormat) {
             this.dateFormat = null == dateFormat ? null : DateFormats.getFormat(dateFormat);
+            return this;
+        }
+
+        public DateTimeFormatter getDateTimeFormatter() {
+            return dateTimeFormatter;
+        }
+
+        public Builder setDateTimeFormatter(DateTimeFormatter formatter) {
+            this.dateTimeFormatter = formatter;
+            return this;
+        }
+
+        public Builder setDateTimeFormatter(String pattern) {
+            return setDateTimeFormatter(pattern, null);
+        }
+
+        public Builder setDateTimeFormatter(String pattern, String zone) {
+            this.dateTimeFormatter = null == pattern ? null : DateFormats.getFormatter(pattern, zone);
             return this;
         }
 
@@ -195,13 +239,14 @@ public class JsonSettings {
             this.nullToEmptyString = settings.nullToEmptyString;
             this.namingStyle = settings.namingStyle;
             this.dateFormat = settings.dateFormat;
+            this.dateTimeFormatter = settings.dateTimeFormatter;
             return this;
         }
 
         public JsonSettings build(){
 			return new JsonSettings(keyQuoted, ignoreNull, ignoreFalse,
                                     ignoreEmptyString, ignoreEmptyArray, nullToEmptyString,
-                                    namingStyle, dateFormat);
+                                    namingStyle, dateFormat, dateTimeFormatter);
 		}
 
     }

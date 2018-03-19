@@ -40,6 +40,14 @@ public interface OrmConfig {
      */
     boolean isAutoMappingTables();
 
+    /**
+     * Returns true if read db schema at startup.
+     *
+     * <p/>
+     * Default is true.
+     */
+    boolean isReadDbSchema();
+
 	/**
 	 * Returns true if auto generate fields for {@link leap.orm.model.Model}.
      *

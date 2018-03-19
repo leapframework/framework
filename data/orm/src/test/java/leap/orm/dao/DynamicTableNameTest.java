@@ -34,7 +34,7 @@ public class DynamicTableNameTest extends OrmTestCase {
     public void testCreateAndDelete() {
         CustomerOrder order = new CustomerOrder();
         order.setName("name1");
-        order.setCreatedAt(Dates.parse("2007-10-7"));
+        order.setCreatedAt(Dates.parse("2007-10-07"));
         order.create();
 
         List<Record> re = dao.createSqlQuery("select * from customer_order_2007 where id_ = ?", order.getId()).list();
@@ -55,7 +55,7 @@ public class DynamicTableNameTest extends OrmTestCase {
     public void testSqlQuery() {
         CustomerOrder order = new CustomerOrder();
         order.setName("name1");
-        order.setCreatedAt(Dates.parse("2017-10-7"));
+        order.setCreatedAt(Dates.parse("2017-10-07"));
         order.create();
 
         boolean exist = dao.createSqlQuery("select * from CustomerOrder where id = :id").param("id", order.getId()).exists();
@@ -86,9 +86,9 @@ public class DynamicTableNameTest extends OrmTestCase {
         assertFalse(exist);
 
         List<CustomerOrder> list = new ArrayList<>();
-        list.add(new CustomerOrder("name1", Dates.parse("2017-10-7")));
-        list.add(new CustomerOrder("name2", Dates.parse("2007-10-7")));
-        list.add(new CustomerOrder("name3", Dates.parse("2017-10-7")));
+        list.add(new CustomerOrder("name1", Dates.parse("2017-10-07")));
+        list.add(new CustomerOrder("name2", Dates.parse("2007-10-07")));
+        list.add(new CustomerOrder("name3", Dates.parse("2017-10-07")));
         dao.batchInsert(list);
 
         exist = dao.createSqlQuery("select * from CustomerOrder where name = :name").param("name", "name1")

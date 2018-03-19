@@ -36,8 +36,10 @@ public interface ApiConfigurator extends Extensible {
     String[] DEFAULT_CONSUMES = new String[]{MimeTypes.APPLICATION_JSON};
 
     String DEFAULT_VERSION   = "1.0";
-    int    MAX_PAGE_SIZE     = 10000;
+    int    MAX_PAGE_SIZE     = 1000;
     int    DEFAULT_PAGE_SIZE = 50;
+    int    MAX_EXPAND        = 100;
+    int    EXPAND_LIMIT      = 1000;
 
     /**
      * Returns the configuration object.
@@ -139,6 +141,16 @@ public interface ApiConfigurator extends Extensible {
      * Sets the default page size.
      */
     ApiConfigurator setDefaultPageSize(int size);
+
+    /**
+     * Sets the max expand.
+     */
+    ApiConfigurator setMaxExpand(int size);
+
+    /**
+     * Sets the expand limit.
+     */
+    ApiConfigurator setExpandLimit(int limit);
 
     /**
      * Sets all the api operations to default anonymous or not.

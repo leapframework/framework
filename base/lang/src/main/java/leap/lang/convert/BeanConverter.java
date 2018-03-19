@@ -130,9 +130,13 @@ public class BeanConverter extends AbstractConverter<Object>{
         //supports special '$' value.
         Object v = map.get("$");
         if(null != v) {
-            ReflectMethod m = bt.getReflectClass().getMethod("$");
-            if(null != m && m.getParameters().length == 1) {
-                m.invoke(bean, Converts.convert(v, m.getParameters()[0].getType(), m.getParameters()[0].getGenericType(), context));
+            if(bean instanceof StringParsable) {
+                ((StringParsable) bean).parseString(v.toString());
+            }else {
+                ReflectMethod m = bt.getReflectClass().getMethod("$");
+                if(null != m && m.getParameters().length == 1) {
+                    m.invoke(bean, Converts.convert(v, m.getParameters()[0].getType(), m.getParameters()[0].getGenericType(), context));
+                }
             }
         }
     }

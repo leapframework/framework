@@ -33,8 +33,7 @@ public class EntityListeners {
     protected final PostDeleteListener[] noTransPostDeleteListeners;
     protected final PostDeleteListener[] inTransPostDeleteListeners;
 
-    protected final PostLoadListener[] noTransPostLoadListeners;
-    protected final PostLoadListener[] inTransPostLoadListeners;
+    protected final PostLoadListener[] postLoadListeners;
 
     private final boolean hasCreateListeners;
     private final boolean hasUpdateListeners;
@@ -47,7 +46,7 @@ public class EntityListeners {
                            PostUpdateListener[] noTransPostUpdateListeners, PostUpdateListener[] inTransPostUpdateListeners,
                            PreDeleteListener[] noTransPreDeleteListeners, PreDeleteListener[] inTransPreDeleteListeners,
                            PostDeleteListener[] noTransPostDeleteListeners, PostDeleteListener[] inTransPostDeleteListeners,
-                           PostLoadListener[] noTransPostLoadListeners, PostLoadListener[] inTransPostLoadListeners) {
+                           PostLoadListener[] postLoadListeners) {
 
         this.noTransPreCreateListeners  = noTransPreCreateListeners;
         this.inTransPreCreateListeners  = inTransPreCreateListeners;
@@ -64,8 +63,7 @@ public class EntityListeners {
         this.noTransPostDeleteListeners = noTransPostDeleteListeners;
         this.inTransPostDeleteListeners = inTransPostDeleteListeners;
 
-        this.noTransPostLoadListeners = noTransPostLoadListeners;
-        this.inTransPostLoadListeners = inTransPostLoadListeners;
+        this.postLoadListeners = postLoadListeners;
 
         this.hasCreateListeners = noTransPreCreateListeners.length > 0 || inTransPreCreateListeners.length > 0 ||
                                   noTransPostCreateListeners.length > 0 || inTransPostCreateListeners.length > 0;
@@ -76,7 +74,7 @@ public class EntityListeners {
         this.hasDeleteListeners = noTransPreDeleteListeners.length > 0 || inTransPreDeleteListeners.length > 0 ||
                                   noTransPostDeleteListeners.length > 0 || inTransPostDeleteListeners.length > 0;
 
-        this.hasLoadListeners = noTransPostLoadListeners.length > 0 || inTransPostLoadListeners.length > 0;
+        this.hasLoadListeners = postLoadListeners.length > 0;
     }
 
     public boolean hasCreateListeners() {
@@ -105,10 +103,6 @@ public class EntityListeners {
 
     public boolean hasLoadListeners() {
         return hasLoadListeners;
-    }
-
-    public boolean hasTransLoadListeners() {
-        return inTransPostLoadListeners.length > 0;
     }
 
     public PreCreateListener[] getNoTransPreCreateListeners() {
@@ -159,11 +153,7 @@ public class EntityListeners {
         return inTransPostDeleteListeners;
     }
 
-    public PostLoadListener[] getNoTransPostLoadListeners() {
-        return noTransPostLoadListeners;
-    }
-
-    public PostLoadListener[] getInTransPostLoadListeners() {
-        return inTransPostLoadListeners;
+    public PostLoadListener[] getPostLoadListeners() {
+        return postLoadListeners;
     }
 }

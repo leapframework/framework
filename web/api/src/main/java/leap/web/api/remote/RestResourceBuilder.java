@@ -6,12 +6,15 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.function.Consumer;
 
 import javax.servlet.http.HttpServletRequest;
 
 import leap.core.AppContext;
 import leap.lang.Assert;
 import leap.lang.Strings;
+import leap.lang.http.client.HttpRequest;
+import leap.lang.http.client.HttpResponse;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.path.Paths;
@@ -30,6 +33,8 @@ public class RestResourceBuilder {
 	private String endpoint;
 	private EntityMapping entityMapping;
 	private AccessToken accessToken;
+	private Consumer<HttpRequest> preSendHandler;
+	private Consumer<HttpResponse> postSendHandler;
 
 	public static RestResourceBuilder newBuilder(){
 		return new RestResourceBuilder();
@@ -37,6 +42,8 @@ public class RestResourceBuilder {
 
 	public RestResource build(){
 		DefaultRestResource res=AppContext.factory().inject(new DefaultRestResource());
+		res.setPreSendHandler(this.preSendHandler);
+		res.setPostSendHandler(this.postSendHandler);
 		if(accessToken!=null){
 			res.setAccessToken(accessToken);
 		}
@@ -164,4 +171,21 @@ public class RestResourceBuilder {
 		return this;
 	}
 
+	public Consumer<HttpRequest> getPreSendHandler() {
+		return preSendHandler;
+	}
+
+	public RestResourceBuilder setPreSendHandler(Consumer<HttpRequest> preSendHandler) {
+		this.preSendHandler = preSendHandler;
+		return this;
+	}
+
+	public Consumer<HttpResponse> getPostSendHandler() {
+		return postSendHandler;
+	}
+
+	public RestResourceBuilder setPostSendHandler(Consumer<HttpResponse> postSendHandler) {
+		this.postSendHandler = postSendHandler;
+		return this;
+	}
 }

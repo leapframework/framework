@@ -21,17 +21,10 @@ package leap.web.api.orm;
 import leap.core.validation.Errors;
 import leap.core.validation.ValidationException;
 import leap.lang.*;
-import leap.lang.convert.Converts;
-import leap.lang.jdbc.JdbcTypeKind;
-import leap.lang.meta.MSimpleType;
-import leap.lang.meta.MTypes;
-import leap.lang.time.DateFormats;
 import leap.orm.command.UpdateCommand;
-import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.RelationMapping;
 import leap.orm.mapping.RelationProperty;
-import leap.web.api.meta.model.MApiModel;
 import leap.web.api.meta.model.MApiProperty;
 import leap.web.api.mvc.params.Partial;
 import leap.web.exception.BadRequestException;
@@ -41,8 +34,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class DefaultModelUpdateExecutor extends ModelExecutorBase implements ModelUpdateExecutor {
 
-    public DefaultModelUpdateExecutor(ModelExecutorContext context) {
+    protected final ModelUpdateHandler handler;
+
+    public DefaultModelUpdateExecutor(ModelExecutorContext context, ModelUpdateHandler handler) {
         super(context);
+        this.handler = handler;
     }
 
     @Override
@@ -54,8 +50,12 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
         return partialUpdateOne(id, partial.getProperties());
     }
 
-        @Override
+    @Override
     public UpdateOneResult partialUpdateOne(Object id, Map<String, Object> properties) {
+        if(null != handler) {
+            handler.processUpdateProperties(context, id, properties);
+        }
+
         Map<RelationProperty, Object[]> relationProperties = new LinkedHashMap<>();
 
         for (Map.Entry<String, Object> entry : properties.entrySet()) {
@@ -97,16 +97,24 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
             throw new ValidationException(errors);
         }
 
+        if(null != handler) {
+            handler.preUpdateProperties(context, id, properties);
+        }
+
+        if(properties.isEmpty()) {
+            throw new BadRequestException("No update properties");
+        }
+
         UpdateCommand update =
                 dao.cmdUpdate(em.getEntityName()).withId(id).from(properties);
 
         AtomicInteger result = new AtomicInteger();
 
         if(relationProperties.isEmpty()) {
-            result.set(update.execute());
+            result.set(executeUpdate(update, id));
         }else {
             dao.doTransaction((conn) -> {
-                result.set(update.execute());
+                result.set(executeUpdate(update, id));
 
                 if(result.get() > 0) {
                     for(Map.Entry<RelationProperty, Object[]> entry : relationProperties.entrySet()) {
@@ -154,6 +162,16 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
         }
 
         return new UpdateOneResult(result.get());
+    }
+
+    protected int executeUpdate(UpdateCommand update, Object id) {
+        int r = update.execute();
+
+        if(null != handler) {
+            handler.postUpdateProperties(context, id, r);
+        }
+
+        return r;
     }
 
 }

@@ -16,6 +16,58 @@
 
 package leap.orm.event;
 
-public interface LoadEntityEvent extends EntityEventWithWrapper {
+import leap.orm.query.QueryContext;
+import leap.orm.value.EntityWrapper;
+
+public interface LoadEntityEvent extends EntityEvent, Iterable<LoadEntityEvent.Row> {
+
+    /**
+     * One row of load entity event.
+     */
+    interface Row {
+        /**
+         * The id in row, may be null.
+         */
+        Object getId();
+
+        /**
+         * The row data.
+         */
+        EntityWrapper getEntity();
+    }
+
+    /**
+     * Returns the {@link QueryContext}
+     */
+    QueryContext getQueryContext();
+
+    /**
+     * Returns true if the event is triggered by 'find' (find by id) operation.
+     */
+    boolean isFind();
+
+    /**
+     * Returns true if the event is triggered by 'query' operation.
+     */
+    boolean isQuery();
+
+    /**
+     * Is one row ?
+     */
+    default boolean isOne() {
+        return size() == 1;
+    }
+
+    /**
+     * Is no row(s) ?
+     */
+    default boolean isEmpty() {
+        return size() == 0;
+    }
+
+    /**
+     * Returns the size of rows.
+     */
+    int size();
 
 }

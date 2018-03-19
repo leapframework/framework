@@ -18,6 +18,7 @@ package leap.web.api.restd;
 
 import leap.core.annotation.Inject;
 import leap.core.validation.ValidationManager;
+import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.json.JsonSettings;
@@ -33,6 +34,7 @@ import leap.web.api.meta.model.MApiOperationBuilder;
 import leap.web.api.meta.model.MApiTag;
 import leap.web.api.mvc.ApiFailureHandler;
 import leap.web.api.route.ApiRoute;
+import leap.web.api.spec.swagger.SwaggerConstants;
 import leap.web.format.RequestFormat;
 import leap.web.format.ResponseFormat;
 import leap.web.route.Route;
@@ -121,7 +123,12 @@ public abstract class RestdOperationBase {
     }
 
     protected void preConfigure(RestdContext context, RestdModel model, FuncActionBuilder action) {
-        action.setExtension(new MApiTag[]{new MApiTag(model.getName())});
+        RestdConfig.Model m = context.getConfig().getModel(model.getName());
+        if(null != m && !Strings.isEmpty(m.getTitle())) {
+            action.setExtension(new MApiTag[]{new MApiTag(model.getName(), m.getTitle())});
+        }else {
+            action.setExtension(new MApiTag[]{new MApiTag(model.getName())});
+        }
     }
 
     protected void postConfigure(RestdContext context, RestdModel model, RouteBuilder route) {
@@ -168,7 +175,7 @@ public abstract class RestdOperationBase {
         route.setAllowClientOnly(true);
         route.addFailureHandler(failureHandler);
 
-        JsonSettings settings = new JsonSettings.Builder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").build();
+        JsonSettings settings = new JsonSettings.Builder().setDateTimeFormatter(SwaggerConstants.DATE_TIME_FORMAT, "GMT").build();
         route.setExtension(settings);
     }
 

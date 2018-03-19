@@ -103,7 +103,7 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
     protected int doExecuteWithEvent() {
         int result;
 
-        EntityEventWithWrapperImpl e = new EntityEventWithWrapperImpl(context, em, entity);
+        EntityEventWithWrapperImpl e = new EntityEventWithWrapperImpl(context, entity, id);
 
         //pre without transaction.
         eventHandler.preUpdateEntityNoTrans(context, em, e);

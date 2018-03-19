@@ -203,7 +203,12 @@ public class DateTimeConverters {
 	    protected Time convertFrom(Class<?> targetType, Long time) {
 			return new java.sql.Time(time);
 		}
-	}
+
+        @Override
+        public String convertToString(Time value) throws Throwable {
+            return DateFormats.TIME_FORMATTER.format(value.toLocalTime());
+        }
+    }
 	
 	public static class SqlTimestampConverter extends AbstractDateConverter<Timestamp> {
 		
@@ -225,28 +230,6 @@ public class DateTimeConverters {
 	    protected Timestamp convertFrom(Class<?> targetType, Long time) {
 		    return new Timestamp(time);
 	    }
-	}
-	
-	public static class InstantConverter extends AbstractDateConverter<Instant> {
-
-		@Override
-        protected Instant convertFrom(Class<?> targetType, Date date) {
-	        // TODO Auto-generated method stub
-	        return null;
-        }
-
-		@Override
-        protected Instant convertFrom(Class<?> targetType, Calendar calendar) {
-	        // TODO Auto-generated method stub
-	        return null;
-        }
-
-		@Override
-        protected Instant convertFrom(Class<?> targetType, Long time) {
-	        // TODO Auto-generated method stub
-	        return null;
-        }
-
 	}
 	
 	protected DateTimeConverters(){

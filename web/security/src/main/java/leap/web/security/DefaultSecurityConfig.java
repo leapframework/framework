@@ -68,6 +68,7 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
     protected String                   authenticationTokenType        = SecurityConstants.DEFAULT_TOKEN_TYPE;
     protected String                   tokenSecret                    = null;
     protected String                   cookieDomain                   = null;
+    protected String[]                 ignorePaths                    = new String[0];
     protected List<RequestIgnore>      ignores                        = new ArrayList<>();
 
     protected Map<String,SecurityFailureHandler> pathPrefixFailureHandlers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -340,7 +341,16 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
     public void setTokenSecret(String tokenSecret) {
         this.tokenSecret = tokenSecret;
     }
-
+    
+    public String[] getIgnorePaths(){
+        return this.ignorePaths;
+    }
+    
+    @ConfigProperty
+    public void setIgnorePaths(String[] ignorePaths){
+        this.ignorePaths = ignorePaths;
+    }
+    
     public String getCookieDomain() {
         return cookieDomain;
     }
@@ -474,5 +484,9 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
             rememberMeSecret = config.ensureGetSecret();
         }
 
+        for (String path : getIgnorePaths()){
+            ignore(path);
+        }
+        
     }
 }

@@ -59,7 +59,7 @@ public class FindOperation extends CrudOperation implements RestdProcessor {
         action.setName(Strings.lowerCamel("find", model.getName()));
         action.setFunction(new FindFunction(context.getApi(), dao, model));
 
-        addIdArgument(context, action, model);
+        addIdArguments(context, action, model);
         addArgument(context, action, QueryOptionsBase.class, "options");
         addModelResponse(action, model);
 
@@ -71,15 +71,9 @@ public class FindOperation extends CrudOperation implements RestdProcessor {
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 
-    private final class FindFunction implements Function<ActionParams, Object> {
-        private final Api        api;
-        private final Dao        dao;
-        private final RestdModel model;
-
+    private final class FindFunction extends CrudFunction {
         public FindFunction(Api api, Dao dao, RestdModel model) {
-            this.api = api;
-            this.dao = dao;
-            this.model = model;
+            super(api, dao, model);
         }
 
         @Override
@@ -90,8 +84,8 @@ public class FindOperation extends CrudOperation implements RestdProcessor {
             ModelExecutorContext context  = new SimpleModelExecutorContext(api, am, dao, model.getEntityMapping());
             ModelQueryExecutor   executor = mef.newQueryExecutor(context);
 
-            Object           id      = params.get(0);
-            QueryOptionsBase options = params.get(1);
+            Object           id      = id(params);
+            QueryOptionsBase options = params.get(idLen);
 
             QueryOneResult result = executor.queryOne(id, options);
 
