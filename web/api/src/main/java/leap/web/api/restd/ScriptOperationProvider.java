@@ -23,13 +23,12 @@ import leap.web.action.FuncActionBuilder;
 import leap.web.api.meta.model.MApiOperationBuilder;
 import leap.web.api.meta.model.MApiParameter;
 import leap.web.api.meta.model.MApiParameterBuilder;
-import leap.web.api.restd.crud.CrudOperation;
 import leap.web.route.RouteBuilder;
 
 import java.lang.reflect.Array;
 import java.util.Map;
 
-public abstract class ScriptOperationProvider extends CrudOperation {
+public abstract class ScriptOperationProvider extends CrudOperationBase {
 
     protected void createArguments(RouteBuilder route, FuncActionBuilder action, MApiOperationBuilder mo) {
         for(MApiParameterBuilder p : mo.getParameters()) {

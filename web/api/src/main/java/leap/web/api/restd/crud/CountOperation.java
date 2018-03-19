@@ -30,9 +30,10 @@ import leap.web.api.orm.ModelExecutorContext;
 import leap.web.api.orm.ModelQueryExecutor;
 import leap.web.api.orm.QueryListResult;
 import leap.web.api.orm.SimpleModelExecutorContext;
+import leap.web.api.restd.CrudOperation;
+import leap.web.api.restd.CrudOperationBase;
 import leap.web.api.restd.RestdContext;
 import leap.web.api.restd.RestdModel;
-import leap.web.api.restd.RestdProcessor;
 import leap.web.route.RouteBuilder;
 
 import java.util.function.Function;
@@ -40,10 +41,10 @@ import java.util.function.Function;
 /**
  * Count records operation.
  */
-public class CountOperation extends CrudOperation implements RestdProcessor {
+public class CountOperation extends CrudOperationBase implements CrudOperation {
 
     @Override
-    public void preProcessModel(ApiConfigurator c, RestdContext context, RestdModel model) {
+    public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model) {
         if(!context.getConfig().allowCountModel(model.getName())) {
             return;
         }

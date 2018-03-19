@@ -29,20 +29,19 @@ import leap.web.api.mvc.params.DeleteOptions;
 import leap.web.api.orm.ModelDeleteExecutor;
 import leap.web.api.orm.ModelExecutorContext;
 import leap.web.api.orm.SimpleModelExecutorContext;
+import leap.web.api.restd.CrudOperation;
+import leap.web.api.restd.CrudOperationBase;
 import leap.web.api.restd.RestdContext;
 import leap.web.api.restd.RestdModel;
-import leap.web.api.restd.RestdProcessor;
 import leap.web.route.RouteBuilder;
-
-import java.util.function.Function;
 
 /**
  * Delete by id operation.
  */
-public class DeleteOperation extends CrudOperation implements RestdProcessor {
+public class DeleteOperation extends CrudOperationBase implements CrudOperation {
 
     @Override
-    public void preProcessModel(ApiConfigurator c, RestdContext context, RestdModel model) {
+    public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model) {
         if(!context.getConfig().allowDeleteModel(model.getName())) {
             return;
         }

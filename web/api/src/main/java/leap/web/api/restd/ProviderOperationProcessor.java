@@ -19,11 +19,10 @@ import leap.core.annotation.Inject;
 import leap.web.api.config.ApiConfigException;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.config.model.RestdConfig;
-import leap.web.api.restd.crud.CrudOperation;
 
 import java.util.Map;
 
-public class RestdOperationProcessor extends CrudOperation implements RestdProcessor {
+public class ProviderOperationProcessor implements RestdProcessor {
 
     protected @Inject Map<String,RestdOperationProvider> providers;
 

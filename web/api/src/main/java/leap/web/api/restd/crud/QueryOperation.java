@@ -26,10 +26,14 @@ import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.ApiResponse;
 import leap.web.api.mvc.params.QueryOptions;
-import leap.web.api.orm.*;
+import leap.web.api.orm.ModelExecutorContext;
+import leap.web.api.orm.ModelQueryExecutor;
+import leap.web.api.orm.QueryListResult;
+import leap.web.api.orm.SimpleModelExecutorContext;
+import leap.web.api.restd.CrudOperation;
+import leap.web.api.restd.CrudOperationBase;
 import leap.web.api.restd.RestdContext;
 import leap.web.api.restd.RestdModel;
-import leap.web.api.restd.RestdProcessor;
 import leap.web.route.RouteBuilder;
 
 import java.util.function.Function;
@@ -37,10 +41,10 @@ import java.util.function.Function;
 /**
  * Query records operation.
  */
-public class QueryOperation extends CrudOperation implements RestdProcessor {
+public class QueryOperation extends CrudOperationBase implements CrudOperation {
 
     @Override
-    public void preProcessModel(ApiConfigurator c, RestdContext context, RestdModel model) {
+    public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model) {
         if(!context.getConfig().allowQueryModel(model.getName())) {
             return;
         }

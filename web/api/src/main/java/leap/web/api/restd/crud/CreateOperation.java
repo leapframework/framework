@@ -32,9 +32,10 @@ import leap.web.api.orm.CreateOneResult;
 import leap.web.api.orm.ModelCreateExecutor;
 import leap.web.api.orm.ModelExecutorContext;
 import leap.web.api.orm.SimpleModelExecutorContext;
+import leap.web.api.restd.CrudOperation;
+import leap.web.api.restd.CrudOperationBase;
 import leap.web.api.restd.RestdContext;
 import leap.web.api.restd.RestdModel;
-import leap.web.api.restd.RestdProcessor;
 import leap.web.route.RouteBuilder;
 
 import java.util.Map;
@@ -43,13 +44,13 @@ import java.util.function.Function;
 /**
  * Create a new record operation.
  */
-public class CreateOperation extends CrudOperation implements RestdProcessor {
+public class CreateOperation extends CrudOperationBase implements CrudOperation {
 
     @Inject
     private RestdValidator[] validators;
 
     @Override
-    public void preProcessModel(ApiConfigurator c, RestdContext context, RestdModel model) {
+    public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model) {
         if(!context.getConfig().allowCreateModel(model.getName())) {
             return;
         }

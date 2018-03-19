@@ -27,20 +27,19 @@ import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.ApiResponse;
 import leap.web.api.mvc.params.QueryOptionsBase;
 import leap.web.api.orm.*;
+import leap.web.api.restd.CrudOperation;
+import leap.web.api.restd.CrudOperationBase;
 import leap.web.api.restd.RestdContext;
 import leap.web.api.restd.RestdModel;
-import leap.web.api.restd.RestdProcessor;
 import leap.web.route.RouteBuilder;
-
-import java.util.function.Function;
 
 /**
  * Find by id operation.
  */
-public class FindOperation extends CrudOperation implements RestdProcessor {
+public class FindOperation extends CrudOperationBase implements CrudOperation {
 
     @Override
-    public void preProcessModel(ApiConfigurator c, RestdContext context, RestdModel model) {
+    public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model) {
         if(!context.getConfig().allowFindModel(model.getName())) {
             return;
         }

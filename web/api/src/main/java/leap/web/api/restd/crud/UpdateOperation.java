@@ -28,8 +28,9 @@ import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.ApiResponse;
 import leap.web.api.orm.*;
+import leap.web.api.restd.CrudOperation;
+import leap.web.api.restd.CrudOperationBase;
 import leap.web.api.restd.RestdModel;
-import leap.web.api.restd.RestdProcessor;
 import leap.web.api.restd.RestdContext;
 import leap.web.route.RouteBuilder;
 
@@ -39,13 +40,13 @@ import java.util.function.Function;
 /**
  * Update a record operation.
  */
-public class UpdateOperation extends CrudOperation implements RestdProcessor {
+public class UpdateOperation extends CrudOperationBase implements CrudOperation {
 
     @Inject
     private RestdValidator[] validators;
 
     @Override
-    public void preProcessModel(ApiConfigurator c, RestdContext context, RestdModel model) {
+    public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model) {
         if(!context.getConfig().allowUpdateModel(model.getName())) {
             return;
         }

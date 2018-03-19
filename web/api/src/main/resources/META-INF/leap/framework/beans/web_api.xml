@@ -52,13 +52,16 @@
         <additional-type-def type="leap.web.api.meta.ApiMetadataProcessor"/>
     </bean>
 
-    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.CreateOperation"/>
-    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.UpdateOperation"/>
-    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.DeleteOperation"/>
-    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.FindOperation"/>
-    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.QueryOperation"/>
-    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.CountOperation"/>
-    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.RestdOperationProcessor"/>
+    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.CrudOperationProcessor"/>
+    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.ProviderOperationProcessor"/>
+
+    <!--crud -->
+    <bean name="create" type="leap.web.api.restd.CrudOperation" class="leap.web.api.restd.crud.CreateOperation"/>
+    <bean name="update" type="leap.web.api.restd.CrudOperation" class="leap.web.api.restd.crud.UpdateOperation"/>
+    <bean name="delete" type="leap.web.api.restd.CrudOperation" class="leap.web.api.restd.crud.DeleteOperation"/>
+    <bean name="find"   type="leap.web.api.restd.CrudOperation" class="leap.web.api.restd.crud.FindOperation"/>
+    <bean name="query"  type="leap.web.api.restd.CrudOperation" class="leap.web.api.restd.crud.QueryOperation"/>
+    <bean name="count"  type="leap.web.api.restd.CrudOperation" class="leap.web.api.restd.crud.CountOperation"/>
 
     <bean name="sql"
           type="leap.web.api.restd.RestdOperationProvider"
