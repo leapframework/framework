@@ -416,12 +416,11 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 				writeOAuth2Implicit(context, m, w, d);
 				break;
 			case SwaggerConstants.ACCESS_CODE:
-				writeOAuth2AccesCode(context, m, w, d);
+				writeOAuth2AccessCode(context, m, w, d);
 				break;
 			default:
 				throw new ApiConfigException("not support flow:"+d.getFlow());
 		}
-        //
     }
     
     protected void writeOAuth2Implicit(WriteContext context, ApiMetadata m, JsonWriter w, MOAuth2ApiSecurityDef d) {
@@ -438,7 +437,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
         });
     }
     
-    protected void writeOAuth2AccesCode(WriteContext context, ApiMetadata m, JsonWriter w, MOAuth2ApiSecurityDef d) {
+    protected void writeOAuth2AccessCode(WriteContext context, ApiMetadata m, JsonWriter w, MOAuth2ApiSecurityDef d) {
         w.property(d.getName(), () -> {
             w.startObject();
             

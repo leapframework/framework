@@ -641,10 +641,9 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                 if(p.isReference()) {
                     continue;
                 }
-                if(p.isNotSelectableExplicitly()) {
-                    continue;
+                if(p.isSelectableExplicitly()) {
+                    fields.add(p.getName());
                 }
-                fields.add(p.getName());
             }
         }else {
             String[] names = Strings.split(select, ',');
@@ -653,7 +652,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                 if(null == p) {
                     throw new BadRequestException("Property '" + name + "' not exists, check the 'select' query param");
                 }
-                if(p.isNotSelectableExplicitly()) {
+                if(!p.isSelectableExplicitly()) {
                     throw new BadRequestException("Property '" + name + "' is not selectable");
                 }
                 fields.add(p.getName());
