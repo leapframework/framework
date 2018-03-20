@@ -41,7 +41,6 @@ import leap.orm.sql.parser.SqlParser;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -49,25 +48,32 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements CriteriaQuery<T>,QueryContext {
-	
-	protected SqlBuilder              builder;
-	protected Predicate<FieldMapping> selectFilter;
-    protected List<JoinBuilder>              joins = new ArrayList<>(1);
-	protected String        where;
-    protected ArrayParams   whereParameters;
-    protected StringBuilder joinByIdWhere;
-    protected List          joinByIdArgs;
-    protected boolean       distinct;
-	protected String        groupBy;
-	protected String        having;
+
+    protected SqlBuilder              builder;
+    protected Predicate<FieldMapping> selectFilter;
+    protected String                  sqlView;
+    protected List<JoinBuilder>       joins = new ArrayList<>(1);
+    protected String                  where;
+    protected ArrayParams             whereParameters;
+    protected StringBuilder           joinByIdWhere;
+    protected List                    joinByIdArgs;
+    protected boolean                 distinct;
+    protected String                  groupBy;
+    protected String                  having;
 
 	public DefaultCriteriaQuery(Dao dao, EntityMapping em, Class<T> targetType) {
 	    super(dao, targetType, em);
 	    Args.notNull(em,"entity mapping");
 	    this.builder = new SqlBuilder();
     }
-	
-	@Override
+
+    @Override
+    public CriteriaQuery<T> fromSqlView(String sql) {
+        this.sqlView = sql;
+        return this;
+    }
+
+    @Override
     public CriteriaQuery<T> params(Map<String, Object> params) {
 	    return (CriteriaQuery<T>)super.params(params);
     }
@@ -1186,7 +1192,13 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 		}
 		
 		protected SqlBuilder from() {
-	        sql.append(" from ").append(em.getEntityName()).append(" ").append(alias);
+	        sql.append(" from ");
+            if(!Strings.isEmpty(sqlView)) {
+                sql.append("(").append(sqlView).append(")");
+            }else {
+                sql.append(em.getEntityName());
+            }
+            sql.append(" ").append(alias);
 	        return this;
 		}
 

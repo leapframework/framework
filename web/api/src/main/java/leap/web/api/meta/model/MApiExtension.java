@@ -18,11 +18,6 @@ package leap.web.api.meta.model;
 
 import leap.lang.accessor.MapAttributeAccessor;
 
-import java.util.LinkedHashMap;
-
 public class MApiExtension extends MapAttributeAccessor {
 
-    public MApiExtension() {
-        super(new LinkedHashMap<>());
-    }
 }

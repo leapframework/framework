@@ -68,7 +68,6 @@ public class RestApiController extends ModelController<RestApi> {
     @GET
     public ApiResponse<List<RestApi>> getRestApis(QueryOptions options) {
         return queryList(options,query -> query.join((sqlBuilder, context) -> {
-            System.out.println("");
             sqlBuilder.append(" left join RestOperation o on o.apiId="+query.alias()
                     +".id AND o.name=:oname AND "+query.alias()+".name=:oname ");
             query.param("oname","name");

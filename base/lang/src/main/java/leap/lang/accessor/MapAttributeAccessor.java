@@ -15,23 +15,24 @@
  */
 package leap.lang.accessor;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
-
-import leap.lang.Args;
 
 public class MapAttributeAccessor implements AttributeAccessor {
 	
 	protected final Map<String,Object> attributes;
 	
 	public MapAttributeAccessor(){
-		this.attributes = new HashMap<String, Object>();
+		this.attributes = new LinkedHashMap<>();
 	}
 	
 	protected MapAttributeAccessor(Map<String,Object> map){
-		Args.notNull(map,"the map");
-		this.attributes = map;
+		this.attributes = null == map ? new LinkedHashMap<>() : map;
 	}
+
+    public Map<String, Object> getAttributes(){
+        return attributes;
+    }
 
 	@Override
     public Object getAttribute(String name) {
@@ -47,8 +48,4 @@ public class MapAttributeAccessor implements AttributeAccessor {
     public void removeAttribute(String name) {
 		attributes.remove(name);
     }
-	
-	public Map<String, Object> map(){
-		return attributes;
-	}
 }

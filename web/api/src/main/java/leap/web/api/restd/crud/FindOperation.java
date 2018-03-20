@@ -33,10 +33,14 @@ import leap.web.api.restd.RestdContext;
 import leap.web.api.restd.RestdModel;
 import leap.web.route.RouteBuilder;
 
+import java.util.function.Function;
+
 /**
  * Find by id operation.
  */
 public class FindOperation extends CrudOperationBase implements CrudOperation {
+
+    protected static final String NAME = "find";
 
     @Override
     public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model) {
@@ -55,8 +59,8 @@ public class FindOperation extends CrudOperationBase implements CrudOperation {
             return;
         }
 
-        action.setName(Strings.lowerCamel("find", model.getName()));
-        action.setFunction(new FindFunction(context.getApi(), dao, model));
+        action.setName(Strings.lowerCamel(NAME, model.getName()));
+        action.setFunction(createFunction(c, context, model));
 
         addIdArguments(context, action, model);
         addArgument(context, action, QueryOptionsBase.class, "options");
@@ -64,13 +68,18 @@ public class FindOperation extends CrudOperationBase implements CrudOperation {
 
         preConfigure(context, model, action);
         route.setAction(action.build());
-        setCrudOperation(route, "find");
+        setCrudOperation(route, NAME);
 
         postConfigure(context, model, route);
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 
-    private final class FindFunction extends CrudFunction {
+    protected Function<ActionParams, Object> createFunction(ApiConfigurator c, RestdContext context, RestdModel model) {
+        return new FindFunction(context.getApi(), context.getDao(), model);
+    }
+
+    protected class FindFunction extends CrudFunction {
+
         public FindFunction(Api api, Dao dao, RestdModel model) {
             super(api, dao, model);
         }
@@ -81,7 +90,7 @@ public class FindOperation extends CrudOperationBase implements CrudOperation {
             MApiModel   am  = amd.getModel(model.getName());
 
             ModelExecutorContext context  = new SimpleModelExecutorContext(api, am, dao, model.getEntityMapping());
-            ModelQueryExecutor   executor = mef.newQueryExecutor(context);
+            ModelQueryExecutor   executor = newQueryExecutor(context);
 
             Object           id      = id(params);
             QueryOptionsBase options = params.get(idLen);
@@ -89,6 +98,10 @@ public class FindOperation extends CrudOperationBase implements CrudOperation {
             QueryOneResult result = executor.queryOne(id, options);
 
             return result.record == null ? ApiResponse.NOT_FOUND : ApiResponse.of(result.record);
+        }
+
+        protected ModelQueryExecutor newQueryExecutor(ModelExecutorContext context) {
+            return mef.newQueryExecutor(context);
         }
 
         @Override

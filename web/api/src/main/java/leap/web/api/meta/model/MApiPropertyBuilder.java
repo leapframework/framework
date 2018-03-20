@@ -30,6 +30,7 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
     protected boolean      discriminator;
     protected boolean      reference;
     protected Boolean      readOnly;
+    protected Boolean      selectable;
     protected Boolean      creatable;
     protected Boolean      updatable;
     protected Boolean      sortable;
@@ -61,6 +62,7 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
         this.unique = mp.isUnique();
         this.reference = mp.isReference();
         this.discriminator = mp.isDiscriminator();
+        this.selectable = mp.getSelectable();
         this.creatable = mp.getCreatable();
         this.updatable = mp.getUpdatable();
         this.sortable = mp.getSortable();
@@ -110,16 +112,8 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
         this.beanProperty = beanProperty;
     }
 
-    public boolean isIdentity() {
-        return identity;
-    }
-
     public void setIdentity(boolean identity) {
         this.identity = identity;
-    }
-
-    public boolean isUnique() {
-        return unique;
     }
 
     public void setUnique(boolean unique) {
@@ -154,8 +148,12 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
         this.readOnly = readOnly;
     }
 
-    public boolean isCreatetable() {
-        return null != creatable && creatable;
+    public Boolean getSelectable() {
+        return selectable;
+    }
+
+    public void setSelectable(Boolean selectable) {
+        this.selectable = selectable;
     }
 
     public Boolean getCreatable() {
@@ -166,20 +164,12 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
         this.creatable = creatable;
     }
 
-    public boolean isUpdatable() {
-        return null != updatable && updatable;
-    }
-
     public Boolean getUpdatable() {
         return updatable;
     }
 
     public void setUpdatable(Boolean updatable) {
         this.updatable = updatable;
-    }
-
-    public boolean isSortable() {
-        return null != sortable && sortable;
     }
 
     public Boolean getSortable() {
@@ -190,20 +180,12 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
         this.sortable = sortable;
     }
 
-    public boolean isFilterable() {
-        return null != filterable && filterable;
-    }
-
     public Boolean getFilterable() {
         return filterable;
     }
 
     public void setFilterable(Boolean filterable) {
         this.filterable = filterable;
-    }
-
-    public boolean isExpandable() {
-        return null != expandable && expandable;
     }
 
     /**
@@ -223,6 +205,6 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
                                 type, format, identity, unique, reference, discriminator, password, required,
                                 defaultValue, enumValues,
 	    					    null == validation ? null : validation.build(), attrs,
-                                readOnly, creatable, updatable, sortable, filterable, expandable, extension);
+                                readOnly, selectable, creatable, updatable, sortable, filterable, expandable, extension);
     }
 }

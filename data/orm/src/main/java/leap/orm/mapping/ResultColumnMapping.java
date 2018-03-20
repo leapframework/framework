@@ -21,10 +21,11 @@ public class ResultColumnMapping {
 	protected String        columnLabel;
 	protected String		aliasName;
 	protected int           columnType;
-	protected EntityMapping	entityMapping;
-	protected FieldMapping  fieldMapping;
-	protected boolean isAlias = false;
-	
+    protected String        resultName;
+    protected String        normalizedName; //the normalized name of result name.
+    protected EntityMapping	entityMapping;
+    protected FieldMapping  fieldMapping;
+
 	protected ResultColumnMapping() {
 
 	}
@@ -69,15 +70,23 @@ public class ResultColumnMapping {
 		this.fieldMapping = fieldMapping;
 	}
 
-	public boolean isAlias() {
-		return isAlias;
-	}
+    public String getResultName() {
+        return resultName;
+    }
 
-	public void setAlias(boolean alias) {
-		isAlias = alias;
-	}
+    public void setResultName(String resultName) {
+        this.resultName = resultName;
+    }
 
-	public String getAliasName() {
+    public String getNormalizedName() {
+        return normalizedName;
+    }
+
+    public void setNormalizedName(String normalizedName) {
+        this.normalizedName = normalizedName;
+    }
+
+    public String getAliasName() {
 		return aliasName;
 	}
 

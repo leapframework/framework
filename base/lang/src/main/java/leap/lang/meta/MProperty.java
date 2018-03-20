@@ -33,6 +33,7 @@ public class MProperty extends ImmutableMNamedWithDesc {
     protected final Integer      precision;
     protected final Integer      scale;
     protected final boolean      discriminator;
+    protected final Boolean      selectable;
     protected final Boolean      creatable;
     protected final Boolean      updatable;
     protected final Boolean      sortable;
@@ -45,7 +46,7 @@ public class MProperty extends ImmutableMNamedWithDesc {
                      boolean fixedLength,
                      Integer length, Integer precision, Integer scale,
                      boolean discriminator,
-                     Boolean creatable, Boolean updatable, Boolean sortable, Boolean filterable,
+                     Boolean selectable, Boolean creatable, Boolean updatable, Boolean sortable, Boolean filterable,
                      boolean reference) {
         super(name, title, summary, description);
 
@@ -63,6 +64,7 @@ public class MProperty extends ImmutableMNamedWithDesc {
         this.precision = precision;
         this.scale = scale;
         this.discriminator = discriminator;
+        this.selectable = selectable;
         this.creatable = creatable;
         this.updatable = updatable;
         this.sortable = sortable;
@@ -119,6 +121,10 @@ public class MProperty extends ImmutableMNamedWithDesc {
 
     public boolean isDiscriminator() {
         return discriminator;
+    }
+
+    public Boolean getSelectable() {
+        return selectable;
     }
 
     public Boolean getCreatable() {

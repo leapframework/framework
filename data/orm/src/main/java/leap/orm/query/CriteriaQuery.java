@@ -37,6 +37,14 @@ public interface CriteriaQuery<T> extends Query<T> {
     String DEFAULT_ALIAS_NAME = "t";
 
     /**
+     * Sets the sql of from.
+     *
+     * <p/>
+     * select * from (sql view) t.
+     */
+    CriteriaQuery<T> fromSqlView(String sql);
+
+    /**
      * Sets the given name and value as CriteriaQuery parameter.
      */
     CriteriaQuery<T> param(String name, Object value);

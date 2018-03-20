@@ -50,6 +50,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
     protected final ModelAndMapping   modelAndMapping;
     protected final ModelQueryHandler handler;
 
+    protected String   sqlView;
     protected String[] excludedFields;
 
     public DefaultModelQueryExecutor(ModelExecutorContext context) {
@@ -60,6 +61,12 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         super(context);
         this.modelAndMapping = new ModelAndMapping(am, em);
         this.handler = handler;
+    }
+
+    @Override
+    public ModelQueryExecutor fromSqlView(String sql) {
+        this.sqlView = sql;
+        return this;
     }
 
     @Override
@@ -76,12 +83,8 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
         Record record;
 
-        CriteriaQuery<Record> query = dao.createCriteriaQuery(em).whereById(id);
-        if(null != options && !Strings.isEmpty(options.getSelect())) {
-            applySelect(query, options.getSelect());
-        }else{
-            query.selectExclude(excludedFields);
-        }
+        CriteriaQuery<Record> query = createCriteriaQuery().whereById(id);
+        applySelect(query, options);
 
         if(null != handler) {
             handler.preQueryOne(context, id, query);
@@ -115,7 +118,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             handler.processQueryListOptions(context, options);
         }
 
-        CriteriaQuery<Record> query = dao.createCriteriaQuery(em);
+        CriteriaQuery<Record> query = createCriteriaQuery();
 
         long count = -1;
         List<Record> list;
@@ -124,11 +127,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             applyOrderBy(query, options.getOrderBy());
         }
 
-        if(!Strings.isEmpty(options.getSelect())) {
-            applySelect(query, options.getSelect());
-        }else{
-            query.selectExclude(excludedFields);
-        }
+        applySelect(query, options);
 
         Map<String, ModelAndMapping> joinedModels = null;
 
@@ -215,7 +214,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
     @Override
     public QueryListResult count(CountOptions options, Consumer<CriteriaQuery> callback) {
-        CriteriaQuery<Record> query = dao.createCriteriaQuery(em);
+        CriteriaQuery<Record> query = createCriteriaQuery();
 
         QueryOptions queryOptions = new QueryOptions();
         queryOptions.setFilters(options.getFilters());
@@ -229,6 +228,10 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         long count = query.count();
 
         return new QueryListResult(null, count);
+    }
+
+    protected CriteriaQuery<Record> createCriteriaQuery() {
+        return dao.createCriteriaQuery(em).fromSqlView(sqlView);
     }
 
     protected void expand(Expand expand, List<Record> records) {
@@ -546,13 +549,44 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         query.orderBy(s.toString());
     }
 
+    protected void applySelect(CriteriaQuery query, String select) {
+        if(Strings.equals("*", select)) {
+            return;
+        }
+
+        EntityMapping em = query.getEntityMapping();
+
+        String[] names = Strings.split(select, ',');
+
+        List<String> fields = new ArrayList<>();
+
+        for(String name : names) {
+
+            FieldMapping p = em.tryGetFieldMapping(name);
+
+            if(null == p) {
+                throw new BadRequestException("Property '" + name + "' not exists, check the 'select' query param");
+            }
+
+            fields.add(p.getFieldName());
+        }
+
+        if(null != excludedFields) {
+            for(String name : excludedFields) {
+                fields.remove(name);
+            }
+        }
+
+        query.select(fields.toArray(new String[fields.size()]));
+    }
+
     /**
      * 设置查询字段
      * @param query 查询语句
      * @param select 待查询字段
      * @param requiredFields select中必须包含的字段，如果不包含，则自动添加该字段
      */
-    protected void applySelect(CriteriaQuery query, String select,String... requiredFields) {
+    protected void applySelect(CriteriaQuery query, String select, String... requiredFields) {
         if(Strings.equals("*", select)) {
             return;
         }
@@ -597,29 +631,36 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         query.select(fields.toArray(new String[fields.size()]));
     }
 
-    protected void applySelect(CriteriaQuery query, String select) {
-        if(Strings.equals("*", select)) {
-            return;
-        }
-
-        EntityMapping em = query.getEntityMapping();
-
-        String[] names = Strings.split(select, ',');
+    protected void applySelect(CriteriaQuery query, QueryOptionsBase options) {
+        String select = null == options ? null : options.getSelect();
 
         List<String> fields = new ArrayList<>();
 
-        for(String name : names) {
-
-            FieldMapping p = em.tryGetFieldMapping(name);
-
-            if(null == p) {
-                throw new BadRequestException("Property '" + name + "' not exists, check the 'select' query param");
+        if(Strings.isEmpty(select) || "*".equals(select)) {
+            for(MApiProperty p : am.getProperties()) {
+                if(p.isReference()) {
+                    continue;
+                }
+                if(p.isNotSelectableExplicitly()) {
+                    continue;
+                }
+                fields.add(p.getName());
             }
-
-            fields.add(p.getFieldName());
+        }else {
+            String[] names = Strings.split(select, ',');
+            for(String name : names) {
+                MApiProperty p = am.tryGetProperty(name);
+                if(null == p) {
+                    throw new BadRequestException("Property '" + name + "' not exists, check the 'select' query param");
+                }
+                if(p.isNotSelectableExplicitly()) {
+                    throw new BadRequestException("Property '" + name + "' is not selectable");
+                }
+                fields.add(p.getName());
+            }
         }
 
-        if(null != excludedFields) {
+        if(null != excludedFields && excludedFields.length > 0) {
             for(String name : excludedFields) {
                 fields.remove(name);
             }

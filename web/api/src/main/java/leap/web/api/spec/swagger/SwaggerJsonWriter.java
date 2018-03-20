@@ -217,7 +217,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 
     private void writeExtension(JsonWriter w, MApiExtension extension) {
         if(null != extension) {
-            extension.map().forEach((name, value) -> {
+            extension.getAttributes().forEach((name, value) -> {
                 if(null != value) {
                     w.property("x-" + name, value);
                 }
@@ -571,6 +571,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
                         w.property(X_UNIQUE, true);
                     }
 
+                    w.propertyOptional(X_SELECTABLE, p.getSelectable());
                     w.propertyOptional(X_CREATABLE,  p.getCreatable());
                     w.propertyOptional(X_UPDATABLE,  p.getUpdatable());
                     w.propertyOptional(X_SORTABLE,   p.getSortable());

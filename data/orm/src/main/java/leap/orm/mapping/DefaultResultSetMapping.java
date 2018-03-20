@@ -15,6 +15,7 @@
  */
 package leap.orm.mapping;
 
+import leap.lang.Strings;
 import leap.orm.OrmContext;
 import leap.orm.OrmMetadata;
 import leap.orm.sql.Sql;
@@ -73,8 +74,9 @@ public class DefaultResultSetMapping implements ResultSetMapping {
 			cm.setColumnType(md.getColumnType(i));
 
 			if(null != selectCmd && selectCmd.isSelectItemAlias(cm.getColumnLabel())){
-				cm.setAliasName(selectCmd.getSelectItemAlias(cm.getColumnLabel()));
-				cm.setAlias(true);
+                cm.setAliasName(selectCmd.getSelectItemAlias(cm.getColumnLabel()));
+                cm.setResultName(cm.getAliasName());
+                cm.setNormalizedName(normalizeName(cm.getAliasName()));
 			}
 			
 			FieldMapping fm = primaryEntityMapping.tryGetFieldMappingByColumn(cm.getColumnLabel());
@@ -82,8 +84,32 @@ public class DefaultResultSetMapping implements ResultSetMapping {
 			if(null != fm){
 				cm.setEntityMapping(primaryEntityMapping);
 				cm.setFieldMapping(fm);
-			}
+                if(null == cm.getResultName()) {
+                    cm.setResultName(fm.getFieldName());
+                    cm.setNormalizedName(fm.getFieldName());
+                }
+			}else {
+                if(null == cm.getResultName()) {
+                    String name = Strings.firstNotEmpty(cm.getColumnLabel(), cm.getColumnName());
+                    for(int j=0;j<name.length();j++) {
+                        char c = name.charAt(j);
+                        if(Character.isLetter(c)) {
+                            if(Character.isUpperCase(c)) {
+                                name = name.toLowerCase();
+                            }
+                            break;
+                        }
+                    }
+                    cm.setResultName(normalizeName(name));
+                    cm.setNormalizedName(cm.getResultName());
+                }
+            }
+
 			columnMappings[i-1] = cm;
 		}
 	}
+
+    protected String normalizeName(String name) {
+        return Strings.lowerCamel(name, '_');
+    }
 }

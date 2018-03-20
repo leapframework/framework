@@ -161,7 +161,9 @@ public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataP
             }else {
                 rm.setPath(strategy.getDefaultModelPath(em.getEntityName()));
             }
-
+            if(null != cm) {
+                rm.setAttrs(cm.getAttributes());
+            }
             restdModels.add(rm.build());
         }
 

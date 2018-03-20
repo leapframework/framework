@@ -16,6 +16,7 @@
 
 package leap.web.api.config.model;
 
+import leap.lang.accessor.MapAttributeAccessor;
 import leap.lang.exception.ObjectExistsException;
 import leap.orm.OrmContext;
 import leap.web.api.meta.model.MApiOperationBuilder;
@@ -189,7 +190,7 @@ public class RestdConfig {
     /**
      * The configuration of restd model.
      */
-    public static class Model {
+    public static class Model extends MapAttributeAccessor {
 
         protected final String name;
 
@@ -209,6 +210,8 @@ public class RestdConfig {
         public Model(String name) {
             this.name = name;
         }
+
+
 
         public String getName() {
             return name;

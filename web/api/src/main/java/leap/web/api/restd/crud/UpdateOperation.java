@@ -42,9 +42,6 @@ import java.util.function.Function;
  */
 public class UpdateOperation extends CrudOperationBase implements CrudOperation {
 
-    @Inject
-    private RestdValidator[] validators;
-
     @Override
     public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model) {
         if(!context.getConfig().allowUpdateModel(model.getName())) {
@@ -92,12 +89,6 @@ public class UpdateOperation extends CrudOperationBase implements CrudOperation 
 
             ModelExecutorContext context  = new SimpleModelExecutorContext(api, am, dao, em);
             ModelUpdateExecutor  executor = mef.newUpdateExecutor(context);
-
-            if(Arrays2.isNotEmpty(validators)) {
-                for (RestdValidator validator : validators) {
-                    validator.validate(model.getName(), record);
-                }
-            }
 
             UpdateOneResult result = executor.partialUpdateOne(id, record);
 

@@ -43,6 +43,8 @@ import java.util.function.Function;
  */
 public class QueryOperation extends CrudOperationBase implements CrudOperation {
 
+    protected static final String NAME = "query";
+
     @Override
     public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model) {
         if(!context.getConfig().allowQueryModel(model.getName())) {
@@ -52,7 +54,6 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
         String verb = "GET";
         String path = fullModelPath(c, model);
 
-        Dao               dao    = context.getDao();
         FuncActionBuilder action = new FuncActionBuilder();
         RouteBuilder      route  = rm.createRoute(verb, path);
 
@@ -60,25 +61,29 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
             return;
         }
 
-        action.setName(Strings.lowerCamel("query", model.getName()));
-        action.setFunction(new QueryFunction(context.getApi(), dao, model));
+        action.setName(Strings.lowerCamel(NAME, model.getName()));
+        action.setFunction(createFunction(c, context, model));
 
         addArgument(context, action, QueryOptions.class, "options");
         addModelQueryResponse(action, model);
 
         preConfigure(context, model, action);
         route.setAction(action.build());
-        setCrudOperation(route, "query");
+        setCrudOperation(route, NAME);
 
         postConfigure(context, model, route);
 
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 
-    private final class QueryFunction implements Function<ActionParams, Object> {
-        private final Api        api;
-        private final Dao        dao;
-        private final RestdModel model;
+    protected Function<ActionParams, Object> createFunction(ApiConfigurator c, RestdContext context, RestdModel model) {
+        return new QueryFunction(context.getApi(), context.getDao(), model);
+    }
+
+    protected class QueryFunction implements Function<ActionParams, Object> {
+        protected final Api        api;
+        protected final Dao        dao;
+        protected final RestdModel model;
 
         public QueryFunction(Api api, Dao dao, RestdModel model) {
             this.api = api;
@@ -92,7 +97,7 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
             MApiModel   am  = amd.getModel(model.getName());
 
             ModelExecutorContext context  = new SimpleModelExecutorContext(api, am, dao, model.getEntityMapping());
-            ModelQueryExecutor   executor = mef.newQueryExecutor(context);
+            ModelQueryExecutor   executor = newQueryExecutor(context);
 
             QueryOptions options = params.get(0);
 
@@ -103,6 +108,10 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
             } else {
                 return ApiResponse.of(result.list).setHeader("X-Total-Count", String.valueOf(result.count));
             }
+        }
+
+        protected ModelQueryExecutor newQueryExecutor(ModelExecutorContext context) {
+            return mef.newQueryExecutor(context);
         }
 
         @Override

@@ -101,6 +101,10 @@ public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactor
                 p.setSortable(fm.isSortable());
             }
 
+            if(null == p.getSelectable()) {
+                p.setSelectable(true);
+            }
+
             if(null == p.getCreatable()) {
 
                 if(fm.isPrimaryKey() && fm.isAutoGenerateValue()) {

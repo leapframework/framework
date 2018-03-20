@@ -30,6 +30,7 @@ public class MApiProperty extends MApiParameterBase {
     protected final boolean      reference;
     protected final boolean      discriminator;
     protected final Boolean      readOnly;
+    protected final Boolean      selectable;
     protected final Boolean      creatable;
     protected final Boolean      updatable;
     protected final Boolean      sortable;
@@ -42,7 +43,7 @@ public class MApiProperty extends MApiParameterBase {
                         boolean discriminator, boolean password, Boolean required,
                         Object defaultValue, String[] enumValues,
                         MApiValidation validation, Map<String, Object> attrs, Boolean readOnly,
-                        Boolean creatable, Boolean updatable, Boolean sortable, Boolean filterable, Boolean expandable, MApiExtension extension) {
+                        Boolean selectable, Boolean creatable, Boolean updatable, Boolean sortable, Boolean filterable, Boolean expandable, MApiExtension extension) {
 	    super(name, title, summary, description, type, format, false, password, required, defaultValue, enumValues, validation, extension, attrs);
 
         this.identity = identity;
@@ -51,6 +52,7 @@ public class MApiProperty extends MApiParameterBase {
         this.discriminator = discriminator;
         this.metaProperty = metaProperty;
         this.beanProperty = beanProperty;
+        this.selectable = selectable;
         this.creatable = creatable;
         this.updatable = updatable;
         this.sortable = sortable;
@@ -95,6 +97,10 @@ public class MApiProperty extends MApiParameterBase {
         return readOnly;
     }
 
+    public Boolean getSelectable() {
+        return selectable;
+    }
+
     public Boolean getCreatable() {
         return creatable;
     }
@@ -115,6 +121,10 @@ public class MApiProperty extends MApiParameterBase {
         return expandable;
     }
 
+    public boolean isSelectableExplicitly() {
+        return null != selectable && selectable;
+    }
+
     public boolean isCreatableExplicitly() {
         return null != creatable && creatable;
     }
@@ -133,6 +143,10 @@ public class MApiProperty extends MApiParameterBase {
 
     public boolean isExpandableExplicitly() {
         return null != expandable && expandable;
+    }
+
+    public boolean isNotSelectableExplicitly() {
+        return null != selectable && !selectable;
     }
 
     public boolean isNotCreatableExplicitly() {

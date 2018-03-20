@@ -32,6 +32,10 @@ public abstract class AbstractMTypeFactory implements MTypeFactory {
                 mp.setRequired(p.required().value());
             }
 
+            if(p.selectable().isPresent()) {
+                mp.setSelectable(p.selectable().value());
+            }
+
             if(p.creatable().isPresent()) {
                 mp.setCreatable(p.creatable().value());
             }

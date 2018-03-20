@@ -48,7 +48,7 @@ public class DefaultEntityReader implements EntityReader {
 	
 	private static final Log log = LogFactory.get(DefaultEntityReader.class);
 	
-	protected final Map<Class<?>, Map<String,Object>> beanColumnMappings = new ConcurrentHashMap<Class<?>, Map<String,Object>>();
+	protected final Map<Class<?>, Map<String,Object>> beanColumnMappings = new ConcurrentHashMap<>();
 
 	@Override
     public <T> T readFirst(OrmContext context, SqlContext sqlContext, ResultSet rs, EntityMapping em, Class<T> resultClass) throws SQLException {
@@ -144,19 +144,14 @@ public class DefaultEntityReader implements EntityReader {
             ResultColumnMapping cm = rsm.getColumnMapping(i);
             FieldMapping  fm = cm.getFieldMapping();
 
-            String name  = cm.getColumnLabel();
+            String name  = null != fm ? fm.getFieldName() : cm.getNormalizedName();
             Object value = readColumnValue(dialect, rs, cm, fm, i+1);
 
-            if(null != fm) {
-                name = fm.getFieldName();
-            } else {
-				name = getKey(context, cm, name);
-			}
-			
             model.set(name, value);
-			if(cm.isAlias() && !name.equals(cm.getAliasName())){
-				model.set(cm.getAliasName(), value);
-			}
+
+            if(Strings.isNotEmpty(cm.getAliasName()) && !name.equals(cm.getAliasName())){
+                model.set(cm.getAliasName(), value);
+            }
         }
 
 		return model;
@@ -212,25 +207,9 @@ public class DefaultEntityReader implements EntityReader {
 			FieldMapping  fm = cm.getFieldMapping();
 			
 			Object value = readColumnValue(dialect, rs, cm, fm, i+1);
-			
-			if(null == fm) {
-				String key = cm.getColumnLabel();
-				key = getKey(context, cm, key);
-				map.put(key, value);
-			}else{
-                map.put(fm.getFieldName(), value);
-            }
-		}
-	}
 
-	private String getKey(OrmContext context, ResultColumnMapping cm, String key) {
-		if(cm.isAlias()){
-			return cm.getAliasName();
+            map.put(cm.getResultName(), value);
 		}
-		if(Strings.isBlank(cm.getColumnLabel()) || Strings.equals(cm.getColumnLabel(), cm.getColumnName())) {
-            key = Strings.lowerCamel(cm.getColumnName(), '_');
-        }
-		return key;
 	}
 
 	protected Object readColumnValue(DbDialect dialect,ResultSet rs,ResultColumnMapping cm,FieldMapping fm, int index) throws SQLException{

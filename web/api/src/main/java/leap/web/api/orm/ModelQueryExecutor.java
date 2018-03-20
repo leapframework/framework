@@ -30,6 +30,11 @@ import java.util.function.Consumer;
 public interface ModelQueryExecutor {
 
     /**
+     * @see {@link CriteriaQuery#fromSqlView(String)}.
+     */
+    ModelQueryExecutor fromSqlView(String sql);
+
+    /**
      * Excludes the field names in the result record.
      */
     ModelQueryExecutor selectExclude(String... names);
