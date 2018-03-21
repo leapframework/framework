@@ -18,6 +18,7 @@ package leap.spring.boot;
 
 import leap.core.AppConfig;
 import leap.core.AppContext;
+import leap.core.AppContextInitializer;
 import leap.core.BeanFactory;
 import org.springframework.boot.ApplicationArguments;
 
@@ -25,6 +26,9 @@ public class StandaloneStarter implements Starter {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
+        //Disable instrumentation.
+        AppContextInitializer.setInstrumentDisabled(true);
+
         AppContext.initStandalone();
 
         final AppConfig   config  = AppContext.config();
