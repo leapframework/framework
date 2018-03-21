@@ -127,7 +127,8 @@ public abstract class AbstractRestResource implements RestResource {
 	        	}
 	        	return ;
 	        }
-	        throw new RuntimeException("REMOTE_SERVICE_INVOKE_FAILED");
+	        throw new RestResourceInvokeException(response);
+	        //throw new RuntimeException("REMOTE_SERVICE_INVOKE_FAILED");
 		});
 		if(out.isEmpty()){
 			return null;
