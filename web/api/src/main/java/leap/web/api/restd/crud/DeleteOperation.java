@@ -35,10 +35,14 @@ import leap.web.api.restd.RestdContext;
 import leap.web.api.restd.RestdModel;
 import leap.web.route.RouteBuilder;
 
+import java.util.function.Function;
+
 /**
  * Delete by id operation.
  */
 public class DeleteOperation extends CrudOperationBase implements CrudOperation {
+
+    protected static final String NAME = "delete";
 
     @Override
     public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model) {
@@ -49,7 +53,6 @@ public class DeleteOperation extends CrudOperationBase implements CrudOperation 
         String verb = "DELETE";
         String path = fullModelPath(c, model) + getIdPath(model);
 
-        Dao               dao    = context.getDao();
         FuncActionBuilder action = new FuncActionBuilder();
         RouteBuilder      route  = rm.createRoute(verb, path);
 
@@ -57,8 +60,8 @@ public class DeleteOperation extends CrudOperationBase implements CrudOperation 
             return;
         }
 
-        action.setName(Strings.lowerCamel("delete", model.getName()));
-        action.setFunction(new DeleteFunction(context.getApi(), dao, model));
+        action.setName(Strings.lowerCamel(NAME, model.getName()));
+        action.setFunction(createFunction(c, context, model));
 
         addIdArguments(context, action, model);
         addArgument(context, action, DeleteOptions.class, "options");
@@ -66,14 +69,18 @@ public class DeleteOperation extends CrudOperationBase implements CrudOperation 
 
         preConfigure(context, model, action);
         route.setAction(action.build());
-        setCrudOperation(route, "delete");
+        setCrudOperation(route, NAME);
 
         postConfigure(context, model, route);
 
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 
-    private final class DeleteFunction extends CrudFunction {
+    protected Function<ActionParams, Object> createFunction(ApiConfigurator c, RestdContext context, RestdModel model) {
+        return new DeleteFunction(context.getApi(), context.getDao(), model);
+    }
+
+    protected class DeleteFunction extends CrudFunction {
 
         public DeleteFunction(Api api, Dao dao, RestdModel model) {
             super(api, dao, model);
@@ -81,11 +88,10 @@ public class DeleteOperation extends CrudOperationBase implements CrudOperation 
 
         @Override
         public Object apply(ActionParams params) {
-            ApiMetadata amd = api.getMetadata();
-            MApiModel   am  = amd.getModel(model.getName());
+            MApiModel am = api.getMetadata().getModel(model.getName());
 
             ModelExecutorContext context = new SimpleModelExecutorContext(api, am, dao, model.getEntityMapping());
-            ModelDeleteExecutor executor = mef.newDeleteExecutor(context);
+            ModelDeleteExecutor executor = newDeleteExecutor(context);
 
             Object        id      = id(params);
             DeleteOptions options = params.get(idLen);
@@ -95,6 +101,10 @@ public class DeleteOperation extends CrudOperationBase implements CrudOperation 
             }else{
                 return ApiResponse.NOT_FOUND;
             }
+        }
+
+        protected ModelDeleteExecutor newDeleteExecutor(ModelExecutorContext context) {
+            return mef.newDeleteExecutor(context);
         }
 
         @Override

@@ -43,6 +43,8 @@ import java.util.function.Function;
  */
 public class CountOperation extends CrudOperationBase implements CrudOperation {
 
+    protected static final String NAME = "count";
+
     @Override
     public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model) {
         if(!context.getConfig().allowCountModel(model.getName())) {
@@ -52,7 +54,6 @@ public class CountOperation extends CrudOperationBase implements CrudOperation {
         String verb = "GET";
         String path = fullModelPath(c, model) + "/count";
 
-        Dao               dao    = context.getDao();
         FuncActionBuilder action = new FuncActionBuilder();
         RouteBuilder      route  = rm.createRoute(verb, path);
 
@@ -60,44 +61,45 @@ public class CountOperation extends CrudOperationBase implements CrudOperation {
             return;
         }
 
-        action.setName(Strings.lowerCamel("count", model.getName()));
-        action.setFunction(new CountFunction(context.getApi(), dao, model));
+        action.setName(Strings.lowerCamel(NAME, model.getName()));
+        action.setFunction(createFunction(c, context, model));
 
         addArgument(context, action, CountOptions.class, "options");
         addModelCountResponse(action, model);
 
         preConfigure(context, model, action);
         route.setAction(action.build());
-        setCrudOperation(route, "count");
+        setCrudOperation(route, NAME);
         postConfigure(context, model, route);
 
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 
-    private final class CountFunction implements Function<ActionParams, Object> {
-        private final Api        api;
-        private final Dao        dao;
-        private final RestdModel model;
+    protected Function<ActionParams, Object> createFunction(ApiConfigurator c, RestdContext context, RestdModel model) {
+        return new CountFunction(context.getApi(), context.getDao(), model);
+    }
 
+    protected class CountFunction extends CrudFunction {
         public CountFunction(Api api, Dao dao, RestdModel model) {
-            this.api = api;
-            this.dao = dao;
-            this.model = model;
+            super(api, dao, model);
         }
 
         @Override
         public Object apply(ActionParams params) {
-            ApiMetadata amd = api.getMetadata();
-            MApiModel   am  = amd.getModel(model.getName());
+            MApiModel am = api.getMetadata().getModel(model.getName());
 
             ModelExecutorContext context  = new SimpleModelExecutorContext(api, am, dao, model.getEntityMapping());
-            ModelQueryExecutor   executor = mef.newQueryExecutor(context);
+            ModelQueryExecutor   executor = newQueryExecutor(context);
 
             CountOptions options = params.get(0);
 
             QueryListResult result = executor.count(options, null);
 
             return ApiResponse.of(result.count);
+        }
+
+        protected ModelQueryExecutor newQueryExecutor(ModelExecutorContext context) {
+            return mef.newQueryExecutor(context);
         }
 
         @Override
