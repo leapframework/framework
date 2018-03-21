@@ -39,4 +39,8 @@ public class DefaultAppConfigurator implements AppConfigurator {
         config.properties.put(name, value);
     }
 
+    @Override
+    public void addAdditionalPackage(String p) {
+        config.getAdditionalPackages().add(p);
+    }
 }

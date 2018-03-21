@@ -117,7 +117,7 @@
 
 		<!-- dependency versions -->
 		<slf4j.version>1.7.5</slf4j.version>
-        <logback.version>1.0.13</logback.version>
+        <logback.version>1.2.3</logback.version>
 		<servlet.version>3.1.0</servlet.version>
 		<jsp.version>2.3.1</jsp.version>
 		<jstl.version>1.2.1</jstl.version>
@@ -401,6 +401,7 @@
         <module>base/junit</module>
         <module>base/lang</module>
 		<module>base/core</module>
+        <module>base/spring-boot</module>
 
         <!-- data -->
 		<module>data/db</module>
