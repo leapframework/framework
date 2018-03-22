@@ -364,7 +364,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
             //base package
             if(Strings.isEmpty(config.basePackage)){
-                config.basePackage = DEFAULT_BASE_PACKAGE;
+                config.basePackage = Strings.firstNotEmpty(AppContextInitializer.getBasePackage(), DEFAULT_BASE_PACKAGE);
                 config.properties.put(INIT_PROPERTY_BASE_PACKAGE,config.basePackage);
             }
 

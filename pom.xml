@@ -419,10 +419,11 @@
         <module>oauth2/webapp</module>
 
         <!-- spring integration -->
-        <module>spring/spring-boot-starter</module>
-        <module>spring/spring-boot-starter-orm</module>
-        <module>spring/spring-boot-starter-web</module>
-        <module>spring/test-spring-boot-starter-orm</module>
+        <module>spring/spring-boot</module>
+        <module>spring/spring-boot-orm</module>
+        <module>spring/spring-boot-web</module>
+        <module>spring/test-spring-boot-orm</module>
+        <module>spring/test-spring-boot-web</module>
 
         <!-- tests -->
         <module>tests</module>

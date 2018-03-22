@@ -37,6 +37,15 @@ public class AppContextInitializer {
 	private static boolean				  initializing;
     private static boolean                testing;
     private static boolean                instrumentDisabled;
+    private static String                 basePackage;
+
+    public static String getBasePackage() {
+        return basePackage;
+    }
+
+    public static void setBasePackage(String basePackage) {
+        AppContextInitializer.basePackage = basePackage;
+    }
 
     public static void setInstrumentDisabled(boolean disabled) {
         instrumentDisabled = disabled;
