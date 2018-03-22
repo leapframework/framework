@@ -18,6 +18,7 @@ package leap.spring.boot;
 
 import leap.core.AppConfig;
 import leap.core.BeanFactory;
+import leap.lang.Factory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
 
@@ -36,5 +37,10 @@ public class Global {
     public interface LeapContext {
         AppConfig config();
         BeanFactory factory();
+    }
+
+    static void start() {
+        Starter starter = Factory.newInstance(Starter.class, StandaloneStarter.class);
+        starter.start();
     }
 }

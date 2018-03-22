@@ -16,19 +16,14 @@
 
 package pkg4;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import leap.orm.dao.Dao;
+import org.springframework.beans.factory.annotation.Autowired;
 
-@Configuration
-public class AutoConfiguration {
+public class Service4 {
 
-    public AutoConfiguration() {
-        System.out.println();
+    private @Autowired Dao dao;
+
+    public void doIt() {
+
     }
-
-    @Bean
-    public Service4 service4() {
-        return new Service4();
-    }
-
 }

@@ -16,14 +16,11 @@
 
 package leap.spring.boot;
 
-import leap.lang.Factory;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -52,10 +49,5 @@ public class SpringAutoConfiguration {
     @Bean
     public EnvironmentPostProcessor environmentPostProcessor() {
         return new SpringEnvPostProcessor();
-    }
-
-    @Bean
-    public ApplicationRunner runner() {
-        return Factory.newInstance(Starter.class, StandaloneStarter.class);
     }
 }

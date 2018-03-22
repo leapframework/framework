@@ -16,6 +16,7 @@
 
 package leap.spring.boot;
 
+import leap.lang.Factory;
 import leap.lang.Objects2;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -30,6 +31,9 @@ final class SpringAutowireResolver implements AutowireCandidateResolver {
     private static final Log log = LogFactory.get(SpringAutowireResolver.class);
 
     private final AutowireCandidateResolver original;
+
+    private boolean starting;
+    private boolean started;
 
     public SpringAutowireResolver(AutowireCandidateResolver original) {
         this.original = original;
@@ -49,36 +53,48 @@ final class SpringAutowireResolver implements AutowireCandidateResolver {
     public Object getSuggestedValue(DependencyDescriptor descriptor) {
         Object bean = null != original ? original.getSuggestedValue(descriptor) : null;
 
-        if(null == bean && null != Global.leap) {
+        if(null == bean) {
             Class type = descriptor.getDependencyType();
 
             if(!type.getName().startsWith(Global.SPRING_PACKAGE_PREFIX)) {
-
-                Type genericType = null;
-
-                if(null != descriptor.getField()) {
-                    genericType = descriptor.getField().getGenericType();
-                }else if(null != descriptor.getMethodParameter()) {
-                    genericType = descriptor.getMethodParameter().getGenericParameterType();
+                if(!started) {
+                    if(starting) {
+                        return null;
+                    }
+                    starting = true;
+                    Global.start();
+                    starting = false;
+                    started = true;
                 }
 
-                try {
-                    LeapBeanSupport.disable();
+                if(null != Global.leap) {
+                    Type genericType = null;
 
-                    bean = Global.leap.factory().resolveInjectValue(type, genericType);
-                    if (null != bean && Objects2.isEmpty(bean)) {
-                        bean = null;
+                    if (null != descriptor.getField()) {
+                        genericType = descriptor.getField().getGenericType();
+                    } else if (null != descriptor.getMethodParameter()) {
+                        genericType = descriptor.getMethodParameter().getGenericParameterType();
                     }
-                    if (null != bean) {
-                        log.debug("Found leap managed bean of type '{}'", type);
-                    }else {
-                        log.debug("No leap managed bean of type '{}'", type);
+
+                    try {
+                        LeapBeanSupport.disable();
+
+                        bean = Global.leap.factory().resolveInjectValue(type, genericType);
+                        if (null != bean && Objects2.isEmpty(bean)) {
+                            bean = null;
+                        }
+                        if (null != bean) {
+                            log.debug("Found leap managed bean of type '{}'", type);
+                        } else {
+                            log.debug("No leap managed bean of type '{}'", type);
+                        }
+                    } finally {
+                        LeapBeanSupport.enable();
                     }
-                }finally {
-                    LeapBeanSupport.enable();
                 }
             }
         }
         return bean;
     }
+
 }

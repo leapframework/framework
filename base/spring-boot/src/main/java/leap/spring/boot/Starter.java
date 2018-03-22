@@ -20,4 +20,12 @@ import org.springframework.boot.ApplicationRunner;
 
 public interface Starter extends ApplicationRunner {
 
+    default void start() {
+        try {
+            run(null);
+        }catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }
