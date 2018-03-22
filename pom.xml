@@ -401,7 +401,6 @@
         <module>base/junit</module>
         <module>base/lang</module>
 		<module>base/core</module>
-        <module>base/spring-boot</module>
 
         <!-- data -->
 		<module>data/db</module>
@@ -418,6 +417,12 @@
         <!-- oauth2 -->
         <module>oauth2/server</module>
         <module>oauth2/webapp</module>
+
+        <!-- spring integration -->
+        <module>spring/spring-boot-starter</module>
+        <module>spring/spring-boot-starter-orm</module>
+        <module>spring/spring-boot-starter-web</module>
+        <module>spring/test-spring-boot-starter-orm</module>
 
         <!-- tests -->
         <module>tests</module>
