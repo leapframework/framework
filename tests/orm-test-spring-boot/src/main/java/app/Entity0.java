@@ -14,20 +14,34 @@
  *  limitations under the License.
  */
 
-package leap.spring.boot;
+package app;
 
-import leap.core.AppConfigurator;
-import leap.core.AppContext;
-import leap.core.config.AppConfigInitializer;
+import leap.orm.annotation.Column;
+import leap.orm.annotation.Id;
+import leap.orm.annotation.Table;
 
-public class LeapConfigInitializer implements AppConfigInitializer {
+@Table(autoCreate = true)
+public class Entity0 {
 
-    @Override
-    public void init(AppContext context, AppConfigurator c) {
-        if(null != Global.bps) {
-            for(String p : Global.bps) {
-                c.addAdditionalPackage(p);
-            }
-        }
+    @Id
+    private String id;
+
+    @Column
+    private String field;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getField() {
+        return field;
+    }
+
+    public void setField(String field) {
+        this.field = field;
     }
 }

@@ -35,6 +35,7 @@
         <module>orm-test-dyna</module>
         <module>orm-test-remote</module>
         <module>orm-test-resources</module>
+        <module>orm-test-spring-boot</module>
 
         <module>webunit-test1</module>
         <module>webunit-test2</module>

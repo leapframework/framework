@@ -18,25 +18,20 @@ package leap.spring.boot;
 
 import leap.lang.Classes;
 import leap.lang.Collections2;
+import leap.lang.Props;
 import leap.lang.Strings;
+import leap.lang.extension.ExProperties;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.lang.resource.Resource;
 import leap.lang.resource.Resources;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringApplicationRunListener;
-import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.boot.autoconfigure.domain.EntityScanPackages;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.core.type.AnnotationMetadata;
-import org.springframework.core.type.StandardAnnotationMetadata;
-import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.StringUtils;
 
 import java.util.*;
 
@@ -52,19 +47,21 @@ public class SpringAppRunListener implements SpringApplicationRunListener {
         if(application.getSources().size() == 1) {
             Object source = application.getSources().iterator().next();
             if(source instanceof Class) {
-                Class<?> mainClass = (Class)source;
-                Global.bp = Classes.getPackageName(mainClass);
-                addBasePackages(bps, mainClass.getAnnotation(EntityScan.class));
-                addBasePackages(bps, mainClass.getAnnotation(ComponentScan.class));
+                Class<?> c = (Class)source;
+                Global.bp = Classes.getPackageName(c);
+                addBasePackages(bps, c);
             }
         }
 
-        if(null == Global.bp && null != application.getMainApplicationClass()) {
+        if(null != application.getMainApplicationClass()) {
             Class<?> mainClass = application.getMainApplicationClass();
-            Global.bp = Classes.getPackageName(mainClass);
-            addBasePackages(bps, mainClass.getAnnotation(EntityScan.class));
-            addBasePackages(bps, mainClass.getAnnotation(ComponentScan.class));
+            if(null == Global.bp) {
+                Global.bp = Classes.getPackageName(mainClass);
+            }
+            addBasePackages(bps, mainClass);
         }
+
+        addBasePackagesFromConfigurations(bps);
 
         Global.bps = bps.toArray(new String[0]);
         log.info("Base package : {}", Global.bp);
@@ -121,6 +118,35 @@ public class SpringAppRunListener implements SpringApplicationRunListener {
         Collections2.addAll(bps, a.basePackages());
         for(Class<?> c : a.basePackageClasses()){
             bps.add(ClassUtils.getPackageName(c));
+        }
+    }
+
+    private static void addBasePackages(Set<String> bps, Class<?> c) {
+        addBasePackages(bps, c.getAnnotation(EntityScan.class));
+        addBasePackages(bps, c.getAnnotation(ComponentScan.class));
+    }
+
+    private static void addBasePackagesFromConfigurations(Set<String> bps) {
+        String frameworkPackage = ClassUtils.getPackageName(SpringAppRunListener.class);
+        for(Resource r : Resources.scan("classpath*:META-INF/spring.factories")) {
+            if(r.exists()) {
+                ExProperties props = Props.load(r);
+
+                String prop = props.get("org.springframework.boot.autoconfigure.EnableAutoConfiguration");
+                if(!Strings.isEmpty(prop)) {
+                    String[] classNames = Strings.split(prop, ',');
+                    for(String className : classNames) {
+                        if(className.startsWith(frameworkPackage) || className.startsWith(Global.SPRING_PACKAGE_PREFIX)) {
+                            continue;
+                        }
+                        Class<?> c = Classes.tryForName(className);
+                        if(null != c) {
+                            bps.add(ClassUtils.getPackageName(c));
+                            addBasePackages(bps, c);
+                        }
+                    }
+                }
+            }
         }
     }
 }

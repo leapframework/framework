@@ -24,5 +24,4 @@ public interface AppConfigurator {
 
     void setProperty(String name, String value);
 
-    void addAdditionalPackage(String p);
 }
