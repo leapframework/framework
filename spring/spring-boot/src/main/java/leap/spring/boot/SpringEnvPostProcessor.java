@@ -20,8 +20,11 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.env.EnvironmentPostProcessor;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.env.ConfigurableEnvironment;
 
+@Order(0)
 public class SpringEnvPostProcessor implements EnvironmentPostProcessor {
 
     private static final Log log = LogFactory.get(SpringEnvPostProcessor.class);
