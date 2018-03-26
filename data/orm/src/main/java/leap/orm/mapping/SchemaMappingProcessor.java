@@ -51,9 +51,8 @@ public class SchemaMappingProcessor extends MappingProcessorAdapter {
 		DbTable table = emb.getPhysicalTable();
 		
 		if(null != table){
-			
 			//Checks the declared id fields and primary key columns.
-			if(emb.isIdDeclared()) {
+			if(emb.isIdDeclared() && !table.isView()) {
 				if(table.getPrimaryKeyColumns().length != emb.getIdFieldMappings().size()) {
 					throw new MappingConfigException("The declared id fields(" + emb.getIdFieldMappings().size() + 
 													 ") do not match the primary key columns(" + table.getPrimaryKeyColumns().length + 
