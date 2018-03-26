@@ -103,9 +103,15 @@ public class SchemaMappingProcessor extends MappingProcessorAdapter {
 										EntityMappingBuilder emb,FieldMappingBuilder fmb){
 		
 		DbColumnBuilder cb = new DbColumnBuilder(column);
-		cb.setName(context.getNamingStrategy().columnName(cb.getName()));
-		fmb.setColumn(cb);
+        if(table.isView() && fmb.isId()) {
+            cb.setPrimaryKey(true);
+            cb.setNullable(false);
+        }
+
+        cb.setName(context.getNamingStrategy().columnName(cb.getName()));
+        fmb.setColumn(cb);
         fmb.setHasPhysicalColumn(true);
+
 		
 		if(null == fmb.getNullable()){
 			fmb.setNullable(cb.isNullable());

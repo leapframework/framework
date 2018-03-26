@@ -141,11 +141,15 @@ public class GenericDbComparator implements DbComparator,DbAware {
 		
 		//check for add or modify
 		for(DbTable sourceTable : sourceTables){
+            if(sourceTable.isView()) {
+                continue;
+            }
+
 			DbTable targetTable = findTable(targetTables,sourceTable.getName());
 			
 			if(null == targetTable){
 				changes.add(new AddTableChange(sourceTable));
-			}else{
+			}else if(!targetTable.isView()){
 				compareTable(changes,sourceTable,targetTable);
 			}
 		}
