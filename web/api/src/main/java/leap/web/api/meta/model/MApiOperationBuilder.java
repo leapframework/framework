@@ -40,26 +40,39 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
     protected boolean allowClientOnly;
 	protected boolean deprecated;
     protected Boolean CorsEnabled;
+    protected String[] permissions;
+    protected String[] clientOnlyPermissions;
 
 	public MApiOperationBuilder() {
 		
 	}
 
     public MApiOperationBuilder(Route route) {
-        this.route       = route;
-        if(!security.containsKey(SwaggerConstants.OAUTH2)){
-            MApiSecurity sec = new MApiSecurity(SwaggerConstants.OAUTH2);
-            security.put(sec.getName(), sec);
+        this.route = route;
+
+        MApiSecurity[] securities = route.getExtension(MApiSecurity[].class);
+        if(null != securities) {
+            for(MApiSecurity security : securities) {
+                this.security.put(security.getName(), security);
+            }
+        }else {
+            if(!security.containsKey(SwaggerConstants.OAUTH2)){
+                MApiSecurity sec = new MApiSecurity(SwaggerConstants.OAUTH2);
+                security.put(sec.getName(), sec);
+            }
+            if(route.getPermissions() != null){
+                security.get(SwaggerConstants.OAUTH2).addScopes(route.getPermissions());
+            }
         }
-        if(route.getPermissions() != null){
-            security.get(SwaggerConstants.OAUTH2).addScopes(route.getPermissions());
-        }
+
         if(null != route.getAllowAnonymous()) {
             this.allowAnonymous = route.getAllowAnonymous();
         }
+
         if(null != route.getAllowClientOnly()){
             this.allowClientOnly = route.getAllowClientOnly();
         }
+
         this.extension = route.getExtension(MApiExtension.class);
     }
 
@@ -184,6 +197,22 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
 
     public void setCorsEnabled(Boolean corsEnabled) {
         this.CorsEnabled = corsEnabled;
+    }
+
+    public String[] getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(String[] permissions) {
+        this.permissions = permissions;
+    }
+
+    public String[] getClientOnlyPermissions() {
+        return clientOnlyPermissions;
+    }
+
+    public void setClientOnlyPermissions(String[] clientOnlyPermissions) {
+        this.clientOnlyPermissions = clientOnlyPermissions;
     }
 
     public MApiExtension getExtension() {

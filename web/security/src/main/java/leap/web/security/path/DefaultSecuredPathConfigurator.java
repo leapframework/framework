@@ -86,13 +86,13 @@ public class DefaultSecuredPathConfigurator implements SecuredPathConfigurator {
 
     @Override
     public SecuredPathConfigurator setPermissionsAllowed(String... permissions) {
-        path.setPermissionsAllowed(permissions);
+        path.setPermissions(permissions);
         return this;
     }
 
     @Override
     public SecuredPathConfigurator setRolesAllowed(String... roles) {
-        path.setRolesAllowed(roles);
+        path.setRoles(roles);
         return this;
     }
 

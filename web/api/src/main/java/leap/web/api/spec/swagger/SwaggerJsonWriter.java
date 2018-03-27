@@ -241,15 +241,10 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
         w.propertyOptional(OPERATION_ID, o.getId());
 
         if(!o.isAllowAnonymous()) {
-            if(m.getSecurityDefs().length > 0) {
-                w.property(SECURITY, () ->
-                        w.array(m.getSecurityDefs(), (sd) -> {
-                            if(!sd.isOAuth2()) {
-                                throw new IllegalStateException("Unsupported security def : " + sd.getClass());
-                            }
-                            writeSecurities(context,m,w,o.getSecurity());
-                        })
-                );
+            if(o.getSecurity().length > 0) {
+                w.property(SECURITY, () -> {
+                    w.array(o.getSecurity(), (sc) -> writeSecurity(context, m, w, sc));
+                });
 
                 if(o.isAllowClientOnly()) {
                     w.property(X_SECURITY,writer -> {
@@ -275,7 +270,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 			w.property(PRODUCES, o.getProduces());
 		}
 		
-		writeDefaultSecurity(context, m, w);
+		//writeDefaultSecurity(context, m, w);
 
 		//write parameters
 		if(o.getParameters().length > 0) {

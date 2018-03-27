@@ -54,6 +54,7 @@ class DefaultRoute extends ExtensibleBase implements Sourced, Route {
     protected Boolean  allowRememberMe;
     protected Boolean  allowClientOnly;
     protected String[] permissions;
+    protected String[] clientOnlyPermissions;
     protected String[] roles;
 
 	public DefaultRoute(Object 	    source,
@@ -317,6 +318,16 @@ class DefaultRoute extends ExtensibleBase implements Sourced, Route {
     @Override
     public void setPermissions(String[] permissions) {
         this.permissions = permissions;
+    }
+
+    @Override
+    public String[] getClientOnlyPermissions() {
+        return clientOnlyPermissions;
+    }
+
+    @Override
+    public void setClientOnlyPermissions(String[] clientOnlyPermissions) {
+        this.clientOnlyPermissions = clientOnlyPermissions;
     }
 
     @Override

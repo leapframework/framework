@@ -36,6 +36,7 @@ public class DefaultSecuredPathBuilder implements SecuredPathBuilder {
     protected Boolean                allowRememberMe = true;
     protected SecurityFailureHandler failureHandler  = null;
     protected List<String>           permissions     = new ArrayList<>();
+    protected List<String>           clientOnlyPermissions = new ArrayList<>();
     protected List<String>           roles           = new ArrayList<>();
 
 	public DefaultSecuredPathBuilder() {
@@ -64,6 +65,7 @@ public class DefaultSecuredPathBuilder implements SecuredPathBuilder {
         this.failureHandler  = path.getFailureHandler();
 
 		Collections2.addAll(permissions, path.getPermissions());
+        Collections2.addAll(clientOnlyPermissions, path.getClientOnlyPermissions());
 		Collections2.addAll(roles, path.getRoles());
 	}
 
@@ -127,27 +129,22 @@ public class DefaultSecuredPathBuilder implements SecuredPathBuilder {
     }
 
     @Override
-    public SecuredPathBuilder setPermissionsAllowed(String... permissions) {
+    public SecuredPathBuilder setPermissions(String... permissions) {
         this.permissions.clear();
         Collections2.addAll(this.permissions, permissions);
         return this;
     }
 
     @Override
-    public SecuredPathBuilder setRolesAllowed(String... roles) {
+    public SecuredPathBuilder setClientOnlyPermissions(String... permissions) {
+        this.clientOnlyPermissions.clear();
+        Collections2.addAll(this.clientOnlyPermissions, permissions);
+        return this;
+    }
+
+    @Override
+    public SecuredPathBuilder setRoles(String... roles) {
         this.roles.clear();
-        Collections2.addAll(this.roles, roles);
-        return this;
-    }
-
-    @Override
-    public SecuredPathBuilder addPermissionsAllowed(String... permissions) {
-        Collections2.addAll(this.permissions, permissions);
-        return this;
-    }
-
-    @Override
-    public SecuredPathBuilder addRolesAllowed(String... roles) {
         Collections2.addAll(this.roles, roles);
         return this;
     }
@@ -161,6 +158,7 @@ public class DefaultSecuredPathBuilder implements SecuredPathBuilder {
                                       allowRememberMe,
                                       failureHandler,
                                       permissions.toArray(Arrays2.EMPTY_STRING_ARRAY),
+                                      clientOnlyPermissions.toArray(Arrays2.EMPTY_STRING_ARRAY),
                                       roles.toArray(Arrays2.EMPTY_STRING_ARRAY));
     }
 }

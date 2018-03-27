@@ -214,6 +214,11 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
         OAuthConfig oc = context.getConfig().getOAuthConfig();
 
         if(oc != null && oc.isEnabled()) {
+            for(MApiSecurityDef sd : md.getSecurityDefs()) {
+                if(sd.isOAuth2()) {
+                    return;
+                }
+            }
 
             MOAuth2ApiSecurityDef def =
                     new MOAuth2ApiSecurityDef(

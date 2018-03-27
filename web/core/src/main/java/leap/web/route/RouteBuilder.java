@@ -58,6 +58,7 @@ public class RouteBuilder extends ExtensibleBase implements RouteBase, Buildable
     protected Boolean              allowClientOnly;
     protected Boolean              allowRememberMe;
     protected String[]             permissions;
+    protected String[]             clientOnlyPermissions;
     protected String[]             roles;
 
     public RouteBuilder() {
@@ -290,6 +291,14 @@ public class RouteBuilder extends ExtensibleBase implements RouteBase, Buildable
         return this;
     }
 
+    public String[] getClientOnlyPermissions() {
+        return clientOnlyPermissions;
+    }
+
+    public void setClientOnlyPermissions(String[] clientOnlyPermissions) {
+        this.clientOnlyPermissions = clientOnlyPermissions;
+    }
+
     public String[] getRoles() {
         return roles;
     }
@@ -343,6 +352,9 @@ public class RouteBuilder extends ExtensibleBase implements RouteBase, Buildable
 
         //permissions
         route.setPermissions(permissions);
+
+        //client only permissions
+        route.setClientOnlyPermissions(clientOnlyPermissions);
 
         //roles
         route.setRoles(this.roles);

@@ -21,14 +21,12 @@ import leap.core.security.Authentication;
 import leap.core.security.Authorization;
 import leap.core.security.annotation.*;
 import leap.core.web.RequestIgnore;
-import leap.lang.Arrays2;
 import leap.lang.Assert;
 import leap.lang.Strings;
 import leap.lang.intercepting.State;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.web.*;
-import leap.web.action.Action;
 import leap.web.action.ActionContext;
 import leap.web.route.Route;
 import leap.web.route.RouteProcessor;
@@ -86,11 +84,15 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
         }
 
         if(null != route.getPermissions()) {
-            spb(route).setPermissionsAllowed(route.getPermissions());
+            spb(route).setPermissions(route.getPermissions());
+        }
+
+        if(null != route.getClientOnlyPermissions()) {
+            spb(route).setClientOnlyPermissions(route.getClientOnlyPermissions());
         }
 
         if(null != route.getRoles()) {
-            spb(route).setRolesAllowed(route.getRoles());
+            spb(route).setRoles(route.getRoles());
         }
 
         config.getPathPrefixFailureHandlers().forEach((prefix, handler) -> {

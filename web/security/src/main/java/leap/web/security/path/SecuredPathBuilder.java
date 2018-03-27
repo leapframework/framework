@@ -47,13 +47,10 @@ public interface SecuredPathBuilder extends Buildable<SecuredPath> {
 
     SecuredPathBuilder setFailureHandler(SecurityFailureHandler h);
 
-    SecuredPathBuilder setPermissionsAllowed(String... permissions);
+    SecuredPathBuilder setPermissions(String... permissions);
 
-    SecuredPathBuilder setRolesAllowed(String... roles);
+    SecuredPathBuilder setClientOnlyPermissions(String... permissions);
 
-    SecuredPathBuilder addPermissionsAllowed(String... permissions);
-
-    SecuredPathBuilder addRolesAllowed(String... roles);
-
+    SecuredPathBuilder setRoles(String... roles);
 
 }

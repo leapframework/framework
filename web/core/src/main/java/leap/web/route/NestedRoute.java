@@ -144,17 +144,27 @@ public interface NestedRoute extends Route {
     }
 
     @Override
-    default String[] getPermissions() {
-        return new String[0];
-    }
-
-    @Override
     default void setAllowClientOnly(Boolean allowClientOnly) {
 
     }
 
     @Override
+    default String[] getPermissions() {
+        return new String[0];
+    }
+
+    @Override
     default void setPermissions(String[] permissions) {
+
+    }
+
+    @Override
+    default String[] getClientOnlyPermissions() {
+        return new String[0];
+    }
+
+    @Override
+    default void setClientOnlyPermissions(String[] permissions) {
 
     }
 

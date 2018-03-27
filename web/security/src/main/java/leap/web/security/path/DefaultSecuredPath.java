@@ -19,6 +19,7 @@ import leap.core.security.Authentication;
 import leap.core.security.Authorization;
 import leap.lang.Args;
 import leap.lang.Arrays2;
+import leap.lang.Objects2;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.path.PathPattern;
@@ -42,6 +43,7 @@ public class DefaultSecuredPath implements SecuredPath {
     protected final Boolean                allowRememberMe;
     protected final SecurityFailureHandler failureHandler;
     protected final String[]               permissions;
+    protected final String[]               clientOnlyPermissions;
     protected final String[]               roles;
 
 	public DefaultSecuredPath(Route route,
@@ -51,6 +53,7 @@ public class DefaultSecuredPath implements SecuredPath {
                               Boolean allowRememberMe,
                               SecurityFailureHandler failureHandler,
                               String[] permissions,
+                              String[] clientOnlyPermissions,
                               String[] roles) {
 		Args.notNull(pattern,"path pattern");
         this.route           = route;
@@ -60,6 +63,7 @@ public class DefaultSecuredPath implements SecuredPath {
 	    this.allowRememberMe = allowRememberMe;
         this.failureHandler  = failureHandler;
         this.permissions     = permissions;
+        this.clientOnlyPermissions = clientOnlyPermissions;
         this.roles           = roles;
     }
 
@@ -101,6 +105,11 @@ public class DefaultSecuredPath implements SecuredPath {
      */
     public String[] getPermissions() {
         return permissions;
+    }
+
+    @Override
+    public String[] getClientOnlyPermissions() {
+        return clientOnlyPermissions;
     }
 
     /**
@@ -175,8 +184,16 @@ public class DefaultSecuredPath implements SecuredPath {
             }
         }
 
+        String[] permissions = null;
+        if(authc.isClientOnly()) {
+            permissions = clientOnlyPermissions;
+        }
+        if(null == permissions || permissions.length == 0) {
+            permissions = this.permissions;
+        }
+
         //Check permissions
-        if(permissions.length > 0) {
+        if(null != permissions && permissions.length > 0) {
             PermissionManager pm = context.getPermissionManager();
 
             boolean allow = false;

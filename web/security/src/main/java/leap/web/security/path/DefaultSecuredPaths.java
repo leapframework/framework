@@ -173,6 +173,11 @@ public class DefaultSecuredPaths implements SecuredPaths {
         }
 
         @Override
+        public String[] getClientOnlyPermissions() {
+            return path.getClientOnlyPermissions();
+        }
+
+        @Override
         public String[] getRoles() {
             return path.getRoles();
         }

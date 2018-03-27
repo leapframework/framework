@@ -24,7 +24,6 @@ import leap.web.Request;
 import leap.web.route.Route;
 import leap.web.security.SecurityContextHolder;
 import leap.web.security.SecurityFailureHandler;
-import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.authz.AuthorizationContext;
 
 public class MergedSecuredPath implements SecuredPath {
@@ -65,6 +64,11 @@ public class MergedSecuredPath implements SecuredPath {
     @Override
     public String[] getPermissions() {
         return merged.getPermissions();
+    }
+
+    @Override
+    public String[] getClientOnlyPermissions() {
+        return merged.getClientOnlyPermissions();
     }
 
     @Override
@@ -114,15 +118,21 @@ public class MergedSecuredPath implements SecuredPath {
         }
 
         if(!Arrays2.isEmpty(p1.getPermissions())) {
-            spb.setPermissionsAllowed(p1.getPermissions());
+            spb.setPermissions(p1.getPermissions());
         }else{
-            spb.setPermissionsAllowed(p2.getPermissions());
+            spb.setPermissions(p2.getPermissions());
+        }
+
+        if(!Arrays2.isEmpty(p1.getClientOnlyPermissions())) {
+            spb.setClientOnlyPermissions(p1.getClientOnlyPermissions());
+        }else{
+            spb.setClientOnlyPermissions(p2.getClientOnlyPermissions());
         }
 
         if(!Arrays2.isEmpty(p1.getRoles())) {
-            spb.setRolesAllowed(p1.getRoles());
+            spb.setRoles(p1.getRoles());
         }else{
-            spb.setRolesAllowed(p2.getRoles());
+            spb.setRoles(p2.getRoles());
         }
 
         if(null != p1.getFailureHandler()) {

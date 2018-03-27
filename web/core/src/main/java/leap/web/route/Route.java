@@ -211,6 +211,16 @@ public interface Route extends RouteBase, Sourced, Extensible {
     void setPermissions(String[] permissions);
 
     /**
+     * Optional. Returns the client only permissions.
+     */
+    String[] getClientOnlyPermissions();
+
+    /**
+     * Sets the client only permissions.
+     */
+    void setClientOnlyPermissions(String[] permissions);
+
+    /**
      * Optional. Returns the roles required for accessing this route..
      */
     String[] getRoles();

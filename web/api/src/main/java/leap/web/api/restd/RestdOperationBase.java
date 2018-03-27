@@ -183,13 +183,12 @@ public abstract class RestdOperationBase {
                 route.setAllowClientOnly(true);
             }
 
-            if(null != mo.getSecurity()) {
-                for(MApiSecurity security : mo.getSecurity().values()) {
-                    if(null != security.getScopes() && !security.getScopes().isEmpty()) {
-                        route.setPermissions(security.getScopes().toArray(new String[0]));
-                        break;
-                    }
-                }
+            if(null != mo.getPermissions() && mo.getPermissions().length > 0) {
+                route.setPermissions(mo.getPermissions());
+            }
+
+            if(null != mo.getClientOnlyPermissions() && mo.getClientOnlyPermissions().length > 0) {
+                route.setClientOnlyPermissions(mo.getClientOnlyPermissions());
             }
         }
     }

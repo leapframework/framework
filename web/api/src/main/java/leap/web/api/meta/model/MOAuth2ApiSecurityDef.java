@@ -38,7 +38,7 @@ public class MOAuth2ApiSecurityDef extends MApiSecurityDef {
         this(name,title,authzEndpointUrl,tokenEndpointUrl,SwaggerConstants.IMPLICIT, null);
     }
 
-    public MOAuth2ApiSecurityDef(String name,String title, String authzEndpointUrl, String tokenEndpointUrl, String flow, Map<String, Object> attrs) {
+    public MOAuth2ApiSecurityDef(String name, String title, String authzEndpointUrl, String tokenEndpointUrl, String flow, Map<String, Object> attrs) {
         super(name,title,attrs);
         
         Args.notEmpty(authzEndpointUrl, "authorization endpoint url");

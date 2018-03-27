@@ -81,7 +81,10 @@ public class SwaggerJsonTest extends WebTestBase {
         op = getAsMap(path,"get");
         xs = getAsMap(op,"x-security");
         Object userRequired = xs.get("userRequired");
-        assertEquals(Boolean.TRUE,userRequired);
+        assertNull(userRequired);
+
+        Object allowClientOnly = xs.get("allowClientOnly");
+        assertEquals(Boolean.TRUE, allowClientOnly);
     }
 
     @Test
