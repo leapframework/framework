@@ -244,10 +244,9 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 
             w.property(SECURITY, () -> 
 				w.array(m.getSecurityDefs(), (sd) -> {
-                    if(!sd.isOAuth2()) {
-                        throw new IllegalStateException("Unsupported security def : " + sd.getClass());
+                    if(null != sd && sd.isOAuth2()) {
+                        writeSecurities(context,m,w,o.getSecurity());
                     }
-					writeSecurities(context,m,w,o.getSecurity());
                 })
             );
 
@@ -405,7 +404,6 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
                 continue;
             }
             
-            throw new IllegalStateException("Unsupported api security def : " + def);
         }
 
         w.endObject();
