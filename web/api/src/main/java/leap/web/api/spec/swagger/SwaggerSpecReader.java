@@ -349,7 +349,7 @@ public class SwaggerSpecReader implements ApiSpecReader {
             MOAuth2ApiSecurityDef def = new MOAuth2ApiSecurityDef(name, name, authzUrl,tokenUrl,flow,map);
             return def;
         }
-        throw new IllegalStateException("No supported security def : " + type);
+        return null;
     }
 
     public MApiModelBuilder readModel(String name, Map<String,Object> map) {

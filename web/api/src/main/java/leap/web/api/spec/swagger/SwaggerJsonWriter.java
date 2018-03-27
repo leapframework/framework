@@ -414,7 +414,6 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
                 continue;
             }
             
-            throw new IllegalStateException("Unsupported api security def : " + def);
         }
 
         w.endObject();
