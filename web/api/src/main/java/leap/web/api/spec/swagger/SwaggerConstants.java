@@ -76,13 +76,15 @@ public class SwaggerConstants {
 	public static final String FLOW                 = "flow";
 	public static final String IMPLICIT             = "implicit";
 	public static final String ACCESS_CODE          = "accessCode";
+    public static final String APPLICATION          = "application";
+    public static final String PASSWORD             = "password";
 	public static final String AUTHZ_URL            = "authorizationUrl";
 	public static final String TOKEN_URL            = "tokenUrl";
 	public static final String SCOPES               = "scopes";
 
     public static final String USER_REQUIRED        = "userRequired";
-    public static final String CLIENT_REQUIRED      = "clientRequired";
-	
+    public static final String ALLOW_CLIENT_ONLY    = "allowClientOnly";
+
     //extend
     public static final String X_SECURITY   = "x-security";
 

@@ -240,26 +240,33 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 
         w.propertyOptional(OPERATION_ID, o.getId());
 
-        if(m.getSecurityDefs().length > 0 && !o.isAllowAnonymous()) {
+        if(!o.isAllowAnonymous()) {
+            if(m.getSecurityDefs().length > 0) {
+                w.property(SECURITY, () ->
+                        w.array(m.getSecurityDefs(), (sd) -> {
+                            if(!sd.isOAuth2()) {
+                                throw new IllegalStateException("Unsupported security def : " + sd.getClass());
+                            }
+                            writeSecurities(context,m,w,o.getSecurity());
+                        })
+                );
 
-            w.property(SECURITY, () -> 
-				w.array(m.getSecurityDefs(), (sd) -> {
-                    if(!sd.isOAuth2()) {
-                        throw new IllegalStateException("Unsupported security def : " + sd.getClass());
-                    }
-					writeSecurities(context,m,w,o.getSecurity());
-                })
-            );
-
-			if(o.getSecurity() != null){
-				w.property(X_SECURITY,writer -> {
-					writer.startObject();
-					writer.property(USER_REQUIRED,!o.isAllowAnonymous());
-					writer.endObject();
-				});
-			}
+                if(o.isAllowClientOnly()) {
+                    w.property(X_SECURITY,writer -> {
+                        writer.startObject();
+                        writer.property(ALLOW_CLIENT_ONLY, true);
+                        writer.endObject();
+                    });
+                }else {
+                    w.property(X_SECURITY,writer -> {
+                        writer.startObject();
+                        writer.property(USER_REQUIRED, true);
+                        writer.endObject();
+                    });
+                }
+            }
         }
-		
+
 		if(o.getConsumes().length > 0) {
 			w.property(CONSUMES, o.getConsumes());
 		}
@@ -287,10 +294,12 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
     	if(sc == null){
 			return;
 		}
+
 		for(MApiSecurity s : sc){
 			writeSecurity(context,m,w,s);
 		}
 	}
+
 	protected void writeSecurity(WriteContext context, ApiMetadata m, JsonWriter w, MApiSecurity sc){
 		w.startObject();
 		w.property(sc.getName(),sc.getScopes());
@@ -412,7 +421,6 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
     }
     
     protected void writeOAuth2SecurityDef(WriteContext context, ApiMetadata m, JsonWriter w, MOAuth2ApiSecurityDef d) {
-        //context.defaultSecurity = OAUTH2;
         switch (d.getFlow()){
 			case SwaggerConstants.IMPLICIT:
 				writeOAuth2Implicit(context, m, w, d);
@@ -420,6 +428,12 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 			case SwaggerConstants.ACCESS_CODE:
 				writeOAuth2AccessCode(context, m, w, d);
 				break;
+            case SwaggerConstants.APPLICATION:
+                writeOAuth2Application(context, m, w, d);
+                break;
+            case SwaggerConstants.PASSWORD:
+                writeOAuth2Password(context, m, w, d);
+                break;
 			default:
 				throw new ApiConfigException("not support flow:"+d.getFlow());
 		}
@@ -450,6 +464,34 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
             
             writeOAuth2Scopes(context, m, w, d, m.getPermissions());
             
+            w.endObject();
+        });
+    }
+
+    protected void writeOAuth2Application(WriteContext context, ApiMetadata m, JsonWriter w, MOAuth2ApiSecurityDef d) {
+        w.property(d.getName(), () -> {
+            w.startObject();
+
+            w.property(TYPE, SwaggerConstants.OAUTH2)
+                    .property(FLOW, APPLICATION)
+                    .property(TOKEN_URL, d.getTokenEndpointUrl());
+
+            writeOAuth2Scopes(context, m, w, d, m.getPermissions());
+
+            w.endObject();
+        });
+    }
+
+    protected void writeOAuth2Password(WriteContext context, ApiMetadata m, JsonWriter w, MOAuth2ApiSecurityDef d) {
+        w.property(d.getName(), () -> {
+            w.startObject();
+
+            w.property(TYPE, SwaggerConstants.OAUTH2)
+                    .property(FLOW, PASSWORD)
+                    .property(TOKEN_URL, d.getTokenEndpointUrl());
+
+            writeOAuth2Scopes(context, m, w, d, m.getPermissions());
+
             w.endObject();
         });
     }

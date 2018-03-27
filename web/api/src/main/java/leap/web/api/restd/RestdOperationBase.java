@@ -31,6 +31,7 @@ import leap.web.api.Apis;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.config.model.RestdConfig;
 import leap.web.api.meta.model.MApiOperationBuilder;
+import leap.web.api.meta.model.MApiSecurity;
 import leap.web.api.meta.model.MApiTag;
 import leap.web.api.mvc.ApiFailureHandler;
 import leap.web.api.route.ApiRoute;
@@ -168,15 +169,29 @@ public abstract class RestdOperationBase {
             }
         }
 
-        if(null != mo && mo.isAllowAnonymous()) {
-            route.setAllowAnonymous(true);
-        }
-
-        route.setAllowClientOnly(true);
         route.addFailureHandler(failureHandler);
 
         JsonSettings settings = new JsonSettings.Builder().setDateTimeFormatter(SwaggerConstants.DATE_TIME_FORMAT, "GMT").build();
         route.setExtension(settings);
+
+        if(null != mo) {
+            if(mo.isAllowAnonymous()) {
+                route.setAllowAnonymous(true);
+            }
+
+            if(mo.isAllowClientOnly()) {
+                route.setAllowClientOnly(true);
+            }
+
+            if(null != mo.getSecurity()) {
+                for(MApiSecurity security : mo.getSecurity().values()) {
+                    if(null != security.getScopes() && !security.getScopes().isEmpty()) {
+                        route.setPermissions(security.getScopes().toArray(new String[0]));
+                        break;
+                    }
+                }
+            }
+        }
     }
 
 }
