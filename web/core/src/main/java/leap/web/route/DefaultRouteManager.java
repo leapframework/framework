@@ -63,6 +63,7 @@ public class DefaultRouteManager implements RouteManager {
     protected @Inject @M ValidationManager   validationManager;
     protected @Inject @M PathTemplateFactory pathTemplateFactory;
     protected @Inject @M App                 app;
+    protected @Inject @M RouteProcessor[]    processors;
 
     @Override
     public Routes createRoutes() {
@@ -161,6 +162,11 @@ public class DefaultRouteManager implements RouteManager {
 
         //add route
         Route result = route.build();
+
+        //process by processors.
+        for(RouteProcessor p : processors) {
+            p.processRoute(result);
+        }
 
         routes.add(result);
 

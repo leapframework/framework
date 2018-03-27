@@ -31,12 +31,13 @@ import leap.web.*;
 import leap.web.action.Action;
 import leap.web.action.ActionContext;
 import leap.web.route.Route;
+import leap.web.route.RouteProcessor;
 import leap.web.security.csrf.CSRF;
 import leap.web.security.csrf.CsrfHandler;
 import leap.web.security.path.*;
 import leap.web.security.permission.PermissionManager;
 
-public class SecurityRequestInterceptor implements RequestInterceptor,AppListener {
+public class SecurityRequestInterceptor implements RequestInterceptor,AppListener, RouteProcessor {
 
 	private static final Log log = LogFactory.get(SecurityRequestInterceptor.class);
 
@@ -58,50 +59,54 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 
 	@Override
     public void postAppStart(App app) throws Throwable {
-
 	    for(Route route : app.routes()) {
-	        if(null != route.getAction()){
-                Ignore ignore = route.getAction().searchAnnotation(Ignore.class);
-                if(null != ignore && ignore.value()){
-                    configurator.ignore(route.getPathTemplate().getTemplate());
-                }
-            }
-	        
-            if(null != route.getAllowAnonymous()) {
-                spb(route).setAllowAnonymous(route.getAllowAnonymous());
-            }
-
-            if(null != route.getAllowClientOnly()) {
-                spb(route).setAllowClientOnly(route.getAllowClientOnly());
-            }
-
-            if(null != route.getAllowRememberMe()) {
-                spb(route).setAllowRememberMe(route.getAllowRememberMe());
-            }
-
-            if(null != route.getPermissions()) {
-                spb(route).setPermissionsAllowed(route.getPermissions());
-            }
-
-            if(null != route.getRoles()) {
-                spb(route).setRolesAllowed(route.getRoles());
-            }
-
-            config.getPathPrefixFailureHandlers().forEach((prefix, handler) -> {
-                if(Strings.startsWith(route.getPathTemplate().getTemplate(), prefix)) {
-                    log.debug("Set failure handler for path prefix '{}'", route.getPathTemplate());
-                    spb(route).setFailureHandler(handler);
-                }
-            });
-
-            SecuredPathBuilder spb = route.removeExtension(SecuredPathBuilder.class);
-            if(null != spb) {
-                route.setExtension(SecuredPath.class, spb.build());
-            }
+            processRoute(route);
 	    }
     }
-	
-	@Override
+
+    @Override
+    public void processRoute(Route route) {
+        if(null != route.getAction()){
+            Ignore ignore = route.getAction().searchAnnotation(Ignore.class);
+            if(null != ignore && ignore.value()){
+                configurator.ignore(route.getPathTemplate().getTemplate());
+            }
+        }
+
+        if(null != route.getAllowAnonymous()) {
+            spb(route).setAllowAnonymous(route.getAllowAnonymous());
+        }
+
+        if(null != route.getAllowClientOnly()) {
+            spb(route).setAllowClientOnly(route.getAllowClientOnly());
+        }
+
+        if(null != route.getAllowRememberMe()) {
+            spb(route).setAllowRememberMe(route.getAllowRememberMe());
+        }
+
+        if(null != route.getPermissions()) {
+            spb(route).setPermissionsAllowed(route.getPermissions());
+        }
+
+        if(null != route.getRoles()) {
+            spb(route).setRolesAllowed(route.getRoles());
+        }
+
+        config.getPathPrefixFailureHandlers().forEach((prefix, handler) -> {
+            if(Strings.startsWith(route.getPathTemplate().getTemplate(), prefix)) {
+                log.debug("Set failure handler for path prefix '{}'", route.getPathTemplate());
+                spb(route).setFailureHandler(handler);
+            }
+        });
+
+        SecuredPathBuilder spb = route.removeExtension(SecuredPathBuilder.class);
+        if(null != spb) {
+            route.setExtension(SecuredPath.class, spb.build());
+        }
+    }
+
+    @Override
     public State preHandleRequest(Request request, Response response, ActionContext ac) throws Throwable {
 		//Web security do not enabled.
 		if(!config.isEnabled()){

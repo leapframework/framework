@@ -6,6 +6,7 @@
     <!-- Base -->
     <bean type="leap.web.RequestInterceptor" class="leap.web.security.SecurityRequestInterceptor">
         <additional-type-def type="leap.web.AppListener"/>
+        <additional-type-def type="leap.web.route.RouteProcessor"/>
     </bean>
     
     <bean type="leap.web.security.SecurityConfig" class="leap.web.security.DefaultSecurityConfig" primary="true">

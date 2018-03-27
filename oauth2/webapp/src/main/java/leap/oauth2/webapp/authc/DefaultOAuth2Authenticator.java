@@ -138,7 +138,7 @@ public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCrea
 
         OAuth2Authentication authc = new SimpleOAuth2Authentication(at, user, client);
         if(null != tokenInfo.getScope()) {
-            authc.setPermissions(Strings.split(tokenInfo.getScope(), ","));
+            authc.setPermissions(Strings.split(tokenInfo.getScope(), ',', ' '));
         }
 
         cacheAuthentication(at, tokenInfo, authc);
