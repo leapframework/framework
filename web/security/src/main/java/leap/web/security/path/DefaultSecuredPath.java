@@ -164,6 +164,7 @@ public class DefaultSecuredPath implements SecuredPath {
 		
         if (authc.isClientOnly() && !isAllowClientOnly()) {
             log.debug("path [{}] : client-only authentication not allowed.", pattern);
+            context.setDenyMessage("client only authentication not allowed");
             return false;
         }
 
@@ -246,7 +247,7 @@ public class DefaultSecuredPath implements SecuredPath {
     protected String getAuthenticationDenyMessage(Authentication authc, SimpleSecurity[] securities) {
         StringBuilder s = new StringBuilder();
 
-        s.append("Expected one of authentications [");
+        s.append("Expected one of authentications [ ");
 
         for(int i=0;i<securities.length;i++) {
             SimpleSecurity sec = securities[i];
@@ -255,17 +256,17 @@ public class DefaultSecuredPath implements SecuredPath {
                 s.append(" , ");
             }
 
-            s.append("{");
-            s.append("user:").append(sec.isUserRequired());
-            s.append(" , client:").append(sec.isClientRequired());
-            s.append("}");
+            s.append("(");
+            s.append("user: ").append(sec.isUserRequired());
+            s.append(", client: ").append(sec.isClientRequired());
+            s.append(")");
         }
 
-        s.append("], Actual ");
-        s.append("{");
-        s.append("user:").append(authc.isUserAuthenticated());
-        s.append(" , client:").append(authc.isClientAuthenticated());
-        s.append("}");
+        s.append(" ], Actual ");
+        s.append("(");
+        s.append("user: ").append(authc.isUserAuthenticated());
+        s.append(", client: ").append(authc.isClientAuthenticated());
+        s.append(")");
 
         return s.toString();
     }
@@ -273,7 +274,7 @@ public class DefaultSecuredPath implements SecuredPath {
     protected String getAuthorizationDenyMessage(Authentication authc, SimpleSecurity[] securities) {
         StringBuilder s = new StringBuilder();
 
-        s.append("Expected one of authorizations [");
+        s.append("Expected one of authorizations [ ");
 
         for(int i=0;i<securities.length;i++) {
             SimpleSecurity sec = securities[i];
@@ -282,17 +283,17 @@ public class DefaultSecuredPath implements SecuredPath {
                 s.append(" , ");
             }
 
-            s.append("{");
-            s.append("perms:").append(Strings.join(sec.getPermissions(), ' '));
-            s.append(" , roles:").append(Strings.join(sec.getRoles(), ' '));
-            s.append("}");
+            s.append("(");
+            s.append(" perms: ").append(Strings.join(sec.getPermissions(), ' '));
+            s.append(", roles: ").append(Strings.join(sec.getRoles(), ' '));
+            s.append(")");
         }
 
-        s.append("], Actual ");
-        s.append("{");
-        s.append("perms:").append(Strings.join(authc.getPermissions(), ' '));
-        s.append(" , roles:").append(Strings.join(authc.getRoles(), ' '));
-        s.append("}");
+        s.append(" ], Actual ");
+        s.append("(");
+        s.append("perms: ").append(Strings.join(authc.getPermissions(), ' '));
+        s.append(", roles: ").append(Strings.join(authc.getRoles(), ' '));
+        s.append(")");
 
         return s.toString();
     }
