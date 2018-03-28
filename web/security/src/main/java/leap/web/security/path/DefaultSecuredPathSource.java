@@ -16,7 +16,6 @@
 package leap.web.security.path;
 
 import leap.core.annotation.Inject;
-import leap.core.annotation.M;
 import leap.core.cache.Cache;
 import leap.core.cache.SimpleLRUCache;
 import leap.lang.Strings;
@@ -52,14 +51,22 @@ public class DefaultSecuredPathSource implements SecuredPathSource {
 	private static final SecuredPath ANY  = new DefaultSecuredPathBuilder().setPattern(ANY_PATTERN).build();
 	private static final SecuredPath NULL = new DefaultSecuredPathBuilder().setPattern(ANY_PATTERN).build();
 
-	protected @Inject @M SecurityConfig config;
+    protected @Inject SecuredPathResolver[] resolvers;
+    protected @Inject SecurityConfig        config;
 
 	protected Cache<String, SecuredPath> cachedPaths = new SimpleLRUCache<>(1024);
 	
 	@Override
 	public SecuredPath getSecuredPath(SecurityContextHolder context, Request request) {
+        SecuredPath securedPath;
+        for(SecuredPathResolver resolver : resolvers) {
+            if((securedPath = resolver.resolveSecuredPath(context)) != null) {
+                return securedPath;
+            }
+        }
+
 		String cacheKey = genCacheKey(request);
-	    SecuredPath securedPath = cachedPaths.get(cacheKey);
+	    securedPath = cachedPaths.get(cacheKey);
 	    if(null != securedPath) {
 	        return securedPath == NULL ? null : securedPath;
 	    }
@@ -83,12 +90,14 @@ public class DefaultSecuredPathSource implements SecuredPathSource {
 		cachedPaths.put(request.getPath(), NULL);
 		return null;
 	}
+
 	private boolean matches(SecuredPath p,Request request){
 		return p.matches(request) &&
-				(p.getRoute() == null ||
+					(p.getRoute() == null ||
 						Strings.equals(p.getRoute().getMethod(),"*") ||
 						Strings.equalsIgnoreCase(p.getRoute().getMethod(),request.getMethod()));
 	}
+
 	private String genCacheKey(Request request){
 		return request.getMethod()+"$"+request.getPath();
 	}

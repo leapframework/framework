@@ -71,7 +71,12 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
         request.setAttribute(CONTEXT_HOLDER_ATTRIBUTE_NAME, this);
     }
 
-	@Override
+    @Override
+    public Request getRequest() {
+        return request;
+    }
+
+    @Override
     public Validation validation() {
 	    return request.getValidation();
     }
