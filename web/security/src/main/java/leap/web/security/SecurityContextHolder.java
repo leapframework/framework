@@ -22,6 +22,7 @@ import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.authz.AuthorizationContext;
 import leap.web.security.login.LoginContext;
 import leap.web.security.logout.LogoutContext;
+import leap.web.security.path.SecuredRoute;
 
 public interface SecurityContextHolder extends AuthenticationContext, AuthorizationContext {
 
@@ -55,12 +56,12 @@ public interface SecurityContextHolder extends AuthenticationContext, Authorizat
     /**
      * Optional
      */
-    SecuredRoute getSecuredRoute();
+    <T> T getSecuredObject();
 
     /**
-     * Sets the secured route.
+     * Sets the secured object.
      */
-    void setSecuredRoute(SecuredRoute route);
+    void setSecuredObject(SecuredObject o);
 
     /**
      * Optional. Returns the deny message.

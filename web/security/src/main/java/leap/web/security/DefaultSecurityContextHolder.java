@@ -25,6 +25,7 @@ import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.login.LoginContext;
 import leap.web.security.logout.LogoutContext;
 import leap.web.security.path.SecuredPath;
+import leap.web.security.path.SecuredRoute;
 import leap.web.security.permission.PermissionManager;
 
 public class DefaultSecurityContextHolder extends SecurityContext implements SecurityContextHolder {
@@ -51,7 +52,7 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
     protected boolean          error;
     protected Object           errorObj;
     protected String           identity;
-    protected SecuredRoute     securedRoute;
+    protected SecuredObject    securedObject;
     protected SimpleSecurity[] securities;
     protected String           denyMessage;
 
@@ -105,13 +106,13 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 	}
 
     @Override
-    public SecuredRoute getSecuredRoute() {
-        return securedRoute;
+    public <T> T getSecuredObject() {
+        return (T)securedObject;
     }
 
     @Override
-    public void setSecuredRoute(SecuredRoute route) {
-        this.securedRoute = route;
+    public void setSecuredObject(SecuredObject o) {
+        this.securedObject = o;
     }
 
     @Override

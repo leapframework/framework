@@ -14,22 +14,61 @@
  *  limitations under the License.
  */
 
-package leap.web.security;
+package leap.web.security.path;
 
 import leap.core.security.Authentication;
 import leap.core.security.SimpleSecurity;
 import leap.lang.Strings;
+import leap.lang.path.PathPattern;
 import leap.web.route.Route;
+import leap.web.security.SecuredObjectBase;
+import leap.web.security.SecurityContextHolder;
+import leap.web.security.path.SecuredPath;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class SecuredRoute extends SecuredObjectBase {
+public class SecuredRoute extends SecuredObjectBase implements SecuredPath {
 
     private final Route route;
 
     public SecuredRoute(Route route) {
         this.route = route;
+    }
+
+    @Override
+    public Route getRoute() {
+        return route;
+    }
+
+    @Override
+    public PathPattern getPattern() {
+        return route.getPathTemplate();
+    }
+
+    @Override
+    public Boolean getAllowAnonymous() {
+        return route.getAllowAnonymous();
+    }
+
+    @Override
+    public Boolean getAllowRememberMe() {
+        return route.getAllowRememberMe();
+    }
+
+    @Override
+    public Boolean getAllowClientOnly() {
+        return route.getAllowClientOnly();
+    }
+
+    @Override
+    public String[] getPermissions() {
+        return route.getPermissions();
+    }
+
+    @Override
+    public String[] getRoles() {
+        return route.getRoles();
     }
 
     @Override

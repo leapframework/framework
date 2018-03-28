@@ -16,25 +16,17 @@
 package leap.web.security.path;
 
 import leap.core.security.Authentication;
-import leap.core.security.SimpleSecurity;
 import leap.lang.Args;
-import leap.lang.Arrays2;
 import leap.lang.Strings;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.path.PathPattern;
-import leap.web.Request;
 import leap.web.action.ActionContext;
 import leap.web.route.Route;
+import leap.web.security.SecuredObject;
 import leap.web.security.SecuredObjectBase;
-import leap.web.security.SecuredRoute;
 import leap.web.security.SecurityContextHolder;
 import leap.web.security.SecurityFailureHandler;
-import leap.web.security.authz.AuthorizationContext;
-import leap.web.security.permission.PermissionManager;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class DefaultSecuredPath extends SecuredObjectBase implements SecuredPath {
 
@@ -130,7 +122,7 @@ public class DefaultSecuredPath extends SecuredObjectBase implements SecuredPath
         ActionContext ac = context.getActionContext();
         if(null != ac && null != ac.getRoute()) {
             SecuredRoute sr = new SecuredRoute(ac.getRoute());
-            context.setSecuredRoute(sr);
+            context.setSecuredObject(sr);
             Boolean result = sr.tryCheckAuthentication(context);
             if(null != result) {
                 return result;
@@ -173,13 +165,9 @@ public class DefaultSecuredPath extends SecuredObjectBase implements SecuredPath
             return false;
         }
 
-        //check route
-        SecuredRoute sr = context.getSecuredRoute();
-        return null == sr ? true : sr.checkAuthorization(context);
+        //check secured object
+        SecuredObject so = context.getSecuredObject();
+        return null == so ? true : so.checkAuthorization(context);
     }
 
-	@Override
-    public int compareTo(SecuredPath o) {
-	    return COMPARATOR.compare(this, o);
-    }
 }

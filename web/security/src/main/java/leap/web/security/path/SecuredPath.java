@@ -48,7 +48,9 @@ public interface SecuredPath extends SecuredObject, RequestMatcher, Comparable<S
     /**
      * Optional. Returns the route.
      */
-    Route getRoute();
+    default Route getRoute() {
+        return null;
+    }
 
     /**
      * Required. Returns the pattern of path.
@@ -58,7 +60,9 @@ public interface SecuredPath extends SecuredObject, RequestMatcher, Comparable<S
     /**
      * Returns the allow-anonymous status, may be null.
      */
-    Boolean getAllowAnonymous();
+    default Boolean getAllowAnonymous() {
+        return null;
+    }
 
     /**
      * Returns true if allows anonymous access to the path.
@@ -83,7 +87,9 @@ public interface SecuredPath extends SecuredObject, RequestMatcher, Comparable<S
     /**
      * Returns the allow-clientOnly status, may be null.
      */
-    Boolean getAllowClientOnly();
+    default Boolean getAllowClientOnly() {
+        return null;
+    }
 
     /**
      * Return true if allows client-only authentication access to the path.
@@ -108,7 +114,9 @@ public interface SecuredPath extends SecuredObject, RequestMatcher, Comparable<S
     /**
      * Returns the allow-rememberMe status, may be null.
      */
-    Boolean getAllowRememberMe();
+    default Boolean getAllowRememberMe() {
+        return null;
+    }
 
     /**
      * Returns true if allows remember-me authentication access to the path.
@@ -133,17 +141,23 @@ public interface SecuredPath extends SecuredObject, RequestMatcher, Comparable<S
     /**
      * Optional. Returns the permissions allowed to access the path.
      */
-    String[] getPermissions();
+    default String[] getPermissions() {
+        return null;
+    }
 
     /**
      * Optional. Returns the roles allowed to access the path.
      */
-    String[] getRoles();
+    default String[] getRoles() {
+        return null;
+    }
 
     /**
      * Optional. Returns the {@link SecurityFailureHandler}.
      */
-    SecurityFailureHandler getFailureHandler();
+    default SecurityFailureHandler getFailureHandler() {
+        return null;
+    }
 
     /**
      * Returns true if the path pattern matches the request.
@@ -157,5 +171,10 @@ public interface SecuredPath extends SecuredObject, RequestMatcher, Comparable<S
      */
     default boolean matches(String path) {
         return getPattern().matches(path);
+    }
+
+    @Override
+    default int compareTo(SecuredPath o) {
+        return COMPARATOR.compare(this, o);
     }
 }
