@@ -17,18 +17,14 @@ package leap.web.security.path;
 
 import leap.core.web.RequestBase;
 import leap.core.web.RequestMatcher;
-import leap.lang.enums.Bool;
 import leap.lang.path.PathPattern;
-import leap.web.Request;
 import leap.web.route.Route;
-import leap.web.security.SecurityContextHolder;
+import leap.web.security.SecuredObject;
 import leap.web.security.SecurityFailureHandler;
-import leap.web.security.authc.AuthenticationContext;
-import leap.web.security.authz.AuthorizationContext;
 
 import java.util.Comparator;
 
-public interface SecuredPath extends RequestMatcher, Comparable<SecuredPath> {
+public interface SecuredPath extends SecuredObject, RequestMatcher, Comparable<SecuredPath> {
 
     Comparator<SecuredPath> COMPARATOR = (p1, p2) -> {
         if (p1 == null && p2 == null) {
@@ -162,14 +158,4 @@ public interface SecuredPath extends RequestMatcher, Comparable<SecuredPath> {
     default boolean matches(String path) {
         return getPattern().matches(path);
     }
-
-    /**
-     * Returns true if the path allows the authentication.
-     */
-    boolean checkAuthentication(Request request, SecurityContextHolder context);
-
-    /**
-     * Returns true if the path allow the authorization.
-     */
-    boolean checkAuthorization(Request request, SecurityContextHolder context);
 }

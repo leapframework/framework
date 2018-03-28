@@ -77,13 +77,13 @@ public class MergedSecuredPath implements SecuredPath {
     }
 
     @Override
-    public boolean checkAuthentication(Request request, SecurityContextHolder context) {
-        return merged.checkAuthentication(request, context);
+    public Boolean tryCheckAuthentication(SecurityContextHolder context) {
+        return merged.tryCheckAuthentication(context);
     }
 
     @Override
-    public boolean checkAuthorization(Request request, SecurityContextHolder context) {
-        return merged.checkAuthorization(request, context);
+    public Boolean tryCheckAuthorization(SecurityContextHolder context) {
+        return merged.tryCheckAuthorization(context);
     }
 
     @Override

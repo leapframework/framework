@@ -53,6 +53,16 @@ public interface SecurityContextHolder extends AuthenticationContext, Authorizat
     LogoutContext getLogoutContext();
 
     /**
+     * Optional
+     */
+    SecuredRoute getSecuredRoute();
+
+    /**
+     * Sets the secured route.
+     */
+    void setSecuredRoute(SecuredRoute route);
+
+    /**
      * Optional. Returns the deny message.
      */
     String getDenyMessage();

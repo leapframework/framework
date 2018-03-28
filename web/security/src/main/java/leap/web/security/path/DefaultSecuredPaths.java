@@ -178,13 +178,13 @@ public class DefaultSecuredPaths implements SecuredPaths {
         }
 
         @Override
-        public boolean checkAuthentication(Request request, SecurityContextHolder context) {
-            return path.checkAuthentication(request, context);
+        public Boolean tryCheckAuthentication(SecurityContextHolder context) {
+            return path.tryCheckAuthentication(context);
         }
 
         @Override
-        public boolean checkAuthorization(Request request, SecurityContextHolder context) {
-            return path.checkAuthorization(request, context);
+        public Boolean tryCheckAuthorization(SecurityContextHolder context) {
+            return path.tryCheckAuthorization(context);
         }
 
         @Override

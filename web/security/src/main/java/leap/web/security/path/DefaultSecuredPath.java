@@ -26,6 +26,8 @@ import leap.lang.path.PathPattern;
 import leap.web.Request;
 import leap.web.action.ActionContext;
 import leap.web.route.Route;
+import leap.web.security.SecuredObjectBase;
+import leap.web.security.SecuredRoute;
 import leap.web.security.SecurityContextHolder;
 import leap.web.security.SecurityFailureHandler;
 import leap.web.security.authz.AuthorizationContext;
@@ -34,7 +36,7 @@ import leap.web.security.permission.PermissionManager;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DefaultSecuredPath implements SecuredPath {
+public class DefaultSecuredPath extends SecuredObjectBase implements SecuredPath {
 
 	private static final Log log = LogFactory.get(DefaultSecuredPath.class);
 
@@ -117,7 +119,7 @@ public class DefaultSecuredPath implements SecuredPath {
      * Returns true if the path allows the authentication.
      */
 	@Override
-    public boolean checkAuthentication(Request request, SecurityContextHolder context) {
+    public Boolean tryCheckAuthentication(SecurityContextHolder context) {
 		if(isAllowAnonymous()) {
 			return true;
 		}
@@ -127,28 +129,11 @@ public class DefaultSecuredPath implements SecuredPath {
         //check route's config
         ActionContext ac = context.getActionContext();
         if(null != ac && null != ac.getRoute()) {
-            Route route = ac.getRoute();
-
-            //allow anonymous
-            if(route.getAllowAnonymous() == Boolean.TRUE) {
-                return true;
-            }
-
-            SimpleSecurity[] securities = route.getSecurities();
-            if(null != securities && securities.length > 0) {
-                List<SimpleSecurity> matches = new ArrayList<>();
-                for(SimpleSecurity security : securities) {
-                    if(security.matchAuthentication(authc)) {
-                        matches.add(security);
-                    }
-                }
-                if(matches.isEmpty()) {
-                    context.setDenyMessage(getAuthenticationDenyMessage(authc, securities));
-                    return false;
-                }else {
-                    context.setSecurities(matches.toArray(new SimpleSecurity[matches.size()]));
-                    return true;
-                }
+            SecuredRoute sr = new SecuredRoute(ac.getRoute());
+            context.setSecuredRoute(sr);
+            Boolean result = sr.tryCheckAuthentication(context);
+            if(null != result) {
+                return result;
             }
         }
 
@@ -175,7 +160,7 @@ public class DefaultSecuredPath implements SecuredPath {
      * Returns true if the path allows the authorization.
      */
     @Override
-    public boolean checkAuthorization(Request request, SecurityContextHolder context) {
+    public Boolean tryCheckAuthorization(SecurityContextHolder context) {
         //Check roles
         if(!checkRoles(context, roles)) {
             context.setDenyMessage("Roles [" + Strings.join(roles, ',') + "] required");
@@ -188,114 +173,9 @@ public class DefaultSecuredPath implements SecuredPath {
             return false;
         }
 
-        //check security
-        SimpleSecurity[] securities = context.getSecurities();
-        if(null != securities && securities.length > 0) {
-            for(SimpleSecurity security : securities) {
-                if(checkPermissions(context, security.getPermissions()) &&
-                        checkRoles(context, security.getRoles())) {
-                    return true;
-                }
-            }
-            context.setDenyMessage(getAuthorizationDenyMessage(context.getAuthentication(), securities));
-            return false;
-        }
-
-        return true;
-    }
-
-    protected boolean checkRoles(AuthorizationContext context, String[] roles) {
-        if(null != roles && roles.length > 0) {
-            boolean allow = false;
-            String[] grantedRoles = context.getAuthentication().getRoles();
-            if(null != grantedRoles && grantedRoles.length > 0) {
-                allow = Arrays2.containsAny(grantedRoles,roles);
-            }
-
-            if(!allow) {
-                allow = context.getAuthorization().hasAnyRole(roles);
-            }
-
-            if(!allow) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    protected boolean checkPermissions(AuthorizationContext context, String[] permissions) {
-        if(null != permissions && permissions.length > 0) {
-            PermissionManager pm = context.getPermissionManager();
-
-            boolean allow = false;
-            String[] grantedPermissions = context.getAuthentication().getPermissions();
-            if(null != grantedPermissions && grantedPermissions.length > 0) {
-                allow = pm.checkPermissionImpliesAll(grantedPermissions,permissions);
-            }
-
-            if(!allow) {
-                allow = context.getAuthorization().hasAllPermission(permissions);
-            }
-
-            if(!allow) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    protected String getAuthenticationDenyMessage(Authentication authc, SimpleSecurity[] securities) {
-        StringBuilder s = new StringBuilder();
-
-        s.append("Expected one of authentications [ ");
-
-        for(int i=0;i<securities.length;i++) {
-            SimpleSecurity sec = securities[i];
-
-            if(i > 0) {
-                s.append(" , ");
-            }
-
-            s.append("(");
-            s.append("user: ").append(sec.isUserRequired());
-            s.append(", client: ").append(sec.isClientRequired());
-            s.append(")");
-        }
-
-        s.append(" ], Actual ");
-        s.append("(");
-        s.append("user: ").append(authc.isUserAuthenticated());
-        s.append(", client: ").append(authc.isClientAuthenticated());
-        s.append(")");
-
-        return s.toString();
-    }
-
-    protected String getAuthorizationDenyMessage(Authentication authc, SimpleSecurity[] securities) {
-        StringBuilder s = new StringBuilder();
-
-        s.append("Expected one of authorizations [ ");
-
-        for(int i=0;i<securities.length;i++) {
-            SimpleSecurity sec = securities[i];
-
-            if(i > 0) {
-                s.append(" , ");
-            }
-
-            s.append("(");
-            s.append(" perms: ").append(Strings.join(sec.getPermissions(), ' '));
-            s.append(", roles: ").append(Strings.join(sec.getRoles(), ' '));
-            s.append(")");
-        }
-
-        s.append(" ], Actual ");
-        s.append("(");
-        s.append("perms: ").append(Strings.join(authc.getPermissions(), ' '));
-        s.append(", roles: ").append(Strings.join(authc.getRoles(), ' '));
-        s.append(")");
-
-        return s.toString();
+        //check route
+        SecuredRoute sr = context.getSecuredRoute();
+        return null == sr ? true : sr.checkAuthorization(context);
     }
 
 	@Override

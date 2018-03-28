@@ -55,7 +55,7 @@ public class DefaultSecurityHandler implements SecurityHandler {
         SecuredPath path = context.getSecuredPath();
 
         if(null != path) {
-            return path.checkAuthentication(request, context);
+            return path.checkAuthentication(context);
         }
 
         return true;
@@ -68,7 +68,7 @@ public class DefaultSecurityHandler implements SecurityHandler {
             return false;
         }
         if(null != path) {
-            return path.checkAuthorization(request, context);
+            return path.checkAuthorization(context);
         }
 
         return true;

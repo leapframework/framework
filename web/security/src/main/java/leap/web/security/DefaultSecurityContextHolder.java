@@ -51,6 +51,7 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
     protected boolean          error;
     protected Object           errorObj;
     protected String           identity;
+    protected SecuredRoute     securedRoute;
     protected SimpleSecurity[] securities;
     protected String           denyMessage;
 
@@ -102,6 +103,16 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 	public void setSecuredPath(SecuredPath path) {
 		this.securedPath = path;
 	}
+
+    @Override
+    public SecuredRoute getSecuredRoute() {
+        return securedRoute;
+    }
+
+    @Override
+    public void setSecuredRoute(SecuredRoute route) {
+        this.securedRoute = route;
+    }
 
     @Override
     public SimpleSecurity[] getSecurities() {
