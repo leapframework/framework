@@ -16,7 +16,7 @@
 
 package leap.web.route;
 
-import leap.core.security.Security;
+import leap.core.security.SimpleSecurity;
 import leap.web.action.*;
 import leap.web.format.RequestFormat;
 import leap.web.format.ResponseFormat;
@@ -170,12 +170,12 @@ public interface NestedRoute extends Route {
     }
 
     @Override
-    default Security[] getSecurities() {
-        return new Security[0];
+    default SimpleSecurity[] getSecurities() {
+        return new SimpleSecurity[0];
     }
 
     @Override
-    default void setSecurities(Security[] securities) {
+    default void setSecurities(SimpleSecurity[] securities) {
 
     }
 

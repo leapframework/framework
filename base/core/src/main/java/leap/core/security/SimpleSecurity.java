@@ -18,14 +18,14 @@ package leap.core.security;
 
 import leap.lang.Buildable;
 
-public class Security {
+public class SimpleSecurity {
 
     protected final boolean  userRequired;
     protected final boolean  clientRequired;
     protected final String[] permissions;
     protected final String[] roles;
 
-    public Security(boolean userRequired, boolean clientRequired, String[] permissions, String[] roles) {
+    public SimpleSecurity(boolean userRequired, boolean clientRequired, String[] permissions, String[] roles) {
         this.userRequired = userRequired;
         this.clientRequired = clientRequired;
         this.permissions = permissions;
@@ -56,17 +56,19 @@ public class Security {
         return roles;
     }
 
-    public boolean matchAuthenitcation(Authentication authc) {
-        if(userRequired && !authc.isUserAuthenticated()) {
-            return false;
+    public boolean matchAuthentication(Authentication authc) {
+        if(!userRequired) {
+            return !clientRequired ? true : authc.isClientAuthenticated();
         }
-        if(clientRequired && !authc.isClientAuthenticated()) {
-            return false;
+
+        if(!clientRequired) {
+            return authc.isUserAuthenticated();
         }
-        return true;
+
+        return authc.isUserAuthenticated() && authc.isClientAuthenticated();
     }
 
-    public static class Builder implements Buildable<Security> {
+    public static class Builder implements Buildable<SimpleSecurity> {
         protected boolean  userRequired;
         protected boolean  clientRequired;
         protected String[] permissions;
@@ -105,8 +107,8 @@ public class Security {
         }
 
         @Override
-        public Security build() {
-            return new Security(userRequired, clientRequired, permissions, roles);
+        public SimpleSecurity build() {
+            return new SimpleSecurity(userRequired, clientRequired, permissions, roles);
         }
     }
 }

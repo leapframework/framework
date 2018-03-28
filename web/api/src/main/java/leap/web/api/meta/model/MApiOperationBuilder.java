@@ -15,7 +15,7 @@
  */
 package leap.web.api.meta.model;
 
-import leap.core.security.Security;
+import leap.core.security.SimpleSecurity;
 import leap.lang.Arrays2;
 import leap.lang.Builders;
 import leap.lang.http.HTTP;
@@ -26,23 +26,23 @@ import java.util.*;
 
 public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation> {
 
-    protected String                         id;
-    protected Route                          route;
-	protected HTTP.Method        		     method;
-    protected Set<String>                    tags       = new LinkedHashSet<>();
-	protected List<MApiParameterBuilder>     parameters = new ArrayList<>();
-	protected List<MApiResponseBuilder>      responses  = new ArrayList<>();
-	protected Set<String>                    consumes   = new LinkedHashSet<>();
-	protected Set<String>                    produces   = new LinkedHashSet<>();
-    protected Map<String, MApiSecurity>      security   = new HashMap<>();
-    protected MApiExtension                  extension;
+    protected String                       id;
+    protected Route                        route;
+	protected HTTP.Method        		   method;
+    protected Set<String>                  tags       = new LinkedHashSet<>();
+	protected List<MApiParameterBuilder>   parameters = new ArrayList<>();
+	protected List<MApiResponseBuilder>    responses  = new ArrayList<>();
+	protected Set<String>                  consumes   = new LinkedHashSet<>();
+	protected Set<String>                  produces   = new LinkedHashSet<>();
+    protected Map<String, MApiSecurityReq> security   = new HashMap<>();
+    protected MApiExtension                extension;
 
-    protected boolean    allowAnonymous;
-    protected boolean    allowClientOnly;
-    protected String[]   permissions;
-    protected Security[] securities;
-    protected boolean    deprecated;
-    protected Boolean    CorsEnabled;
+    protected boolean          allowAnonymous;
+    protected boolean          allowClientOnly;
+    protected String[]         permissions;
+    protected SimpleSecurity[] securities;
+    protected boolean          deprecated;
+    protected Boolean          CorsEnabled;
 
 	public MApiOperationBuilder() {
 		
@@ -51,14 +51,14 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
     public MApiOperationBuilder(Route route) {
         this.route = route;
 
-        MApiSecurity[] securities = route.getExtension(MApiSecurity[].class);
+        MApiSecurityReq[] securities = route.getExtension(MApiSecurityReq[].class);
         if(null != securities) {
-            for(MApiSecurity security : securities) {
+            for(MApiSecurityReq security : securities) {
                 this.security.put(security.getName(), security);
             }
         }else {
             if(!security.containsKey(SwaggerConstants.OAUTH2)){
-                MApiSecurity sec = new MApiSecurity(SwaggerConstants.OAUTH2);
+                MApiSecurityReq sec = new MApiSecurityReq(SwaggerConstants.OAUTH2);
                 security.put(sec.getName(), sec);
             }
             if(route.getPermissions() != null){
@@ -160,12 +160,16 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
 		produces.add(mimeType);
 	}
 
-    public Map<String, MApiSecurity> getSecurity() {
+    public Map<String, MApiSecurityReq> getSecurity() {
         return security;
     }
 
-    public void setSecurity(Map<String, MApiSecurity> security) {
+    public void setSecurity(Map<String, MApiSecurityReq> security) {
         this.security = security;
+    }
+
+    public void addSecurityRequirement(MApiSecurityReq req) {
+        this.security.put(req.getName(), req);
     }
 
     public boolean isDeprecated() {
@@ -200,11 +204,11 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
         this.permissions = permissions;
     }
 
-    public Security[] getSecurities() {
+    public SimpleSecurity[] getSecurities() {
         return securities;
     }
 
-    public void setSecurities(Security[] securities) {
+    public void setSecurities(SimpleSecurity[] securities) {
         this.securities = securities;
     }
 
@@ -232,7 +236,7 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
 								Builders.buildList(responses), 
 								consumes.toArray(Arrays2.EMPTY_STRING_ARRAY), 
 								produces.toArray(Arrays2.EMPTY_STRING_ARRAY),
-                                security.values().toArray(new MApiSecurity[security.size()]),
+                                security.values().toArray(new MApiSecurityReq[security.size()]),
                                 allowAnonymous,
                                 allowClientOnly,
 								deprecated, CorsEnabled, attrs, extension);

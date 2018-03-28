@@ -16,11 +16,9 @@
 package leap.web.security.path;
 
 import leap.core.security.Authentication;
-import leap.core.security.Authorization;
-import leap.core.security.Security;
+import leap.core.security.SimpleSecurity;
 import leap.lang.Args;
 import leap.lang.Arrays2;
-import leap.lang.Objects2;
 import leap.lang.Strings;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -30,9 +28,11 @@ import leap.web.action.ActionContext;
 import leap.web.route.Route;
 import leap.web.security.SecurityContextHolder;
 import leap.web.security.SecurityFailureHandler;
-import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.authz.AuthorizationContext;
 import leap.web.security.permission.PermissionManager;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class DefaultSecuredPath implements SecuredPath {
 
@@ -134,15 +134,21 @@ public class DefaultSecuredPath implements SecuredPath {
                 return true;
             }
 
-            Security[] securities = route.getSecurities();
+            SimpleSecurity[] securities = route.getSecurities();
             if(null != securities && securities.length > 0) {
-                for(Security security : securities) {
-                    if(security.matchAuthenitcation(authc)) {
-                        return true;
+                List<SimpleSecurity> matches = new ArrayList<>();
+                for(SimpleSecurity security : securities) {
+                    if(security.matchAuthentication(authc)) {
+                        matches.add(security);
                     }
                 }
-                context.setDenyMessage(getAuthenticationDenyMessage(authc, securities));
-                return false;
+                if(matches.isEmpty()) {
+                    context.setDenyMessage(getAuthenticationDenyMessage(authc, securities));
+                    return false;
+                }else {
+                    context.setSecurities(matches.toArray(new SimpleSecurity[matches.size()]));
+                    return true;
+                }
             }
         }
 
@@ -181,22 +187,17 @@ public class DefaultSecuredPath implements SecuredPath {
             return false;
         }
 
-        //Check securities at route.
-        ActionContext ac = context.getActionContext();
-        if(null != ac && null != ac.getRoute()) {
-            Route route = ac.getRoute();
-
-            Security[] securities = route.getSecurities();
-            if(null != securities && securities.length > 0) {
-                for(Security security : securities) {
-                    if(checkPermissions(context, security.getPermissions()) &&
-                            checkRoles(context, security.getRoles())) {
-                        return true;
-                    }
+        //check security
+        SimpleSecurity[] securities = context.getSecurities();
+        if(null != securities && securities.length > 0) {
+            for(SimpleSecurity security : securities) {
+                if(checkPermissions(context, security.getPermissions()) &&
+                        checkRoles(context, security.getRoles())) {
+                    return true;
                 }
-                context.setDenyMessage(getAuthorizationDenyMessage(context.getAuthentication(), securities));
-                return false;
             }
+            context.setDenyMessage(getAuthorizationDenyMessage(context.getAuthentication(), securities));
+            return false;
         }
 
         return true;
@@ -242,13 +243,13 @@ public class DefaultSecuredPath implements SecuredPath {
         return true;
     }
 
-    protected String getAuthenticationDenyMessage(Authentication authc, Security[] securities) {
+    protected String getAuthenticationDenyMessage(Authentication authc, SimpleSecurity[] securities) {
         StringBuilder s = new StringBuilder();
 
         s.append("Expected one of authentications [");
 
         for(int i=0;i<securities.length;i++) {
-            Security sec = securities[i];
+            SimpleSecurity sec = securities[i];
 
             if(i > 0) {
                 s.append(" , ");
@@ -269,13 +270,13 @@ public class DefaultSecuredPath implements SecuredPath {
         return s.toString();
     }
 
-    protected String getAuthorizationDenyMessage(Authentication authc, Security[] securities) {
+    protected String getAuthorizationDenyMessage(Authentication authc, SimpleSecurity[] securities) {
         StringBuilder s = new StringBuilder();
 
         s.append("Expected one of authorizations [");
 
         for(int i=0;i<securities.length;i++) {
-            Security sec = securities[i];
+            SimpleSecurity sec = securities[i];
 
             if(i > 0) {
                 s.append(" , ");

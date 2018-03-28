@@ -15,17 +15,12 @@
  */
 package leap.web.security;
 
-import leap.core.security.Authentication;
-import leap.core.security.Authorization;
-import leap.core.security.Credentials;
-import leap.core.security.SecurityContext;
-import leap.core.security.UserPrincipal;
+import leap.core.security.*;
 import leap.core.validation.Validation;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.web.Request;
 import leap.web.action.ActionContext;
-import leap.web.route.Route;
 import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.login.LoginContext;
 import leap.web.security.logout.LogoutContext;
@@ -49,14 +44,15 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 	protected final Request           request;
     protected final ActionContext     actionContext;
 
-	protected SecuredPath   securedPath;
-    protected LoginContext  loginContext;
-    protected LogoutContext logoutContext;
-	protected String        authenticationToken;
-	protected boolean       error;
-	protected Object        errorObj;
-	protected String        identity;
-    protected String        denyMessage;
+    protected SecuredPath      securedPath;
+    protected LoginContext     loginContext;
+    protected LogoutContext    logoutContext;
+    protected String           authenticationToken;
+    protected boolean          error;
+    protected Object           errorObj;
+    protected String           identity;
+    protected SimpleSecurity[] securities;
+    protected String           denyMessage;
 
     private boolean handled;
 
@@ -108,13 +104,23 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 	}
 
     @Override
+    public SimpleSecurity[] getSecurities() {
+        return securities;
+    }
+
+    @Override
+    public void setSecurities(SimpleSecurity[] securities) {
+        this.securities = securities;
+    }
+
+    @Override
     public String getDenyMessage() {
         return denyMessage;
     }
 
     @Override
     public void setDenyMessage(String message) {
-        this.denyMessage = denyMessage;
+        this.denyMessage = message;
     }
 
     @Override

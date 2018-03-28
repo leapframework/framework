@@ -23,20 +23,20 @@ import java.util.Map;
 
 public class MApiOperation extends MApiNamedWithDesc {
 
-    protected final String          id;
-    protected final Route           route;
-    protected final HTTP.Method     method;
-    protected final String[]        tags;
-    protected final MApiParameter[] parameters;
-    protected final MApiResponse[]  responses;
-    protected final String[]        consumes;
-    protected final String[]        produces;
-    protected final MApiSecurity[]  security;
-    protected final boolean         allowAnonymous;
-    protected final boolean         allowClientOnly;
-    protected final boolean         deprecated;
-    protected final Boolean         corsEnabled;
-    protected final MApiExtension   extension;
+    protected final String            id;
+    protected final Route             route;
+    protected final HTTP.Method       method;
+    protected final String[]          tags;
+    protected final MApiParameter[]   parameters;
+    protected final MApiResponse[]    responses;
+    protected final String[]          consumes;
+    protected final String[]          produces;
+    protected final MApiSecurityReq[] security;
+    protected final boolean           allowAnonymous;
+    protected final boolean           allowClientOnly;
+    protected final boolean           deprecated;
+    protected final Boolean           corsEnabled;
+    protected final MApiExtension     extension;
 
     public MApiOperation(String id, String name, String title, String summary, String description,
                          HTTP.Method method,
@@ -46,7 +46,7 @@ public class MApiOperation extends MApiNamedWithDesc {
                          List<MApiResponse> responses,
                          String[] consumes,
                          String[] produces,
-                         MApiSecurity[] security,
+                         MApiSecurityReq[] security,
                          boolean allowAnonymous,
                          boolean allowClientOnly,
                          boolean deprecated,
@@ -157,7 +157,7 @@ public class MApiOperation extends MApiNamedWithDesc {
     /**
      * Returns the permissions required by this operation.
      */
-    public MApiSecurity[] getSecurity() {
+    public MApiSecurityReq[] getSecurity() {
         return security;
     }
 

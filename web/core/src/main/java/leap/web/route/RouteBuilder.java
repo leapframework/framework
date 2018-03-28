@@ -15,7 +15,7 @@
  */
 package leap.web.route;
 
-import leap.core.security.Security;
+import leap.core.security.SimpleSecurity;
 import leap.core.web.path.PathTemplate;
 import leap.lang.Assert;
 import leap.lang.Buildable;
@@ -53,14 +53,14 @@ public class RouteBuilder extends ExtensibleBase implements RouteBase, Buildable
 	protected Map<String, String>  requiredParameters;
 	protected List<FailureHandler> failureHandlers = new ArrayList<>();
 
-    protected Boolean              enabled;
-    protected Boolean              httpsOnly;
-    protected Boolean              allowAnonymous;
-    protected Boolean              allowClientOnly;
-    protected Boolean              allowRememberMe;
-    protected String[]             permissions;
-    protected String[]             roles;
-    protected Security[]           securities;
+    protected Boolean          enabled;
+    protected Boolean          httpsOnly;
+    protected Boolean          allowAnonymous;
+    protected Boolean          allowClientOnly;
+    protected Boolean          allowRememberMe;
+    protected String[]         permissions;
+    protected String[]         roles;
+    protected SimpleSecurity[] securities;
 
     public RouteBuilder() {
 
@@ -301,11 +301,11 @@ public class RouteBuilder extends ExtensibleBase implements RouteBase, Buildable
         return this;
     }
 
-    public Security[] getSecurities() {
+    public SimpleSecurity[] getSecurities() {
         return securities;
     }
 
-    public void setSecurities(Security[] securities) {
+    public void setSecurities(SimpleSecurity[] securities) {
         this.securities = securities;
     }
 

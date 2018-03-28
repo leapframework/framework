@@ -31,7 +31,6 @@ import leap.web.api.Apis;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.config.model.RestdConfig;
 import leap.web.api.meta.model.MApiOperationBuilder;
-import leap.web.api.meta.model.MApiSecurity;
 import leap.web.api.meta.model.MApiTag;
 import leap.web.api.mvc.ApiFailureHandler;
 import leap.web.api.route.ApiRoute;

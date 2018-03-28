@@ -1,6 +1,6 @@
 package leap.web.route;
 
-import leap.core.security.Security;
+import leap.core.security.SimpleSecurity;
 import leap.lang.Extensible;
 import leap.lang.Sourced;
 import leap.web.action.FailureHandler;
@@ -224,12 +224,12 @@ public interface Route extends RouteBase, Sourced, Extensible {
     /**
      * Optional. Returns the securities.
      */
-    Security[] getSecurities();
+    SimpleSecurity[] getSecurities();
 
     /**
-     * Sets the securites.
+     * Sets the security.
      */
-    void setSecurities(Security[] securities);
+    void setSecurities(SimpleSecurity[] securities);
 	
 	/**
 	 * Returns <code>true</code> if the route enables csrf support explicitly.

@@ -23,19 +23,24 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-public class MApiSecurity extends MApiNamed {
+public class MApiSecurityReq extends MApiNamed {
 
     private List<String> scopes = new ArrayList<>();
 
-    public MApiSecurity(String name) {
+    public MApiSecurityReq(String name) {
         super(name);
     }
 
-    public MApiSecurity(String name, String title) {
+    public MApiSecurityReq(String name, String title) {
         super(name, title);
     }
 
-    public MApiSecurity(String name, String title, Map<String, Object> attrs) {
+    public MApiSecurityReq(String name, String[] scopes) {
+        super(name);
+        this.addScopes(scopes);
+    }
+
+    public MApiSecurityReq(String name, String title, Map<String, Object> attrs) {
         super(name, title, attrs);
     }
 

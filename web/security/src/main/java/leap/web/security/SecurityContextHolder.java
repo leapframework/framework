@@ -16,13 +16,12 @@
 package leap.web.security;
 
 import leap.core.RequestContext;
+import leap.core.security.SimpleSecurity;
 import leap.web.action.ActionContext;
-import leap.web.route.Route;
 import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.authz.AuthorizationContext;
 import leap.web.security.login.LoginContext;
 import leap.web.security.logout.LogoutContext;
-import leap.web.security.path.SecuredPath;
 
 public interface SecurityContextHolder extends AuthenticationContext, AuthorizationContext {
 
@@ -63,4 +62,13 @@ public interface SecurityContextHolder extends AuthenticationContext, Authorizat
      */
     void setDenyMessage(String message);
 
+    /**
+     * Optional.
+     */
+    SimpleSecurity[] getSecurities();
+
+    /**
+     * Sets the securities.
+     */
+    void setSecurities(SimpleSecurity[] securities);
 }

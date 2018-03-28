@@ -15,7 +15,7 @@
  */
 package leap.web.route;
 
-import leap.core.security.Security;
+import leap.core.security.SimpleSecurity;
 import leap.core.web.path.PathTemplate;
 import leap.lang.Args;
 import leap.lang.ExtensibleBase;
@@ -44,19 +44,19 @@ class DefaultRoute extends ExtensibleBase implements Sourced, Route {
 	protected final Map<String, String> requiredParameters;
 
     protected boolean    enabled;
-    protected Action     action;
-    protected Integer    successStatus;
-    protected Boolean    corsEnabled;
-    protected Boolean    csrfEnabled;
-    protected Boolean    supportsMultipart;
-    protected boolean    acceptValidationError;
-    protected boolean    httpsOnly;
-    protected Boolean    allowAnonymous;
-    protected Boolean    allowRememberMe;
-    protected Boolean    allowClientOnly;
-    protected String[]   permissions;
-    protected String[]   roles;
-    protected Security[] securities;
+    protected Action           action;
+    protected Integer          successStatus;
+    protected Boolean          corsEnabled;
+    protected Boolean          csrfEnabled;
+    protected Boolean          supportsMultipart;
+    protected boolean          acceptValidationError;
+    protected boolean          httpsOnly;
+    protected Boolean          allowAnonymous;
+    protected Boolean          allowRememberMe;
+    protected Boolean          allowClientOnly;
+    protected String[]         permissions;
+    protected String[]         roles;
+    protected SimpleSecurity[] securities;
 
 	public DefaultRoute(Object 	    source,
 						String 	    method,
@@ -332,12 +332,12 @@ class DefaultRoute extends ExtensibleBase implements Sourced, Route {
     }
 
     @Override
-    public Security[] getSecurities() {
+    public SimpleSecurity[] getSecurities() {
         return securities;
     }
 
     @Override
-    public void setSecurities(Security[] securities) {
+    public void setSecurities(SimpleSecurity[] securities) {
         this.securities = securities;
     }
 

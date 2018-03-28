@@ -285,17 +285,17 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 		w.endObject();
 	}
 
-	protected void writeSecurities(WriteContext context, ApiMetadata m, JsonWriter w, MApiSecurity[] sc){
+	protected void writeSecurities(WriteContext context, ApiMetadata m, JsonWriter w, MApiSecurityReq[] sc){
     	if(sc == null){
 			return;
 		}
 
-		for(MApiSecurity s : sc){
+		for(MApiSecurityReq s : sc){
 			writeSecurity(context,m,w,s);
 		}
 	}
 
-	protected void writeSecurity(WriteContext context, ApiMetadata m, JsonWriter w, MApiSecurity sc){
+	protected void writeSecurity(WriteContext context, ApiMetadata m, JsonWriter w, MApiSecurityReq sc){
 		w.startObject();
 		w.property(sc.getName(),sc.getScopes());
 		w.endObject();

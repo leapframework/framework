@@ -212,7 +212,7 @@ public class SwaggerSpecReader implements ApiSpecReader {
         if(null != security) {
             security.forEach(sc->{
                 for(Map.Entry<String, Object> entry:sc.entrySet()){
-                    MApiSecurity sec = new MApiSecurity(entry.getKey());
+                    MApiSecurityReq sec = new MApiSecurityReq(entry.getKey());
                     sec.addScopes(Collections2.toStringArray((Collection<String>)entry.getValue()));
                     mo.getSecurity().put(sec.getName(),sec);
                     break;
