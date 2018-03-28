@@ -15,6 +15,7 @@
  */
 package leap.web.api.meta.model;
 
+import leap.core.security.Security;
 import leap.lang.Arrays2;
 import leap.lang.Builders;
 import leap.lang.http.HTTP;
@@ -36,12 +37,12 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
     protected Map<String, MApiSecurity>      security   = new HashMap<>();
     protected MApiExtension                  extension;
 
-    protected boolean allowAnonymous;
-    protected boolean allowClientOnly;
-	protected boolean deprecated;
-    protected Boolean CorsEnabled;
-    protected String[] permissions;
-    protected String[] clientOnlyPermissions;
+    protected boolean    allowAnonymous;
+    protected boolean    allowClientOnly;
+    protected String[]   permissions;
+    protected Security[] securities;
+    protected boolean    deprecated;
+    protected Boolean    CorsEnabled;
 
 	public MApiOperationBuilder() {
 		
@@ -191,14 +192,6 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
         this.allowClientOnly = allowClientOnly;
     }
 
-    public Boolean getCorsEnabled() {
-        return CorsEnabled;
-    }
-
-    public void setCorsEnabled(Boolean corsEnabled) {
-        this.CorsEnabled = corsEnabled;
-    }
-
     public String[] getPermissions() {
         return permissions;
     }
@@ -207,12 +200,20 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
         this.permissions = permissions;
     }
 
-    public String[] getClientOnlyPermissions() {
-        return clientOnlyPermissions;
+    public Security[] getSecurities() {
+        return securities;
     }
 
-    public void setClientOnlyPermissions(String[] clientOnlyPermissions) {
-        this.clientOnlyPermissions = clientOnlyPermissions;
+    public void setSecurities(Security[] securities) {
+        this.securities = securities;
+    }
+
+    public Boolean getCorsEnabled() {
+        return CorsEnabled;
+    }
+
+    public void setCorsEnabled(Boolean corsEnabled) {
+        this.CorsEnabled = corsEnabled;
     }
 
     public MApiExtension getExtension() {

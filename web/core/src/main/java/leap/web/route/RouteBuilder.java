@@ -15,6 +15,7 @@
  */
 package leap.web.route;
 
+import leap.core.security.Security;
 import leap.core.web.path.PathTemplate;
 import leap.lang.Assert;
 import leap.lang.Buildable;
@@ -58,8 +59,8 @@ public class RouteBuilder extends ExtensibleBase implements RouteBase, Buildable
     protected Boolean              allowClientOnly;
     protected Boolean              allowRememberMe;
     protected String[]             permissions;
-    protected String[]             clientOnlyPermissions;
     protected String[]             roles;
+    protected Security[]           securities;
 
     public RouteBuilder() {
 
@@ -291,14 +292,6 @@ public class RouteBuilder extends ExtensibleBase implements RouteBase, Buildable
         return this;
     }
 
-    public String[] getClientOnlyPermissions() {
-        return clientOnlyPermissions;
-    }
-
-    public void setClientOnlyPermissions(String[] clientOnlyPermissions) {
-        this.clientOnlyPermissions = clientOnlyPermissions;
-    }
-
     public String[] getRoles() {
         return roles;
     }
@@ -306,6 +299,14 @@ public class RouteBuilder extends ExtensibleBase implements RouteBase, Buildable
     public RouteBuilder setRoles(String[] roles) {
         this.roles = roles;
         return this;
+    }
+
+    public Security[] getSecurities() {
+        return securities;
+    }
+
+    public void setSecurities(Security[] securities) {
+        this.securities = securities;
     }
 
     @Override
@@ -353,11 +354,11 @@ public class RouteBuilder extends ExtensibleBase implements RouteBase, Buildable
         //permissions
         route.setPermissions(permissions);
 
-        //client only permissions
-        route.setClientOnlyPermissions(clientOnlyPermissions);
-
         //roles
         route.setRoles(this.roles);
+
+        //securities
+        route.setSecurities(securities);
 
         //extensions.
         extensions.forEach((t,ex) -> route.setExtension(t, ex));

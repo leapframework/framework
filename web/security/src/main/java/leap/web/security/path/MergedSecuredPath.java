@@ -67,11 +67,6 @@ public class MergedSecuredPath implements SecuredPath {
     }
 
     @Override
-    public String[] getClientOnlyPermissions() {
-        return merged.getClientOnlyPermissions();
-    }
-
-    @Override
     public String[] getRoles() {
         return merged.getRoles();
     }
@@ -87,7 +82,7 @@ public class MergedSecuredPath implements SecuredPath {
     }
 
     @Override
-    public boolean checkAuthorization(Request request, AuthorizationContext context) {
+    public boolean checkAuthorization(Request request, SecurityContextHolder context) {
         return merged.checkAuthorization(request, context);
     }
 
@@ -121,12 +116,6 @@ public class MergedSecuredPath implements SecuredPath {
             spb.setPermissions(p1.getPermissions());
         }else{
             spb.setPermissions(p2.getPermissions());
-        }
-
-        if(!Arrays2.isEmpty(p1.getClientOnlyPermissions())) {
-            spb.setClientOnlyPermissions(p1.getClientOnlyPermissions());
-        }else{
-            spb.setClientOnlyPermissions(p2.getClientOnlyPermissions());
         }
 
         if(!Arrays2.isEmpty(p1.getRoles())) {

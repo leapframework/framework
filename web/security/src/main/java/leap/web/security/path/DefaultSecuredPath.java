@@ -17,6 +17,7 @@ package leap.web.security.path;
 
 import leap.core.security.Authentication;
 import leap.core.security.Authorization;
+import leap.core.security.Security;
 import leap.lang.Args;
 import leap.lang.Arrays2;
 import leap.lang.Objects2;
@@ -43,7 +44,6 @@ public class DefaultSecuredPath implements SecuredPath {
     protected final Boolean                allowRememberMe;
     protected final SecurityFailureHandler failureHandler;
     protected final String[]               permissions;
-    protected final String[]               clientOnlyPermissions;
     protected final String[]               roles;
 
 	public DefaultSecuredPath(Route route,
@@ -53,7 +53,6 @@ public class DefaultSecuredPath implements SecuredPath {
                               Boolean allowRememberMe,
                               SecurityFailureHandler failureHandler,
                               String[] permissions,
-                              String[] clientOnlyPermissions,
                               String[] roles) {
 		Args.notNull(pattern,"path pattern");
         this.route           = route;
@@ -63,7 +62,6 @@ public class DefaultSecuredPath implements SecuredPath {
 	    this.allowRememberMe = allowRememberMe;
         this.failureHandler  = failureHandler;
         this.permissions     = permissions;
-        this.clientOnlyPermissions = clientOnlyPermissions;
         this.roles           = roles;
     }
 
@@ -107,11 +105,6 @@ public class DefaultSecuredPath implements SecuredPath {
         return permissions;
     }
 
-    @Override
-    public String[] getClientOnlyPermissions() {
-        return clientOnlyPermissions;
-    }
-
     /**
      * Returns the roles allowed.
      */
@@ -128,6 +121,8 @@ public class DefaultSecuredPath implements SecuredPath {
 			return true;
 		}
 
+        Authentication authc = context.getAuthentication();
+
         //check route's config
         ActionContext ac = context.getActionContext();
         if(null != ac && null != ac.getRoute()) {
@@ -137,10 +132,18 @@ public class DefaultSecuredPath implements SecuredPath {
             if(route.getAllowAnonymous() == Boolean.TRUE) {
                 return true;
             }
+
+            Security[] securities = route.getSecurities();
+            if(null != securities && securities.length > 0) {
+                for(Security security : securities) {
+                    if(security.matchAuthenitcation(authc)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
         }
 
-        Authentication authc = context.getAuthentication();
-		
 		if(authc == null || !authc.isAuthenticated()){
             log.debug("path [{}] : not authenticated, deny the request.", pattern);
 			return false;
@@ -163,54 +166,74 @@ public class DefaultSecuredPath implements SecuredPath {
      * Returns true if the path allows the authorization.
      */
     @Override
-    public boolean checkAuthorization(Request request, AuthorizationContext context) {
-        Authentication authc = context.getAuthentication();
-        Authorization  authz = context.getAuthorization();
-
+    public boolean checkAuthorization(Request request, SecurityContextHolder context) {
         //Check roles
-        if(roles.length > 0) {
+        if(!checkRoles(context, roles)) {
+            return false;
+        }
+
+        //Check permissions
+        if(!checkPermissions(context, permissions)) {
+            return false;
+        }
+
+        //Check securities at route.
+        ActionContext ac = context.getActionContext();
+        if(null != ac && null != ac.getRoute()) {
+            Route route = ac.getRoute();
+
+            Security[] securities = route.getSecurities();
+            if(null != securities && securities.length > 0) {
+                for(Security security : securities) {
+                    if(checkPermissions(context, security.getPermissions()) &&
+                            checkRoles(context, security.getRoles())) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    protected boolean checkRoles(AuthorizationContext context, String[] roles) {
+        if(null != roles && roles.length > 0) {
             boolean allow = false;
-            String[] grantedRoles = authc.getRoles();
+            String[] grantedRoles = context.getAuthentication().getRoles();
             if(null != grantedRoles && grantedRoles.length > 0) {
                 allow = Arrays2.containsAny(grantedRoles,roles);
             }
 
             if(!allow) {
-                allow = authz.hasAnyRole(roles);
+                allow = context.getAuthorization().hasAnyRole(roles);
             }
 
             if(!allow) {
                 return false;
             }
         }
+        return true;
+    }
 
-        String[] permissions = null;
-        if(authc.isClientOnly()) {
-            permissions = clientOnlyPermissions;
-        }
-        if(null == permissions || permissions.length == 0) {
-            permissions = this.permissions;
-        }
-
-        //Check permissions
+    protected boolean checkPermissions(AuthorizationContext context, String[] permissions) {
         if(null != permissions && permissions.length > 0) {
             PermissionManager pm = context.getPermissionManager();
 
             boolean allow = false;
-            String[] grantedPermissions = authc.getPermissions();
+            String[] grantedPermissions = context.getAuthentication().getPermissions();
             if(null != grantedPermissions && grantedPermissions.length > 0) {
                 allow = pm.checkPermissionImpliesAll(grantedPermissions,permissions);
             }
 
             if(!allow) {
-                allow = authz.hasAllPermission(permissions);
+                allow = context.getAuthorization().hasAllPermission(permissions);
             }
 
             if(!allow) {
                 return false;
             }
         }
-
         return true;
     }
 

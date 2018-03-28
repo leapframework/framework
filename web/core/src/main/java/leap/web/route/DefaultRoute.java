@@ -15,6 +15,7 @@
  */
 package leap.web.route;
 
+import leap.core.security.Security;
 import leap.core.web.path.PathTemplate;
 import leap.lang.Args;
 import leap.lang.ExtensibleBase;
@@ -42,20 +43,20 @@ class DefaultRoute extends ExtensibleBase implements Sourced, Route {
 	protected final FailureHandler[]	failureHandlers;
 	protected final Map<String, String> requiredParameters;
 
-    protected boolean  enabled;
-    protected Action   action;
-    protected Integer  successStatus;
-    protected Boolean  corsEnabled;
-    protected Boolean  csrfEnabled;
-    protected Boolean  supportsMultipart;
-    protected boolean  acceptValidationError;
-    protected boolean  httpsOnly;
-    protected Boolean  allowAnonymous;
-    protected Boolean  allowRememberMe;
-    protected Boolean  allowClientOnly;
-    protected String[] permissions;
-    protected String[] clientOnlyPermissions;
-    protected String[] roles;
+    protected boolean    enabled;
+    protected Action     action;
+    protected Integer    successStatus;
+    protected Boolean    corsEnabled;
+    protected Boolean    csrfEnabled;
+    protected Boolean    supportsMultipart;
+    protected boolean    acceptValidationError;
+    protected boolean    httpsOnly;
+    protected Boolean    allowAnonymous;
+    protected Boolean    allowRememberMe;
+    protected Boolean    allowClientOnly;
+    protected String[]   permissions;
+    protected String[]   roles;
+    protected Security[] securities;
 
 	public DefaultRoute(Object 	    source,
 						String 	    method,
@@ -321,16 +322,6 @@ class DefaultRoute extends ExtensibleBase implements Sourced, Route {
     }
 
     @Override
-    public String[] getClientOnlyPermissions() {
-        return clientOnlyPermissions;
-    }
-
-    @Override
-    public void setClientOnlyPermissions(String[] clientOnlyPermissions) {
-        this.clientOnlyPermissions = clientOnlyPermissions;
-    }
-
-    @Override
     public String[] getRoles() {
         return roles;
     }
@@ -338,6 +329,16 @@ class DefaultRoute extends ExtensibleBase implements Sourced, Route {
     @Override
     public void setRoles(String[] roles) {
         this.roles = roles;
+    }
+
+    @Override
+    public Security[] getSecurities() {
+        return securities;
+    }
+
+    @Override
+    public void setSecurities(Security[] securities) {
+        this.securities = securities;
     }
 
     @Override

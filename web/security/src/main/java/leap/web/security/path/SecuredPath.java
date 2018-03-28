@@ -140,11 +140,6 @@ public interface SecuredPath extends RequestMatcher, Comparable<SecuredPath> {
     String[] getPermissions();
 
     /**
-     * Optional.
-     */
-    String[] getClientOnlyPermissions();
-
-    /**
      * Optional. Returns the roles allowed to access the path.
      */
     String[] getRoles();
@@ -176,5 +171,5 @@ public interface SecuredPath extends RequestMatcher, Comparable<SecuredPath> {
     /**
      * Returns true if the path allow the authorization.
      */
-    boolean checkAuthorization(Request request, AuthorizationContext context);
+    boolean checkAuthorization(Request request, SecurityContextHolder context);
 }

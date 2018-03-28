@@ -49,8 +49,6 @@ public interface SecuredPathBuilder extends Buildable<SecuredPath> {
 
     SecuredPathBuilder setPermissions(String... permissions);
 
-    SecuredPathBuilder setClientOnlyPermissions(String... permissions);
-
     SecuredPathBuilder setRoles(String... roles);
 
 }

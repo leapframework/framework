@@ -1,5 +1,6 @@
 package leap.web.route;
 
+import leap.core.security.Security;
 import leap.lang.Extensible;
 import leap.lang.Sourced;
 import leap.web.action.FailureHandler;
@@ -211,16 +212,6 @@ public interface Route extends RouteBase, Sourced, Extensible {
     void setPermissions(String[] permissions);
 
     /**
-     * Optional. Returns the client only permissions.
-     */
-    String[] getClientOnlyPermissions();
-
-    /**
-     * Sets the client only permissions.
-     */
-    void setClientOnlyPermissions(String[] permissions);
-
-    /**
      * Optional. Returns the roles required for accessing this route..
      */
     String[] getRoles();
@@ -229,6 +220,16 @@ public interface Route extends RouteBase, Sourced, Extensible {
      * Sets the roles.
      */
     void setRoles(String[] roles);
+
+    /**
+     * Optional. Returns the securities.
+     */
+    Security[] getSecurities();
+
+    /**
+     * Sets the securites.
+     */
+    void setSecurities(Security[] securities);
 	
 	/**
 	 * Returns <code>true</code> if the route enables csrf support explicitly.

@@ -173,11 +173,6 @@ public class DefaultSecuredPaths implements SecuredPaths {
         }
 
         @Override
-        public String[] getClientOnlyPermissions() {
-            return path.getClientOnlyPermissions();
-        }
-
-        @Override
         public String[] getRoles() {
             return path.getRoles();
         }
@@ -188,7 +183,7 @@ public class DefaultSecuredPaths implements SecuredPaths {
         }
 
         @Override
-        public boolean checkAuthorization(Request request, AuthorizationContext context) {
+        public boolean checkAuthorization(Request request, SecurityContextHolder context) {
             return path.checkAuthorization(request, context);
         }
 

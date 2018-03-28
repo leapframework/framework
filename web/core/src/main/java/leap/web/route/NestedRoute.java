@@ -16,6 +16,7 @@
 
 package leap.web.route;
 
+import leap.core.security.Security;
 import leap.web.action.*;
 import leap.web.format.RequestFormat;
 import leap.web.format.ResponseFormat;
@@ -159,22 +160,22 @@ public interface NestedRoute extends Route {
     }
 
     @Override
-    default String[] getClientOnlyPermissions() {
-        return new String[0];
-    }
-
-    @Override
-    default void setClientOnlyPermissions(String[] permissions) {
-
-    }
-
-    @Override
     default String[] getRoles() {
         return new String[0];
     }
 
     @Override
     default void setRoles(String[] roles) {
+
+    }
+
+    @Override
+    default Security[] getSecurities() {
+        return new Security[0];
+    }
+
+    @Override
+    default void setSecurities(Security[] securities) {
 
     }
 

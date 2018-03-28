@@ -183,13 +183,8 @@ public abstract class RestdOperationBase {
                 route.setAllowClientOnly(true);
             }
 
-            if(null != mo.getPermissions() && mo.getPermissions().length > 0) {
-                route.setPermissions(mo.getPermissions());
-            }
-
-            if(null != mo.getClientOnlyPermissions() && mo.getClientOnlyPermissions().length > 0) {
-                route.setClientOnlyPermissions(mo.getClientOnlyPermissions());
-            }
+            route.setPermissions(mo.getPermissions());
+            route.setSecurities(mo.getSecurities());
         }
     }
 

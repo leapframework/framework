@@ -85,6 +85,20 @@ public interface Authentication {
         return null != getClient();
     }
 
+    /**
+     * Returns true if the user is not null and not anonymous.
+     */
+    default boolean isUserAuthenticated() {
+        return null != getUser() && !getUser().isAnonymous();
+    }
+
+    /**
+     * Returns true if client is not null and not anonymous.
+     */
+    default boolean isClientAuthenticated() {
+        return null != getClient() && !getClient().isAnonymous();
+    }
+
 	/**
 	 * Returns <code>true</code> if the authentication only contains client, no user.
      */

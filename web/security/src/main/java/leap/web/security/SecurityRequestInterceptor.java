@@ -87,10 +87,6 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
             spb(route).setPermissions(route.getPermissions());
         }
 
-        if(null != route.getClientOnlyPermissions()) {
-            spb(route).setClientOnlyPermissions(route.getClientOnlyPermissions());
-        }
-
         if(null != route.getRoles()) {
             spb(route).setRoles(route.getRoles());
         }
