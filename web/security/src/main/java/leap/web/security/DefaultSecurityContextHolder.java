@@ -56,6 +56,7 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 	protected boolean       error;
 	protected Object        errorObj;
 	protected String        identity;
+    protected String        denyMessage;
 
     private boolean handled;
 
@@ -105,6 +106,16 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 	public void setSecuredPath(SecuredPath path) {
 		this.securedPath = path;
 	}
+
+    @Override
+    public String getDenyMessage() {
+        return denyMessage;
+    }
+
+    @Override
+    public void setDenyMessage(String message) {
+        this.denyMessage = denyMessage;
+    }
 
     @Override
 	public String getAuthenticationToken() {

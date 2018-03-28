@@ -27,7 +27,7 @@ public interface SecurityFailureHandler {
         return false;
     }
 
-    default boolean handleAuthorizationDenied(Request request, Response response, AuthorizationContext context) throws Throwable {
+    default boolean handleAuthorizationDenied(Request request, Response response, SecurityContextHolder context) throws Throwable {
         return false;
     }
 

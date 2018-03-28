@@ -21,6 +21,7 @@ import leap.core.security.Security;
 import leap.lang.Args;
 import leap.lang.Arrays2;
 import leap.lang.Objects2;
+import leap.lang.Strings;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.path.PathPattern;
@@ -140,6 +141,7 @@ public class DefaultSecuredPath implements SecuredPath {
                         return true;
                     }
                 }
+                context.setDenyMessage(getAuthenticationDenyMessage(authc, securities));
                 return false;
             }
         }
@@ -169,11 +171,13 @@ public class DefaultSecuredPath implements SecuredPath {
     public boolean checkAuthorization(Request request, SecurityContextHolder context) {
         //Check roles
         if(!checkRoles(context, roles)) {
+            context.setDenyMessage("Roles [" + Strings.join(roles, ',') + "] required");
             return false;
         }
 
         //Check permissions
         if(!checkPermissions(context, permissions)) {
+            context.setDenyMessage("Permissions [" + Strings.join(permissions, ',') + "] required");
             return false;
         }
 
@@ -190,6 +194,7 @@ public class DefaultSecuredPath implements SecuredPath {
                         return true;
                     }
                 }
+                context.setDenyMessage(getAuthorizationDenyMessage(context.getAuthentication(), securities));
                 return false;
             }
         }
@@ -235,6 +240,60 @@ public class DefaultSecuredPath implements SecuredPath {
             }
         }
         return true;
+    }
+
+    protected String getAuthenticationDenyMessage(Authentication authc, Security[] securities) {
+        StringBuilder s = new StringBuilder();
+
+        s.append("Expected one of authentications [");
+
+        for(int i=0;i<securities.length;i++) {
+            Security sec = securities[i];
+
+            if(i > 0) {
+                s.append(" , ");
+            }
+
+            s.append("{");
+            s.append("user:").append(sec.isUserRequired());
+            s.append(" , client:").append(sec.isClientRequired());
+            s.append("}");
+        }
+
+        s.append("], Actual ");
+        s.append("{");
+        s.append("user:").append(authc.isUserAuthenticated());
+        s.append(" , client:").append(authc.isClientAuthenticated());
+        s.append("}");
+
+        return s.toString();
+    }
+
+    protected String getAuthorizationDenyMessage(Authentication authc, Security[] securities) {
+        StringBuilder s = new StringBuilder();
+
+        s.append("Expected one of authorizations [");
+
+        for(int i=0;i<securities.length;i++) {
+            Security sec = securities[i];
+
+            if(i > 0) {
+                s.append(" , ");
+            }
+
+            s.append("{");
+            s.append("perms:").append(Strings.join(sec.getPermissions(), ' '));
+            s.append(" , roles:").append(Strings.join(sec.getRoles(), ' '));
+            s.append("}");
+        }
+
+        s.append("], Actual ");
+        s.append("{");
+        s.append("perms:").append(Strings.join(authc.getPermissions(), ' '));
+        s.append(" , roles:").append(Strings.join(authc.getRoles(), ' '));
+        s.append("}");
+
+        return s.toString();
     }
 
 	@Override

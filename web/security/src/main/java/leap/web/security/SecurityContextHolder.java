@@ -53,4 +53,14 @@ public interface SecurityContextHolder extends AuthenticationContext, Authorizat
      */
     LogoutContext getLogoutContext();
 
+    /**
+     * Optional. Returns the deny message.
+     */
+    String getDenyMessage();
+
+    /**
+     * Sets the deny message.
+     */
+    void setDenyMessage(String message);
+
 }
