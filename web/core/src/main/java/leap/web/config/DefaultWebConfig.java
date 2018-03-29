@@ -60,6 +60,7 @@ public class DefaultWebConfig implements WebConfig,WebConfigurator,PostCreateBea
 	protected @R boolean actionExtensionEnabled = true;
 	protected @R boolean corsEnabled            = false;
     protected @R boolean allowViewAction        = true;
+    protected @R boolean viewEnabled            = true;
 	protected @N String  cookieDomain           = null;
 
     protected @Inject @M AppConfig       config;
@@ -157,6 +158,11 @@ public class DefaultWebConfig implements WebConfig,WebConfigurator,PostCreateBea
 	public boolean isAutoTrimParameters() {
 		return autoTrimParameters;
 	}
+
+    @Override
+    public boolean isViewEnabled() {
+        return viewEnabled;
+    }
 
     @Override
     public boolean isAllowViewAction() {
@@ -275,6 +281,12 @@ public class DefaultWebConfig implements WebConfig,WebConfigurator,PostCreateBea
 		this.autoTrimParameters = eanbled;
 		return this;
 	}
+
+    @ConfigProperty
+    public WebConfigurator setViewEnabled(boolean viewEnabled) {
+        this.viewEnabled = viewEnabled;
+        return this;
+    }
 
     @ConfigProperty
     public WebConfigurator setAllowViewAction(boolean allowViewAction) {

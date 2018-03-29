@@ -45,12 +45,14 @@ public class DefaultAppInitializer implements AppInitializer {
 	
 	protected void loadConfig(App app) {
 		AppConfig config = app.config();
-		
-		ErrorsConfig errorsConfig = config.removeExtension(ErrorsConfig.class);
-		if(null != errorsConfig){
-			app.errorViews().addErrorViews(errorsConfig);
-			app.errorCodes().addErrorCodes(errorsConfig.getExceptionCodeMappings());
-		}
+
+        if(app.getWebConfig().isViewEnabled()) {
+            ErrorsConfig errorsConfig = config.removeExtension(ErrorsConfig.class);
+            if (null != errorsConfig) {
+                app.errorViews().addErrorViews(errorsConfig);
+                app.errorCodes().addErrorCodes(errorsConfig.getExceptionCodeMappings());
+            }
+        }
 	}
 	
 	protected void loadRoutesFromConfigs(App app){

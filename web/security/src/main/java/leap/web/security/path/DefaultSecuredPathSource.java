@@ -54,7 +54,7 @@ public class DefaultSecuredPathSource implements SecuredPathSource {
     protected @Inject SecuredPathResolver[] resolvers;
     protected @Inject SecurityConfig        config;
 
-	protected Cache<String, SecuredPath> cachedPaths = new SimpleLRUCache<>(1024);
+	protected Cache<String, SecuredPath> cachedPaths = new SimpleLRUCache<>(2048);
 	
 	@Override
 	public SecuredPath getSecuredPath(SecurityContextHolder context, Request request) {

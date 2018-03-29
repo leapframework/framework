@@ -21,6 +21,7 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.web.Request;
 import leap.web.action.ActionContext;
+import leap.web.route.Route;
 import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.login.LoginContext;
 import leap.web.security.logout.LogoutContext;
@@ -44,6 +45,7 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 	protected final PermissionManager permissionManager;
 	protected final Request           request;
     protected final ActionContext     actionContext;
+    protected final Route             route;
 
     protected SecuredPath      securedPath;
     protected LoginContext     loginContext;
@@ -67,6 +69,7 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
         this.permissionManager = permissionManager;
         this.request           = request;
         this.actionContext     = actionContext;
+        this.route             = null == actionContext ? null : actionContext.getRoute();
         request.setAttribute(CONTEXT_ATTRIBUTE_NAME, this);
         request.setAttribute(CONTEXT_HOLDER_ATTRIBUTE_NAME, this);
     }
@@ -74,6 +77,11 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
     @Override
     public Request getRequest() {
         return request;
+    }
+
+    @Override
+    public Route getRoute() {
+        return route;
     }
 
     @Override

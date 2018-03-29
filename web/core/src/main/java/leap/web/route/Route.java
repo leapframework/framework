@@ -61,6 +61,13 @@ public interface Route extends RouteBase, Sourced, Extensible {
         return true;
     }
 
+    /**
+     * Returns true if this route is executable.
+     */
+    default boolean isExecutable() {
+        return true;
+    }
+
 	/**
 	 * Returns a object indicates the source location defined this route.
 	 */

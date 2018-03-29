@@ -111,6 +111,14 @@ public interface WebConfig {
     boolean isAutoTrimParameters();
 
     /**
+     * Returns true if view feature is enabled. (disable for web api only).
+     *
+     * <p/>
+     * Default is <code>true</code>
+     */
+    boolean isViewEnabled();
+
+    /**
      * Is allows access the view from browser directly.
      *
      * Defaults is <code>true</code>.

@@ -19,6 +19,7 @@ import leap.core.RequestContext;
 import leap.core.security.SimpleSecurity;
 import leap.web.Request;
 import leap.web.action.ActionContext;
+import leap.web.route.Route;
 import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.authz.AuthorizationContext;
 import leap.web.security.login.LoginContext;
@@ -43,6 +44,11 @@ public interface SecurityContextHolder extends AuthenticationContext, Authorizat
      * Required.
      */
     Request getRequest();
+
+    /**
+     * Optional.
+     */
+    Route getRoute();
 
     /**
      * Optional.

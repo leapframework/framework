@@ -116,38 +116,41 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
         //format manager
         request.setFormatManager(formatManager);
 
-        //theme
-        Theme theme = themeManager.resolveTheme(request);
-        if (null != theme) {
-            request.setThemeName(theme.getName());
-
-            if (null != theme.getMessageSource()) {
-                request.setMessageSource(theme.getMessageSource());
-            }
-
-            if (null != theme.getAssetSource()) {
-                request.setAssetSource(theme.getAssetSource());
-            }
-
-            if (null != theme.getViewSource()) {
-                request.setViewSource(theme.getViewSource());
-            }
-        }
-
         //message source
         if (null == request.getMessageSource()) {
             request.setMessageSource(app.getMessageSource());
         }
 
-        //view source
-        if (null == request.getViewSource()) {
-            request.setViewSource(viewSource);
+        if(app.getWebConfig().isViewEnabled()) {
+            //theme
+            Theme theme = themeManager.resolveTheme(request);
+            if (null != theme) {
+                request.setThemeName(theme.getName());
+
+                if (null != theme.getMessageSource()) {
+                    request.setMessageSource(theme.getMessageSource());
+                }
+
+                if (null != theme.getAssetSource()) {
+                    request.setAssetSource(theme.getAssetSource());
+                }
+
+                if (null != theme.getViewSource()) {
+                    request.setViewSource(theme.getViewSource());
+                }
+            }
+
+            //view source
+            if (null == request.getViewSource()) {
+                request.setViewSource(viewSource);
+            }
+
+            //asset source
+            if (null == request.getAssetSource()) {
+                request.setAssetSource(assetSource);
+            }
         }
 
-        //asset source
-        if (null == request.getAssetSource()) {
-            request.setAssetSource(assetSource);
-        }
         interceptors.onPrepareRequest(request, response);
     }
 
@@ -181,7 +184,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
         StopWatch sw = StopWatch.startNew();
         DefaultRequestExecution execution = new DefaultRequestExecution();
         try {
-            boolean handled = false;
+            boolean handled;
             try {
                 // resolve route info
                 Router router = request.getExternalRouter();
@@ -330,26 +333,23 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
         return new DefaultActionContext(request, response);
     }
 
-    protected String resolveActionPath(Request request, Response response, Router routeInfo,
-                                       DefaultActionContext ac) throws Exception {
+    protected String resolveActionPath(Request request, Response response, Router router, DefaultActionContext ac) throws Exception {
         String path = null;
 
-        if (null == path) {
-            if (request.hasPathExtension()) {
-                if (webConfig.isActionExtensionEnabled() && webConfig.getActionExtensions().contains(
-                        request.getPathExtension())) {
-                    path = request.getServicePathWithoutExtension();
-                } else if (webConfig.isFormatExtensionEnabled()) {
-                    ResponseFormat fmt = request.getFormatManager().tryGetResponseFormat(request.getPathExtension());
-                    if (null != fmt) {
-                        ac.setResponseFormat(fmt);
-                    }
+        if (request.hasPathExtension()) {
+            if (webConfig.isActionExtensionEnabled() && webConfig.getActionExtensions().contains(
+                    request.getPathExtension())) {
+                path = request.getServicePathWithoutExtension();
+            } else if (webConfig.isFormatExtensionEnabled()) {
+                ResponseFormat fmt = request.getFormatManager().tryGetResponseFormat(request.getPathExtension());
+                if (null != fmt) {
+                    ac.setResponseFormat(fmt);
                 }
             }
+        }
 
-            if (null == path) {
-                path = request.getServicePath();
-            }
+        if (null == path) {
+            path = request.getServicePath();
         }
 
         path = "".equals(path) ? "/" : path;
@@ -444,7 +444,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
             if (null != route) {
 
                 if (_debug) {
-                    log.debug("Handling request '{}' by action '{}'...", request.getPath(), route.getAction());
+                    log.debug("Found route '{}' with action '{}'...", request.getPath(), route.getAction());
                 }
 
                 //Check https only.
@@ -470,6 +470,11 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 
                 if (State.isIntercepted(interceptors.handleRoute(request, response, ac.getRoute(), ac))) {
                     return ROUTE_STATE_HANDLED;
+                }
+
+                if(!route.isExecutable()) {
+                    log.debug("Route is not executable, skip execution");
+                    return ROUTE_STATE_NOT_HANDLED;
                 }
 
                 Result result = new Result();

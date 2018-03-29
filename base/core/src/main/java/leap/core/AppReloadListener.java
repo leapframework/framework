@@ -18,8 +18,11 @@ package leap.core;
 
 public interface AppReloadListener {
 
-    default void postAppReload() {
+    default void preAppReload() {
 
     }
 
+    default void postAppReload() {
+
+    }
 }

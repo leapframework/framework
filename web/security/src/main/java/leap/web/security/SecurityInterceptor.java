@@ -28,8 +28,13 @@ import leap.web.security.authc.credentials.CredentialsAuthenticationContext;
 import leap.web.security.authz.AuthorizationContext;
 import leap.web.security.login.LoginContext;
 import leap.web.security.logout.LogoutContext;
+import leap.web.security.path.SecuredPath;
 
 public interface SecurityInterceptor extends Interceptor{
+
+    default SecuredPath resolveSecuredPath(SecurityContextHolder context) {
+        return null;
+    }
 
 	default State preResolveAuthentication(Request request,Response response, AuthenticationContext context) throws Throwable {
 		return State.CONTINUE;

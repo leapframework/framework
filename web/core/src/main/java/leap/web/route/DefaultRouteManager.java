@@ -304,20 +304,22 @@ public class DefaultRouteManager implements RouteManager {
         route.setRequiredParameters(mapping.getParams());
         route.setSupportsMultipart(supportsMultipart(action));
 
-        //resole default view path
-        String[] defaultViewNames = as.getDefaultViewNames(action, ci.getPath(), actionPath, pathTemplate);
-        for (String defaultViewName : defaultViewNames) {
-            try {
-                View view = resolveView(defaultViewName);
-                if (null != view) {
-                    route.setDefaultView(view);
-                    route.setDefaultViewName(defaultViewName);
-                    break;
-                } else if (null == route.getDefaultViewName()) {
-                    route.setDefaultViewName(defaultViewName);
+        if(app.getWebConfig().isViewEnabled()) {
+            //resole default view path
+            String[] defaultViewNames = as.getDefaultViewNames(action, ci.getPath(), actionPath, pathTemplate);
+            for (String defaultViewName : defaultViewNames) {
+                try {
+                    View view = resolveView(defaultViewName);
+                    if (null != view) {
+                        route.setDefaultView(view);
+                        route.setDefaultViewName(defaultViewName);
+                        break;
+                    } else if (null == route.getDefaultViewName()) {
+                        route.setDefaultViewName(defaultViewName);
+                    }
+                } catch (Throwable e) {
+                    throw new AppConfigException("Error resolving action's default view '" + defaultViewName + "', " + e.getMessage(), e);
                 }
-            } catch (Throwable e) {
-                throw new AppConfigException("Error resolving action's default view '" + defaultViewName + "', " + e.getMessage(), e);
             }
         }
 

@@ -43,7 +43,8 @@ class DefaultRoute extends ExtensibleBase implements Sourced, Route {
 	protected final FailureHandler[]	failureHandlers;
 	protected final Map<String, String> requiredParameters;
 
-    protected boolean    enabled;
+    protected boolean          enabled;
+    protected boolean          executable;
     protected Action           action;
     protected Integer          successStatus;
     protected Boolean          corsEnabled;
@@ -82,6 +83,7 @@ class DefaultRoute extends ExtensibleBase implements Sourced, Route {
 		Args.notNull(action,"action");
 
         this.enabled             = true;
+        this.executable          = true;
 		this.source              = source;
 		this.method              = method;
 	    this.pathTemplate        = pathTemplate;
@@ -109,6 +111,15 @@ class DefaultRoute extends ExtensibleBase implements Sourced, Route {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    @Override
+    public boolean isExecutable() {
+        return executable;
+    }
+
+    public void setExecutable(boolean executable) {
+        this.executable = executable;
     }
 
     /**

@@ -54,6 +54,7 @@ public class RouteBuilder extends ExtensibleBase implements RouteBase, Buildable
 	protected List<FailureHandler> failureHandlers = new ArrayList<>();
 
     protected Boolean          enabled;
+    protected Boolean          executable;
     protected Boolean          httpsOnly;
     protected Boolean          allowAnonymous;
     protected Boolean          allowClientOnly;
@@ -84,6 +85,14 @@ public class RouteBuilder extends ExtensibleBase implements RouteBase, Buildable
     public RouteBuilder setEnabled(Boolean enabled) {
         this.enabled = enabled;
         return this;
+    }
+
+    public Boolean getExecutable() {
+        return executable;
+    }
+
+    public void setExecutable(Boolean executable) {
+        this.executable = executable;
     }
 
     public Object getSource() {
@@ -338,6 +347,10 @@ public class RouteBuilder extends ExtensibleBase implements RouteBase, Buildable
 
         if(null != enabled) {
             route.setEnabled(enabled);
+        }
+
+        if(null != executable) {
+            route.setExecutable(executable);
         }
 
         //success status.

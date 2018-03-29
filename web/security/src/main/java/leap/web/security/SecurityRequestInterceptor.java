@@ -196,7 +196,7 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 	 */
 	protected State resolveAuthentication(Request request, Response response, DefaultSecurityContextHolder context) throws Throwable {
 	    SecurityInterceptor[] interceptors = config.getInterceptors();
-		for(SecurityInterceptor interceptor : config.getInterceptors()) {
+		for(SecurityInterceptor interceptor : interceptors) {
 			if(interceptor.preResolveAuthentication(request, response, context).isIntercepted()){
 				log.debug("Intercepted by interceptor : {}", interceptor.getClass());
 				return State.INTERCEPTED;
@@ -243,6 +243,13 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
     }
 
     protected SecuredPath resolveSecuredPath(Request request, Response response, DefaultSecurityContextHolder context, Route route) throws Throwable {
+        SecuredPath p;
+        for(SecurityInterceptor interceptor : config.getInterceptors()) {
+            if((p = interceptor.resolveSecuredPath(context)) != null){
+                return p;
+            }
+        }
+
         SecuredPath p1 = null == route ? null : route.getExtension(SecuredPath.class);
         SecuredPath p2 = pathSource.getSecuredPath(context, request);
 

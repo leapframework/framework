@@ -23,7 +23,6 @@ import leap.lang.path.PathPattern;
 import leap.web.route.Route;
 import leap.web.security.SecuredObjectBase;
 import leap.web.security.SecurityContextHolder;
-import leap.web.security.path.SecuredPath;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -97,11 +96,36 @@ public class SecuredRoute extends SecuredObjectBase implements SecuredPath {
             }
         }
 
+        if(authc == null || !authc.isAuthenticated()){
+            return false;
+        }
+
+        if(authc.isRememberMe() && (null == route.getAllowRememberMe() || !route.getAllowRememberMe())){
+            return false;
+        }
+
+        if(authc.isClientOnly() && (null == route.getAllowClientOnly() || !route.getAllowClientOnly())) {
+            context.setDenyMessage("client only authentication not allowed");
+            return false;
+        }
+
         return null;
     }
 
     @Override
     public Boolean tryCheckAuthorization(SecurityContextHolder context) {
+        //Check roles
+        if(!checkRoles(context, route.getRoles())) {
+            context.setDenyMessage("Roles [" + Strings.join(route.getRoles(), ',') + "] required");
+            return false;
+        }
+
+        //Check permissions
+        if(!checkPermissions(context, route.getPermissions())) {
+            context.setDenyMessage("Permissions [" + Strings.join(route.getPermissions(), ',') + "] required");
+            return false;
+        }
+
         SimpleSecurity[] securities = context.getSecurities();
         if(null != securities && securities.length > 0) {
             for(SimpleSecurity security : securities) {
@@ -113,6 +137,7 @@ public class SecuredRoute extends SecuredObjectBase implements SecuredPath {
             context.setDenyMessage(getAuthorizationDenyMessage(context.getAuthentication(), securities));
             return false;
         }
+
         return null;
     }
 
