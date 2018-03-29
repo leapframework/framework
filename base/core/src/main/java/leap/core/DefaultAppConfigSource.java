@@ -564,9 +564,6 @@ public class DefaultAppConfigSource implements AppConfigSource {
         }
 
         protected void loadResources(Map<String,Resource> urlResourceMap) throws IOException{
-            for(String basePackage : config.additionalPackages) {
-                loadBasePackageResources(urlResourceMap, basePackage);
-            }
             for(Resource resource : resources){
                 urlResourceMap.put(resource.getURL().toExternalForm(), resource);
             }
