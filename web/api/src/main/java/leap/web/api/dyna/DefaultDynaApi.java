@@ -21,12 +21,19 @@ import leap.web.api.config.ApiConfig;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.meta.ApiMetadata;
 
+import java.util.Map;
+
 public class DefaultDynaApi implements DynaApi {
 
     private final Api api;
 
     public DefaultDynaApi(Api api) {
         this.api = api;
+    }
+
+    @Override
+    public Map<Class<?>, Object> getExtensions() {
+        return api.getExtensions();
     }
 
     @Override

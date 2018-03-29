@@ -20,6 +20,7 @@ import leap.lang.reflect.ReflectMethod;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.util.Map;
 
 public class ActionWrapper implements Action {
 
@@ -42,6 +43,11 @@ public class ActionWrapper implements Action {
     @Override
     public <T> T removeExtension(Class<?> type) {
         return action.removeExtension(type);
+    }
+
+    @Override
+    public Map<Class<?>, Object> getExtensions() {
+        return action.getExtensions();
     }
 
     @Override
