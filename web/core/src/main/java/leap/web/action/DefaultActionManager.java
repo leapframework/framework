@@ -54,6 +54,7 @@ public class DefaultActionManager implements ActionManager {
 	protected static final ResultProcessor NOP_RESULT_PROCESSOR = new AbstractResultProcessor() {
 		@Override
 		public void processReturnValue(ActionContext context, Object returnValue, Result result) throws Throwable {
+            result.setStatus(200);
 		}
 	};
 	
