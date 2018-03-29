@@ -351,8 +351,17 @@ public class DefaultRequest extends Request {
             String schema= getHeader("x-forwarded-proto");
             String host = getHeader("host");
 
-            if(Strings.isEmpty(schema) || Strings.isEmpty(host)){
-                return getServerUrl();
+            URI uri;
+            try {
+                uri = new URI(req.getRequestURL().toString());
+                if(Strings.isEmpty(schema)){
+                    schema = uri.getScheme();
+                }
+                if(Strings.isEmpty(host)){
+                    host = uri.getHost();
+                }
+            } catch (URISyntaxException e) {
+                throw new IllegalStateException("Invalid syntax of request url '" + req.getRequestURL() + "' : " + e.getMessage(), e);
             }
             
             schema+="://";
