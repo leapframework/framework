@@ -22,6 +22,8 @@ import leap.web.api.config.ApiConfig;
 import leap.web.api.config.model.RestdConfig;
 import leap.web.route.Routes;
 
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class SimpleRestdContext implements RestdContext {
@@ -29,8 +31,7 @@ public class SimpleRestdContext implements RestdContext {
     protected Api             api;
     protected RestdConfig     config;
     protected Dao             dao;
-    protected Set<RestdModel> models;
-    protected Routes          routes;
+    protected Set<RestdModel> models = new LinkedHashSet<>();
 
     public SimpleRestdContext(Api api, RestdConfig config) {
         this.api    = api;
