@@ -33,11 +33,6 @@ public class SimpleOAuth2Authentication extends AbstractAuthentication implement
         this.client = client;
 	}
 
-	@Override
-	public boolean isAuthenticated() {
-		return true;
-	}
-
     @Override
 	public Token getCredentials() {
 		return credentials;

@@ -20,7 +20,9 @@ public interface Authentication {
 	/**
 	 * Returns <code>true</code> if the authentication is authenticated.
      */
-	boolean isAuthenticated();
+	default boolean isAuthenticated() {
+        return isUserAuthenticated() || isClientAuthenticated();
+    }
 	
 	/**
 	 * Returns <code>true</code> if the authentication is authenticated from remember-me store.
