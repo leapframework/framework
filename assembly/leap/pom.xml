@@ -47,7 +47,12 @@
     </reporting>     
     
 	<dependencies>
-		<dependency>
+        <dependency>
+            <groupId>org.leapframework</groupId>
+            <artifactId>leap-annnotations</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
 			<groupId>org.leapframework</groupId>
 			<artifactId>leap-lang</artifactId>
 			<version>${project.version}</version>

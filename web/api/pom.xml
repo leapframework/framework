@@ -9,10 +9,6 @@
 	<artifactId>leap-webapi</artifactId>
 	<packaging>jar</packaging>
 
-	<properties>
-		<google.guava.version>23.4-jre</google.guava.version>
-	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.leapframework</groupId>
@@ -43,11 +39,6 @@
 			<artifactId>leap-junit</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-		  <groupId>com.google.guava</groupId>
-		  <artifactId>guava</artifactId>
-		  <version>${google.guava.version}</version>
 		</dependency>
 	</dependencies>
 </project>

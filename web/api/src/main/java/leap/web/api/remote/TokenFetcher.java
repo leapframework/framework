@@ -1,10 +1,5 @@
 package leap.web.api.remote;
 
-import java.util.concurrent.TimeUnit;
-
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-
 import leap.core.annotation.Inject;
 import leap.lang.http.HTTP;
 import leap.lang.http.client.HttpRequest;
@@ -14,16 +9,17 @@ import leap.oauth2.webapp.token.TokenContext;
 import leap.oauth2.webapp.token.TokenExtractor;
 import leap.oauth2.webapp.token.at.AccessToken;
 import leap.web.Request;
+import net.jodah.expiringmap.ExpiringMap;
+
+import java.util.concurrent.TimeUnit;
 
 public class TokenFetcher extends DefaultCodeVerifier {
 
 	@Inject
 	protected TokenExtractor tokenExtractor;
 
-	//客户端At到当前应用自身的Token映射
-	final static Cache<String, MappedAccessToken> tokenMappings = CacheBuilder.newBuilder()
-					.maximumSize(5000)
-					.expireAfterWrite(10, TimeUnit.HOURS).build();
+	final static ExpiringMap<String, MappedAccessToken> tokenMappings =
+            ExpiringMap.builder().maxSize(5000).expiration(10, TimeUnit.HOURS).build();
 
 	public AccessToken getAccessToken(Request request){
 		AccessToken at= TokenContext.getAccessToken();
@@ -40,8 +36,8 @@ public class TokenFetcher extends DefaultCodeVerifier {
 	}
 
 	private MappedAccessToken mapToSelfToken(String clientAt){
-		MappedAccessToken token=tokenMappings.getIfPresent(clientAt);
-		if(token!=null){
+		MappedAccessToken token=tokenMappings.get(clientAt);
+		if(token != null){
 			if(token.isExpired()){
 				AccessToken at=refreshAccessToken(token);
 				token=new MappedAccessToken(clientAt, at);
@@ -55,7 +51,6 @@ public class TokenFetcher extends DefaultCodeVerifier {
 		}
 		return token;
 	}
-
 
 	public MappedAccessToken newAccessToken(String token) {
 		if (null == config.getTokenUrl()) {
