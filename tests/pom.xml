@@ -49,6 +49,7 @@
 
         <module>oauth2-test-server</module>
         <module>oauth2-test-webapp</module>
+        <module>orm-test-pgsql</module>
     </modules>
 
 </project>
