@@ -36,11 +36,6 @@ public class SimpleAuthentication extends AbstractAuthentication implements Auth
 	}
 
 	@Override
-	public boolean isAuthenticated() {
-		return !userPrincipal.isAnonymous();
-	}
-
-	@Override
 	public Credentials getCredentials() {
 		return credentials;
 	}

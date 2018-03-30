@@ -17,6 +17,9 @@
 package leap.web.api.mvc;
 
 import leap.core.annotation.Inject;
+import leap.core.exception.EmptyRecordsException;
+import leap.core.exception.RecordNotFoundException;
+import leap.core.exception.TooManyRecordsException;
 import leap.core.security.SecurityException;
 import leap.core.validation.Errors;
 import leap.core.validation.ValidationException;
@@ -82,6 +85,16 @@ public class DefaultApiFailureHandler implements ApiFailureHandler {
         }
 
         if(e instanceof ObjectNotFoundException) {
+            errorHandler.notFound(response, e.getMessage());
+            return true;
+        }
+
+        if(e instanceof RecordNotFoundException) {
+            errorHandler.notFound(response, e.getMessage());
+            return true;
+        }
+
+        if(e instanceof EmptyRecordsException) {
             errorHandler.notFound(response, e.getMessage());
             return true;
         }

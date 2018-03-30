@@ -60,16 +60,19 @@ public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataP
             return;
         }
 
-        OrmContext  oc  = lookupOrmContext(rc);
-        OrmMetadata om  = oc.getMetadata();
-        Dao         dao = oc.getDao();
-
-        Set<EntityMapping> ormModels   = computeOrmModels(rc, om);
-        Set<RestdModel>    restdModels = createRestdModels(api, rc, oc, ormModels);
-
         SimpleRestdContext restdContext = new SimpleRestdContext(api, rc);
-        restdContext.setDao(dao);
-        restdContext.setModels(Collections.unmodifiableSet(restdModels));
+
+        if(!rc.isNoDataSource()) {
+            OrmContext oc = lookupOrmContext(rc);
+            OrmMetadata om = oc.getMetadata();
+            Dao dao = oc.getDao();
+
+            Set<EntityMapping> ormModels = computeOrmModels(rc, om);
+            Set<RestdModel> restdModels = createRestdModels(api, rc, oc, ormModels);
+
+            restdContext.setDao(dao);
+            restdContext.setModels(Collections.unmodifiableSet(restdModels));
+        }
 
         processRestdApi(api, restdContext);
 
@@ -83,7 +86,12 @@ public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataP
             return;
         }
 
-        OrmContext oc = restdContext.getDao().getOrmContext();
+        Dao dao = restdContext.getDao();
+        if(null == dao) {
+            return;
+        }
+
+        OrmContext oc = dao.getOrmContext();
 
         //create models.
         MTypeContainer mtc = context.getMTypeContainer();

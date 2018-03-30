@@ -400,7 +400,7 @@ public interface DbDialect {
 	 * 
 	 * @param ps
 	 * @param index starts from 1
-	 * @param type JDBC type of the given parameter, may be {@link JdbcTypes#UNKNOW_TYPE_CODE}.
+	 * @param type JDBC type of the given parameter, may be {@link JdbcTypes#UNKNOWN_TYPE_CODE}.
 	 */
 	void setParameter(PreparedStatement ps,int index,Object value,int type) throws SQLException;
 	
@@ -424,7 +424,7 @@ public interface DbDialect {
 	 * Returns the value of the column in the given {@link ResultSet} of the given index.
 	 * 
 	 * <p>
-	 * The given type code may be {@link JdbcTypes#UNKNOW_TYPE_CODE}, the underlying implementation must handle it.
+	 * The given type code may be {@link JdbcTypes#UNKNOWN_TYPE_CODE}, the underlying implementation must handle it.
 	 * 
 	 * <p>
 	 * The given index starts from 1.
@@ -435,7 +435,7 @@ public interface DbDialect {
 	 * Returns the value of the column in the given {@link ResultSet} of the given name.
 	 * 
 	 * <p>
-	 * The given type code may be {@link JdbcTypes#UNKNOW_TYPE_CODE}, the underlying implementation must handle it.
+	 * The given type code may be {@link JdbcTypes#UNKNOWN_TYPE_CODE}, the underlying implementation must handle it.
 	 * 
 	 * <p>
 	 * The given index starts from 1.

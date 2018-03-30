@@ -32,6 +32,7 @@ public class RestdConfig {
     protected String     dataSourceName;
     protected OrmContext ormContext;
     protected boolean    readonly;
+    protected boolean    noDataSource;
 
     protected Set<String>        includedModels = new LinkedHashSet<>();
     protected Set<String>        excludedModels = new LinkedHashSet<>();
@@ -61,6 +62,14 @@ public class RestdConfig {
 
     public void setReadonly(boolean readonly) {
         this.readonly = readonly;
+    }
+
+    public boolean isNoDataSource() {
+        return noDataSource;
+    }
+
+    public void setNoDataSource(boolean noDataSource) {
+        this.noDataSource = noDataSource;
     }
 
     public Set<String> getIncludedModels() {

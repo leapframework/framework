@@ -19,6 +19,11 @@
 	<!-- dependencies configuration -->
 	<dependencies>
         <dependency>
+            <groupId>org.leapframework</groupId>
+            <artifactId>leap-annnotations</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpmime</artifactId>
             <version>${httpclient.version}</version>
