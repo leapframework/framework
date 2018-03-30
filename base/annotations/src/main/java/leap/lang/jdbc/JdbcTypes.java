@@ -17,25 +17,17 @@ package leap.lang.jdbc;
 
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
-import java.sql.Blob;
-import java.sql.Clob;
-import java.sql.Date;
-import java.sql.Ref;
-import java.sql.Struct;
-import java.sql.Time;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
-
-import leap.lang.Args;
-import leap.lang.exception.ObjectNotFoundException;
+import java.util.NoSuchElementException;
 
 public class JdbcTypes {
 	
 	private static final Map<Integer,JdbcType> typeCodeToJdbcTypeMappings = new HashMap<Integer, JdbcType>();
 	private static final Map<String, JdbcType> typeNameToJdbcTypeMappings = new HashMap<String, JdbcType>();
 	
-	public static final int UNKNOW_TYPE_CODE = Integer.MIN_VALUE;
+	public static final int UNKNOWN_TYPE_CODE = Integer.MIN_VALUE;
 	
 	public static final String ARRAY_TYPE_NAME	       = "array";
 	public static final String BIGINT_TYPE_NAME	       = "bigint";
@@ -166,12 +158,12 @@ public class JdbcTypes {
 	/**
 	 * returns the {@link JdbcType} object which 'code' property equals to the given type code.
 	 * 
-	 * @throws ObjectNotFoundException if no {@link JdbcType} object found for the given type code.
+	 * @throws NoSuchElementException if no {@link JdbcType} object found for the given type code.
 	 */
-	public static JdbcType forTypeCode(int typeCode) throws ObjectNotFoundException {
+	public static JdbcType forTypeCode(int typeCode) throws NoSuchElementException {
 		JdbcType type = typeCodeToJdbcTypeMappings.get(typeCode);
 		if(null == type){
-			throw new ObjectNotFoundException("no jdbc type found for code '" + typeCode + "'");
+			throw new NoSuchElementException("no jdbc type found for code '" + typeCode + "'");
 		}
 		return type;
 	}
@@ -189,13 +181,12 @@ public class JdbcTypes {
 	 * returns the {@link JdbcType} object which name property equals to the given type name (ignore case).
 	 * 
 	 * @throws IllegalArgumentException if the given type name is null or empty.
-	 * @throws ObjectNotFoundException if no {@link JdbcType} object found for the given type name.
+	 * @throws NoSuchElementException if no {@link JdbcType} object found for the given type name.
 	 */
-	public static JdbcType forTypeName(String typeName) throws IllegalArgumentException, ObjectNotFoundException {
-		Args.notEmpty(typeName,"type name");
+	public static JdbcType forTypeName(String typeName) throws IllegalArgumentException, NoSuchElementException {
 		JdbcType type = typeNameToJdbcTypeMappings.get(typeName.toLowerCase());
 		if(null == type){
-			throw new ObjectNotFoundException("no jdbc type found for name '" + typeName + "'");
+			throw new NoSuchElementException("no jdbc type found for name '" + typeName + "'");
 		}
 		return type;
 	}

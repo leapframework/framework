@@ -24,7 +24,6 @@ import leap.lang.Arrays2;
 import leap.lang.Exceptions;
 import leap.lang.Strings;
 import leap.lang.exception.NestedSQLException;
-import leap.lang.exception.ObjectExistsException;
 import leap.lang.jdbc.ConnectionCallback;
 import leap.lang.jdbc.ConnectionCallbackWithResult;
 import leap.lang.jdbc.JDBC;
@@ -501,7 +500,7 @@ public class GenericDb extends DbBase {
 			if(i > 0){
 				sb.append(',');
 			}
-			sb.append(dialect.toDisplayString(types != null && types.length > 0 ? types[i] : JdbcTypes.UNKNOW_TYPE_CODE, args[i]));
+			sb.append(dialect.toDisplayString(types != null && types.length > 0 ? types[i] : JdbcTypes.UNKNOWN_TYPE_CODE, args[i]));
 		}
 		
 		sb.append(']');

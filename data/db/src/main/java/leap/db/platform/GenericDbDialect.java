@@ -203,7 +203,7 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 			return "null";
 		}
 		
-		if(type != JdbcTypes.UNKNOW_TYPE_CODE){
+		if(type != JdbcTypes.UNKNOWN_TYPE_CODE){
 			
 			if(type == Types.CLOB){
 				return "(clob)";
@@ -726,7 +726,7 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 
 	@Override
     public void setParameter(PreparedStatement ps, int index, Object value) throws SQLException {
-		setParameter(ps, index, value, JdbcTypes.UNKNOW_TYPE_CODE);
+		setParameter(ps, index, value, JdbcTypes.UNKNOWN_TYPE_CODE);
     }
 	
 	@Override
@@ -740,17 +740,17 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 	
 	@Override
     public Object getColumnValue(ResultSet rs, int index) throws SQLException {
-	    return getColumnValue(rs, index, JdbcTypes.UNKNOW_TYPE_CODE);
+	    return getColumnValue(rs, index, JdbcTypes.UNKNOWN_TYPE_CODE);
     }
 	
 	@Override
     public Object getColumnValue(ResultSet rs, String name) throws SQLException {
-		return getColumnValue(rs, name, JdbcTypes.UNKNOW_TYPE_CODE);
+		return getColumnValue(rs, name, JdbcTypes.UNKNOWN_TYPE_CODE);
     }
 
 	@Override
     public Object getColumnValue(ResultSet rs, int index, int type) throws SQLException {
-		if(type == JdbcTypes.UNKNOW_TYPE_CODE){
+		if(type == JdbcTypes.UNKNOWN_TYPE_CODE){
 			return getColumnValueTypeUnknown(rs, index);
 		}else{
 			return getColumnValueTypeKnown(rs, index, type);
@@ -759,7 +759,7 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 	
 	@Override
     public Object getColumnValue(ResultSet rs, String name, int type) throws SQLException {
-		if(type == JdbcTypes.UNKNOW_TYPE_CODE){
+		if(type == JdbcTypes.UNKNOWN_TYPE_CODE){
 			return getColumnValueTypeUnknown(rs, name);
 		}else{
 			return getColumnValueTypeKnown(rs, name, type);
@@ -956,7 +956,7 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 	}
 	
 	public void setNullParameter(PreparedStatement ps, int index, int type) throws SQLException {
-		if(type == JdbcTypes.UNKNOW_TYPE_CODE){
+		if(type == JdbcTypes.UNKNOWN_TYPE_CODE){
 			setNullParameterTypeUnknow(ps, index);
 		}else{
 			ps.setNull(index, type);
@@ -1066,7 +1066,7 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 			} else {
                 setObject(ps, index, value, type);
 			}
-		} else if (type == JdbcTypes.UNKNOW_TYPE_CODE) {
+		} else if (type == JdbcTypes.UNKNOWN_TYPE_CODE) {
 			if (CharSequence.class.isAssignableFrom(valueType) || Character.class.equals(valueType)) {
 				ps.setString(index, value.toString());
 			} else if (isDateValue(value.getClass())) {

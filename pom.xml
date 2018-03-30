@@ -398,6 +398,7 @@
 	<modules>
         <!-- base -->
         <module>base/agent</module>
+        <module>base/annotations</module>
         <module>base/junit</module>
         <module>base/lang</module>
 		<module>base/core</module>
