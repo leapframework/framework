@@ -69,7 +69,7 @@ public interface SecurityInterceptor extends Interceptor{
         return State.CONTINUE;
     }
 
-	default State onAuthorizationDenied(Request request, Response response, AuthorizationContext context) throws Throwable {
+	default State onAuthorizationDenied(Request request, Response response, SecurityContextHolder context) throws Throwable {
         return State.CONTINUE;
     }
 
