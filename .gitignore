@@ -13,6 +13,8 @@
 # IntelliJ IDEA Files #
 *.iml
 .idea
+*.ipr
+*.iws
 
 # Maven Fields #
 target
