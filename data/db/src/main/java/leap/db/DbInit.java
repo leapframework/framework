@@ -29,26 +29,13 @@ import leap.core.ds.DataSourceListener;
 import leap.core.ds.DataSourceManager;
 import leap.lang.Assert;
 
-public class DbInit implements AppContextInitializable,DataSourceListener {
+public class DbInit implements AppContextInitializable {
 	
     private @Inject @M BeanFactory       factory;
     private @Inject @M DataSourceManager dsm;
 	
 	@Override
-    public void onDataSourceCreated(String name, DataSource ds) {
-	    boolean primary = dsm.getDefaultDataSource() == ds;
-	    initBeans(name, ds, primary);
-    }
-
-	@Override
-    public void onDataSourceDestroyed(String name, DataSource ds) {
-		//TODO : destroy db instance
-    }
-
-	@Override
     public void postInit(AppContext context) throws Throwable {
-		this.dsm.addListener(this);
-		
 		DataSource       defaultDataSource = dsm.tryGetDefaultDataSource();
 		Map<String,DataSource> datasources = dsm.getAllDataSources();
 		
@@ -79,4 +66,5 @@ public class DbInit implements AppContextInitializable,DataSourceListener {
 		}
 		Assert.isTrue(db == factory.getBean(Db.class,name));
 	}
+
 }

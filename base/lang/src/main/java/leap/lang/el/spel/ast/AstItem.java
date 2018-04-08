@@ -84,7 +84,7 @@ public class AstItem extends AstExpr {
     	}
     	
     	if(o instanceof ElPropertyResolver){
-    		return ((ElPropertyResolver) o).resovleProperty(name);
+    		return ((ElPropertyResolver) o).resolveProperty(name, context);
     	}
     	
     	if(o instanceof DynaBean){

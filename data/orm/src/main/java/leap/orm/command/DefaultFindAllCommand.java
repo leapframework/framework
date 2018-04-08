@@ -52,7 +52,7 @@ public class DefaultFindAllCommand<T> extends AbstractEntityDaoCommand implement
 
 	@Override
     public List<T> execute() throws TooManyRecordsException {
-		ResultSetReader<List<T>> reader = ResultSetReaders.forListEntity(context, em, elementType, resultClass);
+		ResultSetReader<List<T>> reader = ResultSetReaders.forListEntity(context, this, em, elementType, resultClass);
 	    return sqlCommand.executeQuery(this, null, reader);
     }
 }

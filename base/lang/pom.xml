@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.leapframework</groupId>
 		<artifactId>leap-parent</artifactId>
-		<version>0.6.1b-SNAPSHOT</version>
+		<version>0.6.9b</version>
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
 	<artifactId>leap-lang</artifactId>
@@ -14,8 +14,6 @@
 	    <h2.version>1.3.172</h2.version>
 		<mvel.version>2.1.8.Final</mvel.version>
 		<juel.version>2.1.3</juel.version>
-		<jacoco.dataFileDir>${project.basedir}/../target</jacoco.dataFileDir>
-		<jacoco.dataFilePath>${jacoco.dataFileDir}/jacoco-it.exec</jacoco.dataFilePath>
 	</properties>
 
 	<!-- dependencies configuration -->

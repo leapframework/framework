@@ -30,5 +30,4 @@ public class OwnerTest extends OrmTestCase {
 		assertEquals("firstName", owner.getFirstName());
 		assertEquals("firstName", owner.getString("firstName"));
 	}
-
 }

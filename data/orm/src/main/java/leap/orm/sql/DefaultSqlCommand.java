@@ -28,7 +28,7 @@ import leap.orm.metadata.MetadataContext;
 import leap.orm.query.QueryContext;
 import leap.orm.reader.ResultSetReaders;
 
-public class DefaultSqlCommand implements SqlCommand {
+public class DefaultSqlCommand implements SqlCommand, SqlLanguage.Options {
 
     private static final Log log = LogFactory.get(DefaultSqlCommand.class);
 
@@ -39,17 +39,51 @@ public class DefaultSqlCommand implements SqlCommand {
     protected final String      content;
     protected final String      dataSourceName;
 
+    protected Boolean filterColumnEnabled;
+    protected Boolean queryFilterEnabled;
+
     private boolean prepared;
 
 	protected SqlClause[] clauses;
 
-    public DefaultSqlCommand(Object source, String desc, String dbType, SqlLanguage lang, String content, String dataSourceName) {
+    public DefaultSqlCommand(Object source, String desc, String dbType,
+                             SqlLanguage lang, String content, String dataSourceName) {
         this.source  = source;
-        this.desc    = desc;
+        this.desc    = Strings.isEmpty(desc) ? content : desc;
         this.dbType  = dbType;
         this.lang    = lang;
         this.content = content;
         this.dataSourceName = dataSourceName;
+    }
+
+    public DefaultSqlCommand clone() {
+        DefaultSqlCommand cloned = new DefaultSqlCommand(source, desc, dbType, lang, content, dataSourceName);
+        cloned.filterColumnEnabled = filterColumnEnabled;
+        cloned.queryFilterEnabled = queryFilterEnabled;
+        return cloned;
+    }
+
+    @Override
+    public Boolean getFilterColumnEnabled() {
+        return filterColumnEnabled;
+    }
+
+    @Override
+    public Boolean getQueryFilterEnabled() {
+        return queryFilterEnabled;
+    }
+
+    public void setFilterColumnEnabled(Boolean filterColumnEnabled) {
+        this.filterColumnEnabled = filterColumnEnabled;
+    }
+
+    public void setQueryFilterEnabled(Boolean queryFilterEnabled) {
+        this.queryFilterEnabled = queryFilterEnabled;
+    }
+
+    @Override
+    public SqlMetadata getMetadata() {
+        return clauses.length == 1 ? clauses[0].getMetadata() : null;
     }
 
     @Override
@@ -59,10 +93,11 @@ public class DefaultSqlCommand implements SqlCommand {
         }
 
         try {
-            this.clauses = lang.parseClauses(context,prepareSql(context, content)).toArray(new SqlClause[0]);
+            this.clauses = lang.parseClauses(context,prepareSql(context, content),this).toArray(new SqlClause[0]);
         } catch (Exception e) {
             throw new SqlConfigException("Error parsing sql (" + desc == null ? content : desc + "), source : " + source,e);
         }
+
         prepared = true;
     }
 
@@ -92,7 +127,12 @@ public class DefaultSqlCommand implements SqlCommand {
         return content;
     }
 
-	public SqlClause getClause() throws IllegalStateException {
+    @Override
+    public SqlClause getSqlClause() {
+        return getClause();
+    }
+
+    public SqlClause getClause() throws IllegalStateException {
 		if(clauses.length > 1) {
             throw new IllegalStateException("Command '" + source + "' contains many clauses");
         }
@@ -101,20 +141,20 @@ public class DefaultSqlCommand implements SqlCommand {
 
 	@Override
     public int executeUpdate(SqlContext context, Object params) throws NestedSQLException {
-        log.debug("Execute update : sql '{}'", desc);
+        log.info("Executing sql update: '{}'", desc);
 		return doExecuteUpdate(context, params, null);
     }
 	
 	@Override
     public int executeUpdate(SqlContext context, Object params, PreparedStatementHandler<Db> psHandler) throws IllegalStateException, NestedSQLException {
-        log.debug("Execute update : sql '{}'", desc);
+        log.info("Executing sql update: '{}'", desc);
 	    return doExecuteUpdate(context, params, psHandler);
     }
 
 	@Override
     public <T> T executeQuery(QueryContext context, Object params,ResultSetReader<T> reader) throws NestedSQLException {
 		//Assert.isTrue(null != queryClause,"This command is not a query, cannot execute query");
-        log.debug("Execute query : sql '{}'", desc);
+        log.info("Executing sql query: '{}'", desc);
         mustPrepare(context);
 
 		if(clauses.length == 1){
@@ -126,7 +166,7 @@ public class DefaultSqlCommand implements SqlCommand {
 	
 	@Override
     public long executeCount(QueryContext context, Object params) {
-        log.debug("Execute count : sql '{}'", desc);
+        log.info("Executing sql count: '{}'", desc);
         mustPrepare(context);
 
 		if(clauses.length == 1){
@@ -159,7 +199,7 @@ public class DefaultSqlCommand implements SqlCommand {
 	}
 	
 	protected int[] doExecuteBatchUpdate(SqlContext context, Object[] batchParams, BatchPreparedStatementHandler<Db> psHandler) {
-        log.debug("Execute batch update : sql '{}'", desc);
+        log.info("Executing sql batch update: '{}'", desc);
         mustPrepare(context);
 
 		if(clauses.length == 1){

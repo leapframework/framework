@@ -165,15 +165,16 @@ public abstract class DbBase implements Db {
         }
     }
 
-    protected void loadSqlStatements(DbExecution execution, Resource file) {
+    protected boolean loadSqlStatements(DbExecution execution, Resource file) {
         if(null == file || !file.exists()) {
-            return;
+            return false;
         }
         String sqls = file.getContent();
         if(!Strings.isEmpty(sqls)) {
             log.debug("Load init sql file '{}'", file.getClasspath());
             execution.addAll(dialect.splitSqlStatements(sqls));
         }
+        return true;
     }
 
     protected Resource[] findMetaInfClasspathSql(String filename) {
@@ -208,7 +209,15 @@ public abstract class DbBase implements Db {
     }
 
     protected Resource findClasspathSql(String filename) {
-        final String prefix = "classpath:/conf/db/" + name + "/" + filename;
+        Resource resource = findClasspathSql("classpath:/conf/db/" + name, filename);
+        if(null == resource) {
+            resource = findClasspathSql("classpath:/conf/db", filename);
+        }
+        return resource;
+    }
+
+    protected Resource findClasspathSql(String classpath, String filename) {
+        final String prefix = classpath + "/" + filename;
 
         Resource resource = Resources.getResource(prefix + "_" + getType().toLowerCase() + ".sql");
         if(null != resource && resource.exists()) {

@@ -18,6 +18,7 @@
 
 package leap.lang.jmx;
 
+import leap.lang.Disposable;
 import leap.lang.exception.ObjectExistsException;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -27,7 +28,7 @@ import java.lang.management.ManagementFactory;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class SimpleMBeanExporter implements MBeanExporter {
+public class SimpleMBeanExporter implements MBeanExporter,Disposable {
 
     public static final String DEFAULT_DOMAIN = "beans";
 
@@ -84,10 +85,12 @@ public class SimpleMBeanExporter implements MBeanExporter {
 
         try {
             server.registerMBean(mbean, name);
-        } catch (InstanceAlreadyExistsException | MBeanRegistrationException e) {
+        } catch (MBeanRegistrationException e) {
             throw new MException(e.getMessage(), e);
         } catch (NotCompliantMBeanException e) {
             throw new IllegalStateException(e);
+        } catch (InstanceAlreadyExistsException e) {
+            // ignore when auto-redeploy.
         }
 
         exportedBeans.put(name, Boolean.TRUE);
@@ -104,9 +107,16 @@ public class SimpleMBeanExporter implements MBeanExporter {
         try {
             server.unregisterMBean(name);
             return true;
+        } catch (InstanceNotFoundException e) {
+            log.info("The mbean '{}' not exists!", name);
         } catch (Exception e) {
             log.warn("Error unexport mbean '" + name + "'", e);
         }
         return false;
+    }
+
+    @Override
+    public void dispose() throws Throwable {
+        unexportAll();
     }
 }

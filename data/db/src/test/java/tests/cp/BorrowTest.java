@@ -91,6 +91,7 @@ public class BorrowTest extends PoolTestBase {
 
     @Test
     public void testInvalidConnectionOnBorrowOld() throws SQLException {
+        ds.setMaxWait(1);
         ds.setTestOnBorrow(true);
         ms.setSupportsJdbc4Validation(true);
 
@@ -107,10 +108,14 @@ public class BorrowTest extends PoolTestBase {
         try(Connection conn = ds.getConnection()){
             assertNotSame(wrapped, conn.unwrap(MockConnection.class));
         }
+
+        ms.setValidateConnectionError(false);
+        try(Connection conn = ds.getConnection()) {}
     }
 
     @Test
-    public void testOpenConnectionError() {
+    public void testOpenConnectionError() throws SQLException {
+        ds.setMaxActive(1);
         ms.setOpenConnectionError(true);
 
         try {
@@ -119,10 +124,14 @@ public class BorrowTest extends PoolTestBase {
         }catch (SQLException e) {
 
         }
+
+        ms.setOpenConnectionError(false);
+        try(Connection conn = ds.getConnection()) {}
     }
 
     @Test
     public void testSetupConnectionErrorOnBorrowNew() throws SQLException {
+        ds.setMaxActive(1);
         ds.setDefaultAutoCommit(false);
         ms.setSetAutoCommitError(true);
 
@@ -132,10 +141,14 @@ public class BorrowTest extends PoolTestBase {
         }catch (SQLException e) {
             assertContains(e.getMessage(), "Set AutoCommit Error");
         }
+
+        ms.setSetAutoCommitError(false);
+        try(Connection conn = ds.getConnection()) {}
     }
 
     @Test
     public void testSetupConnectionErrorOnBorrowOld() throws SQLException {
+        ds.setMaxActive(1);
         ds.setDefaultAutoCommit(false);
         try(Connection conn = ds.getConnection()){
             conn.setAutoCommit(true);
@@ -171,5 +184,8 @@ public class BorrowTest extends PoolTestBase {
         }catch (SQLException e) {
             assertContains(e.getMessage(), "Set AutoCommit Error");
         }
+
+        ms.setSetAutoCommitError(false);
+        try(Connection conn = ds.getConnection()) {}
     }
 }

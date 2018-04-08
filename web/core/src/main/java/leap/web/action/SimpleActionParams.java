@@ -19,6 +19,7 @@ package leap.web.action;
 import leap.lang.collection.SimpleCaseInsensitiveMap;
 import leap.lang.exception.ObjectNotFoundException;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class SimpleActionParams implements ActionParams {
@@ -27,6 +28,8 @@ public class SimpleActionParams implements ActionParams {
     protected final Object[]   values;
 
     private final Map<String, Integer> nameIndexMap;
+
+    private Map<String, Object> map;
 
     public SimpleActionParams(Argument[] arguments, Object[] values) {
         this.arguments = arguments;
@@ -37,6 +40,22 @@ public class SimpleActionParams implements ActionParams {
         for(int i=0;i<arguments.length;i++) {
             nameIndexMap.put(arguments[i].getName(), i);
         }
+    }
+
+    @Override
+    public Argument[] getArguments() {
+        return arguments;
+    }
+
+    @Override
+    public Map<String, Object> toMap() {
+        if(null == map) {
+            map = new LinkedHashMap<>(values.length);
+            for(int i=0;i<arguments.length;i++) {
+                map.put(arguments[i].getName(), values[i]);
+            }
+        }
+        return map;
     }
 
     @Override

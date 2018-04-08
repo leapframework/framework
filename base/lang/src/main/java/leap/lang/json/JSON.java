@@ -30,7 +30,7 @@ public class JSON {
 	
     private static final JsonDecoder decoder = new JsonDecoder();
 
-    private static final ConvertContext convertContext = new ConvertContext() {
+    static final ConvertContext convertContext = new ConvertContext() {
         @Override
         public ConcreteTypes getConcreteTypes() {
             return JsonConcreteTypes.INSTANCE;

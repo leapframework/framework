@@ -143,10 +143,6 @@ public class BeanProperty implements Named,TypeInfoGetter,AnnotationsGetter,Refl
 	}
 	
 	public void setValue(Object bean,Object value){
-		if(!writable){
-			throw new IllegalStateException("Property '" + name + "' of '" + beanType.getBeanClass().getName() + "' not writable");
-		}
-		
 		if(null != value && !type.isAssignableFrom(value.getClass())){
 			value = Converts.convert(value, type,genericType);
 		}

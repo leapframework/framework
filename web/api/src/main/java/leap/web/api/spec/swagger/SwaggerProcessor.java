@@ -30,17 +30,19 @@ import leap.web.api.meta.ApiMetadataBuilder;
 import leap.web.api.meta.ApiMetadataContext;
 import leap.web.api.meta.ApiMetadataProcessor;
 import leap.web.api.spec.ApiSpecContext;
+import leap.web.route.Routes;
 
 public class SwaggerProcessor implements ApiConfigProcessor,ApiMetadataProcessor {
 	
 	private static final String SWAGGER_JSON_FILE = "swagger.json";
 
-	protected @Inject App  app;
 	protected @Inject Apis apis;
 
 	@Override
 	public void preProcess(ApiConfigurator c) {
-		app.routes().create().get(getJsonSpecPath(c.config()), (req, resp) -> 
+        Routes routes = c.config().getDynamicRoutes();
+
+		routes.create().get(getJsonSpecPath(c.config()), (req, resp) ->
                 handleJsonSpecRequest(c.config(), req, resp, c.config().getName())).enableCors()
 		  .allowAnonymous()
 		  .apply();

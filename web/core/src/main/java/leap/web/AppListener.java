@@ -44,6 +44,10 @@ public interface AppListener {
 		
 	}
 	
+	default void onServerInfoResolved(App app, ServerInfo serverInfo) {
+		
+	}
+	
 	default void preAppStop(App app) throws Throwable {
 		
 	}

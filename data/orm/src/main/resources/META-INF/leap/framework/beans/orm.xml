@@ -3,6 +3,8 @@
 
     <!-- init bean -->
     <bean type="leap.core.AppContextInitializable" class="leap.orm.OrmInit"/>
+
+    <bean type="leap.orm.OrmRegistry" class="leap.orm.DefaultOrmRegistry" primary="true"/>
     
     <!-- config -->
     <bean type="leap.orm.OrmConfig" class="leap.orm.DefaultOrmConfig" primary="true"/>
@@ -110,4 +112,9 @@
     <bean name="json"
           type="leap.orm.serialize.FieldSerializer"
           class="leap.orm.serialize.JsonFieldSerializer" primary="true"/>
+
+    <!-- dyna -->
+    <bean type="leap.orm.dyna.DynaOrmFactory"
+          class="leap.orm.dyna.DefaultDynaOrmFactory" primary="true"/>
+
 </beans>

@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.leapframework.org/schema/beans">
-
-    <bean-list type="app.beans.DemoBean">
-        <bean class="app.beans.DemoBeanProd"/>
-        <bean class="app.beans.DemoBeanDev"/>
-    </bean-list>
-
-</beans>

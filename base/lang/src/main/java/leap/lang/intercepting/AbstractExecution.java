@@ -19,16 +19,16 @@ package leap.lang.intercepting;
 
 public abstract class AbstractExecution implements Execution {
 
-    protected Status    status    = Status.PREPARED;
-    protected Throwable exception = null;
+    protected ExecutionState state     = ExecutionState.PREPARED;
+    protected Throwable      exception = null;
 
     @Override
-    public Status getStatus() {
-        return status;
+    public ExecutionState getState() {
+        return state;
     }
 
-    public void setStatus(Status status) {
-        this.status = status;
+    public void setState(ExecutionState state) {
+        this.state = state;
     }
 
     @Override
@@ -41,15 +41,15 @@ public abstract class AbstractExecution implements Execution {
     }
 
     public void failure() {
-        status = Status.FAILURE;
+        state = ExecutionState.FAILURE;
     }
 
     public void failure(Throwable e) {
-        status = Status.FAILURE;
+        state = ExecutionState.FAILURE;
         exception = e;
     }
 
     public void success() {
-        status = Status.SUCCESS;
+        state = ExecutionState.SUCCESS;
     }
 }

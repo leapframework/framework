@@ -318,17 +318,6 @@ public interface CriteriaQuery<T> extends Query<T> {
     CriteriaWhere<T> where();
 
     /**
-     * Sets the where expression to the lambda condition.
-     * <p>
-     * <p>
-     * Example :
-     * <pre>
-     * 	where(m -> m.name == "Jim")
-     * </pre>
-     */
-    CriteriaQuery<T> where(Condition<T> condition);
-
-    /**
      * Sets the where expression in this CriteriaQuery.
      */
     CriteriaQuery<T> where(String expression);

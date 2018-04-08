@@ -77,6 +77,10 @@ public class PooledConnection extends ConnectionProxy implements Connection {
 	long getBusyDurationMs() {
 		return System.currentTimeMillis() - lastBusyTime;
 	}
+
+    boolean isCreated() {
+        return null != conn;
+    }
 	
 	boolean isActive() {
 		return state.get() == STATE_BUSY && null != conn;
@@ -196,18 +200,18 @@ public class PooledConnection extends ConnectionProxy implements Connection {
     }
 
 	void abandonReal() {
-		if(null != conn) {
-			log.debug("Abandon the wrapped connection");
-			JDBC.closeConnection(conn);
-			conn = null;
-		}
+        closeReal();
 	}
 	
 	void closeReal() {
 		if(null != conn) {
-			log.debug("Close the wrapped connection");
 			JDBC.closeConnection(conn);
 			conn = null;
+
+            if(log.isDebugEnabled()) {
+                String state = pool.getStateInfo();
+                log.debug("Underlying connection closed! {} : [{}]", pool.getName(), state);
+            }
 		}
 	}
 	

@@ -191,9 +191,4 @@ public interface Routes extends Iterable<Route>,Emptiable {
 	 */
 	Route match(String method,String path,Map<String,Object> inParameters, Map<String,String> outVariables);
 
-	/**
-	 * Returns all Route with the controller
-	 */
-	Route[] getRoutesByController(Object controller);
-
 }

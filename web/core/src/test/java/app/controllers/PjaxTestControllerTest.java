@@ -25,14 +25,14 @@ public class PjaxTestControllerTest extends WebTestCase {
 	@Test
 	public void testIsPjax() {
 		//Non pjax
-		forGet("/pjax_test/get_is_pjax").send().assertOk().assertContentEquals("");	
+		useGet("/pjax_test/get_is_pjax").send().assertOk().assertContentEquals("");
 		
 		//pjax
-		forGet("/pjax_test/get_is_pjax")
+		useGet("/pjax_test/get_is_pjax")
 			.setHeader(DefaultPjaxDetector.X_PJAX_HEADER, "true")
 			.send().assertContentEquals("pjax");
 		
-		forGet("/pjax_test/get_is_pjax")
+		useGet("/pjax_test/get_is_pjax")
 			.setHeader(DefaultPjaxDetector.X_PJAX_HEADER, "NotEmtptyString")
 			.send().assertContentEquals("pjax");		
 		

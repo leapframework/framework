@@ -16,6 +16,7 @@
 package leap.core.el;
 
 import leap.core.variable.VariableEnvironment;
+import leap.lang.el.ElEvalContext;
 import leap.lang.el.ElException;
 import leap.lang.el.ElPropertyResolver;
 
@@ -28,8 +29,8 @@ public class EnvPropertyResolver implements ElPropertyResolver {
 	}
 
 	@Override
-	public Object resovleProperty(String name) {
-		Object v = env.resolveVariable(name);
+	public Object resolveProperty(String name, ElEvalContext context) {
+		Object v = env.resolveVariable(name, context);
 		
 		if(null == v && !env.checkVariableExists(name)){
 			throw new ElException("Environment variable 'env." + name + "' cannot be resolved");

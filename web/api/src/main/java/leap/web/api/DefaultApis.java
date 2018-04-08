@@ -15,10 +15,6 @@
  */
 package leap.web.api;
 
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.ioc.PostCreateBean;
@@ -41,26 +37,32 @@ import leap.web.api.config.*;
 import leap.web.api.config.model.OAuthConfigImpl;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.ApiMetadataFactory;
-import leap.web.api.meta.model.MApiResponse;
 import leap.web.api.meta.model.MApiPermission;
+import leap.web.api.meta.model.MApiResponse;
 import leap.web.api.mvc.ApiInitializable;
 import leap.web.api.permission.ResourcePermissions;
 import leap.web.route.Route;
+
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 	
 	protected @Inject ApiConfigProcessor[]   configProcessors;
 	protected @Inject ApiMetadataFactory     metadataFactory;
 	protected @Inject MTypeManager           typeManager;
+    protected @Inject App                    app;
 
-	protected Map<String, ApiConfigurator>  configurators  = new ConcurrentHashMap<>();
-	protected Map<String, ApiConfig>        configurations = new ConcurrentHashMap<>();
-	protected Map<String, ApiMetadata>      metadatas      = new ConcurrentHashMap<>();
-
-    protected Map<String,   MApiResponse> commonResponses = new LinkedHashMap<>();
+    protected Map<String, ApiConfigurator> configurators   = new ConcurrentHashMap<>();
+    protected Map<String, ApiConfig>       configurations  = new ConcurrentHashMap<>();
+    protected Map<String, ApiMetadata>     metadatas       = new ConcurrentHashMap<>();
+    protected Map<String, MApiResponse>    commonResponses = new LinkedHashMap<>();
 
     private ApiConfigs      configs;
     private OAuthConfigImpl oauthConfig = new OAuthConfigImpl();
+    private Set<String>     created = new CopyOnWriteArraySet<>();
 
     @Override
     public ApiConfigurator tryGetConfigurator(String name) {
@@ -92,7 +94,25 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 		return api;
     }
 
-	@Override
+    @Override
+    public boolean remove(String name) {
+        String key = name.toLowerCase();
+        if(null == configurators.remove(key)) {
+            return false;
+        }
+
+        created.remove(key);
+        metadatas.remove(key);
+        configurations.remove(key);
+        return true;
+    }
+
+    @Override
+    public void create(ApiConfigurator c) {
+        doCreate(app, c);
+    }
+
+    @Override
     public ApiConfigurator getConfigurator(String name) throws ObjectNotFoundException {
 		Args.notEmpty(name, "name");
 		
@@ -159,7 +179,7 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
         //oauth
         this.oauthConfig.updateFrom(configs.getOAuthConfig());
 
-        //commone responses.
+        //common responses.
         configs.getCommonResponses().forEach((key, builder)->{
             builder.setTypeManager(typeManager);
             commonResponses.put(key,builder.build());
@@ -183,6 +203,7 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
     }
 
     protected void doAdd(String name, ApiConfigurator api) {
+        api.setDynamicRoutes(app.routes());
 
         String key = name.toLowerCase();
         if(configurators.containsKey(key)) {
@@ -236,36 +257,9 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
     public void postAppInit(App app) throws Throwable {
 
 		for(Entry<String, ApiConfigurator> entry : configurators.entrySet()) {
-			doConfiguration(app, entry.getValue());
+			doCreate(app, entry.getValue());
 		}
 
-        for(Entry<String, ApiConfigurator> entry : configurators.entrySet()) {
-            ApiConfigurator c = entry.getValue();
-
-            //configure by processors.
-            for(ApiConfigProcessor p : configProcessors) {
-                p.preProcess(c);
-            }
-
-            for(ApiConfigProcessor p : configProcessors) {
-                p.postProcess(c);
-            }
-
-            for(ApiConfigProcessor p : configProcessors) {
-                p.completeProcess(c.config());
-            }
-
-            //post config
-            postConfigApi(app, c.config());
-
-            //create metadata
-            String key = entry.getKey();
-            ApiMetadata m = createMetadata(c);
-            metadatas.put(key, m);
-
-            //post load
-            postLoadApi(app, c.config(), m);
-        }
 	}
 	
 	protected void doConfiguration(App app, ApiConfigurator c) {
@@ -275,6 +269,40 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 		//resolve routes of api.
 		resolveRoutes(app, c);
 	}
+
+    protected void doCreate(App app, ApiConfigurator c) {
+        String key = c.config().getName().toLowerCase();
+        if(created.contains(key)) {
+            throw new IllegalStateException("The api '" + c.config().getName() + "' already created!");
+        }
+
+        doConfiguration(app, c);
+
+        //configure by processors.
+        for(ApiConfigProcessor p : configProcessors) {
+            p.preProcess(c);
+        }
+
+        for(ApiConfigProcessor p : configProcessors) {
+            p.postProcess(c);
+        }
+
+        for(ApiConfigProcessor p : configProcessors) {
+            p.completeProcess(c.config());
+        }
+
+        //post config
+        postConfigApi(app, c.config());
+
+        //create metadata
+        ApiMetadata m = createMetadata(c);
+        metadatas.put(key, m);
+
+        //post load
+        postLoadApi(app, c.config(), m);
+
+        created.add(key);
+    }
 
     protected void doCommonConfiguration(App app, ApiConfigurator c) {
         //todo : oauth
@@ -289,11 +317,6 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 		for(Route route : app.routes()) {
 			String pathTemplate = route.getPathTemplate().getTemplate();
 			if(pathTemplate.equals(basePath) || pathTemplate.startsWith(basePath)) {
-				
-				if(!c.config().isCorsDisabled() && !route.isCorsDisabled()) {
-					route.setCorsEnabled(true);
-				}
-
                 resolveResourceType(app, c, route);
 
 				c.addRoute(route);

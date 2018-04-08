@@ -16,30 +16,26 @@
 
 package leap.web.api.orm;
 
-import leap.orm.dao.Dao;
-import leap.orm.mapping.EntityMapping;
-import leap.web.api.meta.model.MApiModel;
-
 public class DefaultModelExecutorFactory implements ModelExecutorFactory {
 
     @Override
-    public ModelCreateExecutor newCreateExecutor(ModelExecutorConfig c, MApiModel am, Dao dao, EntityMapping em) {
-        return new DefaultModelCreateExecutor(c, am, dao, em);
+    public ModelCreateExecutor newCreateExecutor(ModelExecutorContext context) {
+        return new DefaultModelCreateExecutor(context);
     }
 
     @Override
-    public ModelUpdateExecutor newUpdateExecutor(ModelExecutorConfig c, MApiModel am, Dao dao, EntityMapping em) {
-        return new DefaultModelUpdateExecutor(c, am, dao, em);
+    public ModelUpdateExecutor newUpdateExecutor(ModelExecutorContext context) {
+        return new DefaultModelUpdateExecutor(context);
     }
 
     @Override
-    public ModelQueryExecutor newQueryExecutor(ModelExecutorConfig c, MApiModel am, Dao dao, EntityMapping em) {
-        return new DefaultModelQueryExecutor(c, am, dao, em);
+    public ModelDeleteExecutor newDeleteExecutor(ModelExecutorContext context) {
+        return new DefaultModelDeleteExecutor(context);
     }
 
     @Override
-    public ModelDeleteExecutor newDeleteExecutor(ModelExecutorConfig c, MApiModel am, Dao dao, EntityMapping em) {
-        return new DefaultModelDeleteExecutor(c, am, dao, em);
+    public ModelQueryExecutor newQueryExecutor(ModelExecutorContext context) {
+        return new DefaultModelQueryExecutor(context);
     }
 
 }

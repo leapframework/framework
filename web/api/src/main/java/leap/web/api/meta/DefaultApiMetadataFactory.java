@@ -66,6 +66,8 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		ApiMetadataBuilder md = new ApiMetadataBuilder();
 		
 		ApiMetadataContext context = createContext(c, md);
+
+        prepareMetadata(context, md);
 		
 		setBaseInfo(context, md);
 
@@ -82,11 +84,25 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		return processMetadata(context, md);
     }
 
+    private void prepareMetadata(ApiMetadataContext context, ApiMetadataBuilder md) {
+
+        final ApiConfig c = context.getConfig();
+
+        c.getRoutes().forEach(route -> {
+
+            if(!c.isCorsDisabled() && !route.isCorsDisabled()) {
+                route.setCorsEnabled(true);
+            }
+
+        });
+    }
+
     @Override
     public MApiOperationBuilder createOperation(ApiMetadataContext context, ApiMetadataBuilder m, Route route) {
         MApiOperationBuilder op = new MApiOperationBuilder(route);
 
         op.setName(route.getAction().getName());
+        op.setCorsEnabled(route.isCorsEnabled());
 
         //Set http method
         setApiMethod(context, m, route, op);
@@ -211,7 +227,8 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
         }
 
 		ApiMetadata m = md.build();
-		
+
+		completeProcessDefault(context, m);
 		for(ApiMetadataProcessor p : processors) {
 			p.completeProcess(context, m);
 		}
@@ -252,6 +269,22 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 
         //process models.
         m.getModels().forEach((name,model) -> postProcessModel(context, m, name, model));
+    }
+
+    protected void completeProcessDefault(ApiMetadataContext context, ApiMetadata m) {
+        final ApiConfig c = context.getConfig();
+
+        m.getPaths().forEach((k,path) -> {
+
+            for(MApiOperation op : path.getOperations()) {
+                Route route = op.getRoute();
+                if(null != route) {
+                    route.setExtension(MApiPath.class,      path);
+                    route.setExtension(MApiOperation.class, op);
+                }
+            }
+
+        });
     }
 
     protected void postProcessModel(ApiMetadataContext context, ApiMetadataBuilder m, String name, MApiModelBuilder model) {

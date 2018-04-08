@@ -140,7 +140,7 @@ public abstract class WebTestBase extends TestBase {
      * Sends a POST request to the given path with the given raw json body and returns the {@link THttpResponse}.
      */
     protected final THttpResponse postJsonRaw(String path, String body) {
-        response = forPost(path)
+        response = usePost(path)
                     .setContentType(ContentTypes.APPLICATION_JSON_UTF8)
                     .setBody(body)
                     .post();
@@ -152,7 +152,7 @@ public abstract class WebTestBase extends TestBase {
      * Sends a POST request to the path with the encoded json body of the given value and returns the {@link THttpResponse}.
      */
     protected final THttpResponse postJson(String path, Object value) {
-        response = forPost(path).setJson(value).post();
+        response = usePost(path).setJson(value).post();
         request = response.request();
         return response;
     }
@@ -218,7 +218,7 @@ public abstract class WebTestBase extends TestBase {
      * @param value the form param's value.
      */
 	protected final THttpResponse post(String path,String name,String value) {
-		response = forPost(path).addFormParam(name, value).send();
+		response = usePost(path).addFormParam(name, value).send();
 		request  = response.request();
 		return response;
 	}
@@ -232,7 +232,7 @@ public abstract class WebTestBase extends TestBase {
      * @param value2 the form param's value.
      */
 	protected final THttpResponse post(String path,String name1,String value1,String name2,String value2) {
-		response = forPost(path)
+		response = usePost(path)
 	                    .addFormParam(name1, value1)
 	                    .addFormParam(name2, value2).send();
 		request  = response.request();
@@ -240,31 +240,38 @@ public abstract class WebTestBase extends TestBase {
 	}
 
     /**
-     * Creates a new {@link THttpRequest} for sending GET request later.
+     * Creates a new {@link THttpRequest} request using 'GET' method.
      */
-    protected final THttpRequest forGet(String path) {
+    protected final THttpRequest useGet(String path) {
         return client().request(Method.GET, path(path));
     }
 
     /**
-     * Creates a new {@link THttpRequest} for sending POST request later.
+     * Creates a new {@link THttpRequest} request using 'POST' method.
      */
-    protected final THttpRequest forPost(String path) {
+    protected final THttpRequest usePost(String path) {
         return client().request(Method.POST, path(path));
     }
 
     /**
-     * Creates a new {@link THttpRequest} for sending DELETE request later.
+     * Creates a new {@link THttpRequest} request using 'DELETE' method.
      */
-    protected final THttpRequest forDelete(String path) {
+    protected final THttpRequest useDelete(String path) {
         return client().request(Method.DELETE, path(path));
     }
 
     /**
-     * Creates a new {@link THttpRequest} for sending PUT request later.
+     * Creates a new {@link THttpRequest} request using 'PUT' method.
      */
-    protected final THttpRequest forPut(String path) {
+    protected final THttpRequest usePut(String path) {
         return client().request(Method.PUT, path(path));
+    }
+
+    /**
+     * Creates a new {@link THttpRequest} request using 'PATCH' method.
+     */
+    protected final THttpRequest usePatch(String path) {
+        return client().request(Method.PATCH, path(path));
     }
 
     /**
@@ -278,7 +285,7 @@ public abstract class WebTestBase extends TestBase {
      * Sends an Ajax GET request to the given path and returns {@link THttpResponse}.
      */
     protected THttpResponse ajaxGet(String path) {
-        response = forGet(path).ajax().send();
+        response = useGet(path).ajax().send();
         request = response.request();
         return response;
     }
@@ -287,7 +294,7 @@ public abstract class WebTestBase extends TestBase {
      * Sends an Ajax POST request to the given path and returns {@link THttpResponse}.
      */
     protected THttpResponse ajaxPost(String path) {
-        response = forPost(path).ajax().send();
+        response = usePost(path).ajax().send();
         request = response.request();
         return response;
     }

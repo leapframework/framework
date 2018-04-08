@@ -87,7 +87,7 @@ public class ResponseBodyControllerTest extends WebTestCase {
 
 		String json = JSON.encode(product);
 		
-		THttpResponse resp = forPost("/response_body/product")
+		THttpResponse resp = usePost("/response_body/product")
 							.setContentType(MimeTypes.APPLICATION_JSON_TYPE)
 							.setBody(json)
 							.send();

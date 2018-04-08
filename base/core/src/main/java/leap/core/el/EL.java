@@ -20,9 +20,14 @@ import leap.lang.Objects2;
 import leap.lang.Strings;
 import leap.lang.convert.Converts;
 import leap.lang.el.ElException;
+import leap.lang.el.ElParseContext;
+import leap.lang.expression.CompositeExpression;
 import leap.lang.expression.Expression;
+import leap.lang.expression.ExpressionException;
 import leap.lang.expression.ValuedExpression;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class EL {
@@ -275,6 +280,85 @@ public class EL {
 
         return !Objects2.isEmpty(v);
     }
+
+	/**
+	 * Parses a composite expression to an {@link Expression} object using the default {@link ElParseContext}.
+	 *
+	 * <p>
+	 *
+	 * For example, the composite expression “${firstName} ${lastName}”
+	 * is composed of three EL expressions: eval-expression “${firstName}”,
+	 * literal- expression “ “, and eval-expression “${lastName}”.
+	 *
+	 * <p>
+	 * Once evaluated, the resulting String is then coerced to the expected type.
+	 */
+	public static CompositeExpression createCompositeExpression(String s) {
+		return parseCompositeExpression(getAppDefaultExpressionLanguage(), s);
+	}
+
+
+	private static CompositeExpression parseCompositeExpression(ExpressionLanguage language, String str){
+		if(null == str){
+			return CompositeExpression.NULL;
+		}
+		if(Strings.EMPTY.equals(str)){
+			return CompositeExpression.EMPTY;
+		}
+		if(str.indexOf(PREFIX) >= 0){
+			return new CompositeExpression(str,parseNodes(language,str));
+		}else{
+			return new CompositeExpression(str);
+		}
+	}
+
+	private static Object[] parseNodes(ExpressionLanguage language,String s){
+		StringBuilder buf = new StringBuilder(s);
+
+		List<Object> nodes = new ArrayList<Object>();
+
+		int startIndex = nextEvalPrefix(buf,0);
+
+		int mark=0;
+		while(startIndex >= 0){
+			int endIndex = buf.indexOf(SUFFIX, startIndex + 2);
+			if(endIndex > 0){
+				if(mark < startIndex){
+					nodes.add(buf.substring(mark,startIndex));
+				}
+				nodes.add(language.createExpression(buf.substring(startIndex+2,endIndex)));
+
+				if(endIndex == buf.length() - 1){
+					mark = buf.length();
+					break;
+				}else{
+					mark = endIndex + 1;
+				}
+
+				startIndex = nextEvalPrefix(buf,endIndex + 1);
+			}else{
+				throw new ExpressionException("Unclosed expression starts from " + startIndex + ", expected suffix '}'");
+			}
+		}
+
+		if(mark < buf.length()){
+			nodes.add(buf.substring(mark));
+		}
+
+		return nodes.toArray(new Object[nodes.size()]);
+	}
+
+	private static int nextEvalPrefix(StringBuilder str,int from){
+		int i = str.indexOf(PREFIX,from);
+
+		//escape
+		if( i > 0 && str.charAt(i-1) == '\\'){
+			str.deleteCharAt(i-1);
+			return nextEvalPrefix(str, i+1);
+		}
+
+		return i;
+	}
 	
 	protected EL() {
 		

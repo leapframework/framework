@@ -18,6 +18,7 @@ package leap.core.ioc;
 
 import leap.core.AppConfig;
 import leap.core.annotation.ConfigProperty;
+import leap.core.annotation.Configurable;
 import leap.core.config.dyna.*;
 import leap.lang.Classes;
 import leap.lang.Collections2;
@@ -80,12 +81,44 @@ public class BeanConfigurator {
         Set<ReflectField> done = new HashSet<>();
 
         for(BeanProperty bp : bt.getProperties()){
+            Configurable.Nested nested = bp.getAnnotation(Configurable.Nested.class);
+            if(null != nested) {
+                String nestedPrefix = nested.prefix();
+
+                if(Strings.isEmpty(nestedPrefix)) {
+                    nestedPrefix = Strings.lowerUnderscore(bp.getName());
+                    if(nestedPrefix.endsWith("_config")) {
+                        nestedPrefix = Strings.removeEnd(nestedPrefix, "_config");
+                    }
+                }
+
+                String fullKeyPrefix = keyPrefix(keyPrefix + nestedPrefix);
+                Object nestedBean    = bp.getValue(bean);
+                BeanType nestedType;
+
+                if(null == nestedBean) {
+                    nestedType = BeanType.of(bp.getType());
+                    nestedBean = nestedType.newInstance();
+                    bp.setValue(bean, nestedBean);
+                }else{
+                    nestedType = BeanType.of(nestedBean.getClass());
+                }
+
+                configure(nestedBean, nestedType, fullKeyPrefix);
+                continue;
+            }
+
             ConfigProperty a = bp.getAnnotation(ConfigProperty.class);
             if(!Property.class.isAssignableFrom(bp.getType()) && null == a) {
                 continue;
             }
 
-            if(bp.isWritable()) {
+            String setByStringMethodName = "set" + Strings.upperFirst(bp.getName()) + "ByString";
+            ReflectMethod setByStringMethod = bt.getReflectClass().getMethod(setByStringMethodName, new Class<?>[]{String.class});
+
+            if(null != setByStringMethod) {
+                doBeanConfigure(bean, new SetByStringValued(bean, bp, setByStringMethod), keyPrefix, a);
+            }else if(bp.isWritable()) {
                 doBeanConfigure(bean, bp, keyPrefix, a);
             }else{
                 ReflectField rf = bp.getReflectField();
@@ -161,6 +194,11 @@ public class BeanConfigurator {
         if(doBeanConfigureByKey(bean, v, keyPrefix + Strings.lowerHyphen(v.getName()), defaultValue)) {
             return;
         }
+
+        if(doBeanConfigureByKey(bean, v, keyPrefix + Strings.lowerUnderscore(v.getName()), defaultValue)) {
+            return;
+        }
+
     }
 
     protected boolean doBeanConfigureByKey(Object bean, ReflectValued v, String key, String defaultValue) {
@@ -283,10 +321,53 @@ public class BeanConfigurator {
             if(value.isNull()){
                 value.convert(defaultValue);
             }
-            
+
             v.setValue(bean, value);
         }else if(!Strings.isEmpty(defaultValue)) {
             v.setValue(bean, Converts.convert(defaultValue, v.getType(), v.getGenericType()));
+        }
+    }
+
+    protected final class SetByStringValued implements ReflectValued {
+
+        private final Object        o;
+        private final BeanProperty  p;
+        private final ReflectMethod m;
+
+        public SetByStringValued(Object o, BeanProperty p, ReflectMethod m) {
+            this.o = o;
+            this.p = p;
+            this.m = m;
+        }
+
+        @Override
+        public String getName() {
+            return p.getName();
+        }
+
+        @Override
+        public Class<?> getType() {
+            return String.class;
+        }
+
+        @Override
+        public Type getGenericType() {
+            return p.getGenericType();
+        }
+
+        @Override
+        public Annotation[] getAnnotations() {
+            return p.getAnnotations();
+        }
+
+        @Override
+        public Object getValue(Object bean) {
+            return p.getValue(bean);
+        }
+
+        @Override
+        public void setValue(Object bean, Object value) {
+            m.invoke(o, value);
         }
     }
 

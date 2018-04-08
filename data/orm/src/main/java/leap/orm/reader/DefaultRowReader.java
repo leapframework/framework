@@ -19,15 +19,16 @@ import leap.core.exception.TooManyRecordsException;
 import leap.core.value.Record;
 import leap.core.value.SimpleRecord;
 import leap.db.DbDialect;
+import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.orm.naming.NamingStrategy;
-import leap.orm.sql.DynamicSqlClause;
 import leap.orm.sql.Sql;
 import leap.orm.sql.SqlCommand;
 import leap.orm.sql.SqlExecutionContext;
+import leap.orm.sql.ast.AstNode;
 import leap.orm.sql.ast.SqlSelect;
 
 import java.sql.ResultSet;
@@ -162,22 +163,32 @@ public class DefaultRowReader implements RowReader {
 		for(int i=0;i<columns.length;i++){
 			ResultColumn column = columns[i];
 			Object value = dialect.getColumnValue(rs, i+1, column.columnType);
+			//map.put(getKey(column, column.fieldName), value);
 			map.put(column.fieldName, value);
 		}
 	}
-	
+
+	private String getKey(ResultColumn cm, String key) {
+		if(cm.isAlias){
+			return key;
+		}
+		if(Strings.isBlank(cm.columnLabel) || Strings.equals(cm.columnLabel, cm.columnName)) {
+			key = Strings.lowerCamel(key, '_');
+		}
+		return key;
+	}
+
+
 	protected static ResultColumn[] createResultColumns(SqlExecutionContext context, SqlCommand command, ResultSet rs) throws SQLException {
 		ResultSetMetaData rsm = rs.getMetaData();
 		NamingStrategy    ns  = context.getOrmContext().getNamingStrategy();
 		
 		ResultColumn[] columns = new ResultColumn[rsm.getColumnCount()];
-		
 		for(int i=1;i<=columns.length;i++){
 			ResultColumn c = new ResultColumn();
 			c.columnName  = rsm.getColumnName(i);
 			c.columnLabel = rsm.getColumnLabel(i);
 			c.columnType  = rsm.getColumnType(i);
-
 			boolean isAlias = false;
 
 //            if(command.getClause() instanceof DynamicSqlClause){
@@ -191,11 +202,11 @@ public class DefaultRowReader implements RowReader {
 					}
 				}
 //			}
-
+			
 			if(!isAlias){
 				c.fieldName = ns.columnToFieldName(c.columnLabel);
 			}
-
+			c.isAlias = isAlias;
 			columns[i-1] = c;
 		}
 		return columns;
@@ -206,6 +217,7 @@ public class DefaultRowReader implements RowReader {
 		protected String columnLabel;
 		protected int    columnType;
 		protected String fieldName;
+		protected boolean isAlias = false;
 		
 		@Override
         public String toString() {

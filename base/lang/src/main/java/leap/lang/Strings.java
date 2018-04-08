@@ -372,7 +372,7 @@ public class Strings {
 	//split
 	
 	public static String[] split(String string) {
-		return splitWorker(string, Chars.COMMA, false, true, true);
+		return splitWorker(string, -1, false, true, true);
 	}
 	
 	public static String[] splitWhitespaces(String s) {

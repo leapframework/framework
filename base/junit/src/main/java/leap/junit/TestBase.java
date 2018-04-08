@@ -15,16 +15,16 @@
  */
 package leap.junit;
 
-import java.lang.reflect.Field;
-import java.math.BigDecimal;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
+
+import java.lang.reflect.Field;
+import java.math.BigDecimal;
+import java.util.Map;
+import java.util.Map.Entry;
 
 public abstract class TestBase extends Assert {
 	
@@ -52,13 +52,19 @@ public abstract class TestBase extends Assert {
 	protected final String getTestMethodName(){
 		return testName.getMethodName();
 	}
-	
+
 	public static void assertContains(String text,String contains){
 		if(null == text || null == contains || !text.contains(contains)){
 			throw new AssertionError("The given string must contains the text : '" + contains + "', actual is : " + text);
 		}
 	}
-	
+
+	public static void assertNotContains(String text,String contains){
+		if(null != text && null != contains && text.contains(contains)){
+			throw new AssertionError("The given string must not contains the text : '" + contains + "', actual is : " + text);
+		}
+	}
+
 	public static void assertEmpty(String string){
 		if(null != string && string.length() > 0){
 			throw new AssertionError("The given string must be null or empty");

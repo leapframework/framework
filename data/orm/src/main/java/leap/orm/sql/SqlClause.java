@@ -18,6 +18,20 @@ package leap.orm.sql;
 import leap.orm.query.QueryContext;
 
 public interface SqlClause {
+
+    /**
+     * Returns <code>true</code> if has {@link SqlMetadata}.
+     */
+    default boolean hasMetadata() {
+        return null != getMetadata();
+    }
+
+    /**
+     * Returns <code>null</code> if no metadata.
+     */
+    default SqlMetadata getMetadata() {
+        return null;
+    }
 	
     /**
      * Creates a sql update statement.

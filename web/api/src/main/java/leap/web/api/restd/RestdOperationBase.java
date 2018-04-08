@@ -21,6 +21,8 @@ import leap.core.validation.ValidationManager;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.json.JsonSettings;
+import leap.lang.path.Paths;
+import leap.web.App;
 import leap.web.action.ArgumentBuilder;
 import leap.web.action.FuncActionBuilder;
 import leap.web.annotation.NonParam;
@@ -29,6 +31,7 @@ import leap.web.api.Apis;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.config.model.RestdConfig;
 import leap.web.api.mvc.ApiFailureHandler;
+import leap.web.route.Route;
 import leap.web.route.RouteBuilder;
 import leap.web.route.RouteManager;
 
@@ -39,9 +42,29 @@ public abstract class RestdOperationBase {
     protected @Inject ValidationManager validationManager;
     protected @Inject ApiFailureHandler failureHandler;
 
+    protected boolean isOperationExists(RestdContext context, String verb, String path) {
+        for(Route route : context.getRoutes()) {
+            if(verb.equalsIgnoreCase(route.getMethod()) &&
+                    route.getPathTemplate().getTemplate().equals(path)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     protected String fullModelPath(ApiConfigurator api, RestdModel model) {
         String basePath = api.config().getBasePath();
         return basePath.equals("/") ? model.getPath() : basePath + model.getPath();
+    }
+
+    protected String fullModelPath(ApiConfigurator api, RestdModel model, String path) {
+        String modelPath = fullModelPath(api, model);
+        return Paths.suffixWithoutSlash(modelPath) + path;
+    }
+
+    protected String fullPath(ApiConfigurator api, String path) {
+        String basePath = api.config().getBasePath();
+        return basePath.equals("/") ? path : basePath + path;
     }
 
     protected ArgumentBuilder addArgument(FuncActionBuilder action, Class<?> type, String name) {
@@ -73,8 +96,10 @@ public abstract class RestdOperationBase {
     protected void configure(RestdContext context, RestdModel model, RouteBuilder route) {
         RestdConfig c = context.getConfig();
 
-        if(c.isModelAnonymous(model.getName())) {
-            route.setAllowAnonymous(true);
+        if(null != model) {
+            if (c.isModelAnonymous(model.getName())) {
+                route.setAllowAnonymous(true);
+            }
         }
 
         route.setAllowClientOnly(true);

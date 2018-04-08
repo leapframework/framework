@@ -29,6 +29,10 @@ public interface Route extends RouteBase, Sourced, Extensible {
                     return -1;
                 }
 
+                if(o1 == o2) {
+                    return 0;
+                }
+
                 int result = o1.getPathTemplate().compareTo(o2.getPathTemplate());
 
                 if (result == 0) {

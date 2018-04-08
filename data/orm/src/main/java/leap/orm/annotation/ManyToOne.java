@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
 import leap.lang.enums.Bool;
 import leap.orm.enums.CascadeDeleteAction;
 
-@Target({ElementType.TYPE,ElementType.FIELD})
+@Target({ElementType.TYPE,ElementType.FIELD,ElementType.METHOD})
 @Retention(RUNTIME)
 @Repeatable(ManyToOnes.class)
 @ARelation

@@ -18,7 +18,9 @@ package leap.orm.sql.ast;
 import leap.lang.Exceptions;
 import leap.lang.annotation.Internal;
 import leap.lang.params.Params;
+import leap.orm.metadata.MetadataContext;
 import leap.orm.sql.PreparedBatchSqlStatementBuilder;
+import leap.orm.sql.Sql;
 import leap.orm.sql.SqlContext;
 import leap.orm.sql.SqlStatementBuilder;
 
@@ -44,9 +46,9 @@ public abstract class AstNode {
         }
 	}
 	
-	public final void buildStatement(SqlStatementBuilder stm,Params params) {
+	public final void buildStatement(SqlContext context, Sql sql, SqlStatementBuilder stm, Params params) {
 		try {
-			buildStatement_(stm, params);
+			buildStatement_(context, sql, stm, params);
         } catch (IOException e) {
         	Exceptions.wrapAndThrow(e);
         }
@@ -58,6 +60,10 @@ public abstract class AstNode {
         } catch (IOException e) {
         	Exceptions.wrapAndThrow(e);
         }
+    }
+
+    public void prepare(MetadataContext context, Sql sql) {
+        //do nothing.
     }
 
     public void resolveDynamic(Appendable buf, Params params) {
@@ -96,7 +102,7 @@ public abstract class AstNode {
 	
 	protected abstract void toString_(Appendable buf) throws IOException;
 	
-	protected abstract void buildStatement_(SqlStatementBuilder stm,Params params) throws IOException;
+	protected abstract void buildStatement_(SqlContext context, Sql sql, SqlStatementBuilder stm,Params params) throws IOException;
 	
 	protected abstract void prepareBatchStatement_(SqlContext context, PreparedBatchSqlStatementBuilder stm,Object[] params) throws IOException;
 

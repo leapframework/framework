@@ -34,36 +34,38 @@ import java.util.*;
 
 public class EntityMapping extends ExtensibleBase {
 	private static final Log log = LogFactory.get(EntityMapping.class);
-	
-	protected final String						 entityName;
-	protected final Class<?>      		         entityClass;
-	protected final BeanType                     beanType;
-	protected final DbTable		  		         table;
-	protected final FieldMapping[]               fieldMappings;
-    protected final FieldMapping[]               whereFieldMappings;
-	protected final FieldMapping[]               keyFieldMappings;
-	protected final String[]                     keyFieldNames;
-	protected final String[]					 keyColumnNames;
-	protected final boolean				         autoIncrementKey;
-	protected final DbColumn			         autoIncrementKeyColumn;
-	protected final FieldMapping                 autoIncrementKeyField;
-	protected final FieldMapping			     optimisticLockField;
-	protected final EntityExecutionInterceptor   insertInterceptor;
-	protected final EntityExecutionInterceptor   updateInterceptor;
-	protected final EntityExecutionInterceptor   deleteInterceptor;
-	protected final EntityExecutionInterceptor   findInterceptor;
-	protected final EntityDomain			     domain;
-	protected final Class<? extends Model> modelClass;
-	protected final EntityValidator[]      validators;
-	protected final RelationMapping[]      relationMappings;
-    protected final RelationProperty[]     relationProperties;
-    protected final boolean                autoCreateTable;
-    protected final boolean                sharding;
-    protected final boolean                autoCreateShardingTable;
-    protected final ShardingAlgorithm      shardingAlgorithm;
-    protected final boolean                selfReferencing;
-    protected final RelationMapping[]      selfReferencingRelations;
-    protected final EntityListeners        listeners;
+
+    protected final String                     entityName;
+    protected final String                     dynamicTableName;
+    protected final Class<?>                   entityClass;
+    protected final BeanType                   beanType;
+    protected final DbTable                    table;
+    protected final FieldMapping[]             fieldMappings;
+    protected final FieldMapping[]             filterFieldMappings;
+    protected final FieldMapping[]             keyFieldMappings;
+    protected final String[]                   keyFieldNames;
+    protected final String[]                   keyColumnNames;
+    protected final boolean                    autoIncrementKey;
+    protected final DbColumn                   autoIncrementKeyColumn;
+    protected final FieldMapping               autoIncrementKeyField;
+    protected final FieldMapping               optimisticLockField;
+    protected final EntityExecutionInterceptor insertInterceptor;
+    protected final EntityExecutionInterceptor updateInterceptor;
+    protected final EntityExecutionInterceptor deleteInterceptor;
+    protected final EntityExecutionInterceptor findInterceptor;
+    protected final EntityDomain               domain;
+    protected final Class<? extends Model>     modelClass;
+    protected final EntityValidator[]          validators;
+    protected final RelationMapping[]          relationMappings;
+    protected final RelationProperty[]         relationProperties;
+    protected final boolean                    autoCreateTable;
+    protected final boolean                    sharding;
+    protected final boolean                    autoCreateShardingTable;
+    protected final ShardingAlgorithm          shardingAlgorithm;
+    protected final boolean                    selfReferencing;
+    protected final RelationMapping[]          selfReferencingRelations;
+    protected final EntityListeners            listeners;
+    protected final boolean                    queryFilterEnabled;
 
     private final Map<String,FieldMapping>    columnNameToFields;
 	private final Map<String,FieldMapping>    fieldNameToFields;
@@ -75,7 +77,7 @@ public class EntityMapping extends ExtensibleBase {
     private final FieldMapping                shardingField;
 
 
-	public EntityMapping(String entityName,
+	public EntityMapping(String entityName, String dynamicTableName,
                          Class<?> entityClass, DbTable table, List<FieldMapping> fieldMappings,
                          EntityExecutionInterceptor insertInterceptor, EntityExecutionInterceptor updateInterceptor,
                          EntityExecutionInterceptor deleteInterceptor, EntityExecutionInterceptor findIncerceptor,
@@ -84,6 +86,7 @@ public class EntityMapping extends ExtensibleBase {
                          List<RelationMapping> relationMappings,
                          RelationProperty[] relationProperties,
                          boolean autoCreateTable,
+                         boolean queryFilterEnabled,
                          boolean sharding, boolean autoCreateShardingTable, ShardingAlgorithm shardingAlgorithm,
                          EntityListeners listeners) {
 		
@@ -97,6 +100,7 @@ public class EntityMapping extends ExtensibleBase {
         }
 		
 		this.entityName		   = entityName;
+        this.dynamicTableName  = dynamicTableName;
 	    this.entityClass       = entityClass;
 	    this.beanType          = null == entityClass ? null : BeanType.of(entityClass);
 	    this.table             = table;
@@ -118,7 +122,7 @@ public class EntityMapping extends ExtensibleBase {
         this.primaryKeyRelations    = createPrimaryKeyRelations();
         this.targetEntityRelations  = createTargetEntityRelations();
         this.referenceToRelations   = createReferenceToRelations();
-        this.whereFieldMappings     = evalWhereFieldMappings();
+        this.filterFieldMappings    = evalFilterFieldMappings();
 	    this.keyFieldMappings       = evalKeyFieldMappings();
 	    this.keyFieldNames          = evalKeyFieldNames();
 	    this.keyColumnNames			= evalKeyColumnNames();
@@ -127,6 +131,7 @@ public class EntityMapping extends ExtensibleBase {
 	    this.autoIncrementKeyField  = autoIncrementKey ? keyFieldMappings[0] : null;
 	    this.optimisticLockField    = findOptimisticLockField();
         this.autoCreateTable        = autoCreateTable;
+        this.queryFilterEnabled     = queryFilterEnabled;
         this.sharding               = sharding;
         this.autoCreateShardingTable= autoCreateShardingTable;
         this.shardingField          = Iterables.firstOrNull(fieldMappings, (f) -> f.isSharding());
@@ -136,6 +141,10 @@ public class EntityMapping extends ExtensibleBase {
         this.selfReferencing = selfReferencingRelations.length > 0;
 
         this.listeners = listeners;
+
+        if(filterFieldMappings.length > 1) {
+            throw new IllegalStateException("Two or more filter columns in an entity is not supported yet!");
+        }
     }
 
     /**
@@ -143,6 +152,13 @@ public class EntityMapping extends ExtensibleBase {
      */
 	public String getEntityName(){
 		return entityName;
+	}
+
+    /**
+     * Returns the dynamic table name.
+     */
+	public String getDynamicTableName(){
+		return dynamicTableName;
 	}
 
     /**
@@ -307,6 +323,10 @@ public class EntityMapping extends ExtensibleBase {
         return autoCreateTable;
     }
 
+    public boolean isQueryFilterEnabled() {
+        return queryFilterEnabled;
+    }
+
     /**
      * Returns true if the entity is a sharding entity.
      */
@@ -431,12 +451,12 @@ public class EntityMapping extends ExtensibleBase {
 		return null != optimisticLockField;
 	}
 
-    public boolean hasWhereFields() {
-        return whereFieldMappings.length > 0;
+    public boolean hasFilterFields() {
+        return filterFieldMappings.length > 0;
     }
 
-    public FieldMapping[] getWhereFieldMappings() {
-        return whereFieldMappings;
+    public FieldMapping[] getFilterFieldMappings() {
+        return filterFieldMappings;
     }
 
     public FieldMapping getOptimisticLockField() {
@@ -492,13 +512,13 @@ public class EntityMapping extends ExtensibleBase {
 		return list.toArray(new FieldMapping[list.size()]);
 	}
 
-    private FieldMapping[] evalWhereFieldMappings(){
+    private FieldMapping[] evalFilterFieldMappings(){
         List<FieldMapping> list = New.arrayList();
 
         for(FieldMapping fm : this.fieldMappings){
-            if(fm.isWhere()){
-                Assert.isTrue(null != fm.getWhereValue(),
-                             "There where value expression must not be null of where field '" + fm.getFieldName() + "'");
+            if(fm.isFilter()){
+                Assert.isTrue(null != fm.getFilterValue(),
+                             "There filter value expression must not be null of filter field '" + fm.getFieldName() + "'");
                 list.add(fm);
             }
         }

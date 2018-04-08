@@ -37,7 +37,7 @@ public class ArgumentBindControllerTest extends WebTestBase {
     
     @Test
     public void testDateBind(){
-        String res = forPost(CONTEXT+"/test_date")
+        String res = usePost(CONTEXT+"/test_date")
                 .addFormParam("date","2017-02-17")
                 .addFormParam("timestamp","2017-02-17")
                 .send().assertOk().getContent();
@@ -53,7 +53,7 @@ public class ArgumentBindControllerTest extends WebTestBase {
         map.put("impl",impl);
         
         
-        String res = forPost(CONTEXT+"/test_json_argument_resolver")
+        String res = usePost(CONTEXT+"/test_json_argument_resolver")
                 .addFormParam("listMap", JSON.encode(list))
                 .addFormParam("map",JSON.encode(map))
                 .addFormParam("impl",JSON.encode(impl))
@@ -68,7 +68,7 @@ public class ArgumentBindControllerTest extends WebTestBase {
     }
     @Test
     public void testDefaultValue(){
-        String content = forPost(CONTEXT+"/test_default_value")
+        String content = usePost(CONTEXT+"/test_default_value")
                 .addFormParam("string1","str").send().assertOk().getContent();
         assertEquals("true",content);
     }

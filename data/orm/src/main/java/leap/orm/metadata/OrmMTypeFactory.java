@@ -91,11 +91,13 @@ public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactor
             }
 
             if(null == p.getCreatable()) {
-                if(fm.isPrimaryKey()) {
+
+                if(fm.isPrimaryKey() && fm.isAutoGenerateValue()) {
                     p.setCreatable(false);
                 }else{
                     p.setCreatable(fm.isInsert());
                 }
+
             }
 
             if(null == p.getUpdatable()) {
@@ -107,7 +109,7 @@ public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactor
             }
 
             if(null == p.getFilterable()) {
-                p.setFilterable(false);
+                p.setFilterable(fm.isPrimaryKey());
             }
 
             if(null != bp) {
@@ -118,11 +120,15 @@ public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactor
 		}
 
         for(RelationProperty rp : em.getRelationProperties()) {
-
             RelationMapping rm = em.getRelationMapping(rp.getRelationName());
 
             EntityMapping targetEntity = c.getMetadata().getEntityMapping(rp.getTargetEntityName());
 
+            if(null != targetEntity.getEntityClass() &&
+                    !context.isComplexTypeCreatingOrCreated(targetEntity.getEntityClass())) {
+                //force the create the complex type of target entity firstly.
+                getMType(targetEntity.getEntityClass(), context, c, targetEntity);
+            }
 
             MPropertyBuilder p = new MPropertyBuilder();
             p.setName(rp.getName());
@@ -155,11 +161,13 @@ public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactor
             ct.addProperty(p.build());
         }
 
+        MComplexType ret = ct.build();
+
         if(null != type) {
-            context.onComplexTypeCreated(type);
+            context.onComplexTypeCreated(type,ret);
         }
 		
-		return ct.build();
+		return ret;
 	}
 
 }

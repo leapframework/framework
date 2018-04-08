@@ -24,6 +24,7 @@ import leap.core.value.Scalars;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.reader.ResultSetReaders;
+import leap.orm.sql.SqlClause;
 import leap.orm.sql.SqlCommand;
 
 import java.util.List;
@@ -55,7 +56,7 @@ public class DefaultEntityQuery<T> extends AbstractQuery<T> implements EntityQue
 
 	@Override
     protected QueryResult<T> executeQuery(QueryContext qc) {
-		ResultSetReader<List<T>> reader = ResultSetReaders.forListEntity(dao.getOrmContext(), em, targetType, resultClass);
+		ResultSetReader<List<T>> reader = ResultSetReaders.forListEntity(dao.getOrmContext(), qc, em, targetType, resultClass);
 		
 	    return new DefaultQueryResult<T>(command.toString(),command.executeQuery(qc, params(), reader));
     }
@@ -69,4 +70,9 @@ public class DefaultEntityQuery<T> extends AbstractQuery<T> implements EntityQue
     protected Scalars executeQueryForScalars(QueryContext context) throws TooManyRecordsException {
 	    return command.executeQuery(context, params(), SimpleScalarsReader.DEFAULT_INSTANCE);
     }
+
+	@Override
+	public SqlClause getSqlClause() {
+		return command.getSqlClause();
+	}
 }

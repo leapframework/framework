@@ -120,10 +120,21 @@ public class DefaultAppConfigSource implements AppConfigSource {
             externalProperties.forEach((k,v) -> props.put(k, new SimpleAppProperty("<external>", k, v)));
         }
 
+        Map<String,String> env = System.getenv();
+        if(null != env) {
+            env.forEach((name, value) -> {
+                //converts all '_' -> '.' if the first character is lower case.
+                if(Character.isLowerCase(name.charAt(0))) {
+                    name = Strings.replace(name, '_', '.');
+                }
+                props.put(name, new SimpleAppProperty("<env>", name, value, true));
+            });
+        }
+
         Properties sysProps = System.getProperties();
         for(Object key : sysProps.keySet()) {
             String name = key.toString();
-            props.put(name, new SimpleAppProperty("<system>", name, System.getProperty(name), true));
+            props.put(name, new SimpleAppProperty("<sys>", name, System.getProperty(name), true));
         }
 
         return props;

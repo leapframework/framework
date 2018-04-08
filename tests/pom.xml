@@ -1,0 +1,54 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.leapframework</groupId>
+		<artifactId>leap-parent</artifactId>
+        <version>0.6.9b</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+	<artifactId>tests</artifactId>
+	<packaging>pom</packaging>
+
+    <properties>
+        <maven.javadoc.skip>true</maven.javadoc.skip>
+        <maven.package.skip>true</maven.package.skip>
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <maven.install.skip>true</maven.install.skip>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.leapframework</groupId>
+            <artifactId>leap-junit</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <modules>
+        <module>core-test-instrument</module>
+        <module>core-test-profile1</module>
+        <module>core-test-profile2</module>
+        <module>core-test-profile3</module>
+
+        <module>orm-test</module>
+        <module>orm-test-dyna</module>
+        <module>orm-test-resources</module>
+
+        <module>webunit-test1</module>
+        <module>webunit-test2</module>
+
+        <module>web-test-resources</module>
+        <module>web-test-module</module>
+        <module>web-test-webapp1</module>
+        <module>web-test-webapp2</module>
+
+        <module>webapi-test</module>
+        <module>webapi-test-dyna</module>
+
+        <module>oauth2-test-server</module>
+        <module>oauth2-test-webapp</module>
+        <module>orm-test-pgsql</module>
+    </modules>
+
+</project>

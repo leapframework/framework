@@ -445,19 +445,6 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     }
 	
 	@Override
-    public CriteriaQuery<T> where(Condition<T> condition) {
-		Args.notNull(condition,"condition");
-		
-		Params params = new ParamsMap();
-		where(context.getConditionParser().parse(condition, params));
-		if(!params.isEmpty()){
-			params(params);
-		}
-		
-		return this;
-    }
-
-	@Override
     public CriteriaQuery<T> where(String expression) {
 		Args.notEmpty(expression = Strings.trim(expression),"where expression");
 		where = expression;
@@ -576,7 +563,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 	@Override
     public long count() {
 		String sql = builder.buildCountSql();
-		SqlStatement statement = createQueryStatement(this,sql);
+		SqlStatement statement = createCountStatement(this,sql);
 	    return statement.executeQuery(ResultSetReaders.forScalarValue(Long.class, false));
     }
 	
@@ -600,7 +587,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 		String sql = builder.buildSelectSql();
 		SqlStatement statement = createQueryStatement(qc,sql);
 		
-		ResultSetReader<List<T>> reader = ResultSetReaders.forListEntity(dao.getOrmContext(), em, targetType, targetType);
+		ResultSetReader<List<T>> reader = ResultSetReaders.forListEntity(dao.getOrmContext(), qc,em, targetType, targetType);
 		
 		return new DefaultQueryResult<T>(sql,statement.executeQuery(reader));
     }
@@ -632,10 +619,18 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     }
 	
 	protected SqlStatement buildQueryStatement(QueryContext qc) {
-		return createQueryStatement(qc,builder.buildSelectSql());
+		return createQueryStatement(qc,builder.buildSelectSql(), false);
 	}
 
-	protected SqlStatement createQueryStatement(QueryContext qc, String sql) {
+    protected SqlStatement createCountStatement(QueryContext qc, String sql) {
+       return createQueryStatement(qc, sql, true);
+    }
+
+    protected SqlStatement createQueryStatement(QueryContext qc, String sql) {
+        return createQueryStatement(qc, sql, false);
+    }
+
+	protected SqlStatement createQueryStatement(QueryContext qc, String sql, boolean count) {
 		SqlClause clause = context.getQueryFactory().createQueryClause(dao, sql);
 
         Object queryParams;
@@ -645,8 +640,13 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         }else {
             queryParams = new MapArrayParams(paramsMap(), args);
         }
-		
-        return clause.createQueryStatement(qc, queryParams);
+
+        if(count) {
+            return clause.createCountStatement(qc, queryParams);
+        }else{
+            return clause.createQueryStatement(qc, queryParams);
+        }
+
 	}
 	
 	protected SqlStatement createUpdateStatement(QueryContext qc, String sql) {
@@ -951,7 +951,11 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                         sql.append(",");
                     }
                     
-                    sql.append(alias).append(".").append(column);
+                    if(column.contains(".")){
+                        sql.append(column);
+                    }else {
+                        sql.append(alias).append(".").append(column);
+                    }
                     
                     index++;
                 }

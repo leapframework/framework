@@ -16,6 +16,7 @@
 package leap.web.route;
 
 import java.io.PrintWriter;
+import java.io.StringWriter;
 
 import leap.lang.Iterables;
 import leap.lang.Strings;
@@ -34,7 +35,15 @@ public class DefaultRoutesPrinter implements RoutesPrinter {
 		this.reverseDisplayOrder = reverseDisplayOrder;
 	}
 
-	@Override
+    @Override
+    public String print(Routes routes) {
+        StringWriter printedRoutes = new StringWriter();
+        PrintWriter writer = new PrintWriter(printedRoutes);
+        print(routes, writer);
+        return printedRoutes.toString();
+    }
+
+    @Override
     public void print(Routes routes, PrintWriter writer) {
 		int maxMethodLength = 6; //length of header 'METHOD' 
 		int maxPathLength   = 4; //length of header 'PATH'
@@ -78,7 +87,7 @@ public class DefaultRoutesPrinter implements RoutesPrinter {
 	}
 	
 	protected String getActionDescription(Route route){
-		return route.getAction().toString();
+		return route instanceof SubRoutes ? "(SubRoutes)" : route.getAction().toString();
 	}
 	
 	protected void printHeader(PrintWriter writer,PrintFormat methodFormat,PrintFormat pathFormat,PrintFormat actionFormat){

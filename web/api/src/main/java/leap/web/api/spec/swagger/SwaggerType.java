@@ -27,6 +27,7 @@ public enum SwaggerType {
 	BOOLEAN("boolean",null),
 	DATE("string","date"),
 	DATETIME("string","date-time"),
+	TIME("string", "time"), // extended type
 	PASSWORD("string","password"),
 	FILE("file",null);
 	

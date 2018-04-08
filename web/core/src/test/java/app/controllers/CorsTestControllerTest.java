@@ -35,19 +35,19 @@ public class CorsTestControllerTest extends WebTestCase {
 
 	@Test
 	public void testOrigin() {
-		forGet("/cors_test/normal")
+		useGet("/cors_test/normal")
 			.addHeader(CorsHandler.REQUEST_HEADER_ORIGIN, "")
 			.send()
 			.assertContentEquals("normal");
 
-		forGet("/cors_test/enabled")
+		useGet("/cors_test/enabled")
 			.addHeader(CorsHandler.REQUEST_HEADER_ORIGIN, "")
 			.send()
 			.assertStatusEquals(HTTP.SC_FORBIDDEN)
 		   	.assertContentEmpty();
 
         THttpResponse resp =
-            forGet("/cors_test/enabled")
+            useGet("/cors_test/enabled")
                 .addHeader(CorsHandler.REQUEST_HEADER_ORIGIN, "http://example.com")
                 .send().assertOk()
                 .assertHeaderEquals(CorsHandler.RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, "http://example.com")
@@ -62,7 +62,7 @@ public class CorsTestControllerTest extends WebTestCase {
     @Test
     public void testExposedHeaderLargeData() {
         THttpResponse resp =
-                forGet("/cors_test/large_data")
+                useGet("/cors_test/large_data")
                         .addHeader(CorsHandler.REQUEST_HEADER_ORIGIN, "http://example.com")
                         .send()
                         .assertOk();

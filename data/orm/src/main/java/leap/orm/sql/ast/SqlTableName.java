@@ -15,9 +15,15 @@
  */
 package leap.orm.sql.ast;
 
+import leap.core.el.EL;
+import leap.db.Db;
 import leap.db.DbDialect;
 import leap.lang.params.Params;
+import leap.orm.OrmContext;
+import leap.orm.dmo.Dmo;
 import leap.orm.mapping.EntityMapping;
+import leap.orm.sql.Sql;
+import leap.orm.sql.SqlContext;
 import leap.orm.sql.SqlStatementBuilder;
 
 import java.io.IOException;
@@ -27,7 +33,6 @@ public class SqlTableName extends SqlObjectNameBase implements SqlTableSource {
 	private String 		  alias;
     private boolean       join;
 	private EntityMapping entityMapping;
-    private DynamicName   dynamicTableName;
 	
 	public SqlTableName() {
 		
@@ -58,33 +63,25 @@ public class SqlTableName extends SqlObjectNameBase implements SqlTableSource {
 		this.entityMapping = entityMapping;
 	}
 
-    public DynamicName getDynamicTableName() {
-        return dynamicTableName;
-    }
-
-    public void setDynamicTableName(DynamicName dynamicTableName) {
-        this.dynamicTableName = dynamicTableName;
-    }
-
     public boolean isEntity(){
 		return null != entityMapping;
 	}
 
     @Override
-    protected void buildStatement_(SqlStatementBuilder stm, Params params) throws IOException {
-        if(null != dynamicTableName) {
-            toSql_(stm, dynamicTableName.get(stm, params));
+    protected void buildStatement_(SqlContext context, Sql sql, SqlStatementBuilder stm, Params params) throws IOException {
+        if(null != entityMapping && null != entityMapping.getDynamicTableName()) {
+            toSql_(stm, entityMapping.getDynamicTableName(), params, context.getOrmContext());
         }else{
-            super.buildStatement_(stm, params);
+            super.buildStatement_(context, sql, stm, params);
         }
     }
 
     @Override
     protected void toSql_(Appendable out) throws IOException {
-        toSql_(out, null);
+        toSql_(out, null, null, null);
     }
 
-    protected void toSql_(Appendable out, String dynamicLastName) throws IOException{
+    protected void toSql_(Appendable out, String dynamicLastName, Params params, OrmContext context) throws IOException{
         if(null != firstName){
             out.append(firstName).append('.');
         }
@@ -94,7 +91,15 @@ public class SqlTableName extends SqlObjectNameBase implements SqlTableSource {
         }
 
         if(null != dynamicLastName) {
+            dynamicLastName = EL.createCompositeExpression(dynamicLastName).getValue(params.map()).toString();
             out.append(dynamicLastName);
+
+            Db db = context.getDb();
+
+            if(!db.checkTableExists(dynamicLastName)) {
+                Dmo dmo = Dmo.get(context.getName());
+                dmo.cmdCreateTable(entityMapping).changeTableName(dynamicLastName).execute();
+            }
         }else if(null != entityMapping){
             out.append(entityMapping.getTableName());
         }else{

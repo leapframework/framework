@@ -21,6 +21,8 @@ import java.util.Objects;
 import leap.lang.Args;
 import leap.lang.Objects2;
 import leap.lang.params.Params;
+import leap.orm.sql.Sql;
+import leap.orm.sql.SqlContext;
 import leap.orm.sql.SqlStatementBuilder;
 import leap.orm.sql.parser.Token;
 
@@ -59,18 +61,18 @@ public class IfClause extends DynamicNode {
     }
 
 	@Override
-    protected void buildStatement_(SqlStatementBuilder stm, Params params) throws IOException {
+    protected void buildStatement_(SqlContext context, Sql sql, SqlStatementBuilder stm, Params params) throws IOException {
 		boolean condition = false;
 		for(IfStatement ifStatement : this.getIfStatements()){
 			Object obj = ifStatement.getCondition().eval(stm,params);
 			if(Objects.equals(Boolean.TRUE,obj)){
-				ifStatement.buildStatement(stm,params);
+				ifStatement.buildStatement(context, sql, stm, params);
 				condition = true;
 			}
 		}
 		if(!condition){
 			if(this.getElseStatement() != null){
-				this.getElseStatement().buildStatement(stm,params);
+				this.getElseStatement().buildStatement(context, sql, stm, params);
 			}
 		}
     }

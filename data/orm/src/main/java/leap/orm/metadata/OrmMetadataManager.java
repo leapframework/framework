@@ -20,11 +20,20 @@ import leap.orm.OrmMetadata;
 import leap.orm.mapping.EntityMapping;
 
 public interface OrmMetadataManager {
-    
-	OrmMetadata createMetadata(String name);
-	
-	void createEntity(OrmContext context, OrmMetadata md, EntityMapping em) throws MetadataException;
-	
+
+    /**
+     * Creates a new {@link OrmMetadata}.
+     */
+	OrmMetadata createMetadata();
+
+    /**
+     * Adds a new entity to the given orm context.
+     */
+	void createEntity(MetadataContext context, EntityMapping em) throws MetadataException;
+
+    /**
+     * Loads default metadata for the given orm context.
+     */
 	void loadMetadata(OrmContext context) throws MetadataException;
 	
 }

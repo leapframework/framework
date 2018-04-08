@@ -16,6 +16,7 @@
 package leap.core.el;
 
 import leap.core.BeanFactory;
+import leap.lang.el.ElEvalContext;
 import leap.lang.el.ElException;
 import leap.lang.el.ElPropertyResolver;
 
@@ -28,7 +29,7 @@ public class BeansPropertyResolver implements ElPropertyResolver {
 	}
 
 	@Override
-    public Object resovleProperty(String name) {
+    public Object resolveProperty(String name, ElEvalContext context) {
 		Object bean = factory.tryGetBean(name);
 		
 		if(null == bean){

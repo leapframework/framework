@@ -6,7 +6,7 @@
 	    <bean id="testIfBeanTrue2" class="tested.beans.TBean"/>
 	</beans>
 	
-	<beans if="true">
+	<beans if-expr="true">
 	    <bean id="testIfBeanTrue3" class="tested.beans.TBean"/>
 	</beans>
 

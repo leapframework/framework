@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Properties;
 
 @SuppressWarnings("rawtypes")
-public class TBean implements TBeanType1, TBeanType2 {
+public class TBean implements TBeanType1, TBeanType2, TBeanType3 {
 	
 	protected String       string;
 	protected int          int1;

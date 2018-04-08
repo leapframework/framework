@@ -63,7 +63,7 @@
         <bean type="leap.lang.http.client.HttpClient" class="leap.lang.http.client.apache.ApacheHttpClient" primary="true"/>
     </beans>
 
-    <beans if-class-not-present="org.apache.http.impl.conn.PoolingHttpClientConnectionManager">
+    <beans if-class-present="!org.apache.http.impl.conn.PoolingHttpClientConnectionManager">
         <bean type="leap.lang.http.client.HttpClient" class="leap.lang.http.client.JdkHttpClient" primary="true">
             <property name="defaultConnectTimeout" value="${httpClient.defaultConnectTimeout}" default-value="30000"/>
             <property name="defaultReadTimeout"    value="${httpClient.defaultReadTimeout}" default-value="30000"/>

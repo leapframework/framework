@@ -61,6 +61,7 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
     protected long                           verySlowSqlThreshold;
     protected boolean                        logSlowSql;
     protected boolean                        logVerySlowSql;
+    protected boolean                        exportMBean;
 
     @ConfigProperty
     public void setMonitoring(boolean monitoring) {
@@ -105,6 +106,15 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
         this.logVerySlowSql = logVerySlowSql;
     }
 
+    public boolean isExportMBean() {
+        return exportMBean;
+    }
+
+    @ConfigProperty
+    public void setExportMBean(boolean exportMBean) {
+        this.exportMBean = exportMBean;
+    }
+
     @Override
     public void addListener(DataSourceListener listener) {
 		if(listeners.contains(listener)){
@@ -132,7 +142,7 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
     }
 
 	@Override
-	public String getDefaultDatasourceBeanName() throws ObjectNotFoundException {
+	public String getDefaultDataSourceBeanName() throws ObjectNotFoundException {
 		return defaultDataSourceBeanName;
 	}
 
@@ -167,8 +177,26 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
     public Map<String, DataSource> getAllDataSources() {
 	    return allDataSourcesImmutableView;
     }
-	
-	@Override
+
+    @Override
+    public void registerDataSource(String name, DataSource ds) throws ObjectExistsException {
+        synchronized (this) {
+            if(allDataSources.containsKey(name)) {
+                throw new ObjectExistsException("DataSource '" + name + "' already exists!");
+            }
+
+            allDataSources.put(name, ds);
+
+            notifyDataSourceCreated(name, ds, exportMBean);
+        }
+    }
+
+    @Override
+    public boolean removeDataSource(String name) {
+        return null != allDataSources.remove(name);
+    }
+
+    @Override
     public DataSource createDefaultDataSource(DataSourceConfig conf) throws ObjectExistsException,SQLException {
 		synchronized (this) {
 			if(null != defaultDataSource){
@@ -180,7 +208,7 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
 			this.defaultDataSource = ds;
 			this.allDataSources.put(DEFAULT_DATASOURCE_NAME, ds);
 			
-			notifyDataSourceCreated(DEFAULT_DATASOURCE_NAME, ds);
+			notifyDataSourceCreated(DEFAULT_DATASOURCE_NAME, ds, conf.isExportMBean());
 			
 			return ds;
         }
@@ -192,12 +220,20 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
 			if(allDataSources.containsKey(name)){
 				throw new ObjectExistsException("DataSource '" + name + "' already exists");
 			}
+
+            if(props.isDefault() && null != defaultDataSource) {
+                throw new ObjectExistsException("Default DataSource already exists!");
+            }
 			
 			DataSource ds = createDataSource(props);
 			
 			allDataSources.put(name,ds);
+
+            if(props.isDefault()) {
+                defaultDataSource = ds;
+            }
 			
-			notifyDataSourceCreated(name, ds);
+			notifyDataSourceCreated(name, ds, props.isExportMBean());
 			
 			return ds;
         }
@@ -298,13 +334,15 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
         return null == ds ? null : (MDataSource)ds;
     }
 
-    protected void notifyDataSourceCreated(String name, DataSource ds) {
+    protected void notifyDataSourceCreated(String name, DataSource ds, boolean exportMBean) {
 
         if(ds instanceof MDataSourceProxy) {
             ((MDataSourceProxy) ds).setName(name);
         }
 
-        exportDataSourceMBean(name, ds);
+        if(exportMBean) {
+            exportDataSourceMBean(name, ds);
+        }
 
 		for(DataSourceListener l : listeners){
 			l.onDataSourceCreated(name, ds);
@@ -380,7 +418,7 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
 		}
 		
 		for(Entry<String, DataSource> entry : allDataSources.entrySet()){
-			notifyDataSourceCreated(entry.getKey(), entry.getValue());
+			notifyDataSourceCreated(entry.getKey(), entry.getValue(), exportMBean);
 		}
 		
 		this.allDataSourcesImmutableView = Collections.unmodifiableMap(allDataSources);

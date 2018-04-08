@@ -16,13 +16,15 @@
 package leap.web.action;
 
 import leap.core.validation.Validation;
+import leap.lang.http.HTTP;
 import leap.lang.intercepting.AbstractExecution;
 
 public class DefaultActionExecution extends AbstractExecution implements ActionExecution {
 
-	private Object[]   args;
-	private Object	   returnValue;
-	private Validation validation;
+	private Object[]    args;
+    private HTTP.Status status;
+	private Object	    returnValue;
+	private Validation  validation;
 	
 	public DefaultActionExecution(Validation validation) {
 		this.validation = validation;
@@ -37,7 +39,16 @@ public class DefaultActionExecution extends AbstractExecution implements ActionE
 		this.args = args;
 	}
 
-	@Override
+    @Override
+    public HTTP.Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(HTTP.Status status) {
+        this.status = status;
+    }
+
+    @Override
     public Object getReturnValue() {
 		return returnValue;
 	}
