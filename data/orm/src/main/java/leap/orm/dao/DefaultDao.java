@@ -67,6 +67,11 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 	public DefaultDao(String name){
 		this.name = name;
 	}
+
+    public DefaultDao(OrmContext context){
+        this.name = context.getName();
+        this.ormContext = context;
+    }
 	
 	//-------------------- validate -----------------------------------
 	@Override

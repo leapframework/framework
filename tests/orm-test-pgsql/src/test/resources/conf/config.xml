@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.leapframework.org/schema/config"
+        xmlns:el="http://www.leapframework.org/schema/el/config"
+        xmlns:orm="http://www.leapframework.org/schema/orm/config">
+
+    <base-package>leap.orm.tested</base-package>
+    <additional-packages>
+        leap.orm.datasource.annotation
+    </additional-packages>
+
+    <properties>
+        <property name="pgsql.driverClassName">org.postgresql.Driver</property>
+        <property name="pgsql.url">jdbc:postgresql://192.168.10.2:5432/pgsqltest</property>
+        <property name="pgsql.username">postgres</property>
+        <property name="pgsql.password">root</property>
+    </properties>
+
+    <orm:config auto-generate-columns="true" query-filter-enabled="true" auto-create-tables="true"/>
+
+    <import resource="config.local.xml" check-existence="false" default-override="true"/>
+</config>   

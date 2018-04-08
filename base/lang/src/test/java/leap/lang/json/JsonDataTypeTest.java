@@ -32,9 +32,10 @@ public class JsonDataTypeTest extends TestBase {
         String s = "2016-11-01";
 
         LocalDate d = LocalDate.parse(s);
-        assertEquals(s, JSON.encode(d));
+        assertEquals("\"" + s + "\"", JSON.encode(d));
 
         d = JSON.decode(s, LocalDate.class);
+
         assertEquals(s, d.toString());
     }
 
@@ -43,7 +44,7 @@ public class JsonDataTypeTest extends TestBase {
         String s = "10:11:12";
 
         LocalTime time = LocalTime.parse(s);
-        assertEquals(s, JSON.encode(time));
+        assertEquals("\"" + s + "\"", JSON.encode(time));
 
         time = JSON.decode(s, LocalTime.class);
         assertEquals(s, time.toString());
@@ -54,7 +55,7 @@ public class JsonDataTypeTest extends TestBase {
         String s = "2016-11-01T10:11:12";
 
         LocalDateTime dt = LocalDateTime.parse(s);
-        assertEquals(s, JSON.encode(dt));
+        assertEquals("\"" + s + "\"", JSON.encode(dt));
 
         dt = JSON.decode(s, LocalDateTime.class);
         assertEquals(s, dt.toString());

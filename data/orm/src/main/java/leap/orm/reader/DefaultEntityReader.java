@@ -32,6 +32,7 @@ import leap.orm.OrmContext;
 import leap.orm.mapping.*;
 import leap.orm.model.Model;
 import leap.orm.naming.NamingStrategy;
+import leap.orm.sql.SqlContext;
 import leap.orm.value.Entity;
 import leap.orm.value.EntityBase;
 
@@ -50,18 +51,18 @@ public class DefaultEntityReader implements EntityReader {
 	protected final Map<Class<?>, Map<String,Object>> beanColumnMappings = new ConcurrentHashMap<Class<?>, Map<String,Object>>();
 
 	@Override
-    public <T> T readFirst(OrmContext context, ResultSet rs, EntityMapping em, Class<T> resultClass) throws SQLException {
+    public <T> T readFirst(OrmContext context, SqlContext sqlContext, ResultSet rs, EntityMapping em, Class<T> resultClass) throws SQLException {
 		if(rs.next()){
-			ResultSetMapping rsm = createResultSetMapping(context, rs, em);
+			ResultSetMapping rsm = createResultSetMapping(context, sqlContext,rs, em);
 			return readCurrentRow(context, rs, rsm, resultClass);
 		}
 		return null;
     }
 
 	@Override
-	public <T> T readSingle(OrmContext context, ResultSet rs, EntityMapping em, Class<T> resultClass) throws SQLException, TooManyRecordsException {
+	public <T> T readSingle(OrmContext context, SqlContext sqlContext, ResultSet rs, EntityMapping em, Class<T> resultClass) throws SQLException, TooManyRecordsException {
 		if(rs.next()){
-			ResultSetMapping rsm = createResultSetMapping(context, rs, em);
+			ResultSetMapping rsm = createResultSetMapping(context, sqlContext,rs, em);
 			
 			T result = readCurrentRow(context, rs, rsm, resultClass);
 			
@@ -76,11 +77,11 @@ public class DefaultEntityReader implements EntityReader {
 	}
 	
 	@Override
-    public <T> List<T> readList(OrmContext context, ResultSet rs, EntityMapping em, Class<T> elementType, Class<? extends T> resultClass) throws SQLException {
+    public <T> List<T> readList(OrmContext context, SqlContext sqlContext, ResultSet rs, EntityMapping em, Class<T> elementType, Class<? extends T> resultClass) throws SQLException {
 		List<T> list = new ArrayList<T>();
 		
 		if(rs.next()){
-			ResultSetMapping rsm = createResultSetMapping(context, rs, em);
+			ResultSetMapping rsm = createResultSetMapping(context, sqlContext, rs, em);
 			do{
 				list.add(readCurrentRow(context, rs, rsm, resultClass));
 			}while(rs.next());
@@ -114,8 +115,8 @@ public class DefaultEntityReader implements EntityReader {
         return readBean(context, rs,rsm,resultClass);
 	}
 	
-	protected ResultSetMapping createResultSetMapping(OrmContext context,ResultSet rs,EntityMapping em) throws SQLException {
-		return new DefaultResultSetMapping(context, rs, em);
+	protected ResultSetMapping createResultSetMapping(OrmContext context,SqlContext sqlContext, ResultSet rs,EntityMapping em) throws SQLException {
+		return new DefaultResultSetMapping(context, sqlContext, rs, em);
 	}
 
     protected Record readRecord(OrmContext context, ResultSet rs,ResultSetMapping rsm) throws SQLException {
@@ -148,9 +149,14 @@ public class DefaultEntityReader implements EntityReader {
 
             if(null != fm) {
                 name = fm.getFieldName();
-            }
-
+            } else {
+				name = getKey(context, cm, name);
+			}
+			
             model.set(name, value);
+			if(cm.isAlias() && !name.equals(cm.getAliasName())){
+				model.set(cm.getAliasName(), value);
+			}
         }
 
 		return model;
@@ -205,13 +211,25 @@ public class DefaultEntityReader implements EntityReader {
 			Object value = readColumnValue(dialect, rs, cm, fm, i+1);
 			
 			if(null == fm) {
-				map.put(cm.getColumnLabel(), value);
+				String key = cm.getColumnLabel();
+				key = getKey(context, cm, key);
+				map.put(key, value);
 			}else{
                 map.put(fm.getFieldName(), value);
             }
 		}
 	}
-	
+
+	private String getKey(OrmContext context, ResultColumnMapping cm, String key) {
+		if(cm.isAlias()){
+			return cm.getAliasName();
+		}
+		if(Strings.isBlank(cm.getColumnLabel()) || Strings.equals(cm.getColumnLabel(), cm.getColumnName())) {
+            key = Strings.lowerCamel(cm.getColumnName(), '_');
+        }
+		return key;
+	}
+
 	protected Object readColumnValue(DbDialect dialect,ResultSet rs,ResultColumnMapping cm,FieldMapping fm, int index) throws SQLException{
 		Object value = dialect.getColumnValue(rs, index, cm.getColumnType());
 		

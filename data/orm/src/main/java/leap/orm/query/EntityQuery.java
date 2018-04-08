@@ -16,9 +16,12 @@
 package leap.orm.query;
 
 import leap.orm.mapping.EntityMapping;
+import leap.orm.sql.SqlClause;
 
 public interface EntityQuery<T> extends Query<T> {
 	
 	EntityMapping getEntityMapping();
-
+	
+	SqlClause getSqlClause();
+	
 }

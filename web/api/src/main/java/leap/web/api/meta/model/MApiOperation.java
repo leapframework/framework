@@ -35,6 +35,7 @@ public class MApiOperation extends MApiNamedWithDesc {
     protected final boolean         allowAnonymous;
     protected final boolean         allowClientOnly;
     protected final boolean         deprecated;
+    protected final Boolean         corsEnabled;
 
     public MApiOperation(String id, String name, String title, String summary, String description,
                          HTTP.Method method,
@@ -47,7 +48,9 @@ public class MApiOperation extends MApiNamedWithDesc {
                          MApiSecurity[] security,
                          boolean allowAnonymous,
                          boolean allowClientOnly,
-                         boolean deprecated, Map<String, Object> attrs) {
+                         boolean deprecated,
+                         Boolean cors,
+                         Map<String, Object> attrs) {
         super(name, title, summary, description, attrs);
 
         this.id = id;
@@ -62,6 +65,7 @@ public class MApiOperation extends MApiNamedWithDesc {
         this.allowAnonymous = allowAnonymous;
         this.allowClientOnly = allowClientOnly;
         this.deprecated = deprecated;
+        this.corsEnabled = cors;
     }
 
     /**
@@ -176,4 +180,10 @@ public class MApiOperation extends MApiNamedWithDesc {
         return deprecated;
     }
 
+    /**
+     * Optional.
+     */
+    public Boolean getCorsEnabled() {
+        return corsEnabled;
+    }
 }

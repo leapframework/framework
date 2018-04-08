@@ -248,9 +248,11 @@ class JdkHttpRequest implements HttpRequest {
                     }
                 }
             }
-            
+
+            JdkHttpResponse response =  new JdkHttpResponse(client, this, immediately);
             log.debug("Response used {}ms", sw.getElapsedMilliseconds());
-            return new JdkHttpResponse(client, this, immediately);
+
+            return response;
         } catch (MalformedURLException e) {
             throw new HttpException("Invalid url : " + e.getMessage(), e);
         } catch (IOException e) {

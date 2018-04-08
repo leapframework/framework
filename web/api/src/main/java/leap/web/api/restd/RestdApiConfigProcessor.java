@@ -26,6 +26,7 @@ import leap.lang.path.AntPathPattern;
 import leap.orm.Orm;
 import leap.orm.OrmContext;
 import leap.orm.OrmMetadata;
+import leap.orm.OrmRegistry;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.metadata.OrmMTypeFactory;
@@ -51,6 +52,7 @@ public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataP
     protected @Inject RestdStrategy    strategy;
     protected @Inject RestdProcessor[] processors;
     protected @Inject OrmMTypeFactory  omf;
+    protected @Inject OrmRegistry      ormRegistry;
 
     @Override
     public void preProcess(ApiConfigurator api) {
@@ -61,15 +63,15 @@ public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataP
 
         OrmContext  oc  = lookupOrmContext(c);
         OrmMetadata om  = oc.getMetadata();
-        Dao         dao = Orm.dao(oc.getName());
+        Dao         dao = oc.getDao();
 
         Set<EntityMapping> ormModels = computeOrmModels(c, om);
         Set<RestdModel> restdModels = createRestdModels(api, c, oc, ormModels);
 
-        SimpleRestdContext context = new SimpleRestdContext();
-        context.setConfig(c);
+        SimpleRestdContext context = new SimpleRestdContext(api.config(), c);
         context.setDao(dao);
         context.setModels(Collections.unmodifiableSet(restdModels));
+        context.setRoutes(null == api.config().getDynamicRoutes() ? app.routes() : api.config().getDynamicRoutes());
 
         api.setExtension(RestdContext.class, context);
 
@@ -98,23 +100,23 @@ public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataP
     protected void processRestdApi(ApiConfigurator api, RestdContext context) {
 
         for(RestdProcessor p : processors) {
-            p.preProcessApi(app, api, context);
+            p.preProcessApi(api, context);
         }
 
         for(RestdModel model : context.getModels()) {
             for(RestdProcessor p : processors) {
-                p.preProcessModel(app, api, context, model);
+                p.preProcessModel(api, context, model);
             }
         }
 
         for(RestdModel model : context.getModels()) {
             for(RestdProcessor p : processors) {
-                p.postProcessModel(app, api, context, model);
+                p.postProcessModel(api, context, model);
             }
         }
 
         for(RestdProcessor p : processors) {
-            p.postProcessApi(app, api, context);
+            p.postProcessApi(api, context);
         }
 
     }
@@ -123,10 +125,9 @@ public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataP
         String dataSourceName =
                 Strings.firstNotEmpty(c.getDataSourceName(), DataSourceManager.DEFAULT_DATASOURCE_NAME);
 
-        OrmContext oc = factory.tryGetBean(OrmContext.class, dataSourceName);
-
+        OrmContext oc = ormRegistry.findContext(dataSourceName);
         if (null == oc) {
-            throw new ApiConfigException("Can't create restd api , data source '" + dataSourceName + "' has not been configured!");
+            throw new ApiConfigException("Can't create restd api , orm context '" + dataSourceName + "' has not been registeree!");
         }
 
         return oc;

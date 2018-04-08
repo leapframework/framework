@@ -7,12 +7,11 @@
 	<xsd:element name="config">
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element ref="debug" minOccurs="0" maxOccurs="1"/>
-                <xsd:element ref="lazy-template" minOccurs="0" maxOccurs="1"/>
                 <xsd:element ref="base-package" minOccurs="0" maxOccurs="1"/>
                 <xsd:element ref="additional-packages" minOccurs="0" maxOccurs="1"/>
                 <xsd:element ref="default-locale" minOccurs="0" maxOccurs="1"/>
                 <xsd:element ref="default-charset" minOccurs="0" maxOccurs="1"/>
+                <xsd:element ref="debug" minOccurs="0" maxOccurs="1"/>
 			    <xsd:choice minOccurs="0" maxOccurs="unbounded">
                     <xsd:element ref="property"/>
                     <xsd:element ref="properties"/>

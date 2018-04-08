@@ -21,7 +21,9 @@ import leap.lang.Strings;
 import leap.lang.convert.Converts;
 import leap.lang.jdbc.JDBC;
 import leap.lang.params.Params;
+import leap.orm.sql.Sql;
 import leap.orm.sql.Sql.Scope;
+import leap.orm.sql.SqlContext;
 import leap.orm.sql.SqlStatementBuilder;
 
 import java.io.IOException;
@@ -37,7 +39,7 @@ public abstract class ParamBase extends AstNode {
     }
 
     @Override
-	protected void buildStatement_(SqlStatementBuilder stm, Params params) throws IOException {
+	protected void buildStatement_(SqlContext context, Sql sql, SqlStatementBuilder stm, Params params) throws IOException {
 		//stm.increaseAndGetParameterIndex();
 		
 		Object p = eval(stm,params);

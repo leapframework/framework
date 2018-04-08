@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.leapframework.org/schema/config"
+		xmlns:orm="http://www.leapframework.org/schema/orm/config">
+
+    <orm:models datasource="ds1">
+		<orm:package name="tested.model"/>
+		<orm:class   name="leap.orm.tested.model.Model3"/>
+    </orm:models>
+
+    <orm:models datasource="mysql">
+        <orm:package name="leap.orm.tested"/>
+    </orm:models>
+    
+    <orm:models datasource="derby">
+        <orm:package name="leap.orm.tested"/>
+    </orm:models>
+    
+    <orm:models datasource="h2">
+        <orm:package name="leap.orm.tested"/>
+        <orm:class name="leap.orm.tested.OrmConfigTableModel" table="table_name_in_xml"/>
+    </orm:models>
+
+</config>

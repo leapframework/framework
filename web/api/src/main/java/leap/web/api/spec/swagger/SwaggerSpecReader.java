@@ -41,6 +41,8 @@ import static leap.web.api.spec.swagger.SwaggerConstants.*;
 
 public class SwaggerSpecReader implements ApiSpecReader {
 
+    private final List<String> HTTP_METHODS_LOWER_CASE = Arrays.asList("get", "put", "post", "delete", "options", "head", "patch");
+
     @Override
     public ApiMetadataBuilder read(Reader reader) throws IOException {
         String content = IO.readString(reader).trim();
@@ -148,7 +150,9 @@ public class SwaggerSpecReader implements ApiSpecReader {
         mp.setPathTemplate(pathTemplate);
 
         map.forEach((method, operation) -> {
-            mp.addOperation(readOperation(method, (Map<String,Object>)operation));
+            if(HTTP_METHODS_LOWER_CASE.contains(method) && null != operation) {
+                mp.addOperation(readOperation(method, (Map<String,Object>)operation));
+            }
         });
 
         return mp;
@@ -160,6 +164,8 @@ public class SwaggerSpecReader implements ApiSpecReader {
         JsonObject o = JsonObject.of(map);
 
         mo.setMethod(HTTP.Method.valueOf(method.toUpperCase()));
+
+        mo.setCorsEnabled(o.get(X_CORS, Boolean.class));
 
         //tags
         List<String> tags = o.getList(TAGS);

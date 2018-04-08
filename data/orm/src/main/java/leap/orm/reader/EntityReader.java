@@ -22,14 +22,15 @@ import java.util.List;
 import leap.core.exception.TooManyRecordsException;
 import leap.orm.OrmContext;
 import leap.orm.mapping.EntityMapping;
+import leap.orm.sql.SqlContext;
 
 
 public interface EntityReader {
 	
-	<T> T readFirst(OrmContext context, ResultSet rs, EntityMapping em, Class<T> resultClass) throws SQLException;
+	<T> T readFirst(OrmContext context, SqlContext sqlContext, ResultSet rs, EntityMapping em, Class<T> resultClass) throws SQLException;
 
-	<T> T readSingle(OrmContext context, ResultSet rs, EntityMapping em, Class<T> resultClass) throws SQLException, TooManyRecordsException;
+	<T> T readSingle(OrmContext context, SqlContext sqlContext, ResultSet rs, EntityMapping em, Class<T> resultClass) throws SQLException, TooManyRecordsException;
 	
-	<T> List<T> readList(OrmContext context, ResultSet rs,EntityMapping em,Class<T> elementType, Class<? extends T> resultClass) throws SQLException;
+	<T> List<T> readList(OrmContext context, SqlContext sqlContext, ResultSet rs,EntityMapping em,Class<T> elementType, Class<? extends T> resultClass) throws SQLException;
 	
 }

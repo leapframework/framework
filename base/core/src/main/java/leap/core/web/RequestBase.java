@@ -70,6 +70,7 @@ public abstract class RequestBase extends RequestContext implements InputStreamS
 	 * Returns the url of server url and context path, example : http://server_host[:server_port][context_path]
 	 */
 	public abstract String getContextUrl();
+
 	/**
 	 * Returns the reverse proxy url of server url and context path, example : http://server_host[:server_port][context_path]
 	 */

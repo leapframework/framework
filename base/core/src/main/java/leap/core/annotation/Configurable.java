@@ -21,7 +21,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.TYPE}) 
+@Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface Configurable {
@@ -35,5 +35,16 @@ public @interface Configurable {
 	 * The prefix of config property.
 	 */
 	String prefix() default "";
-	
+
+    @Target({ElementType.METHOD, ElementType.FIELD})
+    @Retention(RetentionPolicy.RUNTIME)
+    @Inherited
+    @interface Nested {
+
+        /**
+         * The nested prefix.
+         */
+        String prefix() default "";
+
+    }
 }

@@ -16,7 +16,9 @@
 package leap.lang.json;
 
 import leap.lang.Strings;
+import leap.lang.convert.BeanConverter;
 import leap.lang.convert.Converts;
+import leap.lang.exception.ObjectExistsException;
 
 import java.util.Collection;
 import java.util.List;
@@ -27,6 +29,8 @@ import java.util.function.Consumer;
 
 @SuppressWarnings({"rawtypes","unchecked"})
 public class JsonObject implements JsonValue {
+
+    private static final BeanConverter BEAN_CONVERTER = new BeanConverter();
 
     public static JsonObject of(Map<String,Object> map) {
         return new JsonObject(map);
@@ -267,6 +271,21 @@ public class JsonObject implements JsonValue {
     public Double getDouble(String key,Double defaultValue){
     	Double d = get(key);
     	return null == d ? defaultValue : d;
+    }
+
+    /**
+     * Decodes this json object to a bean.
+     */
+    public <T> T decode(Class<T> type) {
+       return Converts.convert(map, type);
+    }
+
+    /**
+     * Decodes this json object to the bean.
+     */
+    public <T> T decode(T bean) {
+        BEAN_CONVERTER.convert(map, bean, JSON.convertContext);
+        return bean;
     }
 
 	@Override

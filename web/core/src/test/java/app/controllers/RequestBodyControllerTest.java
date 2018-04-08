@@ -27,16 +27,16 @@ public class RequestBodyControllerTest extends WebTestCase {
 
 	@Test
 	public void testStringBody() {
-		THttpResponse resp = forPost("/request_body/string_body").setBody("hello").send();
+		THttpResponse resp = usePost("/request_body/string_body").setBody("hello").send();
 		resp.assertContentEquals("hello");
 		
-		resp = forPost("/request_body/string_body1?p1=x").setBody("hello").send();
+		resp = usePost("/request_body/string_body1?p1=x").setBody("hello").send();
 		resp.assertContentEquals("hello:x");
 	}
 	
 	@Test
 	public void testBytesBody() {
-		THttpResponse resp = forPost("/request_body/bytes_body").setBody("hello").send();
+		THttpResponse resp = usePost("/request_body/bytes_body").setBody("hello").send();
 		resp.assertContentEquals(Hex.encode("hello".getBytes()));
 	}
 
@@ -48,7 +48,7 @@ public class RequestBodyControllerTest extends WebTestCase {
 
         String json = JSON.encode(product);
 
-        THttpResponse resp = forPost("/request_body/json_body")
+        THttpResponse resp = usePost("/request_body/json_body")
                 .setContentType(MimeTypes.APPLICATION_JSON_TYPE)
                 .setBody(json).send();
 
@@ -63,7 +63,7 @@ public class RequestBodyControllerTest extends WebTestCase {
 		
 		String json = JSON.encode(product);
 		
-		THttpResponse resp = forPost("/request_body/entity_body")
+		THttpResponse resp = usePost("/request_body/entity_body")
 							.setContentType(MimeTypes.APPLICATION_JSON_TYPE)
 							.setBody(json).send();
 		
@@ -78,7 +78,7 @@ public class RequestBodyControllerTest extends WebTestCase {
         String json = JSON.encode(product);
 
         String content =
-                forPost("/request_body/peek_input_stream")
+                usePost("/request_body/peek_input_stream")
                 .setContentType(MimeTypes.APPLICATION_JSON_TYPE)
                 .setBody(json)
                 .send()
@@ -86,7 +86,7 @@ public class RequestBodyControllerTest extends WebTestCase {
 
         assertEquals(content, json + json);
 
-        forPost("/request_body/peek_input_stream_err")
+        usePost("/request_body/peek_input_stream_err")
                 .setContentType(MimeTypes.APPLICATION_JSON_TYPE)
                 .setBody(json)
                 .send()

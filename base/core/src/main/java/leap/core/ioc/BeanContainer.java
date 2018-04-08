@@ -266,10 +266,6 @@ public class BeanContainer implements BeanFactory {
             ((AppConfigBase) config).setPropertyProvider(tryCreateBean(PropertyProvider.class));
         }
 
-
-
-		this.initNonLazyBeans();
-
         this.containerInited = true;
 
 		return this;
@@ -294,6 +290,7 @@ public class BeanContainer implements BeanFactory {
     	if(appInited){
     		throw new IllegalStateException("postInitialize already called");
     	}
+		this.initNonLazyBeans();
     	this.appInited = true;
     }
     
@@ -558,12 +555,18 @@ public class BeanContainer implements BeanFactory {
     	String key = null == qualifier ? type.getName() : type.getName() + "$" + qualifier;
     	
         List<T> beans = (List<T>)typedBeansMap.get(key);
-    	
-    	if(null == beans){
+
+        boolean cache = true;
+        if(null == beans){
     		beans = new ArrayList<T>();
     		BeanListDefinition bld = beanListDefinitions.get(key);
     		if(null != bld){
     			for(ValueDefinition vd : bld.getValues()){
+                    Object v = vd.getDefinedValue();
+                    if(v instanceof BeanDefinition && !((BeanDefinition)v).isSingleton()) {
+                        cache = false;
+                    }
+
     				Object bean = doCreateBean(vd);
     				if(!type.isAssignableFrom(bean.getClass())){
     					throw new BeanDefinitionException("The bean list's element must be instance of '" + type.getName() + "' in '" + bld.getSource() + "'");
@@ -572,16 +575,23 @@ public class BeanContainer implements BeanFactory {
     			}
     		}else{
     	    	Map<T, BeanDefinition> bds = getBeansWithDefinition(type);
-    	    	
+
     	    	for(Entry<T, BeanDefinition> entry : bds.entrySet()){
     	    		BeanDefinition bd = entry.getValue();
+
+                    if(!bd.isSingleton()) {
+                        cache = false;
+                    }
+
     	    		if(null == qualifier || bd.getQualifiers().contains(qualifier)){
     	    			beans.add(entry.getKey());
     	    		}
     	    	}
     		}
-    		
-    		typedBeansMap.put(key, beans);
+
+            if(cache) {
+                typedBeansMap.put(key, beans);
+            }
     	}
     	return beans;
     }
@@ -618,18 +628,22 @@ public class BeanContainer implements BeanFactory {
 		
 		if(null == beans){
 			beans = new LinkedHashMap<>(5);
-			
+
+            boolean cache = true;
+
 			Set<BeanDefinitionBase> typeSet = bds.beanTypeDefinitions.get(type);
 			if(null != typeSet){
 				for(BeanDefinitionBase bd : typeSet){
-					if(!bd.isSingleton()){
-						throw new BeanDefinitionException("The bean '" + bd.getName() + "' must be singleton, cannot cache the named beans for type '" + type.getName() + "'");
-					}
+                    if(!bd.isSingleton()) {
+                        cache = false;
+                    }
 					beans.put((T)doGetBean(bd),bd);
 				}
 			}
-			
-			typedInstances.put(type, Collections.unmodifiableMap(beans));
+
+            if(cache) {
+                typedInstances.put(type, Collections.unmodifiableMap(beans));
+            }
 		}
 		
 	    return beans;
@@ -1434,6 +1448,10 @@ public class BeanContainer implements BeanFactory {
 		if(bean instanceof BeanNameAware){
 			((BeanNameAware) bean).setBeanName(bd.getName());
 		}
+
+        if(bean instanceof BeanPrimaryAware) {
+            ((BeanPrimaryAware) bean).setBeanPrimary(bd.isPrimary());
+        }
 	}
 	
 	protected void doBeanValidation(BeanDefinitionBase bd,Object bean){
@@ -1531,7 +1549,7 @@ public class BeanContainer implements BeanFactory {
 		if(definedValue instanceof BeanReference){
 			return doGetBeanReferenceInstance((BeanReference)definedValue);
 		}else if(definedValue instanceof BeanDefinitionBase){
-			return doBeanCreation((BeanDefinitionBase)definedValue);
+			return doGetBean((BeanDefinitionBase)definedValue);
 		}
 		
 		throw new IllegalStateException("The value definition must be bean reference or bean definition");
@@ -1869,7 +1887,7 @@ public class BeanContainer implements BeanFactory {
 		
         bds.add(bd);
 	}
-	
+
 	protected void addBeanList(BeanListDefinition bld){
 		String key = bld.getType().getName();
 		
@@ -1929,6 +1947,79 @@ public class BeanContainer implements BeanFactory {
 
         public String key(Class<?> type, String name) {
             return type.getName() + "$" + name;
+        }
+
+        public BeanDefinitionBase remove(String id) {
+            return removeAll(identifiedBeanDefinitions.remove(id));
+        }
+
+        public BeanDefinitionBase remove(Class<?> type, String name) {
+            String key = key(type, name);
+            return removeAll(namedBeanDefinitions.remove(key));
+        }
+
+        public BeanDefinitionBase remove(Class<?> type, Class<?> cls) {
+            Set<BeanDefinitionBase> set = beanTypeDefinitions.get(type);
+            if(null != set) {
+                Set<BeanDefinitionBase> found = new HashSet<>();
+                Set<BeanDefinitionBase> notFound = new LinkedHashSet<>();
+
+                for(BeanDefinitionBase bd : set) {
+                    if(bd.getBeanClass().equals(cls)) {
+                        found.add(bd);
+                    }else{
+                        notFound.add(bd);
+                    }
+                }
+
+                set.clear();
+                set.addAll(notFound);
+
+                for(BeanDefinitionBase bd : found) {
+                    removeAll(bd);
+                }
+            }
+            return null;
+        }
+
+        public BeanDefinitionBase removePrimary(Class<?> type) {
+            return removeAll(primaryBeanDefinitions.remove(type));
+        }
+
+        protected BeanDefinitionBase removeAll(BeanDefinitionBase bd) {
+            if(null != bd) {
+                allBeanDefinitions.remove(bd);
+
+                if(!Strings.isEmpty(bd.getId())) {
+                    identifiedBeanDefinitions.remove(bd.getId());
+                }
+
+                if(bd.isPrimary()) {
+                    primaryBeanDefinitions.remove(bd.getType());
+                }
+
+                if(!Strings.isEmpty(bd.getName())) {
+                    namedBeanDefinitions.remove(bd.getType(), bd.getName());
+                }
+
+                Set<BeanDefinitionBase> set = beanTypeDefinitions.get(bd.getType());
+                if(null != set) {
+                    Set<BeanDefinitionBase> found = new HashSet<>();
+                    Set<BeanDefinitionBase> notFound = new LinkedHashSet<>();
+
+                    for (BeanDefinitionBase item : set) {
+                        if (item == bd) {
+                            found.add(item);
+                        } else {
+                            notFound.add(item);
+                        }
+                    }
+
+                    set.clear();
+                    set.addAll(notFound);
+                }
+            }
+            return bd;
         }
 
         @Override

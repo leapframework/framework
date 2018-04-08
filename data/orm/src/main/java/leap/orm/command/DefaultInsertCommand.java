@@ -32,6 +32,7 @@ import leap.orm.sql.SqlCommand;
 import leap.orm.sql.SqlFactory;
 import leap.orm.value.EntityWrapper;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class DefaultInsertCommand extends AbstractEntityDaoCommand implements InsertCommand,EntityExecutionContext {
@@ -67,7 +68,27 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
 
     @Override
     public Object id() {
-        return null == id ? generatedId : id;
+        if(null != id) {
+            return id;
+        }
+
+        if(null != generatedId) {
+            return generatedId;
+        }
+
+        if(em.getKeyFieldNames().length == 1){
+            return entity.get(em.getKeyFieldNames()[0]);
+        }else if(em.getKeyFieldNames().length > 0){
+            Map<String,Object> map = new LinkedHashMap<>();
+
+            for(String name : em.getKeyFieldNames()) {
+                map.put(name, entity.get(name));
+            }
+
+            return map;
+        }
+
+        return null;
     }
 
 	@Override
@@ -164,11 +185,13 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
         prepareIdAndSerialization(id, map);
 
         //Executes
+        int result;
         if(null != preparedStatementHandler){
-            return command.executeUpdate(this, map, preparedStatementHandler);
+            result = command.executeUpdate(this, map, preparedStatementHandler);
         }else{
-            return command.executeUpdate(this, map);
+            result = command.executeUpdate(this, map);
         }
+        return result;
     }
 	
 	protected void prepare(){

@@ -20,6 +20,22 @@
         <property name="noFieldProperty1" value="1"/>
         <property name="noFieldProperty2" value="2"/>
         <property name="noFieldProperty3" value="3"/>
+
+        <properties prefix="nested1">
+            <property name="prop1" value="1"/>
+        </properties>
+
+        <properties prefix="nested2">
+            <property name="prop1" value="2"/>
+        </properties>
+
+        <properties prefix="nested3">
+            <property name="prop1" value="3"/>
+        </properties>
+
+        <properties prefix="nested">
+            <property name="prop1" value="4"/>
+        </properties>
     </properties>
 
 </config>

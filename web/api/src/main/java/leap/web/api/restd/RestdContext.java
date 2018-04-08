@@ -16,9 +16,10 @@
 
 package leap.web.api.restd;
 
-import leap.orm.OrmContext;
 import leap.orm.dao.Dao;
+import leap.web.api.config.ApiConfig;
 import leap.web.api.config.model.RestdConfig;
+import leap.web.route.Routes;
 
 import java.util.Set;
 
@@ -30,6 +31,11 @@ public interface RestdContext {
     RestdConfig getConfig();
 
     /**
+     * Returns the config of api.
+     */
+    ApiConfig getApiConfig();
+
+    /**
      * Returns the dao object.
      */
     Dao getDao();
@@ -38,5 +44,10 @@ public interface RestdContext {
      * Returns the included models of restd api.
      */
     Set<RestdModel> getModels();
+
+    /**
+     * Returns the {@link Routes} for storing dynamic created routes.
+     */
+    Routes getRoutes();
 
 }

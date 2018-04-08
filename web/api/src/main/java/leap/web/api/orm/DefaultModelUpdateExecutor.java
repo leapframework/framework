@@ -40,8 +40,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class DefaultModelUpdateExecutor extends ModelExecutorBase implements ModelUpdateExecutor {
 
-    protected DefaultModelUpdateExecutor(ModelExecutorConfig c, MApiModel am, Dao dao, EntityMapping em) {
-        super(c, am, dao, em);
+    public DefaultModelUpdateExecutor(ModelExecutorContext context) {
+        super(context);
     }
 
     @Override

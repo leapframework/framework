@@ -36,7 +36,7 @@ public class ValidationTestControllerTest extends WebTestCase {
 
     @Test
 	public void testValidateBean() {
-        forPost("/validation_test/validate")
+        usePost("/validation_test/validate")
                 .setJson(new ValidationTestController.VBean())
                 .sendAjax()
                 .assert400(); //bad request

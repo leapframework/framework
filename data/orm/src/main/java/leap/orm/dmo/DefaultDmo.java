@@ -24,6 +24,7 @@ import leap.lang.Args;
 import leap.lang.Confirm;
 import leap.lang.Strings;
 import leap.lang.tostring.ToStringBuilder;
+import leap.orm.OrmContext;
 import leap.orm.command.CreateEntityCommand;
 import leap.orm.command.CreateTableCommand;
 import leap.orm.command.DropTableCommand;
@@ -47,6 +48,11 @@ public class DefaultDmo extends DmoBase {
 	public DefaultDmo(String name){
 		super(name);
 	}
+
+    public DefaultDmo(OrmContext context) {
+        super(context.getName());
+        this.ormContext = context;
+    }
 	
 	@Override
     public List<DbSchema> getDbSchemas() {

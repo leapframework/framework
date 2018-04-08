@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans"
+       if-servlet-environment="true"
+       if-class-present="leap.web.security.SecurityConfig">
+
+    <!-- error -->
+    <bean type="leap.oauth2.webapp.OAuth2ErrorHandler"
+          class="leap.oauth2.webapp.DefaultOAuth2ErrorHandler" primary="true"/>
+
+    <!-- config -->
+    <bean type="leap.oauth2.webapp.OAuth2Config"
+          class="leap.oauth2.webapp.DefaultOAuth2Config" primary="true">
+
+        <additional-type-def type="leap.oauth2.webapp.OAuth2Configurator" primary="true"/>
+        <additional-type-def type="leap.web.AppListener"/>
+    </bean>
+
+    <!-- login -->
+    <bean type="leap.web.security.SecurityInterceptor"
+          class="leap.oauth2.webapp.login.OAuth2LoginInterceptor"/>
+
+    <bean type="leap.oauth2.webapp.login.OAuth2LoginHandler"
+          class="leap.oauth2.webapp.login.DefaultOAuth2LoginHandler" primary="true"/>
+
+    <!-- logout -->
+    <bean type="leap.web.security.SecurityInterceptor"
+          class="leap.oauth2.webapp.logout.OAuth2LogoutInterceptor"/>
+
+    <!-- authc -->
+    <bean type="leap.web.security.SecurityInterceptor"
+          class="leap.oauth2.webapp.authc.OAuth2AuthenticationInterceptor"/>
+
+    <bean type="leap.oauth2.webapp.authc.OAuth2Authenticator"
+          class="leap.oauth2.webapp.authc.DefaultOAuth2Authenticator" primary="true"/>
+
+    <!-- code -->
+    <bean type="leap.oauth2.webapp.code.CodeVerifier"
+          class="leap.oauth2.webapp.code.DefaultCodeVerifier" primary="true"/>
+
+    <!-- access token -->
+    <bean type="leap.oauth2.webapp.token.TokenExtractor"
+          class="leap.oauth2.webapp.token.DefaultTokenExtractor" primary="true"/>
+
+    <bean type="leap.oauth2.webapp.token.at.AccessTokenStore"
+          class="leap.oauth2.webapp.token.at.DefaultAccessTokenStore" primary="true"/>
+
+    <bean name="jwt"
+          type="leap.oauth2.webapp.token.TokenVerifier"
+          class="leap.oauth2.webapp.token.jwt.JwtTokenVerifier"/>
+
+    <bean type="leap.oauth2.webapp.token.TokenInfoLookup"
+          class="leap.oauth2.webapp.token.DefaultTokenInfoLookup" primary="true"/>
+
+    <!-- id token -->
+    <bean type="leap.oauth2.webapp.token.id.IdTokenVerifier"
+          class="leap.oauth2.webapp.token.id.DefaultIdTokenVerifier" primary="true"/>
+
+    <!-- user -->
+    <bean type="leap.oauth2.webapp.user.UserInfoLookup"
+          class="leap.oauth2.webapp.user.DefaultUserInfoLookup" primary="true"/>
+
+</beans>

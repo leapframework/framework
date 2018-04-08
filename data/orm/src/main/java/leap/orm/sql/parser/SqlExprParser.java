@@ -110,14 +110,15 @@ class SqlExprParser extends SqlParser {
 			        parseExpr();
 			    }
 			    
-			    expect(Token.WHEN).acceptText();
-			    parseExpr();
-			    expect(Token.THEN).acceptText();
-			    parseExpr();
-			    
 			    while(lexer.token() == Token.WHEN) {
 			        acceptText();
 			        parseExpr();
+
+					while (lexer.token() == Token.AND || lexer.token() == Token.OR) {
+						acceptText();
+						parseExpr();
+					}
+
 			        expect(Token.THEN).acceptText();
 			        parseExpr();
 			    }

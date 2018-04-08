@@ -21,7 +21,7 @@ import leap.db.DbDialect;
 import leap.orm.OrmContext;
 import leap.orm.mapping.EntityMapping;
 
-public interface SqlContext {
+public interface SqlContext extends SqlLanguage.Options {
     
     /**
      * Returns the {@link DbDialect}.

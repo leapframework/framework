@@ -16,7 +16,9 @@
 package leap.orm.sql.ast;
 
 import leap.lang.params.Params;
+import leap.orm.metadata.MetadataContext;
 import leap.orm.sql.PreparedBatchSqlStatementBuilder;
+import leap.orm.sql.Sql;
 import leap.orm.sql.SqlContext;
 import leap.orm.sql.SqlStatementBuilder;
 
@@ -44,8 +46,17 @@ public class SqlNodeContainer extends SqlNode implements AstNodeContainer {
 	public void setNodes(AstNode[] nodes) {
 		this.nodes = nodes;
 	}
-	
-	@Override
+
+    @Override
+    public void prepare(MetadataContext context, Sql sql) {
+        if(null != nodes) {
+            for(AstNode node : nodes) {
+                node.prepare(context, sql);
+            }
+        }
+    }
+
+    @Override
     protected void toSql_(Appendable buf) throws IOException {
 		for(int i=0;i<nodes.length;i++){
 			nodes[i].toSql(buf);
@@ -62,10 +73,10 @@ public class SqlNodeContainer extends SqlNode implements AstNodeContainer {
     }
 
 	@Override
-	protected void buildStatement_(SqlStatementBuilder stm, Params params) throws IOException {
+	protected void buildStatement_(SqlContext context, Sql sql, SqlStatementBuilder stm, Params params) throws IOException {
 	    for(int i=0;i<nodes.length;i++){
             AstNode node = nodes[i];
-	    	node.buildStatement(stm, params);
+	    	node.buildStatement(context, sql, stm, params);
 	    }
     }
 	

@@ -46,16 +46,19 @@ public class Orm {
 	}
 
     public static OrmContext context(Class<?> entityClass) {
-        for(OrmContext context : AppContext.factory().getBeans(OrmContext.class)) {
+        OrmRegistry registry = AppContext.factory().getBean(OrmRegistry.class);
+
+        for(OrmContext context : registry.contexts()) {
             if(context.getMetadata().tryGetEntityMapping(entityClass) != null) {
                 return context;
             }
         }
+
         throw new IllegalStateException("Orm context not found for entity class '" + entityClass + "'");
     }
 
     public static boolean hasContexts() {
-        return !AppContext.factory().getBeans(OrmContext.class).isEmpty();
+        return !AppContext.factory().getBean(OrmRegistry.class).isEmpty();
     }
 	
 	public static OrmContext context() {
@@ -75,15 +78,22 @@ public class Orm {
 	}
 	
 	protected static OrmContext getContext(String name,boolean primary){
-		return primary ? AppContext.factory().getBean(OrmContext.class) : AppContext.factory().getBean(OrmContext.class,name);
+        OrmRegistry registry = AppContext.factory().getBean(OrmRegistry.class);
+
+        OrmContext context = primary ? registry.getDefaultContext() : null;
+        if(null != context) {
+            return context;
+        }
+
+        return registry.getContext(name);
 	}
 	
 	protected static Dao getDao(String name,boolean primary){
-		return primary ? AppContext.factory().getBean(Dao.class) : AppContext.factory().getBean(Dao.class,name);
+        return getContext(name, primary).getDao();
 	}
 	
 	protected static Dmo getDmo(String name,boolean primary){
-		return primary ? AppContext.factory().getBean(Dmo.class) : AppContext.factory().getBean(Dmo.class,name);
+        return getContext(name, primary).getDmo();
 	}
 	
 	protected Orm(){

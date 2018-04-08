@@ -3,16 +3,11 @@
 	<parent>
 		<groupId>org.leapframework</groupId>
 		<artifactId>leap-parent</artifactId>
-		<version>0.6.1b-SNAPSHOT</version>
+		<version>0.6.10b-SNAPSHOT</version>
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
 	<artifactId>leap-core</artifactId>
 	<packaging>jar</packaging>
-
-	<properties>
-		<jacoco.dataFileDir>${project.basedir}/../target</jacoco.dataFileDir>
-		<jacoco.dataFilePath>${jacoco.dataFileDir}/jacoco-it.exec</jacoco.dataFilePath>
-	</properties>
 
     <build>
 

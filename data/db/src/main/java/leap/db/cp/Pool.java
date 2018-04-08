@@ -16,6 +16,7 @@
 package leap.db.cp;
 
 import leap.lang.Args;
+import leap.lang.Classes;
 import leap.lang.Strings;
 import leap.lang.jdbc.JDBC;
 import leap.lang.logging.Log;
@@ -26,6 +27,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLTimeoutException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
@@ -37,8 +39,10 @@ import static leap.db.cp.PooledConnection.*;
 
 class Pool {
 	private static final Log log = LogFactory.get(Pool.class);
-	
-	private static final AtomicInteger poolCounter = new AtomicInteger();
+
+    static final String FRAMEWORK_PACKAGE = Classes.getPackageName(PooledConnection.class) + ".";
+
+    private static final AtomicInteger poolCounter = new AtomicInteger();
 	
 	private final PoolFactory                 factory;
 	private final PoolConfig                  config;
@@ -105,6 +109,17 @@ class Pool {
 	public DataSource getDataSource() {
 		return dataSource;
 	}
+
+    public String getStateInfo() {
+        State state = syncPool.state();
+
+        StringBuilder s = new StringBuilder();
+        s.append("total:").append(state.total)
+                .append(", active:").append(state.active)
+                .append(", idle:").append(state.idle);
+
+        return s.toString();
+    }
 	
 	/**
 	 * Get a connection from the pool, or timeout after {@link #maxWait} milliseconds.
@@ -126,25 +141,55 @@ class Pool {
 		log.trace("[{}] Borrowing connection...", getName());
 		
 		final long start = System.currentTimeMillis();
-		
+
+        SQLException se = null;
+        PooledConnection conn = null;
 		try{
-			PooledConnection conn = syncPool.borrowConnection(maxWait);
+			conn = syncPool.borrowConnection(maxWait);
 			if(null != conn) {
 				log.trace("[{}] A connection was borrowed from pool, setup and return.", getName());
-				
 				setupConnectionOnBorrow(conn);
-				
 				return conn;
 			}
 		}catch(InterruptedException e) {
-			throw new SQLException("Interrupted while connection borrowing");
-		}
+			se = new SQLException("Interrupted while connection borrowing");
+		}catch(SQLException e) {
+            log.warn("Setup connection error: {}", e.getMessage(), e);
+            se = e;
+        }
+
+        if(null != se) {
+            if(null != conn) {
+                log.info("Borrowing connection failed, return it to pool");
+                returnConnectionFailed(conn);
+            }
+            throw se;
+        }
 
 		//Timeout
-		log.warn("[{}] Borrowing connection timeout",getName());
+        log.error("[{}] Borrowing connection timeout. [{}]", getName(), getStateInfo());
+        printConnections();
 		throw new SQLTimeoutException("Timeout after " + (System.currentTimeMillis() - start) + "ms of borrowing a connection");
 	}
-	
+
+    protected void printConnections() {
+        if(log.isInfoEnabled()) {
+            int maxPrint = 5;
+            int count = 0;
+            for (PooledConnection conn : syncPool.connections()) {
+                count++;
+                if (count == maxPrint) {
+                    break;
+                }
+                if (conn.isActive()) {
+                    log.info("connection busy duration {}ms\n{}",
+                            conn.getBusyDurationMs(),
+                            new StackTraceStringBuilder(conn.getStackTraceOnOpen()).toString());
+                }
+            }
+        }
+    }
+
 	public boolean isClose() {
 		return closed;
 	}
@@ -183,36 +228,45 @@ class Pool {
 			}
 		}
 	}
+
+    protected void returnConnectionFailed(PooledConnection conn) throws SQLException {
+        try {
+            conn.closeReal();
+        } finally {
+            syncPool.returnConnection(conn);
+            log.trace("A connection was returned to pool");
+        }
+    }
 	
 	@SuppressWarnings("resource")
     protected void setupConnectionOnBorrow(PooledConnection conn) throws SQLException {
 		conn.setupBeforeOnBorrow();
 		
-		Connection wrappd = conn.wrapped();
-		if(null == wrappd) {
+		Connection wrapped = conn.wrapped();
+		if(null == wrapped) {
 			//Connection not created yet ( or was abandoned ).
 			log.trace("Real Connection not created yet, Create it");
-			wrappd = createNewConnectionOnBorrow(conn);
+			wrapped = createNewConnectionOnBorrow(conn);
 
             //todo : test the connection by validation query?.
 		}else if(config.isTestOnBorrow() && !conn.isValid()) {
 			log.info("Real Connection is invalid, Abandon it and Create a new one");
 			conn.abandonReal();
-			wrappd = createNewConnectionOnBorrow(conn);
+			wrapped = createNewConnectionOnBorrow(conn);
 		}else{
 			conn.setNewCreatedConnection(false);
 		}
 		
-		setupConnectionStateOnBorrow(conn, wrappd, 1);
+		setupConnectionStateOnBorrow(conn, wrapped, 1);
 		
 		conn.setupAfterOnBorrow();
 	}
 	
 	protected Connection createNewConnectionOnBorrow(PooledConnection conn) throws SQLException {
-		Connection wrappd = factory.getConnection();
-		conn.setWrapped(wrappd);
+		Connection wrapped = factory.getConnection();
+		conn.setWrapped(wrapped);
 		conn.setNewCreatedConnection(true);
-		return wrappd;
+		return wrapped;
 	}
 	
 	protected void setupConnectionStateOnBorrow(PooledConnection conn, Connection wrapped, int count) throws SQLException {
@@ -335,6 +389,12 @@ class Pool {
 		}
 	}
 
+    final class State {
+        public int total;
+        public int active;
+        public int idle;
+    }
+
     /**
      * The underlying pool holds all the created connections and sync state.
      */
@@ -355,29 +415,27 @@ class Pool {
 			return list;
 		}
 		
-//		int getActiveCount() {
-//			int count = 0;
-//
-//			for(final PooledConnection conn : list) {
-//				if(conn.isActive()) {
-//					count++;
-//				}
-//			}
-//
-//			return count;
-//		}
-//
-//		int getRealCount() {
-//			int size = 0;
-//			for(final PooledConnection conn : list) {
-//				if(null != conn.getReal()) {
-//					size++;
-//				}
-//			}
-//			return size;
-//		}
+        State state() {
+            State state = new State();
+
+            for(final PooledConnection conn : list) {
+                if(conn.isActive()) {
+                    state.total++;
+                    state.active++;
+                    continue;
+                }
+
+                if(conn.isCreated()) {
+                    state.total++;
+                }
+            }
+
+            state.idle = state.total - state.active;
+            return state;
+        }
 		
 		int getIdleCount() {
+
 			int count = 0;
 			
 			for(final PooledConnection conn : list) {

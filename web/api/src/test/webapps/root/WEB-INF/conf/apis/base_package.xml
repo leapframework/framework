@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<apis xmlns="http://www.leapframework.org/schema/web/apis/apis">
-
-    <api name="basepackage" base-path="/basepackage" base-package="api.basepackage">
-        <oauth flow="accessCode"/>
-    </api>
-
-</apis>

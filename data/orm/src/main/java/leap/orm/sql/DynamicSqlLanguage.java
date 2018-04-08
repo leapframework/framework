@@ -30,7 +30,6 @@ import leap.orm.sql.parser.SqlParser;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Configurable(prefix="orm.dynamicSQL")
 public class DynamicSqlLanguage implements SqlLanguage {
@@ -67,27 +66,27 @@ public class DynamicSqlLanguage implements SqlLanguage {
 		this.expressionLanguage = expressionLanguage;
 	}
 
-	@Override
-    public List<SqlClause> parseClauses(MetadataContext context, String text) throws SqlClauseException {
-		List<Sql> sqls = doParseDynaSql(context, text);
-		
-		List<SqlClause> clauses = new ArrayList<>();
-		
-		for(Sql sql : sqls){
-			clauses.add(new DynamicSqlClause(this, new DynamicSql(this, context, sql)));
-		}
-		
-		return clauses;
-    }
-	
-	@Override
-    public DynamicSqlClause parseClause(MetadataContext context, String sql) throws SqlClauseException {
-		List<Sql> sqls = doParseDynaSql(context, sql);
-		return new DynamicSqlClause(this, new DynamicSql(this, context, sqls.get(0)));
+    @Override
+    public List<SqlClause> parseClauses(MetadataContext context, String text, Options options) throws SqlClauseException {
+        List<Sql> sqls = doParseDynaSql(context, text);
+
+        List<SqlClause> clauses = new ArrayList<>();
+
+        for(Sql sql : sqls){
+            clauses.add(new DynamicSqlClause(this, new DynamicSql(this, context, sql, options)));
+        }
+
+        return clauses;
     }
 
-    public DynamicSql.ExecutionSqls parseExecutionSqls(MetadataContext context, String sql) {
-        List<DynamicSql.ExecutionSqls> sqls = doParseExecutionSqls(context, sql);
+    @Override
+    public SqlClause parseClause(MetadataContext context, String sql, Options options) throws SqlClauseException {
+        List<Sql> sqls = doParseDynaSql(context, sql);
+        return new DynamicSqlClause(this, new DynamicSql(this, context, sqls.get(0), options));
+    }
+
+    public DynamicSql.ExecutionSqls parseExecutionSqls(MetadataContext context, String sql, Options options) {
+        List<DynamicSql.ExecutionSqls> sqls = doParseExecutionSqls(context, sql, options);
 
         if(sqls.size() > 1) {
             throw new IllegalStateException("Parsing multi sqls");
@@ -96,26 +95,38 @@ public class DynamicSqlLanguage implements SqlLanguage {
         return sqls.get(0);
     }
 
-    protected List<DynamicSql.ExecutionSqls> doParseExecutionSqls(MetadataContext context, String sql) {
-        String key = context.getName() + "___" + sql;
+    protected List<DynamicSql.ExecutionSqls> doParseExecutionSqls(MetadataContext context, String text, Options options) {
+        String key = context.getName() + "___" + text;
 
         List<DynamicSql.ExecutionSqls> sqls = executionCache.get(key);
 
         if(null == sqls) {
-            log.trace("Parsing sql :\n {}", sql);
+            log.trace("Parsing sql :\n {}", text);
             sqls = new ArrayList<>();
 
-            List<Sql> rawSqls = createParser(sql).sqls();
+            List<Sql> rawSqls = createParser(text).sqls();
+            for(Sql sql : rawSqls) {
+                sql.prepare(context);
+            }
+
             if(smart()) {
-                List<Sql> resolvedSqls = createParser(sql).sqls();
+                List<Sql> resolvedSqls = createParser(text).sqls();
+                for(Sql sql : resolvedSqls) {
+                    sql.prepare(context);
+                }
 
                 for(int i=0;i<resolvedSqls.size();i++) {
                     Sql s = resolvedSqls.get(i);
 
                     s = new SqlResolver(context,s).resolve();
 
-                    processShardingTable(s);
-                    processWhereFields(s);
+                    if(null == options.getFilterColumnEnabled() || options.getFilterColumnEnabled()) {
+                        processWhereFields(context, s);
+                    }
+
+                    if(null == options.getQueryFilterEnabled() || options.getQueryFilterEnabled()) {
+                        processQueryFilter(context, s);
+                    }
 
                     sqls.add(new DynamicSql.ExecutionSqls(rawSqls.get(i),s));
                 }
@@ -131,16 +142,19 @@ public class DynamicSqlLanguage implements SqlLanguage {
         return sqls;
     }
 	
-	protected List<Sql> doParseDynaSql(MetadataContext context, String sql) {
-        String key = context.getName() + "___" + sql;
+	protected List<Sql> doParseDynaSql(MetadataContext context, String text) {
+        String key = context.getName() + "___" + text;
 
 		List<Sql> sqls = cache.get(key);
 
 		if(null == sqls) {
-			log.trace("Parsing dyna sql :\n {}", sql);
+			log.trace("Parsing dyna sql :\n {}", text);
 
-            SqlParser parser = new SqlParser(new Lexer(sql, ParseLevel.DYNA), expressionLanguage);
+            SqlParser parser = new SqlParser(new Lexer(text, ParseLevel.DYNA), expressionLanguage);
             sqls = parser.sqls();
+            for(Sql sql : sqls) {
+                sql.prepare(context);
+            }
 
 			cache.put(key, sqls);
 		}
@@ -155,13 +169,15 @@ public class DynamicSqlLanguage implements SqlLanguage {
 			return new SqlParser(new Lexer(text, ParseLevel.BASE),expressionLanguage);
 		}
 	}
-	
-    protected void processShardingTable(Sql sql) {
-        new SqlShardingProcessor(sql).processShardingTable();
+
+    protected void processWhereFields(MetadataContext context, Sql sql) {
+        new SqlFilterColumnProcessor(context, sql).process();
     }
 
-    protected void processWhereFields(Sql sql) {
-        new SqlWhereProcessor(sql).processWhereFields();
+    protected void processQueryFilter(MetadataContext context, Sql sql) {
+        if(context.getConfig().isQueryFilterEnabled()) {
+            new SqlQueryFilterProcessor(context, sql).process();
+        }
     }
 	
 	protected boolean smart() {

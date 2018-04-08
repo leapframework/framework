@@ -39,16 +39,20 @@ import leap.web.route.RouteBuilder;
 public class DeleteOperation extends CrudOperation implements RestdProcessor {
 
     @Override
-    public void preProcessModel(App app, ApiConfigurator api, RestdContext context, RestdModel model) {
+    public void preProcessModel(ApiConfigurator api, RestdContext context, RestdModel model) {
         if(!context.getConfig().allowDeleteModel(model.getName())) {
             return;
         }
 
-        Dao    dao  = context.getDao();
+        String verb = "DELETE";
         String path = fullModelPath(api, model) + "/{id}";
+        if(isOperationExists(context, verb, path)) {
+            return;
+        }
 
+        Dao               dao    = context.getDao();
         FuncActionBuilder action = new FuncActionBuilder();
-        RouteBuilder route  = rm.createRoute("DELETE", path);
+        RouteBuilder      route  = rm.createRoute(verb, path);
 
         action.setName(Strings.lowerCamel("delete", model.getName()));
         action.setFunction((params) -> execute(api.config(), dao, model, params));
@@ -61,16 +65,15 @@ public class DeleteOperation extends CrudOperation implements RestdProcessor {
         route.setAction(action.build());
 
         configure(context, model, route);
-        api.addRoute(rm.loadRoute(app.routes(), route));
+        api.addRoute(rm.loadRoute(context.getRoutes(), route));
     }
 
-    protected Object execute(ApiConfig c, Dao dao, RestdModel model, ActionParams params) {
-        ApiMetadata md = apis.tryGetMetadata(c.getName());
-        MApiModel   am = md.getModel(model.getName());
+    protected Object execute(ApiConfig ac, Dao dao, RestdModel model, ActionParams params) {
+        ApiMetadata amd = apis.tryGetMetadata(ac.getName());
+        MApiModel   am  = amd.getModel(model.getName());
 
-        ModelExecutorConfig mec = new SimpleModelExecutorConfig(c.getMaxPageSize(), c.getDefaultPageSize());
-
-        ModelDeleteExecutor executor = mef.newDeleteExecutor(mec, am, dao, model.getEntityMapping());
+        ModelExecutorContext context = new SimpleModelExecutorContext(ac, amd, am, dao, model.getEntityMapping());
+        ModelDeleteExecutor executor = mef.newDeleteExecutor(context);
 
         Object        id      = params.get(0);
         DeleteOptions options = params.get(1);

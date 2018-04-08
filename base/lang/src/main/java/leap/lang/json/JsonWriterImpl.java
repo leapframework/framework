@@ -26,6 +26,7 @@ import leap.lang.time.DateFormats;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
+import java.sql.Time;
 import java.text.DateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -589,6 +590,19 @@ public class JsonWriterImpl implements JsonWriter {
         return this;
     }
     
+	public JsonWriter value(Time time) {
+        try {
+            if(null == time) {
+                out.append(NULL_STRING);
+            }else{
+                value(time.toLocalTime());
+            }
+        } catch (IOException e) {
+        	wrapAndThrow(e);
+        }
+        return this;
+    }
+
 	public JsonWriter value(Date date) {
         try {
             if(null == date) {
@@ -607,7 +621,11 @@ public class JsonWriterImpl implements JsonWriter {
     @Override
     public JsonWriter value(LocalDate date) {
         try {
-            out.append(null == date ? NULL_STRING : date.toString());
+			if(null == date) {
+				out.append(NULL_STRING);
+			}else {
+				out.append(DOUBLE_QUOTE).append(date.toString()).append(DOUBLE_QUOTE);
+			}
         } catch (IOException e) {
             wrapAndThrow(e);
         }
@@ -617,7 +635,11 @@ public class JsonWriterImpl implements JsonWriter {
     @Override
     public JsonWriter value(LocalTime time) {
         try {
-            out.append(null == time ? NULL_STRING : time.toString());
+			if(null == time) {
+				out.append(NULL_STRING);
+			}else {
+				out.append(DOUBLE_QUOTE).append(time.toString()).append(DOUBLE_QUOTE);
+			}
         } catch (IOException e) {
             wrapAndThrow(e);
         }
@@ -627,7 +649,11 @@ public class JsonWriterImpl implements JsonWriter {
     @Override
     public JsonWriter value(LocalDateTime dateTime) {
         try {
-            out.append(null == dateTime ? NULL_STRING : dateTime.toString());
+			if(null == dateTime) {
+				out.append(NULL_STRING);
+			}else {
+				out.append(DOUBLE_QUOTE).append(dateTime.toString()).append(DOUBLE_QUOTE);
+			}
         } catch (IOException e) {
             wrapAndThrow(e);
         }
@@ -740,6 +766,8 @@ public class JsonWriterImpl implements JsonWriter {
                 return value(((Character) v).charValue());
             } else if (v instanceof Number) {
                 return value((Number) v);
+            } else if (v instanceof Time) {
+                return value((Time) v);
             } else if (v instanceof Date) {
                 return value((Date) v);
             }else if (v instanceof LocalDate) {

@@ -248,7 +248,7 @@ public class ArgumentControllerTest extends WebTestCase {
     @Test
     @ContextualIgnore
     public void testHeaderParam() {
-        forGet("argument/header_param").addHeader("testHeader","xyz").send().assertContentEquals("xyz");
+        useGet("argument/header_param").addHeader("testHeader","xyz").send().assertContentEquals("xyz");
     }
 
     @Test

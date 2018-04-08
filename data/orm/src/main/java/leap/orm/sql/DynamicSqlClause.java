@@ -15,6 +15,7 @@
  */
 package leap.orm.sql;
 
+import com.sun.org.apache.regexp.internal.RE;
 import leap.core.params.ParamsFactory;
 import leap.db.Db;
 import leap.db.DbLimitQuery;
@@ -22,36 +23,100 @@ import leap.lang.*;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.params.ArrayParams;
-import leap.lang.params.BeanParams;
 import leap.lang.params.EmptyParams;
 import leap.lang.params.Params;
 import leap.lang.value.Limit;
 import leap.orm.query.QueryContext;
 import leap.orm.sql.Sql.Type;
 import leap.orm.sql.ast.*;
-import leap.orm.value.Entity;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
-public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
+public class DynamicSqlClause extends AbstractSqlClause implements SqlClause,SqlMetadata {
 	
 	private static final Log log = LogFactory.get(DynamicSqlClause.class);
 	
 	public static final String ORDER_BY_PLACEHOLDER = "$orderBy$";
-	
-	protected final DynamicSqlLanguage lang;
-    protected final DynamicSql         sql;
+
+    protected final DynamicSqlLanguage     lang;
+    protected final DynamicSql             sql;
+    protected final Set<SqlMetadata.Param> parameters;
 
     private PreparedBatchSqlStatement preparedBatchStatement;
 	
     public DynamicSqlClause(DynamicSqlLanguage lang, DynamicSql sql){
         this.lang = lang;
         this.sql  = sql;
+
+        Map<String, ParamImpl> params = new LinkedHashMap<>();
+
+        sql.raw().traverse((n) -> {
+
+            if(n instanceof DynamicClause) {
+                NamedParamNode[] nodes = ((DynamicClause) n).getNamedParamNodes();
+                for(NamedParamNode pn : nodes) {
+                    String name = pn.getName();
+
+                    if(params.containsKey(name.toLowerCase())) {
+                       continue;
+                    }
+
+                    params.put(name.toLowerCase(), new ParamImpl(name, false));
+                }
+            }else if(n instanceof NamedParamNode) {
+                String name = ((NamedParamNode) n).getName();
+
+                ParamImpl param = params.get(name.toLowerCase());
+                if(null == param) {
+                    params.put(name.toLowerCase(), new ParamImpl(name, true));
+                }else{
+                    param.setRequired(true);
+                }
+            }
+
+            return true;
+
+        });
+
+        this.parameters = Collections.unmodifiableSet(new LinkedHashSet<>(params.values()));
     }
 
-	@Override
+    @Override
+    public boolean isSelect() {
+        return sql.raw().isSelect();
+    }
+
+    @Override
+    public boolean isInsert() {
+        return sql.raw().isInsert();
+    }
+
+    @Override
+    public boolean isUpdate() {
+        return sql.raw().isUpdate();
+    }
+
+    @Override
+    public boolean isDelete() {
+        return sql.raw().isDelete();
+    }
+
+    @Override
+    public Set<Param> getParameters() {
+        return parameters;
+    }
+
+    @Override
+    public boolean hasMetadata() {
+        return false;
+    }
+
+    @Override
+    public SqlMetadata getMetadata() {
+        return this;
+    }
+
+    @Override
     public SqlStatement createUpdateStatement(SqlContext context, Object p) {
         Params params = createParameters(context, p);
         DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(params);
@@ -61,10 +126,6 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 	
 	@Override
     public SqlStatement createQueryStatement(QueryContext context, Object p) {
-		if(log.isDebugEnabled()) {
-			log.debug("Creating query statement for sql : \n {}",sql);
-		}
-
         Params params = createParameters(context, p);
         DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(params);
 
@@ -80,6 +141,10 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
                 createSqlWithoutOrderBy(sqls);
                 return createOrderByQueryStatement(context, sqls, params);
             }
+        }
+
+        if(log.isDebugEnabled()) {
+            log.debug("Creating query statement... \n\noriginal -> \n\n  {}\n\nprocessed -> \n\n  {}\n", sql, sqls.sql);
         }
 
 	    return doCreateStatement(context, sqls, params, true);
@@ -110,7 +175,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 		
 		DefaultSqlStatementBuilder statement = new DefaultSqlStatementBuilder(context, sqls.sqlForCount, true);
 	    
-		sqls.sqlForCount.buildStatement(statement, params);
+		sqls.sqlForCount.buildStatement(context, statement, params);
 		
 		return statement.build();
     }
@@ -119,10 +184,58 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
     public BatchSqlStatement createBatchStatement(SqlContext context, Object[] params) {
         DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(Params.empty());
 
-		PreparedBatchSqlStatement stmt = prepareBatchSqlStatement(context, sqls,params);
-		
-		return stmt.createBatchSqlStatement(context, resolveBatchArgs(context, stmt, params));
+        if(Strings.isNotBlank(context.getPrimaryEntityMapping().getDynamicTableName())) {
+
+        	Map<String, List<Object>> sqlParamMap = new HashMap<>();
+
+			PreparedBatchSqlStatement stmt = prepareBatchSqlStatement(context, sqls,params);
+
+			for (Object param : params) {
+				DefaultSqlStatementBuilder statementBuilder = new DefaultSqlStatementBuilder(context, sql.raw(), sql.raw().isSelect());
+
+				Params p = createParameters(context, param);
+
+				sqls.sql.buildStatement(context, statementBuilder, p);
+
+				DefaultSqlStatement statement = statementBuilder.build();
+
+				String finalSql = statement.getSqlString();
+
+				if(sqlParamMap.containsKey(finalSql)) {
+					sqlParamMap.get(finalSql).add(param);
+				} else {
+					List<Object> list = new ArrayList<>();
+					list.add(param);
+					sqlParamMap.put(finalSql, list);
+				}
+			}
+
+			Map<String, Object[][]> sqlParams = new HashMap<>();
+
+
+			sqlParamMap.forEach((sqlString, sqlParam) -> {
+
+				Object[][] param = resolveBatchArgs(context, stmt, sqlParam.toArray());
+
+				sqlParams.put(sqlString, param);
+			});
+
+			return new DefaultBatchSqlStatement(context, sqls.sql, sqlParams);
+		} else {
+
+			PreparedBatchSqlStatement stmt = prepareBatchSqlStatement(context, sqls,params);
+
+			return stmt.createBatchSqlStatement(context, resolveBatchArgs(context, stmt, params));
+		}
     }
+	
+    public DynamicSql getSql(){
+    	return sql;
+	}
+    
+	public DynamicSqlLanguage getLang(){
+		return lang;
+	}
 	
 	private void createSqlForCount(DynamicSql.ExecutionSqls sqls) {
 		if(null == sqls.sqlForCount) {
@@ -299,8 +412,8 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 
 	protected SqlStatement doCreateStatement(SqlContext context, Sql sql, Params params, boolean query){
 		DefaultSqlStatementBuilder statement = new DefaultSqlStatementBuilder(context, sql, query);
-	    
-		sql.buildStatement(statement, params);
+
+		sql.buildStatement(context, statement, params);
 		
 		return statement.build();
 	}
@@ -357,7 +470,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 		@Override
         public String getSql(Db db) {
 			buildStatement(db);
-			return statement.getSql().toString();
+			return statement.getText().toString();
         }
 		
 		public DefaultSqlStatementBuilder buildStatement(Db db) {
@@ -375,7 +488,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 					sqlWithOrderBy = db.getDialect().addOrderBy(sqlWithoutOrderBy, orderBy);
 				}
 				
-				sql = lang.parseExecutionSqls(context.getOrmContext(), sqlWithOrderBy).sql;
+				sql = lang.parseExecutionSqls(context.getOrmContext(), sqlWithOrderBy, SqlLanguage.Options.EMPTY).sql;
 			}
 
             if(sql.isSelect()) {
@@ -387,7 +500,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
             }
 
             this.statement = new DefaultSqlStatementBuilder(context, sql, true);
-			sql.buildStatement(statement, params);
+			sql.buildStatement(context, statement, params);
 			
 			return statement;
 		}
@@ -430,7 +543,8 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 			return sql;
 		}
 
-		protected void buildSqlStatement(AstNode node,DefaultSqlStatementBuilder statement,Params parameters) {
+        /*
+		protected void buildSqlStatement(SqlContext context, AstNode node,DefaultSqlStatementBuilder statement,Params parameters) {
 			
 			if(node instanceof SqlOrderBy){
 				statement.appendText(ORDER_BY_PLACEHOLDER);
@@ -453,13 +567,14 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 			
 			if(node instanceof SqlNodeContainer) {
 				for(AstNode c : ((SqlNodeContainer) node).getNodes()){
-					buildSqlStatement(c, statement, parameters);
+					buildSqlStatement(context, c, statement, parameters);
 				}
 				return;
 			}
 
-            node.buildStatement(statement, parameters);
+            node.buildStatement(context, statement, parameters);
 		}
+		*/
 
 		@Override
         public String getOrderBy() {
@@ -476,4 +591,30 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 	        return statement.getArgs();
         }
 	}
+
+    protected static final class ParamImpl implements SqlMetadata.Param {
+
+        private final String name;
+
+        private boolean required;
+
+        public ParamImpl(String name, boolean required) {
+            this.name = name;
+            this.required = required;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public boolean isRequired() {
+            return required;
+        }
+
+        public void setRequired(boolean required) {
+            this.required = required;
+        }
+    }
 }

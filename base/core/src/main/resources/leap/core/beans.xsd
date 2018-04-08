@@ -13,36 +13,34 @@
         <xsd:attribute name="id" type="xsd:string"/>
     </xsd:complexType>
 
+    <xsd:group name="rootElements">
+        <xsd:sequence>
+            <xsd:element ref="description" minOccurs="0"/>
+            <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                <xsd:element ref="import"/>
+                <xsd:element ref="if"/>
+                <xsd:element ref="if-not"/>
+                <xsd:element ref="alias"/>
+                <xsd:element ref="init"/>
+                <xsd:element ref="remove-bean"/>
+                <xsd:element ref="bean"/>
+                <xsd:element ref="beans"/>
+                <xsd:element ref="bean-proxy"/>
+                <xsd:element ref="bean-list"/>
+                <xsd:element ref="util-list"/>
+                <xsd:element ref="util-set"/>
+                <xsd:element ref="util-map"/>
+                <xsd:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded"/>
+            </xsd:choice>
+        </xsd:sequence>
+    </xsd:group>
+
 	<!-- Top-level <beans> tag -->
 	<xsd:element name="beans">
 		<xsd:complexType>
-			<xsd:sequence>
-				<xsd:element ref="description" minOccurs="0"/>
-				<xsd:choice minOccurs="0" maxOccurs="unbounded">
-					<xsd:element ref="import"/>
-					<xsd:element ref="alias"/>
-                    <xsd:element ref="init"/>
-					<xsd:element ref="bean"/>
-					<xsd:element ref="beans"/>
-                    <xsd:element ref="bean-proxy"/>
-					<xsd:element ref="bean-list"/>
-					<xsd:element ref="util-list"/>
-					<xsd:element ref="util-set"/>
-					<xsd:element ref="util-map"/>
-					<xsd:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded"/>
-				</xsd:choice>
-                <!-- 
-				<xsd:element ref="beans" minOccurs="0" maxOccurs="unbounded"/>
-                -->
-			</xsd:sequence>
-			<xsd:attribute name="if" use="optional" type="xsd:string"/>
-            <xsd:attribute name="if-not" use="optional" type="xsd:string"/>
-			<xsd:attribute name="if-profile" use="optional" type="xsd:string"/>
-			<xsd:attribute name="if-class-present" use="optional" type="xsd:string"/>
-            <xsd:attribute name="if-class-not-present" use="optional" type="xsd:string"/>
-			<xsd:attribute name="if-servlet-environment" use="optional" type="xsd:boolean"/>
+            <xsd:group ref="rootElements"/>
 			<xsd:attribute name="default-lazy-init" default="true" type="xsd:boolean"/>
-
+            <xsd:attributeGroup ref="ifAttributesWithPrefix"/>
 			<xsd:anyAttribute namespace="##other" processContents="lax"/>
 		</xsd:complexType>
 	</xsd:element>
@@ -98,8 +96,6 @@
         <xsd:attribute name="name" type="xsd:string"/>
 	    <xsd:attribute name="type" type="xsd:string"/>
 	    <xsd:attribute name="class" type="xsd:string"/>
-	    <xsd:attribute name="if" type="xsd:string"/>
-	    <xsd:attribute name="if-profile" use="optional" type="xsd:string"/>
 	    <xsd:attribute name="singleton" type="xsd:boolean"/>
 	    <xsd:attribute name="lazy-init" type="xsd:boolean" default="true"/>
 	    <xsd:attribute name="primary" type="xsd:boolean" use="optional"/>
@@ -114,7 +110,50 @@
 	    <xsd:anyAttribute namespace="##other" processContents="lax" />
 	</xsd:attributeGroup>
 
-    <!-- not in spring framework -->
+    <xsd:attributeGroup name="ifAttributes">
+        <xsd:attribute name="profile"               type="xsd:string"  use="optional"/>
+        <xsd:attribute name="property"              type="xsd:string"  use="optional"/>
+        <xsd:attribute name="expr"                  type="xsd:string"  use="optional"/>
+        <xsd:attribute name="class-present"         type="xsd:string"  use="optional"/>
+        <xsd:attribute name="servlet-environment"   type="xsd:boolean" use="optional"/>
+    </xsd:attributeGroup>
+
+    <xsd:attributeGroup name="ifAttributesWithPrefix">
+        <xsd:attribute name="if-profile"               type="xsd:string"  use="optional"/>
+        <xsd:attribute name="if-property"              type="xsd:string"  use="optional"/>
+        <xsd:attribute name="if"                       type="xsd:string"  use="optional">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[If expression.]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="if-class-present"         type="xsd:string"  use="optional"/>
+        <xsd:attribute name="if-servlet-environment"   type="xsd:boolean" use="optional"/>
+    </xsd:attributeGroup>
+
+    <xsd:element name="if">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[
+                If condition.
+            ]]></xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:group          ref="rootElements"/>
+            <xsd:attributeGroup ref="ifAttributes" />
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="if-not">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[
+                If not condition.
+            ]]></xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:group          ref="rootElements"/>
+            <xsd:attributeGroup ref="ifAttributes" />
+        </xsd:complexType>
+    </xsd:element>
+
     <xsd:element name="init">
         <xsd:annotation>
             <xsd:documentation><![CDATA[
@@ -124,8 +163,25 @@
         <xsd:complexType>
             <xsd:attribute name="class"       type="xsd:string" use="required"></xsd:attribute>
             <xsd:attribute name="init-method" type="xsd:string" use="optional"/>
+            <xsd:attributeGroup ref="ifAttributesWithPrefix"/>
         </xsd:complexType>
-    </xsd:element>   
+    </xsd:element>
+
+    <xsd:element name="remove-bean">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[
+                Removes a bean.
+            ]]></xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:attribute name="id"      type="xsd:string"  use="optional"/>
+            <xsd:attribute name="name"    type="xsd:string"  use="optional"/>
+            <xsd:attribute name="type"    type="xsd:string"  use="optional"/>
+            <xsd:attribute name="class"   type="xsd:string"  use="optional"/>
+            <xsd:attribute name="primary" type="xsd:boolean" use="optional"/>
+            <xsd:attributeGroup ref="ifAttributesWithPrefix"/>
+        </xsd:complexType>
+    </xsd:element>
     
 	<xsd:element name="bean">
 		<xsd:complexType>
@@ -133,6 +189,7 @@
 				<xsd:extension base="identifiedType">
 					<xsd:group ref="beanElements" />
 					<xsd:attributeGroup ref="beanAttributes" />
+                    <xsd:attributeGroup ref="ifAttributesWithPrefix"/>
 				</xsd:extension>
 			</xsd:complexContent>
 		</xsd:complexType>
@@ -147,8 +204,6 @@
                         <xsd:element ref="property"/>
                         <xsd:element ref="invoke"/>
                     </xsd:choice>
-                    <xsd:attribute name="if" type="xsd:string"/>
-                    <xsd:attribute name="if-profile" use="optional" type="xsd:string"/>
                     <xsd:attribute name="proxy-class" type="xsd:string"/>
                     <xsd:attribute name="target-type" use="required"/>
                     <xsd:attribute name="target-primary" type="xsd:boolean" use="optional"/>
@@ -156,6 +211,7 @@
                     <xsd:attribute name="target-id" use="optional"/>
                     <xsd:attribute name="override" type="xsd:boolean" use="optional" default="false"/>
                     <xsd:attribute name="default-override" type="xsd:boolean" use="optional" default="false"/>
+                    <xsd:attributeGroup ref="ifAttributesWithPrefix"/>
                 </xsd:extension>
             </xsd:complexContent>
         </xsd:complexType>
@@ -428,9 +484,7 @@
 		<xsd:attribute name="ref-name" type="xsd:string"/>
 		<xsd:attribute name="value" type="xsd:string"/>
 		<xsd:attribute name="default-value" type="xsd:string"/>
-		<xsd:attribute name="if"     type="xsd:string"/>
-        <xsd:attribute name="if-not" type="xsd:string"/>
-		<xsd:attribute name="if-profile" use="optional" type="xsd:string"/>
+        <xsd:attributeGroup ref="ifAttributesWithPrefix"/>
 	</xsd:complexType>
 
 	<!-- Collection Types -->

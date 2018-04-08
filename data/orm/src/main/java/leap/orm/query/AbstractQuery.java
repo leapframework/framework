@@ -30,6 +30,7 @@ import leap.orm.OrmContext;
 import leap.orm.OrmMetadata;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
+import leap.orm.sql.SqlLanguage;
 
 import java.util.HashMap;
 import java.util.List;
@@ -45,6 +46,9 @@ public abstract class AbstractQuery<T> implements Query<T>,QueryContext {
 
 	private final Map<String, Object> paramsMap = new HashMap<>();
     private Params params;
+
+    protected Boolean queryFilterEnabled;
+    protected Boolean filterColumnEnabled;
 
 	protected Limit  limit;
 	protected String orderBy;
@@ -62,6 +66,28 @@ public abstract class AbstractQuery<T> implements Query<T>,QueryContext {
 		this.targetType = targetType;
 		this.em 		= entityMapping;
 	}
+
+    @Override
+    public Boolean getQueryFilterEnabled() {
+        return queryFilterEnabled;
+    }
+
+    @Override
+    public Boolean getFilterColumnEnabled() {
+        return filterColumnEnabled;
+    }
+
+    @Override
+    public Query<T> withoutQueryFilter() {
+        queryFilterEnabled = false;
+        return this;
+    }
+
+    @Override
+    public Query<T> withoutFilterColumn() {
+        filterColumnEnabled = false;
+        return this;
+    }
 
     //todo : optimize
     protected Object params() {

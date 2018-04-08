@@ -27,29 +27,29 @@ import leap.web.action.*;
 
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
 
 public class DefaultRoutes implements Routes {
 	
 	protected @Inject PathTemplateFactory pathTemplateFactory;
-    protected @Inject ActionManager		actionManager;
+    protected @Inject ActionManager		  actionManager;
 
-    protected Route[]    array = new Route[]{};
-    protected Set<Route> set   = new TreeSet<Route>(Route.COMPARATOR);
+    protected final List<Route> list = new CopyOnWriteArrayList<>();
 	
 	@Override
     public int size() {
-	    return array.length;
+	    return list.size();
     }
 
 	@Override
     public boolean isEmpty() {
-	    return array.length == 0;
+	    return list.isEmpty();
     }
 
 	@Override
     public Iterator<Route> iterator() {
-	    return new ArrayIterator<>(array);
+	    return list.iterator();
     }
 	
 	@Override
@@ -120,18 +120,14 @@ public class DefaultRoutes implements Routes {
 	@Override
     public synchronized Routes add(Route route) {
 		Args.notNull(route,"route");
-		set.add(route);
-		this.setNewArray();
+		list.add(route);
+        Collections.sort(list, Route.COMPARATOR);
 	    return this;
     }
 
     @Override
     public boolean remove(Route route) {
-        boolean r = set.remove(route);
-        if(r) {
-            this.setNewArray();
-        }
-        return r;
+        return list.remove(route);
     }
 
     @Override
@@ -150,12 +146,8 @@ public class DefaultRoutes implements Routes {
 
     @Override
     public Route match(String method, String path, Map<String,Object> inParameters,  Map<String, String> outVariables) {
-		Route[] routes = this.array;
-
 		List<Route> matchedRoutes = new ArrayList<>();
-		for(int i=0;i<routes.length;i++){
-			Route route = routes[i];
-			
+		for(Route route : list){
 			if(null == method || route.getMethod().equals("*") || route.getMethod().equals(method)){
 				
 				if(!matchRequiredParameters(route.getRequiredParameters(), inParameters)){
@@ -168,13 +160,23 @@ public class DefaultRoutes implements Routes {
 			}
 		}
 
-		if(matchedRoutes.isEmpty()) return null;
+		if(matchedRoutes.isEmpty()) {
+            return null;
+        }
 
-		if(matchedRoutes.size() == 1) return matchedRoutes.get(0);
+        Route route = null;
 
-		Route target = rematch(matchedRoutes);
+		if(matchedRoutes.size() == 1) {
+            route = matchedRoutes.get(0);
+        }else{
+            route = rematch(matchedRoutes);
+        }
 
-		return target;
+        if(route instanceof SubRoutes) {
+            route = ((SubRoutes) route).match(method, path, inParameters, outVariables);
+        }
+
+		return route;
     }
 
 	private Route rematch(List<Route> matchedRoutes) {
@@ -189,17 +191,6 @@ public class DefaultRoutes implements Routes {
 			}
 			return re;
 		}).get();
-	}
-
-	@Override
-	public Route[] getRoutesByController(Object controller) {
-		List<Route> routes = new LinkedList<>();
-		for(Route route : this){
-			if(route.getController() == controller){
-				routes.add(route);
-			}
-		}
-		return routes.toArray(new Route[]{});
 	}
 
 	protected boolean matchRequiredParameters(Map<String, String> requiredParameters, Map<String, Object> inParameters) {
@@ -221,9 +212,5 @@ public class DefaultRoutes implements Routes {
 		}
 		
 		return true;
-	}
-
-	protected void setNewArray(){
-		this.array = set.toArray(new Route[set.size()]);
 	}
 }

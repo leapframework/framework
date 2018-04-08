@@ -37,9 +37,11 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 	protected boolean					   _abstract;
 	protected DbTableBuilder			   table;
 	protected String					   tablePrefix;
+	protected String					   dynamicTableName;
 	protected boolean					   tableNameDeclared;
 	protected boolean					   idDeclared;
     protected boolean                      autoCreateTable;
+    protected Boolean                      queryFilterEnabled;
 	protected List<FieldMappingBuilder>    fieldMappings = new ArrayList<>();
 	protected EntityExecutionInterceptor   insertInterceptor;
 	protected EntityExecutionInterceptor   updateInterceptor;
@@ -132,6 +134,15 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 		return this;
 	}
 
+	public String getDynamicTableName() {
+		return dynamicTableName;
+	}
+
+	public EntityMappingBuilder setDynamicTableName(String dynamicTableName) {
+		this.dynamicTableName = dynamicTableName;
+		return this;
+	}
+
 	public String getTableName() {
 		return getTable().getName();
 	}
@@ -170,6 +181,14 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
     public EntityMappingBuilder setAutoCreateTable(boolean autoCreateTable) {
         this.autoCreateTable = autoCreateTable;
         return this;
+    }
+
+    public Boolean getQueryFilterEnabled() {
+        return queryFilterEnabled;
+    }
+
+    public void setQueryFilterEnabled(Boolean queryFilterEnabled) {
+        this.queryFilterEnabled = queryFilterEnabled;
     }
 
     public List<FieldMappingBuilder> getFieldMappings() {
@@ -391,12 +410,12 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 		List<RelationMapping> relations = Builders.buildList(relationMappings);
 		DbTable			      table     = buildTable(fields,relations);
 
-	    return new EntityMapping(entityName,entityClass,table,fields,
+	    return new EntityMapping(entityName,dynamicTableName,entityClass,table,fields,
 	    						 insertInterceptor,updateInterceptor,deleteInterceptor,findInterceptor,
 	    						 domain,modelClass,validators,
                                  relations,
                                  Builders.buildArray(relationProperties, new RelationProperty[0]),
-                                 autoCreateTable,
+                                 autoCreateTable,queryFilterEnabled == null ? false : queryFilterEnabled,
                                  sharding, autoCreateShardingTable, shardingAlgorithm,
                                  listeners.build());
     }

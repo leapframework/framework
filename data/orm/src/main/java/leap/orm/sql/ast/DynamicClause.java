@@ -15,29 +15,35 @@
  */
 package leap.orm.sql.ast;
 
+import leap.lang.Strings;
+import leap.lang.convert.Converts;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
+import leap.lang.params.Params;
+import leap.orm.sql.Sql;
+import leap.orm.sql.SqlContext;
+import leap.orm.sql.SqlStatementBuilder;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import leap.lang.Strings;
-import leap.lang.convert.Converts;
-import leap.lang.params.Params;
-import leap.orm.sql.SqlStatementBuilder;
-
 public class DynamicClause extends DynamicNode implements AstNodeContainer {
-	
-	private final AstNode[]        bodyNodes;
-	private final NamedParamNode[] paramNodes;
-	
-	private boolean nullable;
-	
-	public DynamicClause(AstNode[] bodyNodes){
+
+    private static final Log log = LogFactory.get(DynamicClause.class);
+
+    private AstNode[]        bodyNodes;
+    private NamedParamNode[] paramNodes;
+    private Tag              tagNode;
+    private boolean          nullable;
+
+    public DynamicClause(AstNode[] bodyNodes){
 	    this(bodyNodes,null);
 	}
 	
     public DynamicClause(AstNode[] bodyNodes, Map<String,String> params) {
-        this.bodyNodes = bodyNodes;
+        this.bodyNodes  = bodyNodes;
         this.paramNodes = resolveParamNodes();
         
         if(null != params) {
@@ -46,12 +52,32 @@ public class DynamicClause extends DynamicNode implements AstNodeContainer {
                this.nullable = Converts.toBoolean(nullableValue, false); 
             }
         }
+
+        //{? and @tagname{..} }
+        if(paramNodes.length == 0) {
+            for(AstNode n : bodyNodes) {
+                if(n instanceof Tag) {
+                    tagNode = (Tag)n;
+                    break;
+                }
+            }
+        }
+    }
+
+    @Override
+    public AstNode[] getNodes() {
+        return bodyNodes;
+    }
+
+    public NamedParamNode[] getNamedParamNodes() {
+        return paramNodes;
+    }
+
+    @Override
+    public <T extends AstNode> T findLastNode(Class<T> type) {
+        return AstUtils.findLastNode(bodyNodes, type);
     }
 	
-	public AstNode[] getBodyNodes() {
-		return bodyNodes;
-	}
-
     @Override
     public void resolveDynamic(Appendable buf, Params params) {
         if(test(params)) {
@@ -96,25 +122,35 @@ public class DynamicClause extends DynamicNode implements AstNodeContainer {
 	}
 
 	@Override
-    protected void buildStatement_(SqlStatementBuilder stm, Params params) throws IOException {
-		if(!test(params)) {
-			return;
-		}
-		
-	    for(AstNode n : bodyNodes) {
-	    	n.buildStatement(stm, params);
-	    }
+    protected void buildStatement_(SqlContext context, Sql sql, SqlStatementBuilder stm, Params params) throws IOException {
+
+        if(null != tagNode){
+            String s = tagNode.process(context, sql, params);
+            if(Strings.isEmpty(s)) {
+                if(log.isDebugEnabled()) {
+                    log.debug("Tag {} -> (empty)", tagNode.toString());
+                }
+                return;
+            }
+
+            for(AstNode n : bodyNodes) {
+                if(n == tagNode) {
+                    tagNode.buildStatement(context, sql, stm, params, s);
+                }else{
+                    n.buildStatement(context, sql, stm, params);
+                }
+            }
+        }else{
+            if(!test(params)) {
+                return;
+            }
+
+            for(AstNode n : bodyNodes) {
+                n.buildStatement(context, sql, stm, params);
+            }
+        }
+
     }
-
-	@Override
-	public AstNode[] getNodes() {
-		return bodyNodes;
-	}
-
-	@Override
-	public <T extends AstNode> T findLastNode(Class<T> type) {
-		return AstUtils.findLastNode(bodyNodes, type);
-	}
 
 	protected NamedParamNode[] resolveParamNodes() {
 		List<NamedParamNode> nodes = new ArrayList<NamedParamNode>();

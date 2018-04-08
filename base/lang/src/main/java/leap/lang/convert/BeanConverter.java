@@ -60,6 +60,10 @@ public class BeanConverter extends AbstractConverter<Object>{
 		return false;
     }
 
+    public void convert(Map map, Object bean, ConvertContext context) {
+        doConvert(map, bean, BeanType.of(bean.getClass()), context);
+    }
+
 	protected Object convertFromMap(Class<?> targetType, Type genericType, Map map, ConvertContext context) {
 		BeanType bt = BeanType.of(targetType);
 		
@@ -70,46 +74,50 @@ public class BeanConverter extends AbstractConverter<Object>{
         if(bean.getClass() != targetType) {
             bt = BeanType.of(bean.getClass());
         }
-		
-		for(BeanProperty prop : bt.getProperties()){
-			String name = prop.getName();
-			
-			boolean multiNames = false;
-			
-			for(Annotation a : prop.getAnnotations()){
-				Name nameAnnotation = a.annotationType().getAnnotation(Name.class);
-				
-				if(null != nameAnnotation){
-					name = (String)ReflectClass.of(a.getClass()).getMethod(nameAnnotation.value()).invoke(a);
-					multiNames = true;
-					break;
-				}
-			}
-			
-			Serializer serializer = Serializes.getSerializer(prop.getAnnotation(Serialize.class));
-			
-	        for(Object entryObject : map.entrySet()){
-	            Entry entry = (Entry)entryObject;
-	            
-	            String key = Objects2.toStringOrEmpty(entry.getKey());
-	            
-	            if(name.equalsIgnoreCase(key) || (multiNames && prop.getName().equalsIgnoreCase(key))){
-		            Object param = entry.getValue();
-		            
-		            if(null != serializer && null != param && param instanceof String){
-		            	param = serializer.tryDeserialize((String)param);
-		            }
-		            
-		            if(prop.isWritable()){
-		                prop.setValue(bean, Converts.convert(param, prop.getType(), prop.getGenericType(), context));
-		                break;
-		            }
-	            }
-	        }
-		}
-		
+
+        doConvert(map, bean, bt, context);
+
 		return bean;
 	}
+
+    protected void doConvert(Map map, Object bean, BeanType bt, ConvertContext context) {
+        for(BeanProperty prop : bt.getProperties()){
+            String name = prop.getName();
+
+            boolean multiNames = false;
+
+            for(Annotation a : prop.getAnnotations()){
+                Name nameAnnotation = a.annotationType().getAnnotation(Name.class);
+
+                if(null != nameAnnotation){
+                    name = (String)ReflectClass.of(a.getClass()).getMethod(nameAnnotation.value()).invoke(a);
+                    multiNames = true;
+                    break;
+                }
+            }
+
+            Serializer serializer = Serializes.getSerializer(prop.getAnnotation(Serialize.class));
+
+            for(Object entryObject : map.entrySet()){
+                Entry entry = (Entry)entryObject;
+
+                String key = Objects2.toStringOrEmpty(entry.getKey());
+
+                if(name.equalsIgnoreCase(key) || (multiNames && prop.getName().equalsIgnoreCase(key))){
+                    Object param = entry.getValue();
+
+                    if(null != serializer && null != param && param instanceof String){
+                        param = serializer.tryDeserialize((String)param);
+                    }
+
+                    if(prop.isWritable()){
+                        prop.setValue(bean, Converts.convert(param, prop.getType(), prop.getGenericType(), context));
+                        break;
+                    }
+                }
+            }
+        }
+    }
 	
 	protected Object newInstance(ConvertContext context, BeanType bt, Map<String, Object> map){
 		ReflectClass cls = bt.getReflectClass();

@@ -45,7 +45,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener {
-    private static final String NAMESPACE_URI = "http://www.leapframework.org/schema/web/apis/apis";
+    private static final String NAMESPACE_URI = "http://www.leapframework.org/schema/webapi";
 
     protected static final String APIS                 = "apis";
     protected static final String API                  = "api";
@@ -108,6 +108,8 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
     protected static final String FIND                 = "find";
     protected static final String QUERY                = "query";
     protected static final String OVERRIDE             = "override";
+    protected static final String SQL_OPERATION        = "sql-operation";
+    protected static final String SQL_KEY              = "sql-key";
 
     @Override
     public String getNamespaceURI() {
@@ -694,6 +696,12 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
                 readRestdModel(context, api, reader, rc);
                 return;
             }
+
+            //sql-operation
+            if (reader.isStartElement(SQL_OPERATION)) {
+                rc.addSqlOperation(readSqlOperation(rc, reader));
+                return;
+            }
         });
 
     }
@@ -761,5 +769,22 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
             model.setQueryOperationEnabled(query);
         }
 
+        final RestdConfig.Model m = model;
+
+        reader.loopInsideElement(() -> {
+
+            if(reader.isStartElement(SQL_OPERATION)) {
+                m.addSqlOperation(readSqlOperation(config, reader));
+            }
+        });
+    }
+
+    private RestdConfig.SqlOperation readSqlOperation(RestdConfig config, XmlReader reader) {
+        RestdConfig.SqlOperation op = new RestdConfig.SqlOperation();
+
+        op.setName(reader.getRequiredAttribute(NAME));
+        op.setSqlKey(reader.getRequiredAttribute(SQL_KEY));
+
+        return op;
     }
 }

@@ -33,9 +33,7 @@ public interface JsonStringable {
 			return;
 		}
 		JsonWriter writer = JSON.writer(out)
-				.setIgnoreNull(settings.isIgnoreNull())
-				.setKeyQuoted(settings.isKeyQuoted())
-				.setNamingStyle(settings.getNamingStyle())
+				.setSettings(settings)
 				.create();
 		toJson(writer);
 	}

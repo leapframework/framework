@@ -31,7 +31,6 @@ import leap.lang.Strings;
 import leap.lang.accessor.Getter;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
-import leap.lang.beans.DynaBean;
 import leap.lang.collection.WrappedCaseInsensitiveMap;
 import leap.lang.convert.Converts;
 import leap.lang.expression.Expression;
@@ -51,7 +50,6 @@ import leap.orm.command.InsertCommand;
 import leap.orm.command.UpdateCommand;
 import leap.orm.dao.Dao;
 import leap.orm.dmo.Dmo;
-import leap.orm.linq.Condition;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
 import leap.orm.model.ModelRegistry.ModelContext;
@@ -222,14 +220,6 @@ public abstract class Model implements Getter,ValidatableBean,JsonStringable {
 		return query().where(whereExpression).delete();
 	}
 	
-	/**
-	 * Delete all the records with the given lambda condition.
-	 */
-	@Instrument
-	public static <T extends Model> int deleteAll(Condition<T> condition) {
-		return ((CriteriaQuery<T>)query()).where(condition).delete();
-	}
-
 	/**
 	 * Delete all the records with the given where expression.
 	 */
@@ -423,14 +413,6 @@ public abstract class Model implements Getter,ValidatableBean,JsonStringable {
 	@Instrument
 	public static <T extends Model> CriteriaWhere<T> where() {
 		return (CriteriaWhere<T>)query().where();
-	}
-	
-	/**
-	 * Returns a {@link CriteriaQuery} object for querying records with the given lambda condition.
-	 */
-	@Instrument
-	public static <T extends Model> CriteriaQuery<T> where(Condition<T> condition) {
-		return ((CriteriaQuery<T>)query()).where(condition);
 	}
 	
 	/**
@@ -872,13 +854,6 @@ public abstract class Model implements Getter,ValidatableBean,JsonStringable {
     /**
      * Updates all the records matched the where expression with all the fields.
      */
-    public final <T extends Model> int updateAll(Condition<T> condition) {
-    	return ((CriteriaQuery<T>)thisQuery()).where(condition).update(getUpdateFields());
-    }
-    
-    /**
-     * Updates all the records matched the where expression with all the fields.
-     */
     public final int updateAll(String whereExpression,Object... args) {
     	return thisQuery().where(whereExpression,args).update(getUpdateFields());
     }
@@ -1062,7 +1037,7 @@ public abstract class Model implements Getter,ValidatableBean,JsonStringable {
 
 	protected void doSet(String field,Object value){
     	BeanProperty bp = beanType().tryGetProperty(field, true);
-    	if(null != bp){
+    	if(null != bp && bp.isWritable()){
     		bp.setValue(this, value);
     	}else{
     		fields.put(field, value);

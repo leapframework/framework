@@ -18,6 +18,7 @@
 					</xsd:choice>
                     <xsd:attribute name="auto-create-tables" type="xsd:boolean" use="optional" />
                     <xsd:attribute name="auto-generate-columns" type="xsd:boolean" use="optional" />
+                    <xsd:attribute name="query-filter-enabled" type="xsd:boolean" use="optional" />
 					<xsd:attribute name="default-max-results" type="xsd:int" use="optional" />
                     <xsd:attribute name="default-serialize-format" type="xsd:string" use="optional"/>
 				</xsd:restriction>

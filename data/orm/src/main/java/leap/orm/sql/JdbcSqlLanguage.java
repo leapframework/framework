@@ -24,7 +24,7 @@ import leap.orm.sql.parser.SqlParser;
 public class JdbcSqlLanguage implements SqlLanguage {
 
 	@Override
-    public List<SqlClause> parseClauses(MetadataContext context, String text) throws SqlClauseException {
+    public List<SqlClause> parseClauses(MetadataContext context, String text, Options options) throws SqlClauseException {
 		List<String> sqls = SqlParser.split(text);
 		
 		List<SqlClause> clauses = new ArrayList<SqlClause>();
@@ -37,8 +37,9 @@ public class JdbcSqlLanguage implements SqlLanguage {
     }
 
 	@Override
-    public SqlClause parseClause(MetadataContext context, String sql) throws SqlClauseException {
+    public SqlClause parseClause(MetadataContext context, String sql, Options options) throws SqlClauseException {
 	    return new JdbcSqlClause(sql);
     }
-	
+
+
 }

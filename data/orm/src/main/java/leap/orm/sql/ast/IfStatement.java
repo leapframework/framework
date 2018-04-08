@@ -19,6 +19,8 @@ import java.io.IOException;
 
 import leap.lang.Args;
 import leap.lang.params.Params;
+import leap.orm.sql.Sql;
+import leap.orm.sql.SqlContext;
 import leap.orm.sql.SqlStatementBuilder;
 import leap.orm.sql.parser.Token;
 
@@ -57,10 +59,10 @@ public class IfStatement extends DynamicNode {
     }
 
 	@Override
-    protected void buildStatement_(SqlStatementBuilder stm, Params params) throws IOException {
+    protected void buildStatement_(SqlContext context, Sql sql, SqlStatementBuilder stm, Params params) throws IOException {
 		AstNode[] nodes = this.getBodyNodes();
 		for(AstNode node : nodes){
-			node.buildStatement(stm,params);
+			node.buildStatement(context, sql, stm, params);
 		}
     }
 

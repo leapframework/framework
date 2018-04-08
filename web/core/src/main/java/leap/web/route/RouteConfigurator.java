@@ -99,7 +99,11 @@ public interface RouteConfigurator {
 	default RouteConfigurator allowClientOnly() {
 	    return setAllowClientOnly(true);
 	}
-	
+
+    default RouteConfigurator allowAny() {
+        return allowAnonymous().enableCors().disableCsrf();
+    }
+
 	/**
 	 * Apply the route.
 	 */

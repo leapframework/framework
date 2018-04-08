@@ -15,18 +15,14 @@
  */
 package leap.web.api.spec.swagger;
 
-import static leap.lang.Strings.nullToEmpty;
-import static leap.web.api.spec.swagger.SwaggerConstants.*;
-
-import java.util.List;
-import java.util.Map.Entry;
-
+import leap.core.doc.annotation.Doc;
 import leap.lang.Args;
 import leap.lang.Arrays2;
 import leap.lang.New;
 import leap.lang.Strings;
 import leap.lang.json.JsonWriter;
 import leap.lang.meta.*;
+import leap.web.Request;
 import leap.web.api.config.ApiConfigException;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.*;
@@ -34,7 +30,12 @@ import leap.web.api.meta.model.MApiParameter.Location;
 import leap.web.api.spec.ApiSpecContext;
 import leap.web.api.spec.JsonSpecWriter;
 
-import javax.rmi.PortableRemoteObject;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map.Entry;
+
+import static leap.lang.Strings.nullToEmpty;
+import static leap.web.api.spec.swagger.SwaggerConstants.*;
 
 public class SwaggerJsonWriter extends JsonSpecWriter {
 
@@ -137,21 +138,60 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 		
 		w.endObject();
 	}
-	
+
 	protected void writePath(WriteContext context, ApiMetadata m, JsonWriter w, MApiPath p) {
 		w.startObject();
 
 		for(MApiOperation o : p.getOperations()) {
-			w.property(o.getMethod().name().toLowerCase(), () -> {
+
+            if (checkProfile(o)) continue;
+
+            w.property(o.getMethod().name().toLowerCase(), () -> {
 				writeOperation(context, m, w, p, o);
 			});
 		}
 		
 		w.endObject();
 	}
-	
-	protected void writeOperation(WriteContext context, ApiMetadata m, JsonWriter w, MApiPath p, MApiOperation o) {
+
+    private boolean checkProfile(MApiOperation o) {
+        String[] profiles = tryGetProfiles(o);
+        if (null != profiles) {
+            Request request = Request.tryGetCurrent();
+
+            if (null != request) {
+                String requestProfile = request.getParameter("profile");
+
+                if (Strings.isNotBlank(requestProfile)) {
+
+                    if(!Arrays2.containsAny(profiles, requestProfile)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private String[] tryGetProfiles(MApiOperation o) {
+        if(null == o || null == o.getRoute()
+                || null == o.getRoute().getAction()
+                || null == o.getRoute().getAction().getMethod()
+                || null == o.getRoute().getAction().getMethod().getAnnotation(Doc.class)) {
+            return null;
+        }
+
+        String[] profiles = o.getRoute().getAction().getMethod().getAnnotation(Doc.class).profile();
+
+        return Arrays2.isNotEmpty(profiles) ? profiles : null;
+    }
+
+    protected void writeOperation(WriteContext context, ApiMetadata m, JsonWriter w, MApiPath p, MApiOperation o) {
 		w.startObject();
+
+        if(null != o.getCorsEnabled()) {
+            w.property(X_CORS, o.getCorsEnabled());
+        }
 
         w.propertyOptional(TAGS, o.getTags());
         w.propertyOptional(SUMMARY, o.getSummary());
@@ -327,9 +367,6 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
     
     protected void writeOAuth2SecurityDef(WriteContext context, ApiMetadata m, JsonWriter w, MOAuth2ApiSecurityDef d) {
         //context.defaultSecurity = OAUTH2;
-		if(Strings.equals(d.getFlow(),SwaggerConstants.IMPLICIT)){
-			
-		}
         switch (d.getFlow()){
 			case SwaggerConstants.IMPLICIT:
 				writeOAuth2Implicit(context, m, w, d);
@@ -630,6 +667,8 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 			type = SwaggerType.BYTE;
 		}else if(k == MSimpleTypeKind.DATETIME) {
 			type = SwaggerType.DATETIME;
+		}else if(k == MSimpleTypeKind.TIME) {
+			type = SwaggerType.TIME;
 		}else if(k == MSimpleTypeKind.DECIMAL) {
 			type = SwaggerType.DOUBLE;
 		}else if(k == MSimpleTypeKind.DOUBLE) {

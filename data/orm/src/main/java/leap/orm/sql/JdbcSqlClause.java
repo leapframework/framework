@@ -97,7 +97,7 @@ public class JdbcSqlClause extends AbstractSqlClause implements SqlClause {
 				args = new Object[]{params};
 			}
 		}else{
-			args = Arrays2.EMPTY_OBJECT_ARRAY;;
+			args = Arrays2.EMPTY_OBJECT_ARRAY;
 		}
 		return args;
 	}

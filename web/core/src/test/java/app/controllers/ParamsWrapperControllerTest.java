@@ -23,19 +23,19 @@ public class ParamsWrapperControllerTest extends WebTestBase {
 
     @Test
     public void testSimpleWrapperBean() {
-        forPost("/params_wrapper/test?id=1").setBody("Hello").send().assertOk();
-        forPost("/params_wrapper/test0?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
-        forPost("/params_wrapper/test1?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
-        forPost("/params_wrapper/test2?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
+        usePost("/params_wrapper/test?id=1").setBody("Hello").send().assertOk();
+        usePost("/params_wrapper/test0?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
+        usePost("/params_wrapper/test1?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
+        usePost("/params_wrapper/test2?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
     }
 
     @Test
     public void testMultiWrapperBean() {
-        forPost("/params_wrapper/test3?id=1&name=Hello").send().assertOk();
+        usePost("/params_wrapper/test3?id=1&name=Hello").send().assertOk();
     }
 
     @Test
     public void testCombineWrapperAndBody() {
-        forPost("/params_wrapper/test4?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
+        usePost("/params_wrapper/test4?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
     }
 }

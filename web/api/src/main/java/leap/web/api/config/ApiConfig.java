@@ -30,6 +30,7 @@ import leap.web.api.meta.model.MApiResponse;
 import leap.web.api.meta.model.MApiPermission;
 import leap.web.api.permission.ResourcePermissionsSet;
 import leap.web.route.Route;
+import leap.web.route.Routes;
 
 /**
  * Represents the configuration of a web api.
@@ -234,4 +235,9 @@ public interface ApiConfig extends Named,Titled,Described,Extensible {
      * Returns the {@link RestdConfig} or null if restd is not enabled.
      */
     RestdConfig getRestdConfig();
+
+    /**
+     * Returns the {@link Routes} for dynamic created route(s) of api.
+     */
+    Routes getDynamicRoutes();
 }

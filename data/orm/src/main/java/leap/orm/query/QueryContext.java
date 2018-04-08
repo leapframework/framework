@@ -17,8 +17,9 @@ package leap.orm.query;
 
 import leap.lang.value.Limit;
 import leap.orm.sql.SqlContext;
+import leap.orm.sql.SqlLanguage;
 
-public interface QueryContext extends SqlContext {
+public interface QueryContext extends SqlContext,SqlLanguage.Options {
 	
 	Limit getLimit();
 	

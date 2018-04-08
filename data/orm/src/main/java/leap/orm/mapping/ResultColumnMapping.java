@@ -19,9 +19,11 @@ public class ResultColumnMapping {
 	
 	protected String        columnName;
 	protected String        columnLabel;
+	protected String		aliasName;
 	protected int           columnType;
 	protected EntityMapping	entityMapping;
 	protected FieldMapping  fieldMapping;
+	protected boolean isAlias = false;
 	
 	protected ResultColumnMapping() {
 
@@ -65,5 +67,21 @@ public class ResultColumnMapping {
 
 	protected void setFieldMapping(FieldMapping fieldMapping) {
 		this.fieldMapping = fieldMapping;
+	}
+
+	public boolean isAlias() {
+		return isAlias;
+	}
+
+	public void setAlias(boolean alias) {
+		isAlias = alias;
+	}
+
+	public String getAliasName() {
+		return aliasName;
+	}
+
+	public void setAliasName(String aliasName) {
+		this.aliasName = aliasName;
 	}
 }
