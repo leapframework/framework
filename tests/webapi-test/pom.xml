@@ -18,7 +18,6 @@
 	</parent>
 	<artifactId>webapi-test</artifactId>
 	<packaging>jar</packaging>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.leapframework</groupId>
