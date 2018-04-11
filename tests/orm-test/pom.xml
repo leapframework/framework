@@ -7,7 +7,7 @@
     <parent>
         <artifactId>tests</artifactId>
         <groupId>org.leapframework</groupId>
-        <version>0.7.0b</version>
+        <version>0.7.1b-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>orm-test</artifactId>
