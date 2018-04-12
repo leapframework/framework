@@ -29,6 +29,7 @@ public class AggregateParserTest extends TestBase {
         assertInvalidExpr("sum( )");
         assertInvalidExpr("sum(a) a b");
         assertInvalidExpr("sum(a),a");
+        assertInvalidExpr("sum0(a)");
     }
 
     @Test

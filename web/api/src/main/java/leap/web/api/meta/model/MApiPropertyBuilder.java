@@ -31,6 +31,7 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
     protected boolean      reference;
     protected Boolean      readOnly;
     protected Boolean      selectable;
+    protected Boolean      aggregatable;
     protected Boolean      creatable;
     protected Boolean      updatable;
     protected Boolean      sortable;
@@ -63,6 +64,7 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
         this.reference = mp.isReference();
         this.discriminator = mp.isDiscriminator();
         this.selectable = mp.getSelectable();
+        this.aggregatable = mp.getAggregatable();
         this.creatable = mp.getCreatable();
         this.updatable = mp.getUpdatable();
         this.sortable = mp.getSortable();
@@ -156,6 +158,14 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
         this.selectable = selectable;
     }
 
+    public Boolean getAggregatable() {
+        return aggregatable;
+    }
+
+    public void setAggregatable(Boolean aggregatable) {
+        this.aggregatable = aggregatable;
+    }
+
     public Boolean getCreatable() {
         return creatable;
     }
@@ -205,6 +215,7 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
                                 type, format, identity, unique, reference, discriminator, password, required,
                                 defaultValue, enumValues,
 	    					    null == validation ? null : validation.build(), attrs,
-                                readOnly, selectable, creatable, updatable, sortable, filterable, expandable, extension);
+                                readOnly, selectable, aggregatable, creatable, updatable, sortable, filterable, expandable,
+                                extension);
     }
 }

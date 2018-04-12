@@ -32,6 +32,7 @@ public class MPropertyBuilder extends MNamedWithDescBuilder<MProperty> {
     protected Integer      scale;
     protected boolean      discriminator;
     protected Boolean      selectable;
+    protected Boolean      aggregatable;
     protected Boolean      creatable;
     protected Boolean      updatable;
     protected Boolean      sortable;
@@ -142,6 +143,14 @@ public class MPropertyBuilder extends MNamedWithDescBuilder<MProperty> {
         this.selectable = selectable;
     }
 
+    public Boolean getAggregatable() {
+        return aggregatable;
+    }
+
+    public void setAggregatable(Boolean aggregatable) {
+        this.aggregatable = aggregatable;
+    }
+
     public Boolean getCreatable() {
         return creatable;
     }
@@ -186,7 +195,7 @@ public class MPropertyBuilder extends MNamedWithDescBuilder<MProperty> {
     public MProperty build() {
         return new MProperty(name, title, summary, description, type, beanProperty, identity, unique, required,
                              defaultValue, enumValues, fixedLength, length, precision, scale,
-                             discriminator, selectable, creatable, updatable, sortable, filterable, reference);
+                             discriminator, selectable, aggregatable, creatable, updatable, sortable, filterable, reference);
     }
 
 }

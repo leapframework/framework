@@ -483,11 +483,11 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     }
 
     @Override
-    public CriteriaQuery<T> select(String... fields) {
-		if(null == fields || fields.length == 0){
+    public CriteriaQuery<T> select(String... selection) {
+		if(null == selection || selection.length == 0){
 			builder.selects = null;
 		}else{
-			builder.selects = columns(fields);
+			builder.selects = columns(selection);
 		}
 	    return this;
     }
@@ -1178,7 +1178,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                         sql.append(",");
                     }
                     
-                    if(column.contains(".")){
+                    if(column.contains(".") || column.contains(" ") || column.contains("(")){
                         sql.append(column);
                     }else {
                         sql.append(alias).append(".").append(column);

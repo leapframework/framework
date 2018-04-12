@@ -127,7 +127,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             applyOrderBy(query, options.getOrderBy());
         }
 
-        applySelect(query, options);
+        applySelectOrAggregates(query, options);
 
         Map<String, ModelAndMapping> joinedModels = null;
 
@@ -666,6 +666,37 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
 
         query.select(fields.toArray(new String[fields.size()]));
+    }
+
+    protected void applySelectOrAggregates(CriteriaQuery query, QueryOptions options) {
+        if(Strings.isEmpty(options.getAggregates())) {
+            applySelect(query, options);
+            return;
+        }
+
+        if(!Strings.isEmpty(options.getSelect())) {
+            throw new BadRequestException("Can't use 'select' for aggregation query");
+        }
+
+        List<String> select = new ArrayList<>();
+
+        Aggregate[] aggregates = AggregateParser.parse(options.getAggregates());
+        for(Aggregate aggregate : aggregates) {
+            if(aggregate.getField().equals("*")) {
+                select.add(aggregate.getFunction() + "(" + aggregate.getField() + ") as " + aggregate.getAlias());
+            }else {
+                MApiProperty p = am.tryGetProperty(aggregate.getField());
+                if (null == p) {
+                    throw new BadRequestException("Property '" + aggregate.getField() + "' not exists, check the 'aggregates' param");
+                }
+                if (!p.isAggregatableExplicitly()) {
+                    throw new BadRequestException("Property '" + aggregate.getField() + "' is not aggregatable");
+                }
+                select.add(aggregate.getFunction() + "(" + query.alias() + "." + aggregate.getField() + ") as " + aggregate.getAlias());
+            }
+        }
+
+        query.select(select.toArray(new String[select.size()]));
     }
 
     protected void applyFilters(CriteriaQuery query, Params params, QueryOptions options, Map<String, ModelAndMapping> jms, Map<String, Object> fields) {

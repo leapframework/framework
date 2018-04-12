@@ -20,9 +20,20 @@ import leap.lang.Strings;
 import leap.web.exception.BadRequestException;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class AggregateParser {
+
+    private static final Set<String> funcs = new HashSet<>();
+    static {
+        funcs.add("sum");
+        funcs.add("avg");
+        funcs.add("min");
+        funcs.add("max");
+        funcs.add("count");
+    }
 
     public static Aggregate[] parse(String expr) {
         List<Aggregate> aggregates = new ArrayList<>();
@@ -42,24 +53,46 @@ public class AggregateParser {
                 }
 
                 String func  = part.substring(0, index0);
-                String field = part.substring(index0+1, index1).trim();
+                if(!funcs.contains(func.toLowerCase())) {
+                    throw new BadRequestException("Unsupported aggregation function '" + func + "'");
+                }
 
+                String field = part.substring(index0+1, index1).trim();
                 if(Strings.isEmpty(field)) {
                     invalidExpr(expr);
                 }
 
-                String rest  = index1 == part.length() - 1 ? "" : part.substring(index1 + 1).trim();
-                String alias = Strings.isEmpty(rest) ? Strings.lowerCamel(field, func) : Strings.removeStartIgnoreCase(rest, "as ").trim();
-
-                if(!isIdentifier(alias)) {
-                    throw new BadRequestException("Invalid alias '" + alias + "', must be identifier");
+                if(func.equalsIgnoreCase("count") && !"*".equals(field)) {
+                    throw new BadRequestException("Expected 'count(*)', actual '" + func + "(" + field + ")'");
                 }
+
+                String rest  = index1 == part.length() - 1 ? "" : part.substring(index1 + 1).trim();
+                String alias = alias(rest, field, func);
 
                 aggregates.add(new Aggregate(field, func, alias));
             }
         }
 
         return aggregates.toArray(new Aggregate[aggregates.size()]);
+    }
+
+    private static String alias(String rest, String field, String func) {
+        String alias;
+        if(Strings.isEmpty(rest)) {
+            if("count".equalsIgnoreCase(func)) {
+                return "total";
+            }else {
+                alias = Strings.lowerCamel(field, func);
+            }
+        }else {
+            alias = Strings.removeStartIgnoreCase(rest, "as ").trim();
+        }
+
+        if(!isIdentifier(alias)) {
+            throw new BadRequestException("Invalid alias '" + alias + "', must be identifier");
+        }
+        return alias;
+
     }
 
     private static void invalidExpr(String expr) {

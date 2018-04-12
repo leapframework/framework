@@ -32,6 +32,7 @@ public class QueryOptions extends QueryOptionsBase {
     protected @QueryParam("orderby")     String  orderBy;
     protected @QueryParam("viewId")      String  viewId;
     protected @QueryParam("filters")     String  filters;
+    protected @QueryParam("aggregates")  String  aggregates;
     protected @QueryParam("joins")       String  joins;
 
     public Integer getPageSize() {
@@ -96,6 +97,14 @@ public class QueryOptions extends QueryOptionsBase {
 
     public void setFilters(String filters) {
         this.filters = filters;
+    }
+
+    public String getAggregates() {
+        return aggregates;
+    }
+
+    public void setAggregates(String aggregates) {
+        this.aggregates = aggregates;
     }
 
     public String getJoins() {

@@ -31,6 +31,7 @@ public class MApiProperty extends MApiParameterBase {
     protected final boolean      discriminator;
     protected final Boolean      readOnly;
     protected final Boolean      selectable;
+    protected final Boolean      aggregatable;
     protected final Boolean      creatable;
     protected final Boolean      updatable;
     protected final Boolean      sortable;
@@ -43,7 +44,8 @@ public class MApiProperty extends MApiParameterBase {
                         boolean discriminator, boolean password, Boolean required,
                         Object defaultValue, String[] enumValues,
                         MApiValidation validation, Map<String, Object> attrs, Boolean readOnly,
-                        Boolean selectable, Boolean creatable, Boolean updatable, Boolean sortable, Boolean filterable, Boolean expandable, MApiExtension extension) {
+                        Boolean selectable, Boolean aggregatable, Boolean creatable, Boolean updatable, Boolean sortable, Boolean filterable,
+                        Boolean expandable, MApiExtension extension) {
 	    super(name, title, summary, description, type, format, false, password, required, defaultValue, enumValues, validation, extension, attrs);
 
         this.identity = identity;
@@ -58,6 +60,7 @@ public class MApiProperty extends MApiParameterBase {
         this.sortable = sortable;
         this.filterable = filterable;
         this.expandable = expandable;
+        this.aggregatable = aggregatable;
 
         if(isNotCreatableExplicitly() && isNotUpdatableExplicitly()) {
             this.readOnly = true;
@@ -101,6 +104,10 @@ public class MApiProperty extends MApiParameterBase {
         return selectable;
     }
 
+    public Boolean getAggregatable() {
+        return aggregatable;
+    }
+
     public Boolean getCreatable() {
         return creatable;
     }
@@ -123,6 +130,10 @@ public class MApiProperty extends MApiParameterBase {
 
     public boolean isSelectableExplicitly() {
         return null != selectable && selectable;
+    }
+
+    public boolean isAggregatableExplicitly() {
+        return null != aggregatable && aggregatable;
     }
 
     public boolean isCreatableExplicitly() {
