@@ -35,6 +35,7 @@ public class MProperty extends ImmutableMNamedWithDesc {
     protected final boolean      discriminator;
     protected final Boolean      selectable;
     protected final Boolean      aggregatable;
+    protected final Boolean      groupable;
     protected final Boolean      creatable;
     protected final Boolean      updatable;
     protected final Boolean      sortable;
@@ -47,7 +48,8 @@ public class MProperty extends ImmutableMNamedWithDesc {
                      boolean fixedLength,
                      Integer length, Integer precision, Integer scale,
                      boolean discriminator,
-                     Boolean selectable, Boolean aggregatable, Boolean creatable, Boolean updatable, Boolean sortable, Boolean filterable,
+                     Boolean selectable, Boolean aggregatable, Boolean groupable,
+                     Boolean creatable, Boolean updatable, Boolean sortable, Boolean filterable,
                      boolean reference) {
         super(name, title, summary, description);
 
@@ -67,6 +69,7 @@ public class MProperty extends ImmutableMNamedWithDesc {
         this.discriminator = discriminator;
         this.selectable = selectable;
         this.aggregatable = aggregatable;
+        this.groupable = groupable;
         this.creatable = creatable;
         this.updatable = updatable;
         this.sortable = sortable;
@@ -131,6 +134,10 @@ public class MProperty extends ImmutableMNamedWithDesc {
 
     public Boolean getAggregatable() {
         return aggregatable;
+    }
+
+    public Boolean getGroupable() {
+        return groupable;
     }
 
     public Boolean getCreatable() {

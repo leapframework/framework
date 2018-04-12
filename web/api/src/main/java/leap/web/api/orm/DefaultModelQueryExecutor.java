@@ -669,16 +669,35 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
     }
 
     protected void applySelectOrAggregates(CriteriaQuery query, QueryOptions options) {
-        if(Strings.isEmpty(options.getAggregates())) {
+        if(Strings.isEmpty(options.getAggregates()) && Strings.isEmpty(options.getGroupBy())) {
             applySelect(query, options);
             return;
         }
 
         if(!Strings.isEmpty(options.getSelect())) {
-            throw new BadRequestException("Can't use 'select' for aggregation query");
+            throw new BadRequestException("Can't use 'select' for aggregation or groupby query");
         }
 
         List<String> select = new ArrayList<>();
+
+        if(!Strings.isEmpty(options.getGroupBy())) {
+            if(Strings.isEmpty(options.getAggregates())) {
+                throw new BadRequestException("Must use groupby with aggregates");
+            }
+
+            String[] names = Strings.split(options.getGroupBy(), ',');
+            for(String name : names) {
+                MApiProperty p = am.tryGetProperty(name);
+                if(null == p) {
+                    throw new BadRequestException("Property '" + name + "' not exists, check the 'groupby' param");
+                }
+                if(!p.isSelectableExplicitly()) {
+                    throw new BadRequestException("Property '" + name + "' is not groupable");
+                }
+                select.add(p.getName());
+            }
+            query.groupBy(options.getGroupBy());
+        }
 
         Aggregate[] aggregates = AggregateParser.parse(options.getAggregates());
         for(Aggregate aggregate : aggregates) {

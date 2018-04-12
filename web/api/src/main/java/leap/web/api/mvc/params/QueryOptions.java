@@ -33,6 +33,7 @@ public class QueryOptions extends QueryOptionsBase {
     protected @QueryParam("viewId")      String  viewId;
     protected @QueryParam("filters")     String  filters;
     protected @QueryParam("aggregates")  String  aggregates;
+    protected @QueryParam("groupby")     String  groupBy;
     protected @QueryParam("joins")       String  joins;
 
     public Integer getPageSize() {
@@ -105,6 +106,14 @@ public class QueryOptions extends QueryOptionsBase {
 
     public void setAggregates(String aggregates) {
         this.aggregates = aggregates;
+    }
+
+    public String getGroupBy() {
+        return groupBy;
+    }
+
+    public void setGroupBy(String groupBy) {
+        this.groupBy = groupBy;
     }
 
     public String getJoins() {

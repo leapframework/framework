@@ -32,6 +32,7 @@ public class MApiProperty extends MApiParameterBase {
     protected final Boolean      readOnly;
     protected final Boolean      selectable;
     protected final Boolean      aggregatable;
+    protected final Boolean      groupable;
     protected final Boolean      creatable;
     protected final Boolean      updatable;
     protected final Boolean      sortable;
@@ -44,7 +45,8 @@ public class MApiProperty extends MApiParameterBase {
                         boolean discriminator, boolean password, Boolean required,
                         Object defaultValue, String[] enumValues,
                         MApiValidation validation, Map<String, Object> attrs, Boolean readOnly,
-                        Boolean selectable, Boolean aggregatable, Boolean creatable, Boolean updatable, Boolean sortable, Boolean filterable,
+                        Boolean selectable, Boolean aggregatable, Boolean groupable,
+                        Boolean creatable, Boolean updatable, Boolean sortable, Boolean filterable,
                         Boolean expandable, MApiExtension extension) {
 	    super(name, title, summary, description, type, format, false, password, required, defaultValue, enumValues, validation, extension, attrs);
 
@@ -55,12 +57,13 @@ public class MApiProperty extends MApiParameterBase {
         this.metaProperty = metaProperty;
         this.beanProperty = beanProperty;
         this.selectable = selectable;
+        this.aggregatable = aggregatable;
+        this.groupable = groupable;
         this.creatable = creatable;
         this.updatable = updatable;
         this.sortable = sortable;
         this.filterable = filterable;
         this.expandable = expandable;
-        this.aggregatable = aggregatable;
 
         if(isNotCreatableExplicitly() && isNotUpdatableExplicitly()) {
             this.readOnly = true;
@@ -108,6 +111,10 @@ public class MApiProperty extends MApiParameterBase {
         return aggregatable;
     }
 
+    public Boolean getGroupable() {
+        return groupable;
+    }
+
     public Boolean getCreatable() {
         return creatable;
     }
@@ -134,6 +141,10 @@ public class MApiProperty extends MApiParameterBase {
 
     public boolean isAggregatableExplicitly() {
         return null != aggregatable && aggregatable;
+    }
+
+    public boolean isGroupableExplicitly() {
+        return null != groupable && groupable;
     }
 
     public boolean isCreatableExplicitly() {
