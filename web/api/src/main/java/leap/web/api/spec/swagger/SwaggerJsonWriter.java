@@ -609,6 +609,8 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
                     }
 
                     w.propertyOptional(X_SELECTABLE, p.getSelectable());
+                    w.propertyOptional(X_AGGREGATABLE, p.getAggregatable());
+                    w.propertyOptional(X_GROUPABLE,  p.getGroupable());
                     w.propertyOptional(X_CREATABLE,  p.getCreatable());
                     w.propertyOptional(X_UPDATABLE,  p.getUpdatable());
                     w.propertyOptional(X_SORTABLE,   p.getSortable());
