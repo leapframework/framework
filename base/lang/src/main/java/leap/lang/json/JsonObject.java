@@ -290,6 +290,6 @@ public class JsonObject implements JsonValue {
 
 	@Override
     public String toString() {
-		return map.toString();
+		return JSON.stringify(map);
 	}
 }
