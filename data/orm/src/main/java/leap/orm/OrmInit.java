@@ -22,6 +22,7 @@ import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.core.ds.DataSourceListener;
 import leap.core.ds.DataSourceManager;
+import leap.lang.Lazy;
 import leap.lang.beans.BeanException;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -88,6 +89,9 @@ public class OrmInit implements AppContextInitializable {
     }
 	
 	private static void initOrmBeans(BeanFactory factory,DataSource dataSource,String name,boolean primary){
+        if(dataSource instanceof Lazy) {
+            return;
+        }
 		OrmContext namedContext = factory.tryGetBean(OrmContext.class,name);
 		if(null == namedContext){
 			factory.addBean(OrmContext.class, primary, name, true, DefaultOrmContext.class, name, dataSource);
