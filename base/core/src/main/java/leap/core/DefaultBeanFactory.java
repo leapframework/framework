@@ -504,6 +504,11 @@ public class DefaultBeanFactory extends BeanFactoryInternal implements BeanFacto
         return beanContainer.resolveInjectValue(type, genericType);
     }
 
+    @Override
+    public Object resolveInjectValue(Class<?> type, Type genericType, String name) {
+        return beanContainer.resolveInjectValue(type, genericType, name);
+    }
+
     public void close(){
 		try{
 			if(null != beanContainer){

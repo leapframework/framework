@@ -713,6 +713,13 @@ public class BeanContainer implements BeanFactory {
 					}
 				}
 			}
+
+            for(BeanFactorySupport support : postSupports) {
+                Map<String, T> map = support.getNamedBeans(type);
+                if(null != map) {
+                    beans.putAll(map);
+                }
+            }
 			
 			namedBeansMap.put(type, Collections.unmodifiableMap(beans));
 		}
@@ -1447,14 +1454,20 @@ public class BeanContainer implements BeanFactory {
     @Override
     public Object resolveInjectValue(Class<?> type, Type genericType) {
         SimpleReflectValued v = new SimpleReflectValued(type, genericType);
-        return resolveInjectValue(mockBeanDefinition, mockBean, BeanType.of(MockBean.class), v, true);
+        return resolveInjectValue(mockBeanDefinition, mockBean, BeanType.of(MockBean.class), v, true, null);
+    }
+
+    @Override
+    public Object resolveInjectValue(Class<?> type, Type genericType, String name) {
+        SimpleReflectValued v = new SimpleReflectValued(type, genericType);
+        return resolveInjectValue(mockBeanDefinition, mockBean, BeanType.of(MockBean.class), v, true, name);
     }
 
     protected Object resolveInjectValue(BeanDefinitionBase bd, Object bean, BeanType bt, ReflectValued v) {
-        return resolveInjectValue(bd, bean, bt, v, false);
+        return resolveInjectValue(bd, bean, bt, v, false, null);
     }
 
-    protected Object resolveInjectValue(BeanDefinitionBase bd, Object bean, BeanType bt, ReflectValued v, boolean force) {
+    protected Object resolveInjectValue(BeanDefinitionBase bd, Object bean, BeanType bt, ReflectValued v, boolean force, String beanName) {
 
         if(null != injectors && injectors.length > 0) {
             Annotation found = null;
@@ -1488,11 +1501,15 @@ public class BeanContainer implements BeanFactory {
             }
         }
 
-        return resolveInjectValue(beanFactory, bd, v.getName(), v.getType(), v.getGenericType(), v.getAnnotations());
+        return resolveInjectValue(beanFactory, bd, v.getName(), v.getType(), v.getGenericType(), v.getAnnotations(), beanName);
+    }
+
+    protected Object resolveInjectValue(BeanFactory factory, BeanDefinitionBase bd, String name, Class<?> type,Type genericType,Annotation[] annotations) {
+        return resolveInjectValue(factory, bd, name, type, genericType, annotations, null);
     }
 	
     @SuppressWarnings({ "rawtypes", "unchecked" })
-	protected Object resolveInjectValue(BeanFactory factory, BeanDefinitionBase bd, String name, Class<?> type,Type genericType,Annotation[] annotations) {
+	protected Object resolveInjectValue(BeanFactory factory, BeanDefinitionBase bd, String name, Class<?> type,Type genericType,Annotation[] annotations, String beanName) {
 
 		if(type.equals(BeanFactory.class)) {
 		    return factory;
@@ -1519,8 +1536,10 @@ public class BeanContainer implements BeanFactory {
 				injectedBean = factory.getBean(inject.id());
 			}else{
 				Class  beanType = null == inject ? null : inject.type();
-				String beanName = null == inject ? null : inject.name();
-				
+                if(Strings.isEmpty(beanName)) {
+                    beanName = null == inject ? null : inject.name();
+                }
+
 				if(null != genericType && Lazy.class.equals(type)){
 					boolean nullable = Classes.isAnnotatioinPresent(annotations, NotNull.class) || 
 					                   Classes.isAnnotatioinPresent(annotations, M.class);

@@ -16,14 +16,17 @@
 
 package leap.spring.boot;
 
+import leap.lang.Classes;
 import leap.lang.Factory;
 import leap.lang.Objects2;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.DependencyDescriptor;
 import org.springframework.beans.factory.support.AutowireCandidateResolver;
 
+import javax.sql.DataSource;
 import java.lang.reflect.Type;
 
 final class SpringAutowireResolver implements AutowireCandidateResolver {
@@ -79,10 +82,18 @@ final class SpringAutowireResolver implements AutowireCandidateResolver {
                     try {
                         LeapBeanSupport.disable();
 
-                        bean = Global.factory().resolveInjectValue(type, genericType);
+                        Qualifier qualifier = Classes.getAnnotation(descriptor.getAnnotations(), Qualifier.class);
+
+                        if(null == qualifier) {
+                            bean = Global.factory().resolveInjectValue(type, genericType);
+                        }else {
+                            bean = Global.factory().resolveInjectValue(type, genericType, qualifier.value());
+                        }
+
                         if (null != bean && Objects2.isEmpty(bean)) {
                             bean = null;
                         }
+
                         if (null != bean) {
                             log.debug("Found leap managed bean of type '{}'", type);
                         } else {

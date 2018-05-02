@@ -19,6 +19,8 @@ package leap.core;
 import leap.lang.beans.BeanException;
 import leap.lang.beans.BeanFactoryBase;
 
+import java.util.Map;
+
 public interface BeanFactorySupport extends BeanFactoryBase {
 
     default <T> T tryGetBean(Class<? super T> type,String name) throws BeanException {
@@ -33,4 +35,7 @@ public interface BeanFactorySupport extends BeanFactoryBase {
         return null;
     }
 
+    default <T> Map<String, T> getNamedBeans(Class<? super T> type) {
+        return null;
+    }
 }

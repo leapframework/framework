@@ -328,4 +328,9 @@ public interface BeanFactory extends BeanFactoryBase, AppContextInitializable {
      */
     Object resolveInjectValue(Class<?> type, Type genericType);
 
+    /**
+     * todo: doc
+     */
+    Object resolveInjectValue(Class<?> type, Type genericType, String name);
+
 }

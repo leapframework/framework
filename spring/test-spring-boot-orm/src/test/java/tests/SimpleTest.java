@@ -16,6 +16,8 @@
 
 package tests;
 
+import static junit.framework.TestCase.*;
+import org.springframework.beans.factory.annotation.Qualifier;
 import pkg0.Application;
 import pkg0.Entity0;
 import leap.orm.dao.Dao;
@@ -30,19 +32,41 @@ import pkg3.Entity3;
 import pkg4.Entity4;
 import pkg5_.Entity5;
 
+import javax.sql.DataSource;
+
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class)
 public class SimpleTest {
 
-    private @Autowired Dao dao;
+    @Autowired
+    private DataSource dataSource1;
+
+    @Autowired
+    @Qualifier("secondary")
+    private DataSource dataSource2;
+
+    @Autowired
+    private Dao dao1;
+
+    @Autowired
+    @Qualifier("secondary")
+    private Dao dao2;
 
     @Test
     public void testEntities() {
-        dao.findOrNull(Entity0.class, "1");
-        dao.findOrNull(Entity1.class, "1");
-        dao.findOrNull(Entity2.class, "1");
-        dao.findOrNull(Entity3.class, "1");
-        dao.findOrNull(Entity4.class, "1");
-        dao.findOrNull(Entity5.class, "1");
+        dao1.findOrNull(Entity0.class, "1");
+        dao1.findOrNull(Entity1.class, "1");
+        dao1.findOrNull(Entity2.class, "1");
+        dao1.findOrNull(Entity3.class, "1");
+        dao1.findOrNull(Entity4.class, "1");
+        dao1.findOrNull(Entity5.class, "1");
+    }
+
+    @Test
+    public void testMultiDao() {
+        assertNotSame(dataSource1, dataSource2);
+
+        assertNotSame(dao1, dao2);
+        assertNotSame(dao1.getOrmContext().getDataSource(), dao2.getOrmContext().getDataSource());
     }
 }
