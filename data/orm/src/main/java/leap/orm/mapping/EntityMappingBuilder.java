@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class EntityMappingBuilder implements Buildable<EntityMapping> {
+public class EntityMappingBuilder extends ExtensibleBase implements Buildable<EntityMapping> {
 
     protected String         entityName;
     protected Class<?>       entityClass;
@@ -444,7 +444,8 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 		DbTable			      table          = buildTable(fields,relations);
         DbTable               secondaryTable = buildSecondaryTable(fields, relations);
 
-	    return new EntityMapping(entityName,dynamicTableName,entityClass,extendedEntityClass,
+	    EntityMapping em =
+                new EntityMapping(entityName,dynamicTableName,entityClass,extendedEntityClass,
                                  table,secondaryTable, fields,
 	    						 insertInterceptor,updateInterceptor,deleteInterceptor,findInterceptor,
 	    						 modelClass,validators,
@@ -454,6 +455,10 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
                                  autoValidate,
                                  remote, remoteSettings,
                                  listeners.build());
+
+        em.getExtensions().putAll(extensions);
+
+        return em;
     }
 
 	public DbSchemaObjectName getTableSchemaObjectName() {
