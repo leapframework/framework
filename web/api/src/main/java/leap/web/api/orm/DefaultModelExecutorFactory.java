@@ -17,13 +17,22 @@
 package leap.web.api.orm;
 
 import leap.core.annotation.Inject;
+import leap.lang.annotation.Init;
 
 public class DefaultModelExecutorFactory implements ModelExecutorFactory {
 
-    protected @Inject ModelQueryHandler  queryHandler;
-    protected @Inject ModelCreateHandler createHandler;
-    protected @Inject ModelUpdateHandler updateHandler;
-    protected @Inject ModelDeleteHandler deleteHandler;
+    protected @Inject ModelQueryHandler       queryHandler;
+    protected @Inject ModelQueryInterceptor[] queryInterceptors;
+    protected @Inject ModelCreateHandler      createHandler;
+    protected @Inject ModelUpdateHandler      updateHandler;
+    protected @Inject ModelDeleteHandler      deleteHandler;
+
+    private ModelQueryExtension queryExtension;
+
+    @Init
+    private void init() {
+        this.queryExtension = new ModelQueryExtension(queryHandler, queryInterceptors);
+    }
 
     @Override
     public ModelCreateExecutor newCreateExecutor(ModelExecutorContext context) {
@@ -42,7 +51,7 @@ public class DefaultModelExecutorFactory implements ModelExecutorFactory {
 
     @Override
     public ModelQueryExecutor newQueryExecutor(ModelExecutorContext context) {
-        return new DefaultModelQueryExecutor(context, queryHandler);
+        return new DefaultModelQueryExecutor(context, queryExtension);
     }
 
 }

@@ -47,8 +47,8 @@ import java.util.function.Consumer;
 
 public class DefaultModelQueryExecutor extends ModelExecutorBase implements ModelQueryExecutor {
 
-    protected final ModelAndMapping   modelAndMapping;
-    protected final ModelQueryHandler handler;
+    protected final ModelAndMapping     modelAndMapping;
+    protected final ModelQueryExtension ex;
 
     protected String   sqlView;
     protected String[] excludedFields;
@@ -57,10 +57,10 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         this(context, null);
     }
 
-    public DefaultModelQueryExecutor(ModelExecutorContext context, ModelQueryHandler handler) {
+    public DefaultModelQueryExecutor(ModelExecutorContext context, ModelQueryExtension ex) {
         super(context);
         this.modelAndMapping = new ModelAndMapping(am, em);
-        this.handler = handler;
+        this.ex = null == ex ? ModelQueryExtension.EMPTY : ex;
     }
 
     @Override
@@ -77,8 +77,8 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
     @Override
     public QueryOneResult queryOne(Object id, QueryOptionsBase options) {
-        if(null != handler) {
-            handler.processQueryOneOptions(context, id, options);
+        if(null != ex.handler) {
+            ex.handler.processQueryOneOptions(context, id, options);
         }
 
         Record record;
@@ -86,14 +86,14 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         CriteriaQuery<Record> query = createCriteriaQuery().whereById(id);
         applySelect(query, options);
 
-        if(null != handler) {
-            handler.preQueryOne(context, id, query);
+        if(null != ex.handler) {
+            ex.handler.preQueryOne(context, id, query);
         }
 
         record = query.firstOrNull();
 
-        if(null != handler && null != record) {
-            handler.postQueryOne(context, id, record);
+        if(null != ex.handler && null != record) {
+            ex.handler.postQueryOne(context, id, record);
         }
 
         if(null != record && null != options) {
@@ -114,8 +114,8 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             options = new QueryOptions();
         }
 
-        if(null != handler) {
-            handler.processQueryListOptions(context, options);
+        if(null != ex.handler) {
+            ex.handler.processQueryListOptions(context, options);
         }
 
         CriteriaQuery<Record> query = createCriteriaQuery();
@@ -179,16 +179,16 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             callback.accept(query);
         }
 
-        if(null != handler) {
-            handler.preQueryList(context, query);
+        if(null != ex.handler) {
+            ex.handler.preQueryList(context, query);
         }
 
         PageResult result = query.pageResult(options.getPage(ac.getDefaultPageSize()));
 
         list = result.list();
 
-        if(null != handler) {
-            handler.postQueryList(context, list);
+        if(null != ex.handler) {
+            ex.handler.postQueryList(context, list);
         }
 
         if(!list.isEmpty()) {
@@ -722,16 +722,21 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         StringBuilder where = new StringBuilder();
         List<Object>  args  = new ArrayList<>();
 
-        if(null != handler) {
-            handler.preProcessQueryListWhere(context, options, where, args);
+        if(null != ex.handler) {
+            ex.handler.preProcessQueryListWhere(context, options, where, args);
+        }
+        if(null != ex.interceptors) {
+            for(ModelQueryInterceptor interceptor : ex.interceptors) {
+                interceptor.preProcessQueryListWhere(context, options, where, args);
+            }
         }
 
         //view
-        if(!Strings.isEmpty(options.getViewId()) && null == handler) {
+        if(!Strings.isEmpty(options.getViewId()) && null == ex.handler) {
             throw new BadRequestException("'viewId' not supported");
         }
-        if(null != handler) {
-            handler.handleQueryListView(context, options.getViewId(), where, args);
+        if(null != ex.handler) {
+            ex.handler.handleQueryListView(context, options.getViewId(), where, args);
         }
 
         //fields
@@ -869,8 +874,13 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             }
         }
 
-        if(null != handler) {
-            handler.postProcessQueryListWhere(context, options, where, args);
+        if(null != ex.handler) {
+            ex.handler.postProcessQueryListWhere(context, options, where, args);
+        }
+        if(null != ex.interceptors) {
+            for(ModelQueryInterceptor interceptor : ex.interceptors) {
+                interceptor.postProcessQueryListWhere(context, options, where, args);
+            }
         }
 
         if(where.length() > 0) {
