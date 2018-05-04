@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.leapframework</groupId>
         <artifactId>leap-parent</artifactId>
-        <version>0.7.2b-SNAPSHOT</version>
+        <version>0.7.3b-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <artifactId>test-spring-boot-web</artifactId>
