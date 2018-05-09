@@ -17,6 +17,7 @@ package leap.orm.sql.ast;
 
 import leap.core.el.ExpressionLanguage;
 import leap.lang.Strings;
+import leap.lang.Try;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.params.Params;
@@ -101,6 +102,18 @@ public class Tag extends DynamicNode implements SqlTag {
                 buildStatement(context, sql, stm, params, expr);
             }
         }
+    }
+
+    @Override
+    public void resolveDynamic(SqlContext context, Sql sql, Appendable buf, Params params) {
+        if(null != processor) {
+            String s = processor.toFragment(context, sql, this, params);
+            if(null != s) {
+                Try.catchAll(() -> buf.append(s));
+                return;
+            }
+        }
+        super.resolveDynamic(context, sql, buf, params);
     }
 
     public String process(SqlContext context, Sql sql, Params params) {

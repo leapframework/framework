@@ -52,12 +52,12 @@ public class DynamicSql {
         }
     }
     
-    public ExecutionSqls resolveExecutionSqls(Params params) {
+    public ExecutionSqls resolveExecutionSqls(SqlContext sc, Params params) {
         if(null != sqls) {
             return sqls;
         }
 
-        String text = sql.resolveDynamicSql(params);
+        String text = sql.resolveDynamicSql(sc, params);
         return lang.parseExecutionSqls(context, text, options);
     }
 

@@ -66,7 +66,7 @@ public abstract class AstNode {
         //do nothing.
     }
 
-    public void resolveDynamic(Appendable buf, Params params) {
+    public void resolveDynamic(SqlContext context, Sql sql, Appendable buf, Params params) {
         toSql(buf);
     }
 	

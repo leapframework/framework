@@ -79,9 +79,9 @@ public class DynamicClause extends DynamicNode implements AstNodeContainer {
     }
 	
     @Override
-    public void resolveDynamic(Appendable buf, Params params) {
+    public void resolveDynamic(SqlContext context, Sql sql, Appendable buf, Params params) {
         if(test(params)) {
-            super.resolveDynamic(buf, params);
+            super.resolveDynamic(context, sql, buf, params);
         }
     }
 

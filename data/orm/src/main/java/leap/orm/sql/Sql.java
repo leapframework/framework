@@ -171,11 +171,11 @@ public class Sql {
 		return Strings.trim(sb.toString());
     }
 
-    public String resolveDynamicSql(Params params) {
+    public String resolveDynamicSql(SqlContext context, Params params) {
         StringBuilder sb = new StringBuilder();
 
         for(int i=0;i<nodes.length;i++) {
-            nodes[i].resolveDynamic(sb, params);
+            nodes[i].resolveDynamic(context, this, sb, params);
         }
 
         return Strings.trim(sb.toString());
