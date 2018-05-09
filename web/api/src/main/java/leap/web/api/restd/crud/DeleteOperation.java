@@ -17,7 +17,9 @@
 package leap.web.api.restd.crud;
 
 import leap.lang.Strings;
+import leap.lang.convert.Converts;
 import leap.orm.dao.Dao;
+import leap.web.Request;
 import leap.web.action.ActionParams;
 import leap.web.action.FuncActionBuilder;
 import leap.web.api.Api;
@@ -33,6 +35,7 @@ import leap.web.api.restd.CrudOperation;
 import leap.web.api.restd.CrudOperationBase;
 import leap.web.api.restd.RestdContext;
 import leap.web.api.restd.RestdModel;
+import leap.web.exception.BadRequestException;
 import leap.web.route.RouteBuilder;
 
 import java.util.function.Function;
@@ -64,7 +67,7 @@ public class DeleteOperation extends CrudOperationBase implements CrudOperation 
         action.setFunction(createFunction(c, context, model));
 
         addIdArguments(context, action, model);
-        addArgument(context, action, DeleteOptions.class, "options");
+        addOtherArguments(c, context, action, model);
         addNoContentResponse(action, model);
 
         preConfigure(context, model, action);
@@ -76,14 +79,21 @@ public class DeleteOperation extends CrudOperationBase implements CrudOperation 
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 
+    protected void addOtherArguments(ApiConfigurator c, RestdContext context, FuncActionBuilder action, RestdModel model) {
+        addArgument(context, action, DeleteOptions.class, "options");
+    }
+
     protected Function<ActionParams, Object> createFunction(ApiConfigurator c, RestdContext context, RestdModel model) {
-        return new DeleteFunction(context.getApi(), context.getDao(), model);
+        return new DeleteFunction(context.getApi(), context.getDao(), model, true);
     }
 
     protected class DeleteFunction extends CrudFunction {
 
-        public DeleteFunction(Api api, Dao dao, RestdModel model) {
+        private final boolean cascadeDelete;
+
+        public DeleteFunction(Api api, Dao dao, RestdModel model, boolean cascadeDelete) {
             super(api, dao, model);
+            this.cascadeDelete = cascadeDelete;
         }
 
         @Override
@@ -94,7 +104,15 @@ public class DeleteOperation extends CrudOperationBase implements CrudOperation 
             ModelDeleteExecutor executor = newDeleteExecutor(context);
 
             Object        id      = id(params);
-            DeleteOptions options = params.get(idLen);
+            DeleteOptions options = cascadeDelete ? params.get(idLen) : null;
+
+            if(!cascadeDelete) {
+                Request request = Request.tryGetCurrent();
+                String  param   = request.getParameter("cascade_delete");
+                if(!Strings.isEmpty(param) && Converts.toBoolean(param)) {
+                    throw new BadRequestException("Cascade delete not supported by this operation, check parameter 'cascade_delete'!");
+                }
+            }
 
             if(executor.deleteOne(id, options).success) {
                 return ApiResponse.NO_CONTENT;
