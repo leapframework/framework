@@ -16,6 +16,7 @@
 
 package leap.orm.sql;
 
+import leap.lang.Try;
 import leap.lang.params.Params;
 import leap.orm.metadata.MetadataContext;
 
@@ -57,8 +58,11 @@ public class DynamicSql {
             return sqls;
         }
 
-        String text = sql.resolveDynamicSql(sc, params);
-        return lang.parseExecutionSqls(context, text, options);
+        return Try.throwUncheckedWithResult(() -> {
+            String text = sql.resolveDynamicSql(sc, params);
+
+            return lang.parseExecutionSqls(context, text, options);
+        });
     }
 
     @Override

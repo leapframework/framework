@@ -23,6 +23,7 @@ import leap.orm.sql.ast.AstNode;
 import leap.orm.sql.ast.AstUtils;
 import leap.orm.sql.ast.DynamicNode;
 
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
@@ -171,7 +172,7 @@ public class Sql {
 		return Strings.trim(sb.toString());
     }
 
-    public String resolveDynamicSql(SqlContext context, Params params) {
+    public String resolveDynamicSql(SqlContext context, Params params) throws IOException {
         StringBuilder sb = new StringBuilder();
 
         for(int i=0;i<nodes.length;i++) {
