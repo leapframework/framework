@@ -3,7 +3,7 @@
     <parent>
         <groupId>org.leapframework</groupId>
         <artifactId>tests</artifactId>
-        <version>0.7.3b</version>
+        <version>0.7.4b-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>webapi-test-dyna</artifactId>
