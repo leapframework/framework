@@ -106,16 +106,13 @@ public class Tag extends DynamicNode implements SqlTag {
 
     @Override
     public boolean resolveDynamic(SqlContext context, Sql sql, Appendable buf, Params params) throws IOException {
-        if(null != processor) {
+        if(null != processor && processor.supportsToFragment()) {
             String s = processor.toFragment(context, sql, this, params);
-            if(null != s) {
-                if(Strings.isBlank(s)) {
-                    return false;
-                }else {
-                    buf.append(s);
-                    return true;
-                }
+            if(Strings.isBlank(s)) {
+                return false;
             }
+            buf.append(s);
+            return true;
         }
         return super.resolveDynamic(context, sql, buf, params);
     }

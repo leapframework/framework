@@ -31,6 +31,13 @@ public interface SqlTagProcessor {
     }
 
     /**
+     * Returns true if the processor supports {@link #toFragment(SqlContext, Sql, SqlTag, Params)}.
+     */
+    default boolean supportsToFragment() {
+        return false;
+    }
+
+    /**
      * Returns a not null string if just returns a sql fragment.
      */
     default String toFragment(SqlContext context, Sql sql, SqlTag tag, Params params) {
