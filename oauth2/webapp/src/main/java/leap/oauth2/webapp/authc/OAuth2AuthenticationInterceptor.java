@@ -16,6 +16,7 @@
 
 package leap.oauth2.webapp.authc;
 
+import leap.core.AppConfig;
 import leap.core.annotation.Inject;
 import leap.core.security.token.TokenVerifyException;
 import leap.core.web.RequestIgnore;
@@ -28,6 +29,7 @@ import leap.oauth2.webapp.OAuth2ResponseException;
 import leap.oauth2.webapp.Oauth2InvalidTokenException;
 import leap.oauth2.webapp.token.Token;
 import leap.oauth2.webapp.token.TokenExtractor;
+import leap.web.App;
 import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.SecurityInterceptor;
@@ -40,7 +42,8 @@ import leap.web.security.csrf.CSRF;
 public class OAuth2AuthenticationInterceptor implements SecurityInterceptor {
     
     private static final Log log = LogFactory.get(OAuth2AuthenticationInterceptor.class);
-
+    
+    protected @Inject App                 app;
     protected @Inject OAuth2Config        config;
     protected @Inject TokenExtractor      tokenExtractor;
     protected @Inject OAuth2ErrorHandler  errorHandler;
@@ -51,7 +54,15 @@ public class OAuth2AuthenticationInterceptor implements SecurityInterceptor {
 		if (!config.isEnabled()) {
             return State.CONTINUE;
         }
-    
+        Object o = app.getAttribute("oauth2.skipTokenAuthenticateUrl");
+		if(o instanceof String[]){
+            String[] skips = (String[]) o;
+            for (String skip : skips){
+                if(request.getPath().equals(skip)){
+                    return State.CONTINUE;
+                }
+            }
+        }
         for(RequestIgnore ignore : config.getIgnores()){
 		    if(ignore.matches(request)){
                 return State.CONTINUE;
