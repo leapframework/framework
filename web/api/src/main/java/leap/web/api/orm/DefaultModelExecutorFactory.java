@@ -21,27 +21,36 @@ import leap.lang.annotation.Init;
 
 public class DefaultModelExecutorFactory implements ModelExecutorFactory {
 
-    protected @Inject ModelQueryHandler       queryHandler;
-    protected @Inject ModelQueryInterceptor[] queryInterceptors;
-    protected @Inject ModelCreateHandler      createHandler;
-    protected @Inject ModelUpdateHandler      updateHandler;
-    protected @Inject ModelDeleteHandler      deleteHandler;
+    protected @Inject ModelCreateHandler       createHandler;
+    protected @Inject ModelCreateInterceptor[] createInterceptors;
 
-    private ModelQueryExtension queryExtension;
+    protected @Inject ModelUpdateHandler       updateHandler;
+    protected @Inject ModelUpdateInterceptor[] updateInterceptors;
+
+    protected @Inject ModelQueryHandler        queryHandler;
+    protected @Inject ModelQueryInterceptor[]  queryInterceptors;
+
+    protected @Inject ModelDeleteHandler       deleteHandler;
+
+    private ModelCreateExtension createExtension;
+    private ModelUpdateExtension updateExtension;
+    private ModelQueryExtension  queryExtension;
 
     @Init
     private void init() {
-        this.queryExtension = new ModelQueryExtension(queryHandler, queryInterceptors);
+        this.createExtension = new ModelCreateExtension(createHandler, createInterceptors);
+        this.updateExtension = new ModelUpdateExtension(updateHandler, updateInterceptors);
+        this.queryExtension  = new ModelQueryExtension(queryHandler, queryInterceptors);
     }
 
     @Override
     public ModelCreateExecutor newCreateExecutor(ModelExecutorContext context) {
-        return new DefaultModelCreateExecutor(context, createHandler);
+        return new DefaultModelCreateExecutor(context, createExtension);
     }
 
     @Override
     public ModelUpdateExecutor newUpdateExecutor(ModelExecutorContext context) {
-        return new DefaultModelUpdateExecutor(context, updateHandler);
+        return new DefaultModelUpdateExecutor(context, updateExtension);
     }
 
     @Override

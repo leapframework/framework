@@ -25,7 +25,7 @@ public class ModelQueryExtension {
 
     public ModelQueryExtension(ModelQueryHandler handler, ModelQueryInterceptor[] interceptors) {
         this.handler = handler;
-        this.interceptors = null != interceptors && interceptors.length == 0 ?  null : interceptors;
+        this.interceptors = null == interceptors ? new ModelQueryInterceptor[0] : interceptors;
     }
 
     public ModelQueryHandler getHandler() {

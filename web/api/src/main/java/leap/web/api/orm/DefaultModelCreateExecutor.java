@@ -36,17 +36,25 @@ import java.util.*;
 
 public class DefaultModelCreateExecutor extends ModelExecutorBase implements ModelCreateExecutor {
 
-    protected final ModelCreateHandler handler;
+    protected final ModelCreateExtension ex;
 
-    public DefaultModelCreateExecutor(ModelExecutorContext context, ModelCreateHandler handler) {
+    public DefaultModelCreateExecutor(ModelExecutorContext context, ModelCreateExtension ex) {
         super(context);
-        this.handler = handler;
+        this.ex = null == ex ? ModelCreateExtension.EMPTY : ex;
     }
 
     @Override
     public CreateOneResult createOne(Object request, Object id, Map<String, Object> extraProperties) {
-        if(null != handler) {
-            Object r = handler.processCreationParams(context, request);
+        for(ModelCreateInterceptor interceptor : ex.getInterceptors()) {
+            Object r = interceptor.processCreationParams(context,request);
+            if(null != r) {
+                request = r;
+                break;
+            }
+        }
+
+        if(null != ex.handler) {
+            Object r = ex.handler.processCreationParams(context, request);
             if(null != r) {
                 request = r;
             }
@@ -69,8 +77,13 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
             properties.putAll(extraProperties);
         }
 
-        if(null != handler) {
-            handler.processCreationRecord(context, properties);
+        for(ModelCreateInterceptor interceptor : ex.getInterceptors()) {
+            if(interceptor.processCreationRecord(context, properties)) {
+                break;
+            }
+        }
+        if(null != ex.handler) {
+            ex.handler.processCreationRecord(context, properties);
         }
 
         Map<RelationProperty, Object[]> relationProperties = new LinkedHashMap<>();
@@ -82,6 +95,11 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
             MApiProperty p = am.tryGetProperty(name);
 
             if(null == p) {
+                for(ModelCreateInterceptor interceptor : ex.getInterceptors()) {
+                    if(interceptor.handleCreationPropertyNotFound(context, name, entry.getValue())) {
+                        continue;
+                    }
+                }
                 throw new BadRequestException("Property '" + name + "' not exists!");
             }
 
@@ -89,6 +107,11 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
                 if(null == properties.get(name)) {
                     removingKeys.add(name);
                 }else{
+                    for(ModelCreateInterceptor interceptor : ex.getInterceptors()) {
+                        if(interceptor.handleCreationPropertyReadonly(context, name, entry.getValue())) {
+                            continue;
+                        }
+                    }
                     throw new BadRequestException("Property '" + name + "' is not creatable!");
                 }
             }
@@ -122,8 +145,13 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
             throw new ValidationException(errors);
         }
 
-        if(null != handler) {
-            handler.preCreateRecord(context, properties);
+        for(ModelCreateInterceptor interceptor : ex.getInterceptors()) {
+            if(interceptor.preCreateRecord(context, properties)) {
+                break;
+            }
+        }
+        if(null != ex.handler) {
+            ex.handler.preCreateRecord(context, properties);
         }
 
         InsertCommand insert = dao.cmdInsert(em.getEntityName()).from(properties);
@@ -180,8 +208,8 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
 
     protected void executeInsert(InsertCommand insert) {
         insert.execute();
-        if(null != handler) {
-            handler.postCreateRecord(context, insert.id());
+        if(null != ex.handler) {
+            ex.handler.postCreateRecord(context, insert.id());
         }
     }
 

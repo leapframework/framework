@@ -34,11 +34,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class DefaultModelUpdateExecutor extends ModelExecutorBase implements ModelUpdateExecutor {
 
-    protected final ModelUpdateHandler handler;
+    protected final ModelUpdateExtension ex;
 
-    public DefaultModelUpdateExecutor(ModelExecutorContext context, ModelUpdateHandler handler) {
+    public DefaultModelUpdateExecutor(ModelExecutorContext context, ModelUpdateExtension ex) {
         super(context);
-        this.handler = handler;
+        this.ex = ex;
     }
 
     @Override
@@ -52,8 +52,13 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
 
     @Override
     public UpdateOneResult partialUpdateOne(Object id, Map<String, Object> properties) {
-        if(null != handler) {
-            handler.processUpdateProperties(context, id, properties);
+        for(ModelUpdateInterceptor interceptor : ex.getInterceptors()) {
+            if(interceptor.processUpdateProperties(context, id, properties)) {
+                break;
+            }
+        }
+        if(null != ex.handler) {
+            ex.handler.processUpdateProperties(context, id, properties);
         }
 
         Map<RelationProperty, Object[]> relationProperties = new LinkedHashMap<>();
@@ -64,10 +69,20 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
             MApiProperty p = am.tryGetProperty(name);
 
             if (null == p) {
+                for(ModelUpdateInterceptor interceptor : ex.getInterceptors()) {
+                    if(interceptor.handleUpdatePropertyNotFound(context, name, entry.getValue())) {
+                        continue;
+                    }
+                }
                 throw new BadRequestException("Property '" + name + "' not exists!");
             }
 
             if (p.isNotUpdatableExplicitly()) {
+                for(ModelUpdateInterceptor interceptor : ex.getInterceptors()) {
+                    if(interceptor.handleUpdatePropertyReadonly(context, name, entry.getValue())){
+                        continue;
+                    }
+                }
                 throw new BadRequestException("Property '" + name + "' is not updatable!");
             }
 
@@ -97,8 +112,13 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
             throw new ValidationException(errors);
         }
 
-        if(null != handler) {
-            handler.preUpdateProperties(context, id, properties);
+        for(ModelUpdateInterceptor interceptor : ex.getInterceptors()) {
+            if(interceptor.preUpdateProperties(context, id, properties)) {
+                break;
+            }
+        }
+        if(null != ex.handler) {
+            ex.handler.preUpdateProperties(context, id, properties);
         }
 
         if(properties.isEmpty()) {
@@ -167,8 +187,8 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
     protected int executeUpdate(UpdateCommand update, Object id) {
         int r = update.execute();
 
-        if(null != handler) {
-            handler.postUpdateProperties(context, id, r);
+        if(null != ex.handler) {
+            ex.handler.postUpdateProperties(context, id, r);
         }
 
         return r;

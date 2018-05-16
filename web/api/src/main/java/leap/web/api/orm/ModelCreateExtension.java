@@ -16,22 +16,23 @@
 
 package leap.web.api.orm;
 
-import leap.web.api.mvc.params.QueryOptions;
+public class ModelCreateExtension {
 
-import java.util.List;
+    static ModelCreateExtension EMPTY = new ModelCreateExtension(null, null);
 
-public interface ModelQueryInterceptor {
+    protected final ModelCreateHandler       handler;
+    protected final ModelCreateInterceptor[] interceptors;
 
-    default boolean processQueryListOptions(ModelExecutorContext context, QueryOptions options) {
-        return false;
+    public ModelCreateExtension(ModelCreateHandler handler, ModelCreateInterceptor[] interceptors) {
+        this.handler = handler;
+        this.interceptors = null == interceptors ? new ModelCreateInterceptor[0] : interceptors;
     }
 
-    default boolean preProcessQueryListWhere(ModelExecutorContext context, QueryOptions options, StringBuilder where, List<Object> args) {
-        return false;
+    public ModelCreateHandler getHandler() {
+        return handler;
     }
 
-    default boolean postProcessQueryListWhere(ModelExecutorContext context, QueryOptions options, StringBuilder where, List<Object> args){
-        return false;
+    public ModelCreateInterceptor[] getInterceptors() {
+        return interceptors;
     }
-
 }

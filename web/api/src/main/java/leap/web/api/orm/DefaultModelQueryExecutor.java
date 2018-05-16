@@ -114,6 +114,11 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             options = new QueryOptions();
         }
 
+        for(ModelQueryInterceptor interceptor : ex.interceptors) {
+            if(interceptor.processQueryListOptions(context, options)) {
+                break;
+            }
+        }
         if(null != ex.handler) {
             ex.handler.processQueryListOptions(context, options);
         }
@@ -727,7 +732,9 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
         if(null != ex.interceptors) {
             for(ModelQueryInterceptor interceptor : ex.interceptors) {
-                interceptor.preProcessQueryListWhere(context, options, where, args);
+                if(interceptor.preProcessQueryListWhere(context, options, where, args)){
+                    break;
+                }
             }
         }
 
@@ -879,7 +886,9 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
         if(null != ex.interceptors) {
             for(ModelQueryInterceptor interceptor : ex.interceptors) {
-                interceptor.postProcessQueryListWhere(context, options, where, args);
+                if(interceptor.postProcessQueryListWhere(context, options, where, args)){
+                    break;
+                }
             }
         }
 
