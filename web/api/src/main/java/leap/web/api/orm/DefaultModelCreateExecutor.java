@@ -87,18 +87,20 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
             MApiProperty p = am.tryGetProperty(name);
 
             if(null == p) {
-                if(!ex.handleCreationPropertyNotFound(context, name, entry.getValue())) {
-                    throw new BadRequestException("Property '" + name + "' not exists!");
+                if(ex.handleCreationPropertyNotFound(context, name, entry.getValue())) {
+                    continue;
                 }
+                throw new BadRequestException("Property '" + name + "' not exists!");
             }
 
             if(p.isNotCreatableExplicitly()) {
                 if(null == properties.get(name)) {
                     removingKeys.add(name);
                 }else{
-                    if(!ex.handleCreationPropertyReadonly(context, name, entry.getValue())) {
-                        throw new BadRequestException("Property '" + name + "' is not creatable!");
+                    if(ex.handleCreationPropertyReadonly(context, name, entry.getValue())) {
+                        continue;
                     }
+                    throw new BadRequestException("Property '" + name + "' is not creatable!");
                 }
             }
 

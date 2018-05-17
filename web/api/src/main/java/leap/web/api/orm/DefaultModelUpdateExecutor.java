@@ -65,15 +65,17 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
             MApiProperty p = am.tryGetProperty(name);
 
             if (null == p) {
-                if(!ex.handleUpdatePropertyNotFound(context, name, entry.getValue())) {
-                    throw new BadRequestException("Property '" + name + "' not exists!");
+                if(ex.handleUpdatePropertyNotFound(context, name, entry.getValue())) {
+                    continue;
                 }
+                throw new BadRequestException("Property '" + name + "' not exists!");
             }
 
             if (p.isNotUpdatableExplicitly()) {
-                if(!ex.handleUpdatePropertyReadonly(context, name, entry.getValue())) {
-                    throw new BadRequestException("Property '" + name + "' is not updatable!");
+                if(ex.handleUpdatePropertyReadonly(context, name, entry.getValue())) {
+                    continue;
                 }
+                throw new BadRequestException("Property '" + name + "' is not updatable!");
             }
 
             if (null != p.getMetaProperty() && p.getMetaProperty().isReference()) {
