@@ -45,14 +45,10 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
 
     @Override
     public CreateOneResult createOne(Object request, Object id, Map<String, Object> extraProperties) {
-        for(ModelCreateInterceptor interceptor : ex.getInterceptors()) {
-            Object r = interceptor.processCreationParams(context,request);
-            if(null != r) {
-                request = r;
-                break;
-            }
+        Object v = ex.processCreationParams(context, request);
+        if(null != v) {
+            request = v;
         }
-
         if(null != ex.handler) {
             Object r = ex.handler.processCreationParams(context, request);
             if(null != r) {
@@ -77,11 +73,7 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
             properties.putAll(extraProperties);
         }
 
-        for(ModelCreateInterceptor interceptor : ex.getInterceptors()) {
-            if(interceptor.processCreationRecord(context, properties)) {
-                break;
-            }
-        }
+        ex.processCreationRecord(context, properties);
         if(null != ex.handler) {
             ex.handler.processCreationRecord(context, properties);
         }
@@ -95,31 +87,23 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
             MApiProperty p = am.tryGetProperty(name);
 
             if(null == p) {
-                for(ModelCreateInterceptor interceptor : ex.getInterceptors()) {
-                    if(interceptor.handleCreationPropertyNotFound(context, name, entry.getValue())) {
-                        continue;
-                    }
+                if(!ex.handleCreationPropertyNotFound(context, name, entry.getValue())) {
+                    throw new BadRequestException("Property '" + name + "' not exists!");
                 }
-                throw new BadRequestException("Property '" + name + "' not exists!");
             }
 
             if(p.isNotCreatableExplicitly()) {
                 if(null == properties.get(name)) {
                     removingKeys.add(name);
                 }else{
-                    for(ModelCreateInterceptor interceptor : ex.getInterceptors()) {
-                        if(interceptor.handleCreationPropertyReadonly(context, name, entry.getValue())) {
-                            continue;
-                        }
+                    if(!ex.handleCreationPropertyReadonly(context, name, entry.getValue())) {
+                        throw new BadRequestException("Property '" + name + "' is not creatable!");
                     }
-                    throw new BadRequestException("Property '" + name + "' is not creatable!");
                 }
             }
 
             if(null != p.getMetaProperty() && p.getMetaProperty().isReference()) {
-
-                Object v = properties.get(name);
-
+                v = properties.get(name);
                 if(null == v) {
                     continue;
                 }
@@ -145,11 +129,7 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
             throw new ValidationException(errors);
         }
 
-        for(ModelCreateInterceptor interceptor : ex.getInterceptors()) {
-            if(interceptor.preCreateRecord(context, properties)) {
-                break;
-            }
-        }
+        ex.preCreateRecord(context, properties);
         if(null != ex.handler) {
             ex.handler.preCreateRecord(context, properties);
         }

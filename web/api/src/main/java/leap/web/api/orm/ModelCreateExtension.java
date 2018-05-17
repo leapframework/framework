@@ -16,7 +16,9 @@
 
 package leap.web.api.orm;
 
-public class ModelCreateExtension {
+import java.util.Map;
+
+public class ModelCreateExtension implements ModelCreateInterceptor {
 
     static ModelCreateExtension EMPTY = new ModelCreateExtension(null, null);
 
@@ -32,7 +34,54 @@ public class ModelCreateExtension {
         return handler;
     }
 
-    public ModelCreateInterceptor[] getInterceptors() {
-        return interceptors;
+    @Override
+    public Object processCreationParams(ModelExecutorContext context, Object params) {
+        for(ModelCreateInterceptor interceptor : interceptors) {
+            Object v = interceptor.processCreationParams(context, params);
+            if(null != v) {
+                return v;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public boolean processCreationRecord(ModelExecutorContext context, Map<String, Object> record) {
+        for(ModelCreateInterceptor interceptor : interceptors) {
+            if(interceptor.processCreationRecord(context, record)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean handleCreationPropertyNotFound(ModelExecutorContext context, String name, Object value) {
+        for(ModelCreateInterceptor interceptor : interceptors) {
+            if(interceptor.handleCreationPropertyNotFound(context, name, value)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean handleCreationPropertyReadonly(ModelExecutorContext context, String name, Object value) {
+        for(ModelCreateInterceptor interceptor : interceptors) {
+            if(interceptor.handleCreationPropertyReadonly(context, name, value)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean preCreateRecord(ModelExecutorContext context, Map<String, Object> record) {
+        for(ModelCreateInterceptor interceptor : interceptors) {
+            if(interceptor.preCreateRecord(context, record)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

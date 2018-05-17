@@ -16,7 +16,9 @@
 
 package leap.web.api.orm;
 
-public class ModelUpdateExtension {
+import java.util.Map;
+
+public class ModelUpdateExtension implements ModelUpdateInterceptor {
 
     static ModelUpdateExtension EMPTY = new ModelUpdateExtension(null, null);
 
@@ -32,7 +34,43 @@ public class ModelUpdateExtension {
         return handler;
     }
 
-    public ModelUpdateInterceptor[] getInterceptors() {
-        return interceptors;
+    @Override
+    public boolean processUpdateProperties(ModelExecutorContext context, Object id, Map<String, Object> properties) {
+        for(ModelUpdateInterceptor interceptor : interceptors) {
+            if(interceptor.processUpdateProperties(context, id, properties)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean handleUpdatePropertyNotFound(ModelExecutorContext context, String name, Object value) {
+        for(ModelUpdateInterceptor interceptor : interceptors) {
+            if(interceptor.handleUpdatePropertyNotFound(context, name, value)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean handleUpdatePropertyReadonly(ModelExecutorContext context, String name, Object value) {
+        for(ModelUpdateInterceptor interceptor : interceptors) {
+            if(interceptor.handleUpdatePropertyReadonly(context, name, value)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean preUpdateProperties(ModelExecutorContext context, Object id, Map<String, Object> properties) {
+        for(ModelUpdateInterceptor interceptor : interceptors) {
+            if(interceptor.preUpdateProperties(context, id, properties)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

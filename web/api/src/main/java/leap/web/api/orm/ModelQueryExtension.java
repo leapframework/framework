@@ -16,12 +16,16 @@
 
 package leap.web.api.orm;
 
-public class ModelQueryExtension {
+import leap.web.api.mvc.params.QueryOptions;
+
+import java.util.List;
+
+public class ModelQueryExtension implements ModelQueryInterceptor {
 
     public static final ModelQueryExtension EMPTY = new ModelQueryExtension(null, null);
 
     protected final ModelQueryHandler       handler;
-    protected final ModelQueryInterceptor[] interceptors;
+    private final ModelQueryInterceptor[] interceptors;
 
     public ModelQueryExtension(ModelQueryHandler handler, ModelQueryInterceptor[] interceptors) {
         this.handler = handler;
@@ -32,8 +36,33 @@ public class ModelQueryExtension {
         return handler;
     }
 
-    public ModelQueryInterceptor[] getInterceptors() {
-        return interceptors;
+    @Override
+    public boolean processQueryListOptions(ModelExecutorContext context, QueryOptions options) {
+        for(ModelQueryInterceptor interceptor : interceptors) {
+            if(interceptor.processQueryListOptions(context, options)) {
+                return true;
+            }
+        }
+        return false;
     }
 
+    @Override
+    public boolean preProcessQueryListWhere(ModelExecutorContext context, QueryOptions options, StringBuilder where, List<Object> args) {
+        for(ModelQueryInterceptor interceptor : interceptors) {
+            if(interceptor.preProcessQueryListWhere(context, options, where, args)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean postProcessQueryListWhere(ModelExecutorContext context, QueryOptions options, StringBuilder where, List<Object> args) {
+        for(ModelQueryInterceptor interceptor : interceptors) {
+            if(interceptor.postProcessQueryListWhere(context, options, where, args)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

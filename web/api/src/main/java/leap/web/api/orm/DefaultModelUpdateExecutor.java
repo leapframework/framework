@@ -38,7 +38,7 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
 
     public DefaultModelUpdateExecutor(ModelExecutorContext context, ModelUpdateExtension ex) {
         super(context);
-        this.ex = ex;
+        this.ex = null == ex ? ModelUpdateExtension.EMPTY : ex;
     }
 
     @Override
@@ -52,11 +52,7 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
 
     @Override
     public UpdateOneResult partialUpdateOne(Object id, Map<String, Object> properties) {
-        for(ModelUpdateInterceptor interceptor : ex.getInterceptors()) {
-            if(interceptor.processUpdateProperties(context, id, properties)) {
-                break;
-            }
-        }
+        ex.processUpdateProperties(context, id, properties);
         if(null != ex.handler) {
             ex.handler.processUpdateProperties(context, id, properties);
         }
@@ -69,21 +65,15 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
             MApiProperty p = am.tryGetProperty(name);
 
             if (null == p) {
-                for(ModelUpdateInterceptor interceptor : ex.getInterceptors()) {
-                    if(interceptor.handleUpdatePropertyNotFound(context, name, entry.getValue())) {
-                        continue;
-                    }
+                if(!ex.handleUpdatePropertyNotFound(context, name, entry.getValue())) {
+                    throw new BadRequestException("Property '" + name + "' not exists!");
                 }
-                throw new BadRequestException("Property '" + name + "' not exists!");
             }
 
             if (p.isNotUpdatableExplicitly()) {
-                for(ModelUpdateInterceptor interceptor : ex.getInterceptors()) {
-                    if(interceptor.handleUpdatePropertyReadonly(context, name, entry.getValue())){
-                        continue;
-                    }
+                if(!ex.handleUpdatePropertyReadonly(context, name, entry.getValue())) {
+                    throw new BadRequestException("Property '" + name + "' is not updatable!");
                 }
-                throw new BadRequestException("Property '" + name + "' is not updatable!");
             }
 
             if (null != p.getMetaProperty() && p.getMetaProperty().isReference()) {
@@ -112,11 +102,7 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
             throw new ValidationException(errors);
         }
 
-        for(ModelUpdateInterceptor interceptor : ex.getInterceptors()) {
-            if(interceptor.preUpdateProperties(context, id, properties)) {
-                break;
-            }
-        }
+        ex.preUpdateProperties(context, id, properties);
         if(null != ex.handler) {
             ex.handler.preUpdateProperties(context, id, properties);
         }

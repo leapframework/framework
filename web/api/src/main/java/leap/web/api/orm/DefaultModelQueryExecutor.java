@@ -114,11 +114,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             options = new QueryOptions();
         }
 
-        for(ModelQueryInterceptor interceptor : ex.interceptors) {
-            if(interceptor.processQueryListOptions(context, options)) {
-                break;
-            }
-        }
+        ex.processQueryListOptions(context, options);
         if(null != ex.handler) {
             ex.handler.processQueryListOptions(context, options);
         }
@@ -730,13 +726,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         if(null != ex.handler) {
             ex.handler.preProcessQueryListWhere(context, options, where, args);
         }
-        if(null != ex.interceptors) {
-            for(ModelQueryInterceptor interceptor : ex.interceptors) {
-                if(interceptor.preProcessQueryListWhere(context, options, where, args)){
-                    break;
-                }
-            }
-        }
+        ex.preProcessQueryListWhere(context, options, where, args);
 
         //view
         if(!Strings.isEmpty(options.getViewId()) && null == ex.handler) {
@@ -884,13 +874,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         if(null != ex.handler) {
             ex.handler.postProcessQueryListWhere(context, options, where, args);
         }
-        if(null != ex.interceptors) {
-            for(ModelQueryInterceptor interceptor : ex.interceptors) {
-                if(interceptor.postProcessQueryListWhere(context, options, where, args)){
-                    break;
-                }
-            }
-        }
+        ex.postProcessQueryListWhere(context, options, where, args);
 
         if(where.length() > 0) {
             query.where(where.toString(), args.toArray());
