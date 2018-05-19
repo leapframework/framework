@@ -16,6 +16,8 @@
 
 package leap.web.api.orm;
 
+import leap.core.value.Record;
+
 import java.util.Map;
 
 public class ModelCreateExtension implements ModelCreateInterceptor {
@@ -83,5 +85,16 @@ public class ModelCreateExtension implements ModelCreateInterceptor {
             }
         }
         return false;
+    }
+
+    @Override
+    public Object postCreateRecord(ModelExecutorContext context, Object id, Record record) {
+        for(ModelCreateInterceptor interceptor : interceptors) {
+            Object v = interceptor.postCreateRecord(context, id, record);
+            if(null != v) {
+                return v;
+            }
+        }
+        return null;
     }
 }

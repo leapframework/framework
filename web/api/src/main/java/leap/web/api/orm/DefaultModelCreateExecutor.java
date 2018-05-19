@@ -20,6 +20,7 @@ package leap.web.api.orm;
 
 import leap.core.validation.Errors;
 import leap.core.validation.ValidationException;
+import leap.core.value.Record;
 import leap.lang.Beans;
 import leap.lang.Enumerable;
 import leap.lang.Enumerables;
@@ -185,7 +186,17 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
             });
         }
 
-        return new CreateOneResult(insert.id());
+        Object createdId = insert.id();
+
+        Record record = dao.find(em, createdId);
+        record.put("$id", createdId);
+
+        Object entity = ex.postCreateRecord(context, createdId, record);
+        if(null != entity) {
+            return new CreateOneResult(createdId, entity);
+        }else {
+            return new CreateOneResult(createdId, record);
+        }
     }
 
     protected void executeInsert(InsertCommand insert) {

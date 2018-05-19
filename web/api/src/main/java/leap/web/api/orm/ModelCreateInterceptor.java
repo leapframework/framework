@@ -16,6 +16,8 @@
 
 package leap.web.api.orm;
 
+import leap.core.value.Record;
+
 import java.util.Map;
 
 public interface ModelCreateInterceptor {
@@ -58,5 +60,10 @@ public interface ModelCreateInterceptor {
         return false;
     }
 
-
+    /**
+     * Called after record has been created.
+     */
+    default Object postCreateRecord(ModelExecutorContext context, Object id, Record record) {
+        return null;
+    }
 }

@@ -23,7 +23,6 @@ import leap.web.action.ActionParams;
 import leap.web.action.FuncActionBuilder;
 import leap.web.api.Api;
 import leap.web.api.config.ApiConfigurator;
-import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.ApiResponse;
 import leap.web.api.orm.CreateOneResult;
@@ -99,11 +98,7 @@ public class CreateOperation extends CrudOperationBase implements CrudOperation 
             ModelCreateExecutor executor = newCreateExecutor(context);
 
             CreateOneResult result = executor.createOne(record);
-
-            Record r = dao.find(model.getEntityMapping(), result.id);
-            r.put("$id", result.id);
-
-            return ApiResponse.created(r);
+            return ApiResponse.created(result.entity);
         }
 
         protected ModelCreateExecutor newCreateExecutor(ModelExecutorContext context) {
