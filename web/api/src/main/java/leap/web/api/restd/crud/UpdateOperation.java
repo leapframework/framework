@@ -32,7 +32,9 @@ import leap.web.api.restd.CrudOperation;
 import leap.web.api.restd.CrudOperationBase;
 import leap.web.api.restd.RestdContext;
 import leap.web.api.restd.RestdModel;
+import leap.web.exception.NotFoundException;
 import leap.web.route.RouteBuilder;
+import org.omg.CosNaming.NamingContextPackage.NotFound;
 
 import java.util.Map;
 import java.util.function.Function;
@@ -99,7 +101,7 @@ public class UpdateOperation extends CrudOperationBase implements CrudOperation 
             if (result.affectedRows > 0) {
                 return ApiResponse.NO_CONTENT;
             } else {
-                return ApiResponse.NOT_FOUND;
+                throw new NotFoundException(am.getName() + "' " + id.toString() + "' not found");
             }
         }
 

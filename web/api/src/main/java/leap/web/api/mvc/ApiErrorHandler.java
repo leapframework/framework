@@ -16,34 +16,59 @@
 
 package leap.web.api.mvc;
 
+import leap.lang.http.HTTP;
 import leap.web.Response;
 
 public interface ApiErrorHandler {
 
-    void unauthorized(Response response);
+    default void unauthorized(Response response) {
+        unauthorized(response, "Unauthorized");
+    }
 
-    void unauthorized(Response response, String message);
+    default void unauthorized(Response response, String message) {
+        responseError(response, HTTP.SC_UNAUTHORIZED,  HTTP.Status.UNAUTHORIZED.name(), message);
+    }
 
-    void forbidden(Response response);
+    default void forbidden(Response response) {
+        forbidden(response, "Forbidden");
+    }
 
-    void forbidden(Response response, String message);
+    default void forbidden(Response response, String message) {
+        responseError(response, HTTP.SC_FORBIDDEN, HTTP.Status.FORBIDDEN.name(), message);
+    }
 
-    void notFound(Response response);
+    default void notFound(Response response) {
+        notFound(response, "Not found");
+    }
 
-    void notFound(Response response, String message);
+    default void notFound(Response response, String message) {
+        responseError(response, HTTP.SC_NOT_FOUND, HTTP.Status.NOT_FOUND.name(), message);
+    }
 
-    void badRequest(Response response);
+    default void badRequest(Response response) {
+        badRequest(response, "Bad request");
+    }
 
-    void badRequest(Response response, String message);
+    default void badRequest(Response response, String message) {
+        responseError(response, HTTP.SC_BAD_REQUEST, HTTP.Status.BAD_REQUEST.name(), message);
+    }
 
-    void internalServerError(Response response, String message);
+    default void internalServerError(Response response, String message) {
+        responseError(response, HTTP.SC_INTERNAL_SERVER_ERROR, HTTP.Status.INTERNAL_SERVER_ERROR.name(), message);
+    }
 
-    void internalServerError(Response response, Throwable cause);
+    default void internalServerError(Response response, Throwable cause) {
+        responseError(response, HTTP.SC_INTERNAL_SERVER_ERROR, HTTP.Status.INTERNAL_SERVER_ERROR.name(), cause.getMessage());
+    }
 
-    void responseError(Response response, int status, String message);
+    default void responseError(Response response, int status, String message) {
+        responseError(response, status, new ApiError(message));
+    }
+
+    default void responseError(Response response, int status, String code, String message) {
+        responseError(response, status, new ApiError(code, message));
+    }
 
     void responseError(Response response, int status, ApiError error);
-
-    void responseError(Response response, int status, String code, String message);
 
 }

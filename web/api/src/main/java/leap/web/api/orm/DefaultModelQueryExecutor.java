@@ -186,9 +186,12 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             ex.handler.preQueryList(context, query);
         }
 
-        PageResult result = query.pageResult(options.getPage(ac.getDefaultPageSize()));
+        PageResult page = query.pageResult(options.getPage(ac.getDefaultPageSize()));
 
-        list = result.list();
+        list = ex.executeQueryList(context, options, page);
+        if(null == list){
+            list = page.list();
+        }
 
         if(null != ex.handler) {
             ex.handler.postQueryList(context, list);
@@ -212,7 +215,9 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             count = query.count();
         }
 
-        return new QueryListResult(list, count);
+        Object entity = ex.processQueryListResult(context, page, count, list);
+
+        return new QueryListResult(list, count, entity);
     }
 
     @Override
@@ -230,7 +235,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
         long count = query.count();
 
-        return new QueryListResult(null, count);
+        return new QueryListResult(null, count, null);
     }
 
     protected CriteriaQuery<Record> createCriteriaQuery() {

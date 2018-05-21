@@ -54,7 +54,10 @@ public class FormattingResultProcessor extends AbstractResultProcessor implement
         if(returnValue instanceof ResponseEntity) {
             ResponseEntity re = (ResponseEntity)returnValue;
 
-            result.setStatus(re.getStatus().value());
+            if(null != re.getStatus()) {
+                result.setStatus(re.getStatus().value());
+            }
+
             returnValue = re.getEntity();
 
             re.getHeaders().forEach(context.getResponse()::addHeader);

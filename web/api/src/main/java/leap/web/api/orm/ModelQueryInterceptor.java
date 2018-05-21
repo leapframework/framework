@@ -17,6 +17,7 @@
 package leap.web.api.orm;
 
 import leap.core.value.Record;
+import leap.orm.query.PageResult;
 import leap.web.api.mvc.params.QueryOptions;
 import leap.web.api.mvc.params.QueryOptionsBase;
 
@@ -44,4 +45,11 @@ public interface ModelQueryInterceptor {
         return false;
     }
 
+    default List<Record> executeQueryList(ModelExecutorContext context, QueryOptions options, PageResult page) {
+        return null;
+    }
+
+    default Object processQueryListResult(ModelExecutorContext context, PageResult page, long totalCount, List<Record> records) {
+        return null;
+    }
 }

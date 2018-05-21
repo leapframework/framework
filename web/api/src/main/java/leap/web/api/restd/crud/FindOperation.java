@@ -31,6 +31,7 @@ import leap.web.api.restd.CrudOperation;
 import leap.web.api.restd.CrudOperationBase;
 import leap.web.api.restd.RestdContext;
 import leap.web.api.restd.RestdModel;
+import leap.web.exception.NotFoundException;
 import leap.web.route.RouteBuilder;
 
 import java.util.function.Function;
@@ -98,8 +99,10 @@ public class FindOperation extends CrudOperationBase implements CrudOperation {
             QueryOneResult result = executor.queryOne(id, options);
             if(null != result.entity) {
                 return ApiResponse.of(result.entity);
+            }else if(result.record == null) {
+                throw new NotFoundException(am.getName() + " '" + id.toString() + "' not found");
             }else {
-                return result.record == null ? ApiResponse.NOT_FOUND : ApiResponse.of(result.record);
+                return ApiResponse.of(result.record);
             }
         }
 

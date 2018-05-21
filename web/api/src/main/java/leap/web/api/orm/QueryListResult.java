@@ -26,9 +26,11 @@ public final class QueryListResult {
 
     public final List<Record> list;
     public final long         count;
+    public final Object       entity;
 
-    public QueryListResult(List<Record> list, long count) {
+    public QueryListResult(List<Record> list, long count, Object entity) {
         this.list = list;
         this.count = count;
+        this.entity = entity;
     }
 }

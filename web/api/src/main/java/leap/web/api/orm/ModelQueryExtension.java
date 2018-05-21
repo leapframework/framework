@@ -17,6 +17,7 @@
 package leap.web.api.orm;
 
 import leap.core.value.Record;
+import leap.orm.query.PageResult;
 import leap.web.api.mvc.params.QueryOptions;
 import leap.web.api.mvc.params.QueryOptionsBase;
 
@@ -87,5 +88,27 @@ public class ModelQueryExtension implements ModelQueryInterceptor {
             }
         }
         return false;
+    }
+
+    @Override
+    public List<Record> executeQueryList(ModelExecutorContext context, QueryOptions options, PageResult page) {
+        for(ModelQueryInterceptor interceptor : interceptors) {
+            List<Record> list = interceptor.executeQueryList(context, options, page);
+            if(null != list) {
+                return list;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Object processQueryListResult(ModelExecutorContext context, PageResult page, long totalCount, List<Record> records) {
+        for(ModelQueryInterceptor interceptor : interceptors) {
+            Object v = interceptor.processQueryListResult(context, page, totalCount, records);
+            if(null != v) {
+                return v;
+            }
+        }
+        return null;
     }
 }

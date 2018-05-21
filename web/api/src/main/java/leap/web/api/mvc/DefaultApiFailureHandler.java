@@ -19,8 +19,6 @@ package leap.web.api.mvc;
 import leap.core.annotation.Inject;
 import leap.core.exception.EmptyRecordsException;
 import leap.core.exception.RecordNotFoundException;
-import leap.core.exception.TooManyRecordsException;
-import leap.core.security.SecurityException;
 import leap.core.validation.Errors;
 import leap.core.validation.ValidationException;
 import leap.lang.NamedError;
@@ -42,16 +40,17 @@ public class DefaultApiFailureHandler implements ApiFailureHandler {
     @Override
     public boolean handleFailure(ActionContext context, ActionExecution execution, Result result) {
         Response response = context.getResponse();
+        ApiErrorHandler errorHandler = getErrorHandler(context);
 
         if(execution.isValidationError()) {
-            handleValidationError(response, execution.getValidation().errors());
+            handleValidationError(errorHandler, response, execution.getValidation().errors());
             return true;
         }
 
         if(execution.hasException()) {
             Throwable e = execution.getException();
 
-            if(handleException(response, e)) {
+            if(handleException(errorHandler, response, e)) {
                 return true;
             }
 
@@ -64,10 +63,11 @@ public class DefaultApiFailureHandler implements ApiFailureHandler {
         return true;
     }
 
-    protected boolean handleException(Response response, Throwable e) {
+    protected boolean handleException(ApiErrorHandler errorHandler, Response response, Throwable e) {
+
         if(e instanceof ValidationException) {
             Errors errors = ((ValidationException) e).getErrors();
-            handleValidationError(response, errors);
+            handleValidationError(errorHandler, response, errors);
             return true;
         }
 
@@ -118,8 +118,16 @@ public class DefaultApiFailureHandler implements ApiFailureHandler {
         return false;
     }
 
-    protected void handleValidationError(Response response, Errors errors) {
+    protected void handleValidationError(ApiErrorHandler errorHandler, Response response, Errors errors) {
         NamedError error = errors.first();
         errorHandler.badRequest(response, "Validation failed -> " + error.getName() + " : " + error.getMessage());
+    }
+
+    protected ApiErrorHandler getErrorHandler(ActionContext context) {
+        ApiErrorHandler errorHandler = (ApiErrorHandler)context.getRequest().getAttribute(ApiErrorHandler.class.getName());
+        if(null == errorHandler) {
+            errorHandler = this.errorHandler;
+        }
+        return errorHandler;
     }
 }

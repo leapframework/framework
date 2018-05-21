@@ -683,12 +683,14 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
                         "Result not found for action '" + actionContext.getAction().toString() + "'");
             }
 
-            response.setStatus(result.getStatus());
+            if(response.getStatus() == 200) {
+                response.setStatus(result.getStatus());
+            }
             return;
         }
 
         //set response status if the result status is valid.
-        if (result.getStatus() != Result.STATUS_UNDEFINED) {
+        if (result.getStatus() != Result.STATUS_UNDEFINED && response.getStatus() == 200) {
             response.setStatus(result.getStatus());
         }
 
