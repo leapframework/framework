@@ -21,8 +21,14 @@ package leap.web.api.orm;
 public class DeleteOneResult {
 
     public final boolean success;
+    public final Object  entity;
 
     public DeleteOneResult(boolean success) {
+        this(success, null);
+    }
+
+    public DeleteOneResult(boolean success, Object entity) {
         this.success = success;
+        this.entity  = entity;
     }
 }

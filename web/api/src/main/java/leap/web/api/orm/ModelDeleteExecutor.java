@@ -19,5 +19,7 @@ package leap.web.api.orm;
 import leap.web.api.mvc.params.DeleteOptions;
 
 public interface ModelDeleteExecutor {
+
     DeleteOneResult deleteOne(Object id, DeleteOptions options);
+
 }

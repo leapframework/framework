@@ -28,6 +28,7 @@ import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.ApiResponse;
 import leap.web.api.mvc.params.DeleteOptions;
+import leap.web.api.orm.DeleteOneResult;
 import leap.web.api.orm.ModelDeleteExecutor;
 import leap.web.api.orm.ModelExecutorContext;
 import leap.web.api.orm.SimpleModelExecutorContext;
@@ -114,10 +115,15 @@ public class DeleteOperation extends CrudOperationBase implements CrudOperation 
                 }
             }
 
-            if(executor.deleteOne(id, options).success) {
-                return ApiResponse.NO_CONTENT;
-            }else{
-                return ApiResponse.NOT_FOUND;
+            DeleteOneResult result = executor.deleteOne(id, options);
+            if(null != result.entity) {
+                return ApiResponse.of(result.entity);
+            }else {
+                if(result.success) {
+                    return ApiResponse.NO_CONTENT;
+                }else {
+                    return ApiResponse.NOT_FOUND;
+                }
             }
         }
 

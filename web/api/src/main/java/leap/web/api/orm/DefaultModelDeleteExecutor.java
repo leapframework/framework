@@ -22,11 +22,11 @@ import leap.web.api.mvc.params.DeleteOptions;
 
 public class DefaultModelDeleteExecutor extends ModelExecutorBase implements ModelDeleteExecutor {
 
-    protected final ModelDeleteHandler handler;
+    protected final ModelDeleteExtension ex;
 
-    public DefaultModelDeleteExecutor(ModelExecutorContext context, ModelDeleteHandler handler) {
+    public DefaultModelDeleteExecutor(ModelExecutorContext context, ModelDeleteExtension ex) {
         super(context);
-        this.handler = handler;
+        this.ex = null == ex ? ModelDeleteExtension.EMPTY : ex;
     }
 
     @Override
@@ -35,10 +35,10 @@ public class DefaultModelDeleteExecutor extends ModelExecutorBase implements Mod
             options = new DeleteOptions();
         }
 
-        if(null != handler) {
-            handler.processDeleteOptions(context, id, options);
+        if(null != ex.handler) {
+            ex.handler.processDeleteOptions(context, id, options);
 
-            DeleteOneResult result = handler.handleDeleteExecution(context, id, options);
+            DeleteOneResult result = ex.handler.handleDeleteExecution(context, id, options);
             if(null != result) {
                 return result;
             }
@@ -51,11 +51,16 @@ public class DefaultModelDeleteExecutor extends ModelExecutorBase implements Mod
             result = new DeleteOneResult(dao.cascadeDelete(em, id));
         }
 
-        if(null != handler) {
-            DeleteOneResult r = handler.postDeleteRecore(context, id, options, result);
+        if(null != ex.handler) {
+            DeleteOneResult r = ex.handler.postDeleteRecore(context, id, options, result);
             if (null != r) {
                 result = r;
             }
+        }
+
+        Object entity = ex.processDeleteOneResult(context, id, result.success);
+        if(null != entity) {
+            result = new DeleteOneResult(result.success, entity);
         }
 
         return result;
