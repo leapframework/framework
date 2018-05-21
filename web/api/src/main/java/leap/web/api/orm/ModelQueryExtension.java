@@ -16,7 +16,9 @@
 
 package leap.web.api.orm;
 
+import leap.core.value.Record;
 import leap.web.api.mvc.params.QueryOptions;
+import leap.web.api.mvc.params.QueryOptionsBase;
 
 import java.util.List;
 
@@ -25,7 +27,7 @@ public class ModelQueryExtension implements ModelQueryInterceptor {
     public static final ModelQueryExtension EMPTY = new ModelQueryExtension(null, null);
 
     protected final ModelQueryHandler       handler;
-    private final ModelQueryInterceptor[] interceptors;
+    protected final ModelQueryInterceptor[] interceptors;
 
     public ModelQueryExtension(ModelQueryHandler handler, ModelQueryInterceptor[] interceptors) {
         this.handler = handler;
@@ -34,6 +36,27 @@ public class ModelQueryExtension implements ModelQueryInterceptor {
 
     public ModelQueryHandler getHandler() {
         return handler;
+    }
+
+    @Override
+    public boolean processQueryOneOptions(ModelExecutorContext context, QueryOptionsBase options) {
+        for(ModelQueryInterceptor interceptor : interceptors) {
+            if(interceptor.processQueryOneOptions(context, options)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public Object processQueryOneRecord(ModelExecutorContext context, Object id, Record record) {
+        for(ModelQueryInterceptor interceptor : interceptors) {
+            Object v = interceptor.processQueryOneRecord(context, id, record);
+            if(null != v) {
+                return v;
+            }
+        }
+        return null;
     }
 
     @Override

@@ -16,11 +16,21 @@
 
 package leap.web.api.orm;
 
+import leap.core.value.Record;
 import leap.web.api.mvc.params.QueryOptions;
+import leap.web.api.mvc.params.QueryOptionsBase;
 
 import java.util.List;
 
 public interface ModelQueryInterceptor {
+
+    default boolean processQueryOneOptions(ModelExecutorContext context, QueryOptionsBase options) {
+        return false;
+    }
+
+    default Object processQueryOneRecord(ModelExecutorContext context, Object id, Record record) {
+        return null;
+    }
 
     default boolean processQueryListOptions(ModelExecutorContext context, QueryOptions options) {
         return false;

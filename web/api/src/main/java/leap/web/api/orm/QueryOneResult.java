@@ -23,9 +23,14 @@ import leap.core.value.Record;
 public class QueryOneResult {
 
     public final Record record;
+    public final Object entity;
 
     public QueryOneResult(Record record) {
-        this.record = record;
+        this(record, null);
     }
 
+    public QueryOneResult(Record record, Object entity) {
+        this.record = record;
+        this.entity = entity;
+    }
 }

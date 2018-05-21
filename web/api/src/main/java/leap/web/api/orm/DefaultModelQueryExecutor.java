@@ -105,7 +105,9 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             }
         }
 
-        return new QueryOneResult(record);
+        Object entity = ex.processQueryOneRecord(context, id, record);
+
+        return new QueryOneResult(record, entity);
     }
 
     @Override
