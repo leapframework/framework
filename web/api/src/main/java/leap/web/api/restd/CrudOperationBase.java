@@ -80,6 +80,18 @@ public abstract class CrudOperationBase extends RestdOperationBase {
         return a;
     }
 
+    protected ArgumentBuilder addModelArgumentForReplace(RestdContext context, FuncActionBuilder action, RestdModel model) {
+        ArgumentBuilder a = newModelArgument(model);
+
+        for(RestdArgumentSupport vs : argumentSupports) {
+            vs.processModelArgumentForReplace(context, model, a);
+        }
+
+        action.addArgument(a);
+
+        return a;
+    }
+
     protected void addIdArguments(RestdContext context, FuncActionBuilder action, RestdModel model) {
         for(FieldMapping id : model.getEntityMapping().getKeyFieldMappings()) {
             ArgumentBuilder a = newIdArgument(model, id);
