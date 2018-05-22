@@ -26,6 +26,7 @@ public class DefaultModelExecutorFactory implements ModelExecutorFactory {
 
     protected @Inject ModelUpdateHandler       updateHandler;
     protected @Inject ModelUpdateInterceptor[] updateInterceptors;
+    protected @Inject ModelReplaceInterceptor[] replaceInterceptors;
 
     protected @Inject ModelQueryHandler        queryHandler;
     protected @Inject ModelQueryInterceptor[]  queryInterceptors;
@@ -41,7 +42,7 @@ public class DefaultModelExecutorFactory implements ModelExecutorFactory {
     @Init
     private void init() {
         this.createExtension = new ModelCreateExtension(createHandler, createInterceptors);
-        this.updateExtension = new ModelUpdateExtension(updateHandler, updateInterceptors);
+        this.updateExtension = new ModelUpdateExtension(updateHandler, updateInterceptors, replaceInterceptors);
         this.queryExtension  = new ModelQueryExtension(queryHandler, queryInterceptors);
         this.deleteExtension = new ModelDeleteExtension(deleteHandler, deleteInterceptors);
     }

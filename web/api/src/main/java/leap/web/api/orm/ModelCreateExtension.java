@@ -19,6 +19,7 @@ package leap.web.api.orm;
 import leap.core.value.Record;
 
 import java.util.Map;
+import java.util.Set;
 
 public class ModelCreateExtension implements ModelCreateInterceptor {
 
@@ -58,9 +59,9 @@ public class ModelCreateExtension implements ModelCreateInterceptor {
     }
 
     @Override
-    public boolean handleCreationPropertyNotFound(ModelExecutorContext context, String name, Object value) {
+    public boolean handleCreationPropertyNotFound(ModelExecutorContext context, String name, Object value, Set<String> removes) {
         for(ModelCreateInterceptor interceptor : interceptors) {
-            if(interceptor.handleCreationPropertyNotFound(context, name, value)) {
+            if(interceptor.handleCreationPropertyNotFound(context, name, value, removes)) {
                 return true;
             }
         }
@@ -68,9 +69,9 @@ public class ModelCreateExtension implements ModelCreateInterceptor {
     }
 
     @Override
-    public boolean handleCreationPropertyReadonly(ModelExecutorContext context, String name, Object value) {
+    public boolean handleCreationPropertyReadonly(ModelExecutorContext context, String name, Object value, Set<String> removes) {
         for(ModelCreateInterceptor interceptor : interceptors) {
-            if(interceptor.handleCreationPropertyReadonly(context, name, value)) {
+            if(interceptor.handleCreationPropertyReadonly(context, name, value, removes)) {
                 return true;
             }
         }

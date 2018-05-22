@@ -21,6 +21,13 @@ import java.util.Map;
 public interface ModelUpdateHandler {
 
     /**
+     * Process the replace record.
+     */
+    default void processReplaceRecord(ModelExecutorContext context, Object id, Map<String, Object> record) {
+
+    }
+
+    /**
      * Process the update properties.
      */
     default void processUpdateProperties(ModelExecutorContext context, Object id, Map<String, Object> properties) {

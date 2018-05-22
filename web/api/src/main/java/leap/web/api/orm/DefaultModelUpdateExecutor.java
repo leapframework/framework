@@ -23,6 +23,7 @@ import leap.core.validation.ValidationException;
 import leap.lang.*;
 import leap.orm.command.UpdateCommand;
 import leap.orm.mapping.EntityMapping;
+import leap.orm.mapping.FieldMapping;
 import leap.orm.mapping.RelationMapping;
 import leap.orm.mapping.RelationProperty;
 import leap.web.api.meta.model.MApiProperty;
@@ -42,6 +43,46 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
     }
 
     @Override
+    public UpdateOneResult replaceUpdateOne(Object id, Map<String, Object> record) {
+        if(null == record || record.isEmpty()) {
+            throw new BadRequestException("No update properties");
+        }
+
+        ex.processReplaceRecord(context, id, record);
+        if(null != ex.handler) {
+            ex.handler.processReplaceRecord(context, id, record);
+        }
+
+        Set<String> removes = new HashSet<>();
+
+        for(FieldMapping fm : em.getFieldMappings()) {
+            if(!record.containsKey(fm.getFieldName())) {
+                if(fm.isNullable()) {
+                    record.put(fm.getFieldName(), null);
+                }else if(null != fm.getDefaultValue()) {
+                    record.put(fm.getFieldName(), fm.getDefaultValue().getValue());
+                }
+            }else {
+                Object value = record.get(fm.getFieldName());
+                if(null == value && !fm.isNullable()) {
+                    if(null != fm.getDefaultValue()) {
+                        record.put(fm.getFieldName(), fm.getDefaultValue().getValue());
+                    }else {
+                        removes.add(fm.getFieldName());
+                    }
+                }
+            }
+        }
+
+        removes.forEach(record::remove);
+
+        int affected = doUpdate(id, record, false);
+        Object entity = ex.postReplaceRecord(context, id, affected);
+
+        return new UpdateOneResult(affected, entity);
+    }
+
+    @Override
     public UpdateOneResult partialUpdateOne(Object id, Partial partial) {
         if (null == partial || partial.isEmpty()) {
             throw new BadRequestException("No update properties");
@@ -57,7 +98,16 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
             ex.handler.processUpdateProperties(context, id, properties);
         }
 
+        int affected = doUpdate(id, properties, true);
+        Object entity = ex.postUpdateProperties(context, id, affected);
+
+        return new UpdateOneResult(affected, entity);
+    }
+
+    protected int doUpdate(Object id, Map<String, Object> properties, boolean partial) {
         Map<RelationProperty, Object[]> relationProperties = new LinkedHashMap<>();
+
+        Set<String> removes = new HashSet<>();
 
         for (Map.Entry<String, Object> entry : properties.entrySet()) {
             String name = entry.getKey();
@@ -65,22 +115,34 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
             MApiProperty p = am.tryGetProperty(name);
 
             if (null == p) {
-                if(ex.handleUpdatePropertyNotFound(context, name, entry.getValue())) {
-                    continue;
+                if(partial) {
+                    if(ex.handleUpdatePropertyNotFound(context, name, entry.getValue(), removes)) {
+                        continue;
+                    }
+                }else {
+                    if(ex.handleReplacePropertyNotFound(context, name, entry.getValue(), removes)) {
+                        continue;
+                    }
                 }
                 throw new BadRequestException("Property '" + name + "' not exists!");
             }
 
             if (p.isNotUpdatableExplicitly()) {
-                if(ex.handleUpdatePropertyReadonly(context, name, entry.getValue())) {
-                    continue;
+                if(partial) {
+                    if(ex.handleUpdatePropertyReadonly(context, name, entry.getValue(), removes)) {
+                        continue;
+                    }
+                    throw new BadRequestException("Property '" + name + "' is not updatable!");
+                }else {
+                    if(ex.handleReplacePropertyReadonly(context, name, entry.getValue(), removes)) {
+                        continue;
+                    }
+                    removes.add(name);
                 }
-                throw new BadRequestException("Property '" + name + "' is not updatable!");
             }
 
             if (null != p.getMetaProperty() && p.getMetaProperty().isReference()) {
                 Object v = properties.get(name);
-
                 if (null == v) {
                     continue;
                 }
@@ -104,7 +166,10 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
             throw new ValidationException(errors);
         }
 
-        ex.preUpdateProperties(context, id, properties);
+        if(!removes.isEmpty()) {
+            removes.forEach(properties::remove);
+        }
+
         if(null != ex.handler) {
             ex.handler.preUpdateProperties(context, id, properties);
         }
@@ -169,7 +234,7 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
             });
         }
 
-        return new UpdateOneResult(result.get());
+        return result.get();
     }
 
     protected int executeUpdate(UpdateCommand update, Object id) {

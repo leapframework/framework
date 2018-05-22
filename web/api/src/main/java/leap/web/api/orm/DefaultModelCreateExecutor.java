@@ -81,14 +81,14 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
 
         Map<RelationProperty, Object[]> relationProperties = new LinkedHashMap<>();
 
-        Set<String> removingKeys = new HashSet<>();
+        Set<String> removes = new HashSet<>();
 
         for (Map.Entry<String, Object> entry : properties.entrySet()) {
             String name = entry.getKey();
             MApiProperty p = am.tryGetProperty(name);
 
             if(null == p) {
-                if(ex.handleCreationPropertyNotFound(context, name, entry.getValue())) {
+                if(ex.handleCreationPropertyNotFound(context, name, entry.getValue(), removes)) {
                     continue;
                 }
                 throw new BadRequestException("Property '" + name + "' not exists!");
@@ -96,9 +96,9 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
 
             if(p.isNotCreatableExplicitly()) {
                 if(null == properties.get(name)) {
-                    removingKeys.add(name);
+                    removes.add(name);
                 }else{
-                    if(ex.handleCreationPropertyReadonly(context, name, entry.getValue())) {
+                    if(ex.handleCreationPropertyReadonly(context, name, entry.getValue(), removes)) {
                         continue;
                     }
                     throw new BadRequestException("Property '" + name + "' is not creatable!");
@@ -125,7 +125,7 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
         }
 
         //Removes the not creatable properties.
-        removingKeys.forEach(properties::remove);
+        removes.forEach(properties::remove);
 
         Errors errors = dao.validate(em, properties);
         if(!errors.isEmpty()) {

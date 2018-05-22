@@ -62,6 +62,7 @@
     <bean name="find"   type="leap.web.api.restd.CrudOperation" class="leap.web.api.restd.crud.FindOperation"/>
     <bean name="query"  type="leap.web.api.restd.CrudOperation" class="leap.web.api.restd.crud.QueryOperation"/>
     <bean name="count"  type="leap.web.api.restd.CrudOperation" class="leap.web.api.restd.crud.CountOperation"/>
+    <bean name="replace" type="leap.web.api.restd.CrudOperation" class="leap.web.api.restd.crud.ReplaceOperation"/>
 
     <bean name="sql"
           type="leap.web.api.restd.RestdOperationProvider"

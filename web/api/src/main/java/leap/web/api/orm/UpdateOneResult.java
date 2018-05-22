@@ -20,9 +20,11 @@ package leap.web.api.orm;
 
 public class UpdateOneResult {
 
-    public final int affectedRows;
+    public final int    affectedRows;
+    public final Object entity;
 
-    public UpdateOneResult(int affectedRows) {
+    public UpdateOneResult(int affectedRows, Object entity) {
         this.affectedRows = affectedRows;
+        this.entity = entity;
     }
 }

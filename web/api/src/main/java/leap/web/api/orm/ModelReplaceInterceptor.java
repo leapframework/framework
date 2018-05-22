@@ -19,31 +19,21 @@ package leap.web.api.orm;
 import java.util.Map;
 import java.util.Set;
 
-public interface ModelUpdateInterceptor {
+public interface ModelReplaceInterceptor {
 
-    /**
-     * Process the update properties.
-     */
-    default boolean processUpdateProperties(ModelExecutorContext context, Object id, Map<String, Object> properties) {
+    default boolean processReplaceRecord(ModelExecutorContext context, Object id, Map<String, Object> record) {
         return false;
     }
 
-    /**
-     * Handles not exists property.
-     */
-    default boolean handleUpdatePropertyNotFound(ModelExecutorContext context, String name, Object value, Set<String> removes) {
+    default boolean handleReplacePropertyNotFound(ModelExecutorContext context, String name, Object value, Set<String> removes) {
         return false;
     }
 
-    /**
-     * Handles not updatable property
-     */
-    default boolean handleUpdatePropertyReadonly(ModelExecutorContext context, String name, Object value, Set<String> removes) {
+    default boolean handleReplacePropertyReadonly(ModelExecutorContext context, String name, Object value, Set<String> removes) {
         return false;
     }
 
-    default Object postUpdateProperties(ModelExecutorContext context, Object id, int affected) {
+    default Object postReplaceRecord(ModelExecutorContext context, Object id, int affected) {
         return null;
     }
-
 }

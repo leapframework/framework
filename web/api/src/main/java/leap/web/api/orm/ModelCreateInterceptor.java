@@ -19,6 +19,7 @@ package leap.web.api.orm;
 import leap.core.value.Record;
 
 import java.util.Map;
+import java.util.Set;
 
 public interface ModelCreateInterceptor {
 
@@ -42,14 +43,14 @@ public interface ModelCreateInterceptor {
     /**
      * Handles not exists property.
      */
-    default boolean handleCreationPropertyNotFound(ModelExecutorContext context, String name, Object value) {
+    default boolean handleCreationPropertyNotFound(ModelExecutorContext context, String name, Object value, Set<String> removes) {
         return false;
     }
 
     /**
      * Handles not creatable property
      */
-    default boolean handleCreationPropertyReadonly(ModelExecutorContext context, String name, Object value) {
+    default boolean handleCreationPropertyReadonly(ModelExecutorContext context, String name, Object value, Set<String> removes) {
         return false;
     }
 
