@@ -58,6 +58,7 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 	protected @Inject ApiMetadataFactory     metadataFactory;
 	protected @Inject MTypeManager           typeManager;
     protected @Inject App                    app;
+    protected @Inject BeanFactory            factory;
 
     protected Map<String, MApiResponse> commonResponses = new LinkedHashMap<>();
     protected Map<String, Api>          apis            = new ConcurrentHashMap<>();
@@ -110,7 +111,7 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 		Args.notEmpty(name,     "name");
 		Args.notEmpty(basePath, "basePath");
         
-		DefaultApiConfig c = new DefaultApiConfig(name,basePath,DefaultApis.class);
+		DefaultApiConfig c = factory.inject(new DefaultApiConfig(name,basePath,DefaultApis.class));
         doAdd(c);
 		return c;
     }
@@ -123,7 +124,7 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 
     @Override
     public Api newDynamic(String name, String basePath) {
-        DefaultApiConfig c = new DefaultApiConfig(name,basePath,DefaultApis.class);
+        DefaultApiConfig c = factory.inject(new DefaultApiConfig(name,basePath,DefaultApis.class));
         return doNewApi(c, true);
     }
 

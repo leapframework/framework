@@ -46,7 +46,6 @@ public abstract class RestdOperationBase {
     protected @Inject RouteManager            rm;
     protected @Inject Apis                    apis;
     protected @Inject ValidationManager       validationManager;
-    protected @Inject ApiFailureHandler       failureHandler;
     protected @Inject RestdOperationSupport[] operationSupports;
     protected @Inject RestdArgumentSupport[]  argumentSupports;
     protected @Inject RequestFormat[]         supportedConsumes;
@@ -168,7 +167,7 @@ public abstract class RestdOperationBase {
             }
         }
 
-        route.addFailureHandler(failureHandler);
+        route.addFailureHandler(context.getApiConfig().getFailureHandler());
 
         JsonSettings settings = new JsonSettings.Builder().setDateTimeFormatter(SwaggerConstants.DATE_TIME_FORMAT, "GMT").build();
         route.setExtension(settings);

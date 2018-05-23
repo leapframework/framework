@@ -15,6 +15,7 @@
  */
 package leap.web.api.config;
 
+import leap.core.annotation.Inject;
 import leap.lang.*;
 import leap.lang.meta.MComplexType;
 import leap.lang.naming.NamingStyle;
@@ -22,6 +23,7 @@ import leap.lang.path.Paths;
 import leap.web.api.config.model.*;
 import leap.web.api.meta.ApiMetadataBuilder;
 import leap.web.api.meta.model.*;
+import leap.web.api.mvc.ApiFailureHandler;
 import leap.web.api.permission.ResourcePermissionsSet;
 import leap.web.api.route.ApiRoute;
 import leap.web.api.route.SimpleApiRoute;
@@ -85,6 +87,8 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     protected RestdConfig restdConfig;
     protected Routes      containerRoutes;
     protected ApiMetadataBuilder metadata;
+
+    protected @Inject ApiFailureHandler failureHandler;
 
 	public DefaultApiConfig(String name, String basePath, Object source) {
 		Args.notEmpty(name, "name");
@@ -536,6 +540,15 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
 
     public void setMetadata(ApiMetadataBuilder metadata) {
         this.metadata = metadata;
+    }
+
+    @Override
+    public ApiFailureHandler getFailureHandler() {
+        return failureHandler;
+    }
+
+    public void setFailureHandler(ApiFailureHandler failureHandler) {
+        this.failureHandler = failureHandler;
     }
 
     @Override

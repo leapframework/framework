@@ -44,7 +44,7 @@ public abstract class ModelExecutorTestBase extends AppTestBase implements PostC
 
     @Override
     public void postCreate(BeanFactory factory) throws Throwable {
-        ac = new DefaultApiConfig("api", "/", "");
+        ac = factory.inject(new DefaultApiConfig("api", "/", ""));
 
         ApiMetadataBuilder m = new ApiMetadataBuilder();
         m.setName("api");

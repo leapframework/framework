@@ -31,6 +31,7 @@ import leap.web.api.meta.model.MApiModel;
 import leap.web.api.meta.model.MApiModelBuilder;
 import leap.web.api.meta.model.MApiPermission;
 import leap.web.api.meta.model.MApiResponse;
+import leap.web.api.mvc.ApiFailureHandler;
 import leap.web.api.permission.ResourcePermissionsSet;
 import leap.web.api.route.ApiRoute;
 import leap.web.route.Route;
@@ -272,5 +273,8 @@ public interface ApiConfig extends Named,Titled,Described,Extensible {
      */
     RestdConfig getRestdConfig();
 
-
+    /**
+     * Returns the failure handler.
+     */
+    ApiFailureHandler getFailureHandler();
 }

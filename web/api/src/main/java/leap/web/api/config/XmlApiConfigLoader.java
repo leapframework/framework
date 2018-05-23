@@ -19,6 +19,8 @@
 package leap.web.api.config;
 
 import leap.core.AppConfigException;
+import leap.core.BeanFactory;
+import leap.core.annotation.Inject;
 import leap.core.config.AppConfigContext;
 import leap.core.config.AppConfigListener;
 import leap.core.config.AppConfigPaths;
@@ -112,6 +114,8 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
     protected static final String OVERRIDE             = "override";
     protected static final String SQL_OPERATION        = "sql-operation";
     protected static final String SQL_KEY              = "sql-key";
+
+    private @Inject BeanFactory factory;
 
     @Override
     public String getNamespaceURI() {
@@ -371,7 +375,7 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
         ApiConfigurator api = extensions.getApi(name);
         if (null == api) {
             reader.getRequiredAttribute(BASE_PATH);
-            api = new DefaultApiConfig(name, basePath,reader.getSource());
+            api = factory.inject(new DefaultApiConfig(name, basePath,reader.getSource()));
             api.setBasePackage(basePackage);
             extensions.addApi(api);
         }else{

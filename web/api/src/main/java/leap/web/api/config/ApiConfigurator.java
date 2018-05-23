@@ -26,6 +26,7 @@ import leap.web.api.config.model.ParamConfig;
 import leap.web.api.config.model.RestdConfig;
 import leap.web.api.meta.ApiMetadataBuilder;
 import leap.web.api.meta.model.*;
+import leap.web.api.mvc.ApiFailureHandler;
 import leap.web.route.Route;
 import leap.web.route.Routes;
 
@@ -265,4 +266,9 @@ public interface ApiConfigurator extends Extensible {
      * Sets {@link ApiMetadataBuilder}.
      */
     void setMetadata(ApiMetadataBuilder metadata);
+
+    /**
+     * Sets {@link ApiFailureHandler}.
+     */
+    void setFailureHandler(ApiFailureHandler failureHandler);
 }

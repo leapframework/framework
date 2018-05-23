@@ -37,6 +37,14 @@ public class DefaultApiFailureHandler implements ApiFailureHandler {
 
     protected @Inject ApiErrorHandler errorHandler;
 
+    public DefaultApiFailureHandler() {
+
+    }
+
+    public DefaultApiFailureHandler(ApiErrorHandler errorHandler) {
+        this.errorHandler = errorHandler;
+    }
+
     @Override
     public boolean handleFailure(ActionContext context, ActionExecution execution, Result result) {
         Response response = context.getResponse();
