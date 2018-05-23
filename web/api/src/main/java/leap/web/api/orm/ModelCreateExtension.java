@@ -38,7 +38,7 @@ public class ModelCreateExtension implements ModelCreateInterceptor {
     }
 
     @Override
-    public Object processCreationParams(ModelExecutorContext context, Object params) {
+    public Object processCreationParams(ModelExecutionContext context, Object params) {
         for(ModelCreateInterceptor interceptor : interceptors) {
             Object v = interceptor.processCreationParams(context, params);
             if(null != v) {
@@ -49,7 +49,7 @@ public class ModelCreateExtension implements ModelCreateInterceptor {
     }
 
     @Override
-    public boolean processCreationRecord(ModelExecutorContext context, Map<String, Object> record) {
+    public boolean processCreationRecord(ModelExecutionContext context, Map<String, Object> record) {
         for(ModelCreateInterceptor interceptor : interceptors) {
             if(interceptor.processCreationRecord(context, record)) {
                 return true;
@@ -59,7 +59,7 @@ public class ModelCreateExtension implements ModelCreateInterceptor {
     }
 
     @Override
-    public boolean handleCreationPropertyNotFound(ModelExecutorContext context, String name, Object value, Set<String> removes) {
+    public boolean handleCreationPropertyNotFound(ModelExecutionContext context, String name, Object value, Set<String> removes) {
         for(ModelCreateInterceptor interceptor : interceptors) {
             if(interceptor.handleCreationPropertyNotFound(context, name, value, removes)) {
                 return true;
@@ -69,7 +69,7 @@ public class ModelCreateExtension implements ModelCreateInterceptor {
     }
 
     @Override
-    public boolean handleCreationPropertyReadonly(ModelExecutorContext context, String name, Object value, Set<String> removes) {
+    public boolean handleCreationPropertyReadonly(ModelExecutionContext context, String name, Object value, Set<String> removes) {
         for(ModelCreateInterceptor interceptor : interceptors) {
             if(interceptor.handleCreationPropertyReadonly(context, name, value, removes)) {
                 return true;
@@ -79,7 +79,7 @@ public class ModelCreateExtension implements ModelCreateInterceptor {
     }
 
     @Override
-    public boolean preCreateRecord(ModelExecutorContext context, Map<String, Object> record) {
+    public boolean preCreateRecord(ModelExecutionContext context, Map<String, Object> record) {
         for(ModelCreateInterceptor interceptor : interceptors) {
             if(interceptor.preCreateRecord(context, record)) {
                 return true;
@@ -89,7 +89,7 @@ public class ModelCreateExtension implements ModelCreateInterceptor {
     }
 
     @Override
-    public Object postCreateRecord(ModelExecutorContext context, Object id, Record record) {
+    public Object postCreateRecord(ModelExecutionContext context, Object id, Record record) {
         for(ModelCreateInterceptor interceptor : interceptors) {
             Object v = interceptor.postCreateRecord(context, id, record);
             if(null != v) {

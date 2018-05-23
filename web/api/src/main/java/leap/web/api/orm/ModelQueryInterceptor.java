@@ -25,31 +25,31 @@ import java.util.List;
 
 public interface ModelQueryInterceptor {
 
-    default boolean processQueryOneOptions(ModelExecutorContext context, QueryOptionsBase options) {
+    default boolean processQueryOneOptions(ModelExecutionContext context, QueryOptionsBase options) {
         return false;
     }
 
-    default Object processQueryOneRecord(ModelExecutorContext context, Object id, Record record) {
+    default Object processQueryOneRecord(ModelExecutionContext context, Object id, Record record) {
         return null;
     }
 
-    default boolean processQueryListOptions(ModelExecutorContext context, QueryOptions options) {
+    default boolean processQueryListOptions(ModelExecutionContext context, QueryOptions options) {
         return false;
     }
 
-    default boolean preProcessQueryListWhere(ModelExecutorContext context, QueryOptions options, StringBuilder where, List<Object> args) {
+    default boolean preProcessQueryListWhere(ModelExecutionContext context, QueryOptions options, StringBuilder where, List<Object> args) {
         return false;
     }
 
-    default boolean postProcessQueryListWhere(ModelExecutorContext context, QueryOptions options, StringBuilder where, List<Object> args){
+    default boolean postProcessQueryListWhere(ModelExecutionContext context, QueryOptions options, StringBuilder where, List<Object> args){
         return false;
     }
 
-    default List<Record> executeQueryList(ModelExecutorContext context, QueryOptions options, PageResult page) {
+    default List<Record> executeQueryList(ModelExecutionContext context, QueryOptions options, PageResult page) {
         return null;
     }
 
-    default Object processQueryListResult(ModelExecutorContext context, PageResult page, long totalCount, List<Record> records) {
+    default Object processQueryListResult(ModelExecutionContext context, PageResult page, long totalCount, List<Record> records) {
         return null;
     }
 }

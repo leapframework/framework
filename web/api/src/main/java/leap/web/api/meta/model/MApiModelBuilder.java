@@ -17,6 +17,7 @@ package leap.web.api.meta.model;
 
 import leap.lang.Arrays2;
 import leap.lang.Builders;
+import leap.lang.Extensible;
 import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
 import leap.lang.meta.MComplexType;
@@ -24,12 +25,12 @@ import leap.lang.meta.MProperty;
 import leap.web.api.annotation.ApiModel;
 import leap.web.api.annotation.ApiProperty;
 
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> {
+public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> implements Extensible {
+
+    protected final Map<Class<?>, Object> extensions = new HashMap<>();
 
     protected String       baseName;
     protected MComplexType type;
@@ -127,9 +128,34 @@ public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> {
     }
 
     @Override
+    public Map<Class<?>, Object> getExtensions() {
+        return extensions;
+    }
+
+    @Override
+    public final <T> T getExtension(Class<?> type) {
+        return (T)extensions.get(type);
+    }
+
+    @Override
+    public final <T> void setExtension(Class<T> type, Object extension) {
+        extensions.put(type, extension);
+    }
+
+    @Override
+    public <T> T removeExtension(Class<?> type) {
+        return (T)extensions.remove(type);
+    }
+
+    @Override
     public MApiModel build() {
-        return new MApiModel(entity, baseName, name, title, summary, description, javaTypes.toArray(Arrays2.EMPTY_CLASS_ARRAY),
-                Builders.buildArray(properties.values(), new MApiProperty[properties.size()]), attrs, extension);
+        MApiModel m =
+                new MApiModel(entity, baseName, name, title, summary, description, javaTypes.toArray(Arrays2.EMPTY_CLASS_ARRAY),
+                              Builders.buildArray(properties.values(), new MApiProperty[properties.size()]), attrs, extension);
+
+        m.getExtensions().putAll(this.extensions);
+
+        return m;
     }
 
 }

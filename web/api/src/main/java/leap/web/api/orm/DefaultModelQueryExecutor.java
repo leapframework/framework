@@ -77,6 +77,8 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
     @Override
     public QueryOneResult queryOne(Object id, QueryOptionsBase options) {
+        ModelExecutionContext context = new DefaultModelExecutionContext(this.context);
+
         if(null != ex.handler) {
             ex.handler.processQueryOneOptions(context, id, options);
         }
@@ -112,6 +114,8 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
     @Override
     public QueryListResult queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback) {
+        ModelExecutionContext context = new DefaultModelExecutionContext(this.context);
+
         if(null == options) {
             options = new QueryOptions();
         }
@@ -176,7 +180,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             }
         }
 
-        applyFilters(query, options.getParams(), options, joinedModels, filters);
+        applyFilters(context, query, options.getParams(), options, joinedModels, filters);
 
         if(callback != null){
             callback.accept(query);
@@ -222,12 +226,14 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
     @Override
     public QueryListResult count(CountOptions options, Consumer<CriteriaQuery> callback) {
+        ModelExecutionContext context = new DefaultModelExecutionContext(this.context);
+
         CriteriaQuery<Record> query = createCriteriaQuery();
 
         QueryOptions queryOptions = new QueryOptions();
         queryOptions.setFilters(options.getFilters());
 
-        applyFilters(query, null, queryOptions, null, null);
+        applyFilters(context, query, null, queryOptions, null, null);
 
         if(callback != null){
             callback.accept(query);
@@ -726,7 +732,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         query.select(select.toArray(new String[select.size()]));
     }
 
-    protected void applyFilters(CriteriaQuery query, Params params, QueryOptions options, Map<String, ModelAndMapping> jms, Map<String, Object> fields) {
+    protected void applyFilters(ModelExecutionContext context, CriteriaQuery query, Params params, QueryOptions options, Map<String, ModelAndMapping> jms, Map<String, Object> fields) {
         StringBuilder where = new StringBuilder();
         List<Object>  args  = new ArrayList<>();
 

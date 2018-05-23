@@ -48,6 +48,7 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
             throw new BadRequestException("No update properties");
         }
 
+        ModelExecutionContext context = new DefaultModelExecutionContext(this.context);
         ex.processReplaceRecord(context, id, record);
         if(null != ex.handler) {
             ex.handler.processReplaceRecord(context, id, record);
@@ -84,7 +85,7 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
 
         removes.forEach(record::remove);
 
-        int affected = doUpdate(id, record, false);
+        int affected = doUpdate(context, id, record, false);
         Object entity = ex.postReplaceRecord(context, id, affected);
 
         return new UpdateOneResult(affected, entity);
@@ -101,18 +102,19 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
 
     @Override
     public UpdateOneResult partialUpdateOne(Object id, Map<String, Object> properties) {
+        ModelExecutionContext context = new DefaultModelExecutionContext(this.context);
         ex.processUpdateProperties(context, id, properties);
         if(null != ex.handler) {
             ex.handler.processUpdateProperties(context, id, properties);
         }
 
-        int affected = doUpdate(id, properties, true);
+        int affected = doUpdate(context, id, properties, true);
         Object entity = ex.postUpdateProperties(context, id, affected);
 
         return new UpdateOneResult(affected, entity);
     }
 
-    protected int doUpdate(Object id, Map<String, Object> properties, boolean partial) {
+    protected int doUpdate(ModelExecutionContext context, Object id, Map<String, Object> properties, boolean partial) {
         Map<RelationProperty, Object[]> relationProperties = new LinkedHashMap<>();
 
         Set<String> removes = new HashSet<>();

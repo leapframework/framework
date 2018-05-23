@@ -31,6 +31,8 @@ public class DefaultModelDeleteExecutor extends ModelExecutorBase implements Mod
 
     @Override
     public DeleteOneResult deleteOne(Object id, DeleteOptions options) {
+        ModelExecutionContext context = new DefaultModelExecutionContext(this.context);
+
         if(null == options) {
             options = new DeleteOptions();
         }

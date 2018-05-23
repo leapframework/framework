@@ -29,7 +29,7 @@ public class ModelDeleteExtension implements ModelDeleteInterceptor {
     }
 
     @Override
-    public Object processDeleteOneResult(ModelExecutorContext context, Object id, boolean success) {
+    public Object processDeleteOneResult(ModelExecutionContext context, Object id, boolean success) {
         for(ModelDeleteInterceptor interceptor : interceptors) {
             Object v = interceptor.processDeleteOneResult(context, id, success);
             if(null != v) {

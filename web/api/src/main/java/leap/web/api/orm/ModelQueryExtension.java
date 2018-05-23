@@ -40,7 +40,7 @@ public class ModelQueryExtension implements ModelQueryInterceptor {
     }
 
     @Override
-    public boolean processQueryOneOptions(ModelExecutorContext context, QueryOptionsBase options) {
+    public boolean processQueryOneOptions(ModelExecutionContext context, QueryOptionsBase options) {
         for(ModelQueryInterceptor interceptor : interceptors) {
             if(interceptor.processQueryOneOptions(context, options)) {
                 return true;
@@ -50,7 +50,7 @@ public class ModelQueryExtension implements ModelQueryInterceptor {
     }
 
     @Override
-    public Object processQueryOneRecord(ModelExecutorContext context, Object id, Record record) {
+    public Object processQueryOneRecord(ModelExecutionContext context, Object id, Record record) {
         for(ModelQueryInterceptor interceptor : interceptors) {
             Object v = interceptor.processQueryOneRecord(context, id, record);
             if(null != v) {
@@ -61,7 +61,7 @@ public class ModelQueryExtension implements ModelQueryInterceptor {
     }
 
     @Override
-    public boolean processQueryListOptions(ModelExecutorContext context, QueryOptions options) {
+    public boolean processQueryListOptions(ModelExecutionContext context, QueryOptions options) {
         for(ModelQueryInterceptor interceptor : interceptors) {
             if(interceptor.processQueryListOptions(context, options)) {
                 return true;
@@ -71,7 +71,7 @@ public class ModelQueryExtension implements ModelQueryInterceptor {
     }
 
     @Override
-    public boolean preProcessQueryListWhere(ModelExecutorContext context, QueryOptions options, StringBuilder where, List<Object> args) {
+    public boolean preProcessQueryListWhere(ModelExecutionContext context, QueryOptions options, StringBuilder where, List<Object> args) {
         for(ModelQueryInterceptor interceptor : interceptors) {
             if(interceptor.preProcessQueryListWhere(context, options, where, args)) {
                 return true;
@@ -81,7 +81,7 @@ public class ModelQueryExtension implements ModelQueryInterceptor {
     }
 
     @Override
-    public boolean postProcessQueryListWhere(ModelExecutorContext context, QueryOptions options, StringBuilder where, List<Object> args) {
+    public boolean postProcessQueryListWhere(ModelExecutionContext context, QueryOptions options, StringBuilder where, List<Object> args) {
         for(ModelQueryInterceptor interceptor : interceptors) {
             if(interceptor.postProcessQueryListWhere(context, options, where, args)) {
                 return true;
@@ -91,7 +91,7 @@ public class ModelQueryExtension implements ModelQueryInterceptor {
     }
 
     @Override
-    public List<Record> executeQueryList(ModelExecutorContext context, QueryOptions options, PageResult page) {
+    public List<Record> executeQueryList(ModelExecutionContext context, QueryOptions options, PageResult page) {
         for(ModelQueryInterceptor interceptor : interceptors) {
             List<Record> list = interceptor.executeQueryList(context, options, page);
             if(null != list) {
@@ -102,7 +102,7 @@ public class ModelQueryExtension implements ModelQueryInterceptor {
     }
 
     @Override
-    public Object processQueryListResult(ModelExecutorContext context, PageResult page, long totalCount, List<Record> records) {
+    public Object processQueryListResult(ModelExecutionContext context, PageResult page, long totalCount, List<Record> records) {
         for(ModelQueryInterceptor interceptor : interceptors) {
             Object v = interceptor.processQueryListResult(context, page, totalCount, records);
             if(null != v) {

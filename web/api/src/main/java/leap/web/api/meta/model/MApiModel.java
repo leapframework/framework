@@ -15,11 +15,15 @@
  */
 package leap.web.api.meta.model;
 
+import leap.lang.Extensible;
 import leap.lang.Strings;
 
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class MApiModel extends MApiNamedWithDesc {
+public class MApiModel extends MApiNamedWithDesc implements Extensible {
+
+    protected final Map<Class<?>, Object> extensions = new ConcurrentHashMap<>();
 
     protected final boolean        entity;
     protected final String         baseName;
@@ -79,5 +83,25 @@ public class MApiModel extends MApiNamedWithDesc {
 
     public MApiExtension getExtension() {
         return extension;
+    }
+
+    @Override
+    public Map<Class<?>, Object> getExtensions() {
+        return extensions;
+    }
+
+    @Override
+    public final <T> T getExtension(Class<?> type) {
+        return (T)extensions.get(type);
+    }
+
+    @Override
+    public final <T> void setExtension(Class<T> type, Object extension) {
+        extensions.put(type, extension);
+    }
+
+    @Override
+    public <T> T removeExtension(Class<?> type) {
+        return (T)extensions.remove(type);
     }
 }

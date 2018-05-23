@@ -21,19 +21,19 @@ import java.util.Set;
 
 public interface ModelReplaceInterceptor {
 
-    default boolean processReplaceRecord(ModelExecutorContext context, Object id, Map<String, Object> record) {
+    default boolean processReplaceRecord(ModelExecutionContext context, Object id, Map<String, Object> record) {
         return false;
     }
 
-    default boolean handleReplacePropertyNotFound(ModelExecutorContext context, String name, Object value, Set<String> removes) {
+    default boolean handleReplacePropertyNotFound(ModelExecutionContext context, String name, Object value, Set<String> removes) {
         return false;
     }
 
-    default boolean handleReplacePropertyReadonly(ModelExecutorContext context, String name, Object value, Set<String> removes) {
+    default boolean handleReplacePropertyReadonly(ModelExecutionContext context, String name, Object value, Set<String> removes) {
         return false;
     }
 
-    default Object postReplaceRecord(ModelExecutorContext context, Object id, int affected) {
+    default Object postReplaceRecord(ModelExecutionContext context, Object id, int affected) {
         return null;
     }
 }

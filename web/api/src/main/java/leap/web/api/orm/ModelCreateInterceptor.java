@@ -29,42 +29,42 @@ public interface ModelCreateInterceptor {
      * <p/>
      * Returns an object will replace the passed in params.
      */
-    default Object processCreationParams(ModelExecutorContext context, Object params) {
+    default Object processCreationParams(ModelExecutionContext context, Object params) {
         return null;
     }
 
     /**
      * Process the record for creation.
      */
-    default boolean processCreationRecord(ModelExecutorContext context, Map<String,Object> record) {
+    default boolean processCreationRecord(ModelExecutionContext context, Map<String,Object> record) {
         return false;
     }
 
     /**
      * Handles not exists property.
      */
-    default boolean handleCreationPropertyNotFound(ModelExecutorContext context, String name, Object value, Set<String> removes) {
+    default boolean handleCreationPropertyNotFound(ModelExecutionContext context, String name, Object value, Set<String> removes) {
         return false;
     }
 
     /**
      * Handles not creatable property
      */
-    default boolean handleCreationPropertyReadonly(ModelExecutorContext context, String name, Object value, Set<String> removes) {
+    default boolean handleCreationPropertyReadonly(ModelExecutionContext context, String name, Object value, Set<String> removes) {
         return false;
     }
 
     /**
      * Called before creating record.
      */
-    default boolean preCreateRecord(ModelExecutorContext context, Map<String, Object> record) {
+    default boolean preCreateRecord(ModelExecutionContext context, Map<String, Object> record) {
         return false;
     }
 
     /**
      * Called after record has been created.
      */
-    default Object postCreateRecord(ModelExecutorContext context, Object id, Record record) {
+    default Object postCreateRecord(ModelExecutionContext context, Object id, Record record) {
         return null;
     }
 }

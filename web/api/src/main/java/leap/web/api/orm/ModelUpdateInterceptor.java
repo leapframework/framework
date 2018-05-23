@@ -24,25 +24,25 @@ public interface ModelUpdateInterceptor {
     /**
      * Process the update properties.
      */
-    default boolean processUpdateProperties(ModelExecutorContext context, Object id, Map<String, Object> properties) {
+    default boolean processUpdateProperties(ModelExecutionContext context, Object id, Map<String, Object> properties) {
         return false;
     }
 
     /**
      * Handles not exists property.
      */
-    default boolean handleUpdatePropertyNotFound(ModelExecutorContext context, String name, Object value, Set<String> removes) {
+    default boolean handleUpdatePropertyNotFound(ModelExecutionContext context, String name, Object value, Set<String> removes) {
         return false;
     }
 
     /**
      * Handles not updatable property
      */
-    default boolean handleUpdatePropertyReadonly(ModelExecutorContext context, String name, Object value, Set<String> removes) {
+    default boolean handleUpdatePropertyReadonly(ModelExecutionContext context, String name, Object value, Set<String> removes) {
         return false;
     }
 
-    default Object postUpdateProperties(ModelExecutorContext context, Object id, int affected) {
+    default Object postUpdateProperties(ModelExecutionContext context, Object id, int affected) {
         return null;
     }
 

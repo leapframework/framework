@@ -39,7 +39,7 @@ public class ModelUpdateExtension implements ModelUpdateInterceptor, ModelReplac
     }
 
     @Override
-    public boolean processUpdateProperties(ModelExecutorContext context, Object id, Map<String, Object> properties) {
+    public boolean processUpdateProperties(ModelExecutionContext context, Object id, Map<String, Object> properties) {
         for(ModelUpdateInterceptor interceptor : updateInterceptors) {
             if(interceptor.processUpdateProperties(context, id, properties)) {
                 return true;
@@ -49,7 +49,7 @@ public class ModelUpdateExtension implements ModelUpdateInterceptor, ModelReplac
     }
 
     @Override
-    public boolean handleUpdatePropertyNotFound(ModelExecutorContext context, String name, Object value, Set<String> removes) {
+    public boolean handleUpdatePropertyNotFound(ModelExecutionContext context, String name, Object value, Set<String> removes) {
         for(ModelUpdateInterceptor interceptor : updateInterceptors) {
             if(interceptor.handleUpdatePropertyNotFound(context, name, value, removes)) {
                 return true;
@@ -59,7 +59,7 @@ public class ModelUpdateExtension implements ModelUpdateInterceptor, ModelReplac
     }
 
     @Override
-    public boolean handleUpdatePropertyReadonly(ModelExecutorContext context, String name, Object value, Set<String> removes) {
+    public boolean handleUpdatePropertyReadonly(ModelExecutionContext context, String name, Object value, Set<String> removes) {
         for(ModelUpdateInterceptor interceptor : updateInterceptors) {
             if(interceptor.handleUpdatePropertyReadonly(context, name, value, removes)) {
                 return true;
@@ -69,7 +69,7 @@ public class ModelUpdateExtension implements ModelUpdateInterceptor, ModelReplac
     }
 
     @Override
-    public Object postUpdateProperties(ModelExecutorContext context, Object id, int affected) {
+    public Object postUpdateProperties(ModelExecutionContext context, Object id, int affected) {
         for(ModelUpdateInterceptor interceptor : updateInterceptors) {
             Object v = interceptor.postUpdateProperties(context, id, affected);
             if(null != v) {
@@ -80,7 +80,7 @@ public class ModelUpdateExtension implements ModelUpdateInterceptor, ModelReplac
     }
 
     @Override
-    public boolean processReplaceRecord(ModelExecutorContext context, Object id, Map<String, Object> record) {
+    public boolean processReplaceRecord(ModelExecutionContext context, Object id, Map<String, Object> record) {
         for(ModelReplaceInterceptor interceptor : replaceInterceptors) {
             if(interceptor.processReplaceRecord(context, id, record)) {
                 return true;
@@ -90,7 +90,7 @@ public class ModelUpdateExtension implements ModelUpdateInterceptor, ModelReplac
     }
 
     @Override
-    public boolean handleReplacePropertyNotFound(ModelExecutorContext context, String name, Object value, Set<String> removes) {
+    public boolean handleReplacePropertyNotFound(ModelExecutionContext context, String name, Object value, Set<String> removes) {
         for(ModelReplaceInterceptor interceptor : replaceInterceptors) {
             if(interceptor.handleReplacePropertyNotFound(context, name, value, removes)) {
                 return true;
@@ -100,7 +100,7 @@ public class ModelUpdateExtension implements ModelUpdateInterceptor, ModelReplac
     }
 
     @Override
-    public boolean handleReplacePropertyReadonly(ModelExecutorContext context, String name, Object value, Set<String> removes) {
+    public boolean handleReplacePropertyReadonly(ModelExecutionContext context, String name, Object value, Set<String> removes) {
         for(ModelReplaceInterceptor interceptor : replaceInterceptors) {
             if(interceptor.handleReplacePropertyReadonly(context, name, value, removes)) {
                 return true;
@@ -110,7 +110,7 @@ public class ModelUpdateExtension implements ModelUpdateInterceptor, ModelReplac
     }
 
     @Override
-    public Object postReplaceRecord(ModelExecutorContext context, Object id, int affected) {
+    public Object postReplaceRecord(ModelExecutionContext context, Object id, int affected) {
         for(ModelReplaceInterceptor interceptor : replaceInterceptors) {
             Object v = interceptor.postReplaceRecord(context, id, affected);
             if(null != v) {

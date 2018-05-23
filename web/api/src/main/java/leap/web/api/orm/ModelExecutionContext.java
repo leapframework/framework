@@ -16,10 +16,12 @@
 
 package leap.web.api.orm;
 
-public interface ModelDeleteInterceptor {
+import leap.lang.accessor.AttributeAccessor;
 
-    default Object processDeleteOneResult(ModelExecutionContext context, Object id, boolean success) {
-        return null;
-    }
+public interface ModelExecutionContext extends ModelExecutorContext, AttributeAccessor {
+
+    Object getExecutionContext();
+
+    void setExecutionContext(Object o);
 
 }
