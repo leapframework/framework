@@ -115,8 +115,6 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
     protected static final String SQL_OPERATION        = "sql-operation";
     protected static final String SQL_KEY              = "sql-key";
 
-    private @Inject BeanFactory factory;
-
     @Override
     public String getNamespaceURI() {
         return NAMESPACE_URI;
@@ -375,7 +373,7 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
         ApiConfigurator api = extensions.getApi(name);
         if (null == api) {
             reader.getRequiredAttribute(BASE_PATH);
-            api = factory.inject(new DefaultApiConfig(name, basePath,reader.getSource()));
+            api = new DefaultApiConfig(name, basePath,reader.getSource());
             api.setBasePackage(basePackage);
             extensions.addApi(api);
         }else{

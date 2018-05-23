@@ -39,6 +39,7 @@ import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.ApiMetadataFactory;
 import leap.web.api.meta.model.MApiPermission;
 import leap.web.api.meta.model.MApiResponse;
+import leap.web.api.mvc.ApiFailureHandler;
 import leap.web.api.mvc.ApiInitializable;
 import leap.web.api.permission.ResourcePermissions;
 import leap.web.api.route.ApiRoute;
@@ -313,6 +314,10 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
     }
 
     protected void doConfiguration(App app, ApiConfigurator c) {
+        if(null == c.config().getFailureHandler()) {
+            c.setFailureHandler(app.factory().getBean(ApiFailureHandler.class));
+        }
+
         //todo : oauth
 
         //todo : cors

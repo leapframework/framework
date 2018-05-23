@@ -174,14 +174,14 @@ public class DefaultRouteManager implements RouteManager {
     }
 
     @Override
-    public void loadRoutesFromController(Routes routes, Class<?> controllerClass, String basePath) {
+    public Route[] loadRoutesFromController(Routes routes, Class<?> controllerClass, String basePath) {
         Object controller = as.getControllerInstance(controllerClass);
 
-        loadRoutesFromController(routes, controller, basePath);
+        return loadRoutesFromController(routes, controller, basePath);
     }
 
     @Override
-    public void loadRoutesFromController(Routes routes, Object controller, String basePath) {
+    public Route[] loadRoutesFromController(Routes routes, Object controller, String basePath) {
         Class<?> cls = controller.getClass();
 
         //An controller can defines two or more controller path
@@ -192,6 +192,8 @@ public class DefaultRouteManager implements RouteManager {
         if (!basePath.equals("/")) {
             pathPrefix = Paths.prefixWithAndSuffixWithoutSlash(basePath);
         }
+
+        List<Route> loaded = new ArrayList<>();
 
         for (String controllerPath : controllerPaths) {
             //Normalize the path
@@ -227,22 +229,24 @@ public class DefaultRouteManager implements RouteManager {
                     continue;
                 }
 
-                loadActionMethod(routes, ci, rm);
+                loadActionMethod(routes, ci, rm, loaded);
             }
         }
+
+        return loaded.toArray(new Route[0]);
     }
 
-    protected void loadActionMethod(Routes routes, ControllerInfoImpl ci, ReflectMethod rm) {
+    protected void loadActionMethod(Routes routes, ControllerInfoImpl ci, ReflectMethod rm, List<Route> loaded) {
         ActionBuilder action = createAction(ci, rm);
 
         ActionMapping[] mappings = as.getActionMappings(action);
 
         for (ActionMapping m : mappings) {
-            addActionRoute(routes, ci, action, m);
+            loaded.add(addActionRoute(routes, ci, action, m));
         }
     }
 
-    protected void addActionRoute(Routes routes, ControllerInfo ci, ActionBuilder action, ActionMapping mapping) {
+    protected Route addActionRoute(Routes routes, ControllerInfo ci, ActionBuilder action, ActionMapping mapping) {
 
         StringBuilder path = new StringBuilder();
 
@@ -329,7 +333,7 @@ public class DefaultRouteManager implements RouteManager {
         route.setAction(act);
 
         //load the route
-        loadRoute(routes, route);
+        return loadRoute(routes, route);
     }
 
     protected void addFailureHandler(RouteBuilder route, Failure a) {

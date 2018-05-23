@@ -40,6 +40,13 @@ public interface BeanFactory extends BeanFactoryBase, AppContextInitializable {
 	AppConfig getAppConfig();
 
     /**
+     * Configures the bean.
+     */
+    default void configure(Object bean) {
+        configure(bean, null);
+    }
+
+    /**
      * Configures the bean with the config key prefix.
      */
     void configure(Object bean, String prefix);
