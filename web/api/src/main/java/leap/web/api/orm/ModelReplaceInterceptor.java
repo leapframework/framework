@@ -25,6 +25,13 @@ public interface ModelReplaceInterceptor {
         return false;
     }
 
+    /**
+     * None -> Null Or Not Exists
+     */
+    default boolean processReplaceNONEProperties(ModelExecutionContext context, Object id, Map<String, Object> record, Set<String> removes) {
+        return false;
+    }
+
     default boolean handleReplacePropertyNotFound(ModelExecutionContext context, String name, Object value, Set<String> removes) {
         return false;
     }
@@ -36,4 +43,5 @@ public interface ModelReplaceInterceptor {
     default Object postReplaceRecord(ModelExecutionContext context, Object id, int affected) {
         return null;
     }
+
 }

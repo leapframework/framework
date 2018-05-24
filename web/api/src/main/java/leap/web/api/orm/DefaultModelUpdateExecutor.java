@@ -56,28 +56,30 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
 
         Set<String> removes = new HashSet<>();
 
-        for(FieldMapping fm : em.getFieldMappings()) {
-            if(!fm.isUpdate()) {
-                continue;
-            }
-
-            if(!record.containsKey(fm.getFieldName())) {
-                if(fm.isNullable()) {
-                    record.put(fm.getFieldName(), null);
-                }else {
-                    if(null != fm.getDefaultValue()) {
-                        record.put(fm.getFieldName(), fm.getDefaultValue().getValue());
-                    }else {
-                        throw new BadRequestException("Property '" + fm.getFieldName() + "' is required!");
-                    }
+        if(!ex.processReplaceNONEProperties(context, id, record, removes)) {
+            for(FieldMapping fm : em.getFieldMappings()) {
+                if(!fm.isUpdate()) {
+                    continue;
                 }
-            }else {
-                Object value = record.get(fm.getFieldName());
-                if(null == value && !fm.isNullable()) {
-                    if(null != fm.getDefaultValue()) {
-                        record.put(fm.getFieldName(), fm.getDefaultValue().getValue());
+
+                if(!record.containsKey(fm.getFieldName())) {
+                    if(fm.isNullable()) {
+                        record.put(fm.getFieldName(), null);
                     }else {
-                        throw new BadRequestException("Property '" + fm.getFieldName() + "' is required, but null!");
+                        if(null != fm.getDefaultValue()) {
+                            record.put(fm.getFieldName(), fm.getDefaultValue().getValue());
+                        }else {
+                            throw new BadRequestException("Property '" + fm.getFieldName() + "' is required!");
+                        }
+                    }
+                }else {
+                    Object value = record.get(fm.getFieldName());
+                    if(null == value && !fm.isNullable()) {
+                        if(null != fm.getDefaultValue()) {
+                            record.put(fm.getFieldName(), fm.getDefaultValue().getValue());
+                        }else {
+                            throw new BadRequestException("Property '" + fm.getFieldName() + "' is required, but null!");
+                        }
                     }
                 }
             }

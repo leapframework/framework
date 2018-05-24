@@ -90,6 +90,16 @@ public class ModelUpdateExtension implements ModelUpdateInterceptor, ModelReplac
     }
 
     @Override
+    public boolean processReplaceNONEProperties(ModelExecutionContext context, Object id, Map<String, Object> record, Set<String> removes) {
+        for(ModelReplaceInterceptor interceptor : replaceInterceptors) {
+            if(interceptor.processReplaceNONEProperties(context, id, record, removes)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public boolean handleReplacePropertyNotFound(ModelExecutionContext context, String name, Object value, Set<String> removes) {
         for(ModelReplaceInterceptor interceptor : replaceInterceptors) {
             if(interceptor.handleReplacePropertyNotFound(context, name, value, removes)) {
