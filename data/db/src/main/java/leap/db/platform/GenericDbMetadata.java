@@ -26,6 +26,7 @@ import leap.lang.logging.Log;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -81,10 +82,18 @@ public class GenericDbMetadata implements DbMetadata,DbAware {
         this.supportsAlterTableWithDropColumn = dm.supportsAlterTableWithDropColumn();
         this.maxTableNameLength				  = dm.getMaxTableNameLength();
         this.maxColumnNameLength			  = dm.getMaxColumnNameLength();
-        this.catalog						  = dm.getConnection().getCatalog();
+        this.catalog						  = getCatalog(dm);
         this.defaultSchemaName				  = defaultSchemaName;
         this.metadataReader					  = metadataReader;
 	}
+
+    protected String getCatalog(DatabaseMetaData dm) throws SQLException {
+        try {
+            return dm.getConnection().getCatalog();
+        }catch (SQLFeatureNotSupportedException e) {
+            return null;
+        }
+    }
 	
 	@Override
     public synchronized void setDb(Db db) {

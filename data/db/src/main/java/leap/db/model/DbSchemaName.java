@@ -19,6 +19,8 @@ import java.sql.DatabaseMetaData;
 
 public class DbSchemaName extends DbNamedObject {
 
+    public static final String UNSUPPORTED = "unsupported";
+
 	protected final String catalog;
 
 	public DbSchemaName(String catalog,String name) {

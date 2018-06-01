@@ -8,13 +8,26 @@
         <property name="password"        value="${h2.password}" />
         <property name="maxActive" 		 value="10"/>
         <property name="maxWait" 		 value="10000"/>
-    </bean>    
+    </bean>
 
     <bean name="derby" type="javax.sql.DataSource" class="leap.db.cp.PooledDataSource">
         <property name="driverClassName" value="org.apache.derby.jdbc.EmbeddedDriver" />
         <property name="jdbcUrl"         value="jdbc:derby:target/derby/test;create=true" />
     </bean>
-    
+
+    <!--
+    <bean name="unsupported" type="javax.sql.DataSource" class="mock.MockUnsupportedDataSource">
+        <constructor-arg>
+            <bean class="leap.db.cp.PooledDataSource" >
+                <property name="driverClassName" value="${h2.driverClassName}" />
+                <property name="jdbcUrl"         value="jdbc:h2:mem:unsupported;DB_CLOSE_ON_EXIT=FALSE;" />
+                <property name="username"        value="sa" />
+                <property name="password"        value="1" />
+            </bean>
+        </constructor-arg>
+    </bean>
+    -->
+
 	<bean name="ds1" type="javax.sql.DataSource" class="leap.db.cp.PooledDataSource">
         <property name="driverClassName" value="${h2.driverClassName}" />
         <property name="jdbcUrl"         value="jdbc:h2:mem:leap1;DB_CLOSE_ON_EXIT=FALSE" />
