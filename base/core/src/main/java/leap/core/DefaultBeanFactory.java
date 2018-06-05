@@ -434,6 +434,11 @@ public class DefaultBeanFactory extends BeanFactoryInternal implements BeanFacto
     }
 
     @Override
+    public <T> T tryCreateBean(Class<T> type, String name) {
+        return beanContainer.tryCreateBean(type, name);
+    }
+
+    @Override
     public boolean isSingleton(String beanId) throws NoSuchBeanException {
 		Boolean singleton = null;
 		
