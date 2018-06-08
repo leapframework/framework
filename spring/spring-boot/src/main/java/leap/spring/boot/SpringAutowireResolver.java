@@ -28,6 +28,7 @@ import org.springframework.beans.factory.support.AutowireCandidateResolver;
 
 import javax.sql.DataSource;
 import java.lang.reflect.Type;
+import java.util.Collection;
 
 final class SpringAutowireResolver implements AutowireCandidateResolver {
 
@@ -83,10 +84,13 @@ final class SpringAutowireResolver implements AutowireCandidateResolver {
                         LeapBeanSupport.disable();
 
                         Qualifier qualifier = Classes.getAnnotation(descriptor.getAnnotations(), Qualifier.class);
-
                         if(null == qualifier) {
                             bean = Global.factory().resolveInjectValue(type, genericType);
                         }else {
+                            if(Collection.class.isAssignableFrom(type) || type.isArray()) {
+                                //collection injection with qualifier does not supported.
+                                return null;
+                            }
                             bean = Global.factory().resolveInjectValue(type, genericType, qualifier.value());
                         }
 
