@@ -31,6 +31,12 @@ public class FiltersParserTest extends TestBase {
     }
 
     @Test
+    public void testDoubleQuoted() {
+        Filters filters = FiltersParser.parse("a eq \"s\"");
+        assertEquals("s", filters.nodes()[2].literal());
+    }
+
+    @Test
     public void testSingleQuoteChar() {
         Filters filters = FiltersParser.parse("a.name eq 'not exists'");
         assertEquals("not exists", filters.nodes()[2].literal());

@@ -31,8 +31,12 @@ import leap.lang.collection.ArrayIterable;
 import leap.lang.exception.NestedClassNotFoundException;
 import leap.lang.exception.NestedIOException;
 import leap.lang.io.IO;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 
 public class SimpleResourceSet extends ArrayIterable<Resource> implements ResourceSet {
+
+    private static final Log log = LogFactory.get(SimpleResourceSet.class);
 
     public static SimpleResourceSet EMPTY = new SimpleResourceSet(new Resource[0]);
 	
@@ -217,7 +221,8 @@ public class SimpleResourceSet extends ArrayIterable<Resource> implements Resour
 			
 	        for(int i=0;i<values.length;i++){
 	        	Resource resource = values[i];
-	        	
+
+                String className = null;
 	        	if(null != resource.getClasspath() && Strings.endsWith(resource.getFilename(),Classes.CLASS_FILE_SUFFIX)){
 	        		InputStream is  = null;
 	        		try{
@@ -226,13 +231,13 @@ public class SimpleResourceSet extends ArrayIterable<Resource> implements Resour
 	        			ClassReader classReader = new ClassReader(is);
 	        			
 	        			String internalClassName = classReader.getClassName();
-	        			String className         = internalClassName.replace('/','.');
+	        			className         = internalClassName.replace('/','.');
 	        			
 	        			classes.add(Class.forName(className, false, Classes.getClassLoader()));
-	        		}catch(IOException e){
-	        			throw new NestedIOException("Error loading .class file " + resource.getDescription() + "' : " + e.getMessage(),e);
-	        		}catch(ClassNotFoundException e){
-	        			throw new NestedClassNotFoundException(e.getMessage(), e);
+	        		}catch(IOException e) {
+                        throw new NestedIOException("Error loading .class file " + resource.getDescription() + "' : " + e.getMessage(), e);
+                    }catch (NoClassDefFoundError|ClassNotFoundException e){
+                        log.info("Ignore loading class '{}', reason: {}", className, e.getMessage());
 	        		}finally{
 	        			IO.close(is);
 	        		}

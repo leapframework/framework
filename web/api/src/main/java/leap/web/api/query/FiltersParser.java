@@ -35,17 +35,27 @@ public class FiltersParser extends ParserBase {
         OPS.put(token.name(), token);
     }
 
+    private static final void op(Token token, String s) {
+        OPS.put(s, token);
+    }
+
     static {
         op(Token.LIKE);
         op(Token.IS);
         op(Token.NOT);
         op(Token.IN);
         op(Token.EQ);
+        op(Token.EQ, "=");
         op(Token.GT);
+        op(Token.GT, ">");
         op(Token.LT);
+        op(Token.LT, "<");
         op(Token.GE);
+        op(Token.GE, ">=");
         op(Token.LE);
+        op(Token.LE, "<=");
         op(Token.NE);
+        op(Token.NE, "!=");
     }
 
     public static Filters parse(String expr) {
@@ -150,19 +160,22 @@ public class FiltersParser extends ParserBase {
         int start = pos;
         int end   = 0;
         boolean quoted = false;
+        char quotedChar = 0x0000;
+        char escapedChar = 0x0000;
 
-        if(ch == '\'') {
+        if(ch == '\'' || ch == '\"') {
             start  = pos + 1;
             quoted = true;
+            quotedChar = ch;
         }
 
         for(;;) {
             nextChar();
 
             //handles ' character
-            if(ch == '\'') {
+            if(ch == quotedChar) {
                 //escaped ''
-                if(charAt(pos+1) == '\'') {
+                if(charAt(pos+1) == quotedChar) {
                     nextChar();
                     continue;
                 }
@@ -175,7 +188,7 @@ public class FiltersParser extends ParserBase {
                 }
 
                 //invalid ' character
-                error("Invalid character \"'\", should use \"''\" instead");
+                error("Invalid character [" + quoted + "], should use [" + quotedChar + quotedChar + "] instead");
             }
 
             if(ch == '(' && charAt(pos+1) == ')') {
