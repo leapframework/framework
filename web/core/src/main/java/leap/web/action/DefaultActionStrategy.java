@@ -58,7 +58,7 @@ public class DefaultActionStrategy implements ActionStrategy {
             }
         }
 
-		if(cls.isAnnotationPresent(NonController.class)){
+		if(Classes.isAnnotationPresent(cls, NonController.class)){
 			return false;
 		}
 
@@ -71,7 +71,7 @@ public class DefaultActionStrategy implements ActionStrategy {
             return false;
         }
 
-        if(Classes.isAnnotatioinPresent(cls.getAnnotations(), Controller.class, true)) {
+        if(Classes.isAnnotationPresent(cls.getAnnotations(), Controller.class, true)) {
             return true;
         }
 
@@ -111,7 +111,7 @@ public class DefaultActionStrategy implements ActionStrategy {
     @Override
     public boolean isIndexAction(ActionBuilder action) {
 	    return Strings.equalsIgnoreCase(config.getIndexActionName(),action.getName()) ||
-               Classes.isAnnotatioinPresent(action.getAnnotations(), Index.class);
+               Classes.isAnnotationPresent(action.getAnnotations(), Index.class);
     }
 
 	@Override
@@ -285,7 +285,7 @@ public class DefaultActionStrategy implements ActionStrategy {
         //Check is restful style.
         Object controller = action.getController();
         boolean restful = false;
-        if(null != controller && controller.getClass().isAnnotationPresent(Restful.class)) {
+        if(null != controller && Classes.isAnnotationPresent(controller.getClass(), Restful.class)) {
             restful = true;
         }
 

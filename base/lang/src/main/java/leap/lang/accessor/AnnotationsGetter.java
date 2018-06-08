@@ -37,7 +37,7 @@ public interface AnnotationsGetter {
      * Returns true if the annotation type exists.
      */
     default boolean isAnnotationPresent(Class<? extends Annotation> annotationType) {
-        return Classes.isAnnotatioinPresent(getAnnotations(), annotationType);
+        return Classes.isAnnotationPresent(getAnnotations(), annotationType);
     }
 
 }

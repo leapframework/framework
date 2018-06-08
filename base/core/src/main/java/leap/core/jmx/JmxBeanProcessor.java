@@ -24,6 +24,7 @@ import leap.core.annotation.Inject;
 import leap.core.ioc.BeanDefinition;
 import leap.core.ioc.BeanDefinitionConfigurator;
 import leap.core.ioc.BeanProcessor;
+import leap.lang.Classes;
 import leap.lang.Strings;
 import leap.lang.jmx.MBeanExporter;
 import leap.lang.jmx.Managed;
@@ -40,7 +41,7 @@ public class JmxBeanProcessor implements BeanProcessor {
 
     @Override
     public void postInitBean(AppContext context, BeanFactory factory, BeanDefinitionConfigurator c) throws Throwable {
-        if(c.definition().isExportMBean() || c.definition().getBeanClass().isAnnotationPresent(Managed.class)){
+        if(c.definition().isExportMBean() || Classes.isAnnotationPresent(c.definition().getBeanClass(), Managed.class)){
             c.setLazyInit(false);
         }
     }

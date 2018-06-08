@@ -45,7 +45,6 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Internal
@@ -185,7 +184,8 @@ public class BeanContainer implements BeanFactory {
                         continue;
                     }
 
-                    Object injectedBean = resolveInjectValue(factory, bd, rf.getName(), rf.getType(), rf.getGenericType(), rf.getAnnotations());
+                    Object injectedBean =
+                            resolveInjectValue(factory, bd, rf.getName(), rf.getType(), rf.getGenericType(), rf.getAnnotations());
 
                     if (null != injectedBean) {
                         rf.setValue(null, injectedBean);
@@ -1541,11 +1541,11 @@ public class BeanContainer implements BeanFactory {
                 }
 
 				if(null != genericType && Lazy.class.equals(type)){
-					boolean nullable = Classes.isAnnotatioinPresent(annotations, NotNull.class) || 
-					                   Classes.isAnnotatioinPresent(annotations, M.class);
+					boolean nullable = Classes.isAnnotationPresent(annotations, NotNull.class) ||
+					                   Classes.isAnnotationPresent(annotations, M.class);
 					
-					boolean required = Classes.isAnnotatioinPresent(annotations, NotEmpty.class) ||
-					                   Classes.isAnnotatioinPresent(annotations, R.class);
+					boolean required = Classes.isAnnotationPresent(annotations, NotEmpty.class) ||
+					                   Classes.isAnnotationPresent(annotations, R.class);
 					
 					Type typeArgument = Types.getTypeArgument(genericType);
 					Class<?> acturalTypeArgument = Types.getActualType(typeArgument);

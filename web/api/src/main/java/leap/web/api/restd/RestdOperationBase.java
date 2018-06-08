@@ -18,6 +18,7 @@ package leap.web.api.restd;
 
 import leap.core.annotation.Inject;
 import leap.core.validation.ValidationManager;
+import leap.lang.Classes;
 import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
@@ -102,7 +103,7 @@ public abstract class RestdOperationBase {
         a.setType(type);
         a.setRequired(required);
 
-        if(type.isAnnotationPresent(ParamsWrapper.class)) {
+        if(Classes.isAnnotationPresent(type, ParamsWrapper.class)) {
             BeanType bt = BeanType.of(type);
             for (BeanProperty bp : bt.getProperties()) {
                 if (bp.isField() && !bp.isAnnotationPresent(NonParam.class)) {

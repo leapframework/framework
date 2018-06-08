@@ -28,7 +28,6 @@ import leap.lang.Classes;
 import leap.lang.Strings;
 import leap.lang.asm.ClassReader;
 import leap.lang.collection.ArrayIterable;
-import leap.lang.exception.NestedClassNotFoundException;
 import leap.lang.exception.NestedIOException;
 import leap.lang.io.IO;
 import leap.lang.logging.Log;
@@ -227,11 +226,18 @@ public class SimpleResourceSet extends ArrayIterable<Resource> implements Resour
 	        		InputStream is  = null;
 	        		try{
 	        			is = resource.getInputStream();
-	        			
-	        			ClassReader classReader = new ClassReader(is);
-	        			
-	        			String internalClassName = classReader.getClassName();
-	        			className         = internalClassName.replace('/','.');
+
+                        ClassReader cr;
+                        try {
+                            cr = new ClassReader(is);
+                        }catch (Exception e) {
+                            //java.lang.ArrayIndexOutOfBoundsException: 6
+                            log.warn("Err read class file '{}' by asm, msg : {}", resource.getClasspath(), e.getMessage());
+                            continue;
+                        }
+
+	        			String internalClassName = cr.getClassName();
+	        			className = internalClassName.replace('/','.');
 	        			
 	        			classes.add(Class.forName(className, false, Classes.getClassLoader()));
 	        		}catch(IOException e) {

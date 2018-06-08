@@ -400,7 +400,25 @@ public class Classes {
 			out = out.replace(INNER_CLASS_SEPARATOR_CHAR, PACKAGE_SEPARATOR_CHAR);
 		}
 		return out + arrayPrefix;
-	}	
+	}
+
+    public static Annotation[] getAnnotations(Class<?> c) {
+        try {
+            return null == c ? EMPTY_ANNOTATION_ARRAY : c.getAnnotations();
+        }catch (java.lang.ArrayStoreException e) {
+            //java.lang.ArrayStoreException: sun.reflect.annotation.TypeNotPresentExceptionProxy
+            return EMPTY_ANNOTATION_ARRAY;
+        }
+    }
+
+    public static <T extends Annotation> T getAnnotation(Class<?> c, Class<T> annotationType) {
+        try {
+            return null == c ? null : c.getAnnotation(annotationType);
+        }catch (java.lang.ArrayStoreException e) {
+            //java.lang.ArrayStoreException: sun.reflect.annotation.TypeNotPresentExceptionProxy
+            return null;
+        }
+    }
 	
     public static <T extends Annotation> T getAnnotation(Annotation[] annotations,Class<T> annotationType){
 		return getAnnotation(annotations, annotationType, false);
@@ -438,12 +456,21 @@ public class Classes {
 		}
 		return null;
 	}
-	
-	public static boolean isAnnotatioinPresent(Annotation[] annotations,Class<? extends Annotation> annotationType){
+
+    public static boolean isAnnotationPresent(Class<?> c, Class<? extends Annotation> type) {
+        try {
+            return null != c && c.isAnnotationPresent(type);
+        }catch (java.lang.ArrayStoreException e) {
+            //java.lang.ArrayStoreException: sun.reflect.annotation.TypeNotPresentExceptionProxy
+            return false;
+        }
+    }
+
+	public static boolean isAnnotationPresent(Annotation[] annotations, Class<? extends Annotation> annotationType){
 		return null != getAnnotation(annotations, annotationType);
 	}
 	
-	public static boolean isAnnotatioinPresent(Annotation[] annotations,Class<? extends Annotation> annotationType, boolean meta){
+	public static boolean isAnnotationPresent(Annotation[] annotations, Class<? extends Annotation> annotationType, boolean meta){
 		return null != getAnnotation(annotations, annotationType, meta);
 	}
 	

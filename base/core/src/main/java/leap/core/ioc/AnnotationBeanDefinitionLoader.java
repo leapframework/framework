@@ -20,9 +20,12 @@ import leap.lang.Arrays2;
 import leap.lang.Classes;
 import leap.lang.Strings;
 import leap.lang.beans.BeanType;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 
 
 class AnnotationBeanDefinitionLoader {
+    private static final Log log = LogFactory.get(AnnotationBeanDefinitionLoader.class);
 
 	public void load(final BeanContainer container, Class<?>[] classes) {
 		if(null == container.getAppConfig()){
@@ -40,9 +43,11 @@ class AnnotationBeanDefinitionLoader {
 				}
 				needLoad = needLoad || cls.getName().startsWith(additionalPackage);
 			}
-			if(cls.isAnnotationPresent(Bean.class) && needLoad){
-				readBean(container, cls);
-			}
+
+            boolean isBean = Classes.isAnnotationPresent(cls, Bean.class);
+            if (isBean && needLoad) {
+                readBean(container, cls);
+            }
 		}
 	}
 	

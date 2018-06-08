@@ -119,7 +119,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 	 */
 	protected boolean isContextModelWhenNoCrossContext(OrmContext context, Class<?> cls){
 		String ds = context.getName();
-		boolean annotated = cls.isAnnotationPresent(DataSource.class);
+		boolean annotated = Classes.isAnnotationPresent(cls, DataSource.class);
 		if(null != modelsConfigs){
 			Optional<OrmModelsConfig> ormConfig = modelsConfigs.getModelsConfigMap().values().stream()
 					.filter(omc -> omc.contains(cls))
@@ -186,7 +186,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 	protected boolean isContextModelWhenCrossContext(OrmContext context, Class<?> cls){
 		//The datasource's name.
 		String ds = context.getName();
-		boolean annotated = cls.isAnnotationPresent(DataSource.class);
+		boolean annotated = Classes.isAnnotationPresent(cls, DataSource.class);
 		if(null != modelsConfigs) {
 			OrmModelsConfig models = modelsConfigs.getModelsConfig(ds);
 			if(null != models && models.contains(cls)) {
@@ -235,7 +235,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 		}
 
 		for(Annotation a : javaType.getAnnotations()){
-			if(a.annotationType().isAnnotationPresent(AEntity.class)){
+			if(Classes.isAnnotationPresent(a.annotationType(), AEntity.class)){
 				return true;
 			}
 		}
@@ -244,12 +244,12 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 
 	@Override
     public boolean isExplicitNonEntity(MetadataContext context,Class<?> javaType) {
-	    return javaType.isAnnotationPresent(NonEntity.class);
+	    return Classes.isAnnotationPresent(javaType, NonEntity.class);
     }
 
     @Override
     public boolean isRemoteEntity(MetadataContext context, Class<?> javaType) {
-        return javaType.isAnnotationPresent(RestEntity.class);
+        return Classes.isAnnotationPresent(javaType, RestEntity.class);
     }
 
     @Override

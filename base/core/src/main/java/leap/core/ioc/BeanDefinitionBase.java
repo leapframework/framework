@@ -16,6 +16,7 @@
 package leap.core.ioc;
 
 import leap.core.annotation.Configurable;
+import leap.lang.Classes;
 import leap.lang.Strings;
 import leap.lang.beans.BeanType;
 import leap.lang.tostring.ToStringBuilder;
@@ -350,7 +351,7 @@ class BeanDefinitionBase implements BeanDefinition,TypeDefinition,BeanDefinition
 
     public boolean isConfigurable() {
 		if(null == configurable) {
-			configurable = beanClass.isAnnotationPresent(Configurable.class); 
+			configurable = Classes.isAnnotationPresent(beanClass,Configurable.class);
 		}
 		return configurable;
 	}
