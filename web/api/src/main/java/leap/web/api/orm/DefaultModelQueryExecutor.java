@@ -22,6 +22,10 @@ import leap.core.value.Record;
 import leap.core.value.SimpleRecord;
 import leap.lang.Strings;
 import leap.lang.convert.Converts;
+import leap.lang.text.scel.ScelExpr;
+import leap.lang.text.scel.ScelName;
+import leap.lang.text.scel.ScelNode;
+import leap.lang.text.scel.ScelToken;
 import leap.orm.enums.RemoteType;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
@@ -814,9 +818,9 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
         //filters
         if(!Strings.isEmpty(options.getFilters())) {
-            Filters filters = FiltersParser.parse(options.getFilters());
+            ScelExpr filters = FiltersParser.parse(options.getFilters());
 
-            FiltersParser.Node[] nodes = filters.nodes();
+            ScelNode[] nodes = filters.nodes();
             if(nodes.length > 0) {
 
                 boolean and = !args.isEmpty();
@@ -825,7 +829,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                 }
 
                 for(int i=0;i<nodes.length;i++) {
-                    FiltersParser.Node node = nodes[i];
+                    ScelNode node = nodes[i];
 
                     if(node.isParen()) {
                         where.append(node.literal());
@@ -842,11 +846,11 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                         continue;
                     }
 
-                    FiltersParser.Name nameNode = (FiltersParser.Name)nodes[i];
+                    ScelName nameNode = (ScelName)nodes[i];
 
                     String alias = nameNode.alias();
                     String name  = nameNode.literal();
-                    FiltersParser.Token op = nodes[++i].token();
+                    ScelToken op = nodes[++i].token();
                     String value = nodes[++i].literal();
 
                     if(null != alias) {
@@ -862,7 +866,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
                     String sqlOperator = toSqlOperator(op);
 
-                    if(op == FiltersParser.Token.IS || op == FiltersParser.Token.NOT){
+                    if(op == ScelToken.IS || op == ScelToken.NOT){
                         where.append(alias).append('.').append(name).append(' ').append(sqlOperator);
                         continue;
                     }
@@ -871,7 +875,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                     if(value.endsWith("()")) {
                         String expr = "#{env." + value.substring(0, value.length() - 2) + "}";
                         applyFieldFilterExpr(where, args, alias, modelAndProp.field, expr, sqlOperator);
-                    }else if(op == FiltersParser.Token.IN) {
+                    }else if(op == ScelToken.IN) {
                         applyFieldFilterIn(where, args, alias, modelAndProp.field, Strings.split(value, ','));
                     }else{
                         applyFieldFilter(where, args, alias, modelAndProp.field, value, sqlOperator);
@@ -962,45 +966,45 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         args.add(Converts.convert(values, Array.newInstance(((FieldMapping)fm).getJavaType(), 0).getClass()));
     }
 
-    protected String toSqlOperator(FiltersParser.Token op) {
+    protected String toSqlOperator(ScelToken op) {
 
-        if(op == FiltersParser.Token.EQ) {
+        if(op == ScelToken.EQ) {
             return "=";
         }
 
-        if(op == FiltersParser.Token.GE) {
+        if(op == ScelToken.GE) {
             return ">=";
         }
 
-        if(op == FiltersParser.Token.LE) {
+        if(op == ScelToken.LE) {
             return "<=";
         }
 
-        if(op == FiltersParser.Token.GT) {
+        if(op == ScelToken.GT) {
             return ">";
         }
 
-        if(op == FiltersParser.Token.LT) {
+        if(op == ScelToken.LT) {
             return "<";
         }
 
-        if(op == FiltersParser.Token.NE) {
+        if(op == ScelToken.NE) {
             return "<>";
         }
 
-        if(op == FiltersParser.Token.IN) {
+        if(op == ScelToken.IN) {
             return "in";
         }
 
-        if(op == FiltersParser.Token.LIKE) {
+        if(op == ScelToken.LIKE) {
             return "like";
         }
 
-        if(op == FiltersParser.Token.IS){
+        if(op == ScelToken.IS){
             return "is null";
         }
 
-        if(op == FiltersParser.Token.NOT){
+        if(op == ScelToken.NOT){
             return "is not null";
         }
         throw new IllegalStateException("Not supported operator '" + op + "'");
