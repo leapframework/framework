@@ -363,6 +363,21 @@ public class Parser {
             rightExp = shift();
 
             expr = new AstBinary(expr,INSTANCE_OF, rightExp);
+        } else if (lexer.token() == Token.CONTAINS) {
+            lexer.nextToken();
+            rightExp = shift();
+
+            expr = new AstBinary(expr,CONTAINS, rightExp);
+        } else if (lexer.token() == Token.STARTS_WITH) {
+            lexer.nextToken();
+            rightExp = shift();
+
+            expr = new AstBinary(expr,STARTS_WITH, rightExp);
+        } else if (lexer.token() == Token.ENDS_WITH) {
+            lexer.nextToken();
+            rightExp = shift();
+
+            expr = new AstBinary(expr,ENDS_WITH, rightExp);
         }
 
         return expr;
@@ -405,8 +420,8 @@ public class Parser {
                 accept(Token.RPAREN);
                 break;
             case IDENTIFIER:
+                primaryExpr = new AstIdentifier(context,lexer.stringVal());
                 lexer.nextToken();
-                primaryExpr = new AstIdentifier(context,lexer.stringVal());	
                 break;
             case PLUSPLUS:
                 lexer.nextToken();
