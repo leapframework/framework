@@ -234,7 +234,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 			return true;
 		}
 
-		for(Annotation a : javaType.getAnnotations()){
+		for(Annotation a : Classes.getAnnotations(javaType)){
 			if(Classes.isAnnotationPresent(a.annotationType(), AEntity.class)){
 				return true;
 			}
