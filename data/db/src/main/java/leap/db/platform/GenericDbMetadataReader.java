@@ -534,9 +534,14 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 	}
 	
 	protected boolean readForeignKeyProperties(DbTableBuilder table,DbForeignKeyBuilder fk,ResultSet rs) throws SQLException {
+        String pkTableName = rs.getString(PKTABLE_NAME);
+        if(Strings.isEmpty(pkTableName)) {
+            log.info("Invalid fk {}, no PK_TABLE_NAME", fk.getName());
+            return false;
+        }
 		
 		DbSchemaObjectName foreignTable = 
-				new DbSchemaObjectName(rs.getString(PKTABLE_CATALOG), rs.getString(PKTABLE_SCHEMA),rs.getString(PKTABLE_NAME));
+				new DbSchemaObjectName(rs.getString(PKTABLE_CATALOG), rs.getString(PKTABLE_SCHEMA), pkTableName);
 		
         fk.setForeignTable(foreignTable);
 
