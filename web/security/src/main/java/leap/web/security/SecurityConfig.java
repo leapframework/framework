@@ -44,7 +44,7 @@ public interface SecurityConfig {
 	 * Default is <code>false</code>.
 	 */
 	boolean isCrossContext();
-	
+
 	/**
 	 * Returns <code>true</code> if csrf security enabled.
 	 * 
@@ -52,6 +52,11 @@ public interface SecurityConfig {
 	 * Default is <code>true</code>, it should not be disabled for security reason. 
 	 */
 	boolean isCsrfEnabled();
+
+    /**
+     * Returns <code>true</code> if ignore cors request.
+     */
+    boolean isCorsIgnored();
 	
 	/**
 	 * Returns <code>true</code> if all request paths will be intercepted by security module and checks the user authentication.

@@ -44,6 +44,7 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
     protected boolean                  enabled                        = false;
     protected boolean                  crossContext                   = false;
     protected Boolean                  csrfEnabled                    = null;
+    protected boolean                  corsIgnored                    = false;
     protected boolean                  loginEnabled                   = true;
     protected boolean                  logoutEnabled                  = true;
     protected boolean                  authenticateAnyRequests        = true;
@@ -132,6 +133,16 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
     public DefaultSecurityConfig setCrossContext(boolean crossContext) {
         this.crossContext = crossContext;
         return this;
+    }
+
+    @Override
+    public boolean isCorsIgnored() {
+        return corsIgnored;
+    }
+
+    @ConfigProperty
+    public void setCorsIgnored(boolean corsIgnored) {
+        this.corsIgnored = corsIgnored;
     }
 
     public boolean isCsrfEnabled() {

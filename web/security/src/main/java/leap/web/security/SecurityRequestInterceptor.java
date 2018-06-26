@@ -28,6 +28,7 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.web.*;
 import leap.web.action.ActionContext;
+import leap.web.cors.CorsHandler;
 import leap.web.route.Route;
 import leap.web.route.RouteProcessor;
 import leap.web.security.csrf.CSRF;
@@ -45,6 +46,7 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
     protected @Inject @M SecuredPathSource      pathSource;
     protected @Inject @M SecurityHandler        handler;
     protected @Inject @M CsrfHandler            csrf;
+    protected @Inject @M CorsHandler            cors;
 
     protected SecuredPathBuilder spb(Route route) {
         SecuredPathBuilder spb = route.getExtension(SecuredPathBuilder.class);
@@ -111,10 +113,16 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 			log.debug("Web security not enabled, ignore the interceptor");
 			return State.CONTINUE;
 		}
-		
+
+        //csrf
 		if(State.isIntercepted(csrf.handleRequest(request, response))){
 		    return State.INTERCEPTED;
 		}
+
+        //cors
+        if(config.isCorsIgnored() && cors.isPreflightRequest(request)) {
+            return State.CONTINUE;
+        }
 		
 		//TODO : cache 
 		//Check is the request ignored.
