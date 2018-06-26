@@ -349,8 +349,10 @@ public class DefaultRequest extends Request {
     public String getReverseProxyServerUrl() {
 	    if(null == reverseProxyServerUrl){
             String schema= getHeader("x-forwarded-proto");
-            String host = getHeader("host");
-
+            String host = getHeader("x-forwarded-host");
+            if(Strings.isEmpty(host)){
+                host = getHeader("host");
+            }
             URI uri;
             try {
                 uri = new URI(req.getRequestURL().toString());

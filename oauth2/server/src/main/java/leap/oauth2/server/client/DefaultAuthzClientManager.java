@@ -18,6 +18,7 @@ package leap.oauth2.server.client;
 import leap.core.annotation.Inject;
 import leap.oauth2.server.OAuth2AuthzServerConfig;
 
+import static leap.oauth2.server.Oauth2MessageKey.ERROR_INVALID_GRANT_CLIENT_NOT_FOUND;
 import static leap.oauth2.server.Oauth2MessageKey.INVALID_REQUEST_INVALID_CLIENT;
 import static leap.oauth2.server.Oauth2MessageKey.INVALID_REQUEST_INVALID_CLIENT_SECRET;
 
@@ -31,7 +32,7 @@ public class DefaultAuthzClientManager implements AuthzClientManager {
 
         AuthzClient client = loadClientById(credentials.getClientId());
         if(client == null){
-            context.addError(INVALID_REQUEST_INVALID_CLIENT,"client not found");
+            context.addError(ERROR_INVALID_GRANT_CLIENT_NOT_FOUND,"client not found");
             return null;
         }
         if(!client.isEnabled()){
