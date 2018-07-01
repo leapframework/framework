@@ -546,13 +546,30 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 		});
     }
 
-	@Override
+    @Override
+    public boolean exists(String entityName, Object id) throws MappingNotFoundException {
+        return runInWrapperContext(em(entityName), (context)->{
+            return commandFactory().newCheckEntityExistsCommand(context.getDao(),context.getEntityMapping(), id).execute();
+        });
+    }
+
+    @Override
     public long count(Class<?> entityClass) {
 		Args.notNull(entityClass,"entity class");
 		return commandFactory().newCountEntityCommand(this, em(entityClass)).execute();
     }
 
-	//-------------------- execute -----------------------------------
+    @Override
+    public long count(String entityName) {
+        return commandFactory().newCountEntityCommand(this, em(entityName)).execute();
+    }
+
+    @Override
+    public long count(EntityMapping em) {
+        return commandFactory().newCountEntityCommand(this, em).execute();
+    }
+
+    //-------------------- execute -----------------------------------
 	public int executeUpdate(SqlCommand command, Object[] args) {
 	    return command.executeUpdate(simpleSqlContext, args);
 	}

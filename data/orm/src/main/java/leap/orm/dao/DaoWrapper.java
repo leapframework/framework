@@ -342,8 +342,23 @@ public abstract class DaoWrapper extends Dao {
     }
 
     @Override
+    public boolean exists(String entityName, Object id) throws MappingNotFoundException {
+        return dao().exists(entityName, id);
+    }
+
+    @Override
     public long count(Class<?> entityClass) {
         return dao().count(entityClass);
+    }
+
+    @Override
+    public long count(String entityName) {
+        return dao().count(entityName);
+    }
+
+    @Override
+    public long count(EntityMapping em) {
+        return dao().count(em);
     }
 
     @Override

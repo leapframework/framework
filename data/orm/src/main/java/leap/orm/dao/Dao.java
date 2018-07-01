@@ -617,10 +617,27 @@ public abstract class Dao implements JdbcExecutor {
 	 */
 	public abstract boolean exists(Class<?> entityClass,Object id) throws MappingNotFoundException;
 
+    /**
+     * Checks is an entity of the given id exists in the underlying database.
+     *
+     * @throws MappingNotFoundException if the given entity not exists.
+     */
+    public abstract boolean exists(String entityName,Object id) throws MappingNotFoundException;
+
 	/**
 	 * Returns total rows in the underlying db of the given entity.
 	 */
 	public abstract long count(Class<?> entityClass);
+
+    /**
+     * Returns total rows in the underlying db of the given entity.
+     */
+    public abstract long count(String entityName);
+
+    /**
+     * Returns total rows in the underlying db of the given entity.
+     */
+    public abstract long count(EntityMapping em);
 	
 	//----------------------------execute-------------------------------
 	public abstract int executeUpdate(SqlCommand command, Object[] args);
