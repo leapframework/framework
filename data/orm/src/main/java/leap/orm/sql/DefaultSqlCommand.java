@@ -67,7 +67,7 @@ public class DefaultSqlCommand extends AbstractSqlCommand {
     public int executeUpdate(SqlContext context, Object params, PreparedStatementHandler<Db> psHandler) throws IllegalStateException, NestedSQLException {
         mustPrepare(context);
 
-        log.info("Executing sql update: '{}'", desc());
+        log.debug("Executing sql update: '{}'", desc());
 
         if(clauses.length == 1){
             return clauses[0].createUpdateStatement(context, params).executeUpdate(psHandler);
@@ -90,7 +90,7 @@ public class DefaultSqlCommand extends AbstractSqlCommand {
 	@Override
     public <T> T executeQuery(QueryContext context, Object params,ResultSetReader<T> reader) throws NestedSQLException {
 		//Assert.isTrue(null != queryClause,"This command is not a query, cannot execute query");
-        log.info("Executing sql query: '{}'", desc());
+        log.debug("Executing sql query: '{}'", desc());
         mustPrepare(context);
 
 		if(clauses.length == 1){
@@ -102,7 +102,7 @@ public class DefaultSqlCommand extends AbstractSqlCommand {
 	
 	@Override
     public long executeCount(QueryContext context, Object params) {
-        log.info("Executing sql count: '{}'", desc());
+        log.debug("Executing sql count: '{}'", desc());
         mustPrepare(context);
 
 		if(clauses.length == 1){
@@ -117,7 +117,7 @@ public class DefaultSqlCommand extends AbstractSqlCommand {
     								Object[] batchParams, 
     								BatchPreparedStatementHandler<Db> handler) throws IllegalStateException, NestedSQLException {
 
-        log.info("Executing sql batch update: '{}'", desc());
+        log.debug("Executing sql batch update: '{}'", desc());
         mustPrepare(context);
 
 		if(clauses.length == 1){
