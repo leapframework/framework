@@ -147,6 +147,11 @@ public class ScelParser extends AbstractStringParser {
 
     private boolean scanOperator() {
         skipWhitespaces();
+
+        if(eof()) {
+            error("Expected operator, but eof");
+        }
+
         if(ch == ':') {
             nodes.add(EQ);
             nextChar();

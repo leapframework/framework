@@ -37,6 +37,15 @@ public class ScelParserTest extends TestBase {
     }
 
     @Test
+    public void testInvalidExpr() {
+        try {
+            ScelParser.parse("deleted0");
+        }catch (Exception e) {
+            assertTrue(e instanceof IllegalStateException);
+        }
+    }
+
+    @Test
     public void testIsNull() {
         ScelExpr expr = ScelParser.parse("a is null");
         assertEquals("a is null", expr.toString());

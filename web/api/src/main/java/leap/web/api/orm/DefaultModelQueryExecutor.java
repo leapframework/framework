@@ -818,7 +818,13 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
         //filters
         if(!Strings.isEmpty(options.getFilters())) {
-            ScelExpr filters = FiltersParser.parse(options.getFilters());
+            ScelExpr filters;
+
+            try {
+                filters = FiltersParser.parse(options.getFilters());
+            }catch (Exception e) {
+                throw new BadRequestException("Invalid filter expr '" + options.getFilters() + "', " + e.getMessage(), e);
+            }
 
             ScelNode[] nodes = filters.nodes();
             if(nodes.length > 0) {
@@ -869,6 +875,12 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                     if(op == ScelToken.IS || op == ScelToken.NOT){
                         where.append(alias).append('.').append(name).append(' ').append(sqlOperator);
                         continue;
+                    }
+
+                    if(op == ScelToken.SW) {
+                        value = "%" + value;
+                    }else if(op == ScelToken.EW) {
+                        value = value + "%";
                     }
 
                     //env
@@ -996,7 +1008,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             return "in";
         }
 
-        if(op == ScelToken.LIKE) {
+        if(op == ScelToken.LIKE || op == ScelToken.SW || op == ScelToken.EW) {
             return "like";
         }
 
@@ -1004,7 +1016,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             return "is null";
         }
 
-        if(op == ScelToken.NOT){
+        if(op == ScelToken.NOT || op == ScelToken.PR){
             return "is not null";
         }
         throw new IllegalStateException("Not supported operator '" + op + "'");
