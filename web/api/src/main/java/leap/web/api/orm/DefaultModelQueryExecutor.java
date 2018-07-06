@@ -881,6 +881,8 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                         value = "%" + value;
                     }else if(op == ScelToken.EW) {
                         value = value + "%";
+                    }else if(op == ScelToken.CO) {
+                        value = "%" + value + "%";
                     }
 
                     //env
@@ -1008,7 +1010,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             return "in";
         }
 
-        if(op == ScelToken.LIKE || op == ScelToken.SW || op == ScelToken.EW) {
+        if(op == ScelToken.LIKE || op == ScelToken.CO || op == ScelToken.SW || op == ScelToken.EW) {
             return "like";
         }
 
