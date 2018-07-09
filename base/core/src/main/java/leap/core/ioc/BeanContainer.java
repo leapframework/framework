@@ -1460,7 +1460,8 @@ public class BeanContainer implements BeanFactory {
     @Override
     public Object resolveInjectValue(Class<?> type, Type genericType, String name) {
         SimpleReflectValued v = new SimpleReflectValued(type, genericType);
-        return resolveInjectValue(mockBeanDefinition, mockBean, BeanType.of(MockBean.class), v, true, name);
+        BeanDefinitionBase bd = this.createBeanDefinition(MockBean.class, name);
+        return resolveInjectValue(bd, mockBean, BeanType.of(MockBean.class), v, true, name);
     }
 
     protected Object resolveInjectValue(BeanDefinitionBase bd, Object bean, BeanType bt, ReflectValued v) {
