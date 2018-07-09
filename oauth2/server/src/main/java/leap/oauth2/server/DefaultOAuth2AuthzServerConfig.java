@@ -581,7 +581,8 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
 
     @Override
     public OAuth2AuthzServerConfigurator useJwtVerifier(JwtVerifier verifier) {
-        return null;
+	    this.jwtVerifier = verifier;
+        return this;
     }
 
     @Override
