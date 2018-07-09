@@ -156,11 +156,11 @@ public class AppContext implements AttributeAccessor {
 		threadlocal.set(null);
 	}
 	
-	protected static void setStandalone(AppContext standalone){
+	public static void setStandalone(AppContext standalone){
 		AppContext.standalone = standalone;
 	}
 	
-	protected static AppContext getStandalone(){
+	public static AppContext getStandalone(){
 		return standalone;
 	}
 

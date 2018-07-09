@@ -29,12 +29,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+
 @Configuration
 public class WebConfiguration {
 
     private static final Log log = LogFactory.get(WebConfiguration.class);
 
-    static AppFilter filter = new AppFilter();
+    static AppFilter filter = new BootFilter();
 
     static {
         Global.leap = new Global.LeapContext() {
@@ -74,6 +77,17 @@ public class WebConfiguration {
         log.debug("Register app filter, base-package : {}, profile : {}", Global.bp, Global.profile);
 
         return r;
+    }
+
+    public static class BootFilter extends AppFilter {
+        @Override
+        public void init(FilterConfig config) throws ServletException {
+            super.init(config);
+            if(null != AppContext.getStandalone()) {
+                throw new IllegalStateException("Found duplicated standalone context");
+            }
+            AppContext.setStandalone(bootstrap.getAppContext());
+        }
     }
 
 }
