@@ -26,7 +26,7 @@ public class ScelExpr {
 
     private Expression expression;
 
-    ScelExpr(ScelNode[] nodes) {
+    public ScelExpr(ScelNode[] nodes) {
         this.nodes = nodes;
     }
 
