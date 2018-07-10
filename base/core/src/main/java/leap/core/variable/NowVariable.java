@@ -15,14 +15,13 @@
  */
 package leap.core.variable;
 
-import java.util.Date;
-
+import java.sql.Timestamp;
 
 public class NowVariable implements Variable {
 
 	@Override
 	public Object getValue() {
-		return new Date();
+		return new Timestamp(System.currentTimeMillis());
 	}
 
 }
