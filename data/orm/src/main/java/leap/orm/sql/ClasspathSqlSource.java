@@ -45,12 +45,11 @@ public class ClasspathSqlSource implements SqlSource {
     public void loadSqlCommands(SqlConfigContext context) throws SqlConfigException, SqlClauseException {
 		//load all sqls
         AppResources resources = AppResources.tryGet(config);
-        if(null == resources) {
-            return;
+        if(null != resources) {
+            loadSqls(context, resources.search("sqls"));
+        }else {
+            loadSqls(context, AppResources.scanMetaAndApp("sqls"));
         }
-
-		loadSqls(context, resources.search("sqls"));
-
 		monitorSqls(context);
     }
 	

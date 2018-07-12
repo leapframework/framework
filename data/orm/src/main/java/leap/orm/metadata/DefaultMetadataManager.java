@@ -82,6 +82,11 @@ public class DefaultMetadataManager implements OrmMetadataManager {
     }
 
     @Override
+    public void loadSqls(OrmContext context) throws MetadataException {
+        doLoadSqls(new LoadingContext(context));
+    }
+
+    @Override
     public void loadPackage(OrmContext context, String basePackage) throws MetadataException {
         Class[] classes = Resources.scanPackage(basePackage).searchClasses();
         loadClasses(context, classes);
@@ -117,14 +122,8 @@ public class DefaultMetadataManager implements OrmMetadataManager {
         loadingContext.buildMappings();
         log.debug("Load {} entities used {}ms",context.getMetadata().getEntityMappingSize(),sw.getElapsedMilliseconds());
 
-        sw.restart();
-
-        //init sql commands
-        for(SqlSource ss : sqlSources){
-            ss.loadSqlCommands(loadingContext);
-        }
-
-        log.debug("Load {} sqls used {}ms",context.getMetadata().getSqlCommandSize(),sw.getElapsedMilliseconds());
+        //load sqls
+        doLoadSqls(loadingContext);
 
         //create default sql commands for all entities.
         DbSchemaBuilder schema = new DbSchemaBuilder(context.getName());
@@ -144,6 +143,17 @@ public class DefaultMetadataManager implements OrmMetadataManager {
         for(SqlCommand command : context.getMetadata().getSqlCommandSnapshotList()) {
             command.prepare(context);
         }
+    }
+
+    protected void doLoadSqls(LoadingContext context) {
+        StopWatch sw = StopWatch.startNew();
+
+        //init sql commands
+        for(SqlSource ss : sqlSources){
+            ss.loadSqlCommands(context);
+        }
+
+        log.debug("Load {} sqls used {}ms",context.getMetadata().getSqlCommandSize(),sw.getElapsedMilliseconds());
     }
 
     @Override

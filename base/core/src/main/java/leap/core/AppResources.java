@@ -118,6 +118,19 @@ public class AppResources {
         return url.contains(CP_CORE_PREFIX) || url.contains(CP_FRAMEWORK_PREFIX);
     }
 
+    public static AppResource[] scanMetaAndApp(String name) {
+        List<String> patterns = new ArrayList<>();
+        patterns.add("classpath*:" + CP_META_PREFIX + "/" + name + "/**/*.*");
+        patterns.add("classpath*:" + CP_META_PREFIX + "/" + name + ".*");
+        patterns.add("classpath:"  + CP_APP_PREFIX  + "/" + name + "/**/*.*");
+        patterns.add("classpath:"  + CP_APP_PREFIX  + "/" + name + ".*");
+
+        List<Resource> list = Resources.scan(patterns.toArray(new String[0])).toList();
+        List<AppResource> ress = new ArrayList<>();
+        list.forEach(r -> ress.add(new SimpleAppResource(r)));
+        return ress.toArray(new AppResource[0]);
+    }
+
     protected static boolean isCoreResource(String cp) {
         return null != cp && cp.startsWith(CP_CORE_PREFIX);
     }

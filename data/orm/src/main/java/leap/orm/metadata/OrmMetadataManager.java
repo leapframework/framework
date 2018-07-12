@@ -38,6 +38,11 @@ public interface OrmMetadataManager {
 	void loadMetadata(OrmContext context) throws MetadataException;
 
     /**
+     * Loads the sqls only.
+     */
+    void loadSqls(OrmContext context) throws MetadataException;
+
+    /**
      * Loads the metadata at the base package.
      */
     void loadPackage(OrmContext context, String basePackage) throws MetadataException;
