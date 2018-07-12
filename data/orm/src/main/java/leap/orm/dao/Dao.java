@@ -779,23 +779,35 @@ public abstract class Dao implements JdbcExecutor {
 	 * @param queryName a unique key or command name use to get a {@link SqlCommand} from {@link OrmMetadata}.
 	 * 
 	 * @see OrmMetadata#getSqlCommand(String)
-	 * @see OrmMetadata#getSqlCommand(Class, String)
+	 * @see OrmMetadata#getSqlCommand(String, String)
+     *
+     * @deprecated The method will cause the mistake with another method {@link #createNamedQuery(String, Class)}.
 	 */
+    @Deprecated
 	public abstract <T> EntityQuery<T> createNamedQuery(Class<T> entityClass,String queryName);
 	
 	/**
 	 * Creates a new {@link Query} object for querying data later.
+     *
+     * @deprecated The method will cause the mistake with another method {@link #createNamedQuery(String, Class)}.
 	 */
+    @Deprecated
 	public abstract EntityQuery<Record> createNamedQuery(String entityName,String queryName);
 	
 	/**
 	 * Creates a new {@link Query} object for querying data later.
+     *
+     * @deprecated The method will cause the mistake with another method {@link #createNamedQuery(String, Class)}.
 	 */
+    @Deprecated
 	public abstract <T> EntityQuery<T> createNamedQuery(String entityName,Class<T> resultClass, String queryName);
 	
 	/**
 	 * Creates a new {@link EntityQuery} object for executing the given named query.
+     *
+     * @deprecated The method will cause the mistake with another method {@link #createNamedQuery(String, Class)}.
 	 */
+    @Deprecated
 	public abstract <T> EntityQuery<T> createNamedQuery(EntityMapping em, Class<T> resultClass, String queryName);
 	
 	
