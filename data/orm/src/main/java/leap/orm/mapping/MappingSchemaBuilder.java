@@ -4,12 +4,14 @@ import leap.lang.Buildable;
 import leap.lang.exception.ObjectExistsException;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class MappingSchemaBuilder implements Buildable<MappingSchema> {
 
-    private final Map<String, EntityMappingBuilder> ems = new LinkedHashMap<>();
+    private final Map<String,   EntityMappingBuilder> ems = new LinkedHashMap<>();
+    private final Map<Class<?>, EntityMappingBuilder> classMap = new HashMap<>();
 
     public Collection<EntityMappingBuilder> getEntityMappings() {
         return ems.values();
@@ -17,6 +19,10 @@ public class MappingSchemaBuilder implements Buildable<MappingSchema> {
 
     public EntityMappingBuilder getEntityMapping(String name) {
         return ems.get(name.toLowerCase());
+    }
+
+    public EntityMappingBuilder getEntityMapping(Class<?> c) {
+        return classMap.get(c);
     }
 
     public void addEntity(EntityMappingBuilder em) throws ObjectExistsException {
@@ -27,6 +33,13 @@ public class MappingSchemaBuilder implements Buildable<MappingSchema> {
         }
 
         ems.put(key, em);
+
+        if(null != em.getEntityClass()) {
+            if(classMap.containsKey(em.getEntityClass())) {
+                throw new ObjectExistsException("The entity mapping '" + em.getEntityClass() + "' already exists in schema");
+            }
+            classMap.put(em.getEntityClass(), em);
+        }
     }
 
     @Override

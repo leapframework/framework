@@ -15,6 +15,7 @@
  */
 package leap.lang.json;
 
+import leap.lang.Classes;
 import leap.lang.Types;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
@@ -56,6 +57,14 @@ class JsonDecoder {
             }
 
             Class<?> valueType = Types.getActualTypeArguments(genericType)[1];
+            if(valueType.equals(Object.class)) {
+                return;
+            }
+
+            if(Classes.isSimpleValueType(valueType)) {
+                return;
+            }
+
             map.forEach((k, v) -> {
                 if(v instanceof Map) {
                     String name = k.toString();
