@@ -105,6 +105,7 @@ public class OkTHttpClient extends THttpClientBase {
         cb.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
         cb.hostnameVerifier((s, sslSession) -> true);
         cb.readTimeout(30, TimeUnit.MINUTES); //for debugging
+        cb.retryOnConnectionFailure(false);
 
         return cb.build();
     }

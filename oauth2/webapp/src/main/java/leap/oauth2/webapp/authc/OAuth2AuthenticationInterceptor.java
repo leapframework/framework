@@ -16,7 +16,6 @@
 
 package leap.oauth2.webapp.authc;
 
-import leap.core.AppConfig;
 import leap.core.annotation.Inject;
 import leap.core.security.token.TokenVerifyException;
 import leap.core.web.RequestIgnore;
