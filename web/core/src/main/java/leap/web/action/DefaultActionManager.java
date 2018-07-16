@@ -169,10 +169,10 @@ public class DefaultActionManager implements ActionManager {
                     log.debug("Caught a ResponseException(status=2xx) while executing action, just throw it!");
                     throw e;
                 } else {
-                    log.info("Fail execute action {} : {}", context.getAction(), e.getMessage());
+                    log.info("Fail execute action {} : {}", context.getAction(), e.getMessage(), e);
                 }
             } else if(e instanceof ValidationException) {
-                log.info("Action '{}' validate failed : {}", context.getAction(), e.getMessage());
+                log.info("Action '{}' validate failed : {}", context.getAction(), e.getMessage(), e);
             } else {
                 log.error("Action '{}' error : {}", context.getAction(), e.getMessage(), e);
             }

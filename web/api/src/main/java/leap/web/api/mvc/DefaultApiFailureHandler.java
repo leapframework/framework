@@ -79,6 +79,12 @@ public class DefaultApiFailureHandler implements ApiFailureHandler {
             return true;
         }
 
+        if(e instanceof ApiResponseException) {
+            ApiResponseException ex = (ApiResponseException)e;
+            errorHandler.responseError(response, ex.getStatus(), ex.getCode(), ex.getMessage());
+            return true;
+        }
+
         if(e instanceof ResponseException) {
             int code = ((ResponseException) e).getStatus();
             HTTP.Status status = HTTP.Status.valueOf(code);
