@@ -260,10 +260,12 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
     		String s = Converts.toString(value);
     		if(s.endsWith(")")) {
     			return s;
-			}else if(s.startsWith("'")) {
+			}else if(s.startsWith("'") && s.endsWith("'")) {
     			return s;
-			}else {
+			}else if(typeCode == Types.VARCHAR || typeCode == Types.CHAR){
 				return "'" + Converts.toString(value) + "'";
+			}else {
+    			return s;
 			}
     	}
     }
