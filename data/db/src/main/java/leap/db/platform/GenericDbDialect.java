@@ -257,7 +257,14 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
     	if(type.getKind().isNumeric()){
     		return Converts.toString(value);
     	}else{
-    		return "'" + Converts.toString(value) + "'";
+    		String s = Converts.toString(value);
+    		if(s.endsWith(")")) {
+    			return s;
+			}else if(s.startsWith("'")) {
+    			return s;
+			}else {
+				return "'" + Converts.toString(value) + "'";
+			}
     	}
     }
 	

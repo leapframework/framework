@@ -118,7 +118,7 @@ public class MySql5Dialect extends GenericDbDialect {
     @Override
     protected String getColumnDefaultDefinition(DbColumn column) {
         if((!column.isNullable()) && column.getTypeCode() == Types.TIMESTAMP && Strings.isEmpty(column.getDefaultValue())) {
-            return "DEFAULT CURRENT_TIMESTAMP";
+            return "DEFAULT CURRENT_TIMESTAMP()";
         }
         return super.getColumnDefaultDefinition(column);
     }
