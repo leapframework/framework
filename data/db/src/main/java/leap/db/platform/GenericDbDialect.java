@@ -1101,9 +1101,10 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 
         if(isDefaultBeforeNullInColumnDefinition()){
             //default
-            if(!Strings.isEmpty(column.getDefaultValue())){
-            	definition.append(' ').append(getColumnDefaultDefinition(column));
-            }
+			String defaults = getColumnDefaultDefinition(column);
+			if(!Strings.isEmpty(defaults)) {
+				definition.append(' ').append(defaults);
+			}
             
             //null
         	String nullDefinition = getColumnNullableDefinition(column);
@@ -1118,9 +1119,10 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
         	}
             
             //default
-            if(!Strings.isEmpty(column.getDefaultValue())){
-            	definition.append(' ').append(getColumnDefaultDefinition(column));
-            }
+			String defaults = getColumnDefaultDefinition(column);
+        	if(!Strings.isEmpty(defaults)) {
+				definition.append(' ').append(defaults);
+			}
         }
     
 //        //Check Constaint

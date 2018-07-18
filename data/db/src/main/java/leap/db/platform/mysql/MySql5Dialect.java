@@ -116,6 +116,14 @@ public class MySql5Dialect extends GenericDbDialect {
     }
 
     @Override
+    protected String getColumnDefaultDefinition(DbColumn column) {
+        if((!column.isNullable()) && column.getTypeCode() == Types.TIMESTAMP && Strings.isEmpty(column.getDefaultValue())) {
+            return "DEFAULT CURRENT_TIMESTAMP";
+        }
+        return super.getColumnDefaultDefinition(column);
+    }
+
+    @Override
     public String readDefaultValue(int typeCode, String nativeDefaultValue) {
         // MySQL converts illegal date/time/timestamp values to "0000-00-00 00:00:00", but this
         // is an illegal ISO value, so we replace it with NULL
@@ -228,10 +236,33 @@ public class MySql5Dialect extends GenericDbDialect {
         
         columnTypes.add(Types.DATE,          "date");
         columnTypes.add(Types.TIME,          "time");
-        columnTypes.add(Types.TIMESTAMP,     "datetime");
 
         columnTypes.add(Types.BLOB,          "blob");
         columnTypes.add(Types.CLOB,          "text");
+
+        //https://dev.mysql.com/doc/refman/5.6/en/timestamp-initialization.html
+        //Before 5.6.5, this is true only for TIMESTAMP, and for at most one TIMESTAMP column per table.
+        if(metadata.getProductMinorVersion() >= 6) {
+            //5.7.19-log
+            try {
+                String[] parts = Strings.split(metadata.getProductVersion(), ".");
+                if (parts.length >= 3) {
+                    String v = parts[2];
+                    int sep = v.indexOf('-');
+                    if(sep > 0) {
+                        v = v.substring(0, sep);
+                    }
+                    if(Integer.parseInt(v) >= 5) {
+                        columnTypes.add(Types.TIMESTAMP, "timestamp");
+                        return;
+                    }
+                }
+            }catch (Exception e) {
+                log.error("Unable the recognize the mysql version '" + metadata.getProductVersion() + "'", e);
+            }
+        }
+
+        columnTypes.add(Types.TIMESTAMP, "datetime");
     }
 
 	@Override
