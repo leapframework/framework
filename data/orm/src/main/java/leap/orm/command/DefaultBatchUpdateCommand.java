@@ -86,10 +86,10 @@ public class DefaultBatchUpdateCommand extends AbstractEntityDaoCommand implemen
                     Expression expression = fm.getUpdateValue();
                     if (null != expression) {
                         value = expression.getValue(entity);
+                        if (null != value) {
+                            entity.set(fm.getFieldName(), value);
+                        }
                     }
-                }
-                if (null != value) {
-                    entity.set(fm.getFieldName(), value);
                 }
             }
         }

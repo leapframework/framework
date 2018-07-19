@@ -142,7 +142,14 @@ public interface Params extends Emptiable, NamedGetter {
 	default boolean isIndexed() {
         return false;
     }
-	
+
+	/**
+	 * Returns true if this params is an array.
+	 */
+	default boolean isArray() {
+		return false;
+	}
+
 	/**
 	 * Returns the max index if this params is indexed.
 	 * 
