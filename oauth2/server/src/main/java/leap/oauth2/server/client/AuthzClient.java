@@ -15,10 +15,12 @@
  */
 package leap.oauth2.server.client;
 
+import leap.core.security.ClientPrincipal;
+
 /**
  * A registered oauth2.0 client.
  */
-public interface AuthzClient {
+public interface AuthzClient extends ClientPrincipal {
 	
 	/**
 	 * Required.
