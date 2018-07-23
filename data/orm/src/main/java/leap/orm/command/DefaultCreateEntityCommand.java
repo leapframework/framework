@@ -15,18 +15,22 @@
  */
 package leap.orm.command;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import leap.db.DbExecution;
 import leap.db.change.SchemaChanges;
 import leap.db.model.DbTable;
 import leap.lang.Args;
 import leap.lang.Error;
+import leap.orm.OrmContext;
 import leap.orm.dmo.Dmo;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.EntityMappingBuilder;
+import leap.orm.mapping.MappingConfigContext;
 import leap.orm.mapping.MappingExistsException;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class DefaultCreateEntityCommand extends AbstractDmoCommand implements CreateEntityCommand {
 	
@@ -53,6 +57,9 @@ public class DefaultCreateEntityCommand extends AbstractDmoCommand implements Cr
 		if(null != metadata.tryGetEntityMapping(emb.getEntityName())){
 			throw new MappingExistsException("Entity named '" + emb.getEntityName() + "' already exists, check the class '" + entityClass.getName() + "'");
 		}
+
+        SingleMappingConfigContext mcc = new SingleMappingConfigContext(dmo.getOrmContext(), entityClass, emb);
+		dmo.getOrmContext().getMetadataManager().processMappings(mcc);
 	}
 
 	@Override
@@ -162,4 +169,52 @@ public class DefaultCreateEntityCommand extends AbstractDmoCommand implements Cr
 	    upgradeTableExecution = changes.applyChanges();
 	    return upgradeTableExecution.success();
 	}
+
+	protected static final class SingleMappingConfigContext implements MappingConfigContext {
+	    private final OrmContext                          oc;
+	    private final Class<?>                            cls;
+	    private final EntityMappingBuilder                emb;
+	    private final Map<Class<?>, EntityMappingBuilder> embs = new HashMap<>();
+
+        public SingleMappingConfigContext(OrmContext oc, Class<?> cls, EntityMappingBuilder emb) {
+            this.oc = oc;
+            this.cls = cls;
+            this.emb = emb;
+            this.embs.put(cls, emb);
+        }
+
+        @Override
+        public OrmContext getOrmContext() {
+            return oc;
+        }
+
+        @Override
+        public Iterable<EntityMappingBuilder> getEntityMappings() {
+            return embs.values();
+        }
+
+        @Override
+        public EntityMappingBuilder tryGetEntityMapping(String entityName) {
+            if(emb.getEntityName().equalsIgnoreCase(entityName)) {
+                return emb;
+            }else {
+                return null;
+            }
+        }
+
+        @Override
+        public EntityMappingBuilder tryGetEntityMapping(Class<?> entityClass) {
+            return embs.get(entityClass);
+        }
+
+        @Override
+        public void addEntityMapping(EntityMappingBuilder emb) throws MappingExistsException {
+            throw new IllegalStateException("");
+        }
+
+        @Override
+        public void removeEntityMapping(String name) {
+            throw new IllegalStateException("");
+        }
+    }
 }
