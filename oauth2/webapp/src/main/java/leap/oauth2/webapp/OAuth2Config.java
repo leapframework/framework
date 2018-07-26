@@ -54,6 +54,14 @@ public interface OAuth2Config {
     boolean isLoginWithAccessToken();
 
     /**
+     * Returns true if force to lookup user info from remote server.
+     *
+     * <p/>
+     * Default is false.
+     */
+    boolean isForceLookupUserInfo();
+
+    /**
      * todo : doc
      */
     String getAuthorizeUrl();

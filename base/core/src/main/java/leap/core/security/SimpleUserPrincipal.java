@@ -16,11 +16,15 @@
 
 package leap.core.security;
 
+import java.util.Collections;
+import java.util.Map;
+
 public class SimpleUserPrincipal implements UserPrincipal {
 
     protected Object id;
     protected String name;
     protected String loginName;
+    protected Map<String, Object> properties = Collections.emptyMap();
 
     @Override
     public Object getId() {
@@ -49,4 +53,12 @@ public class SimpleUserPrincipal implements UserPrincipal {
         this.loginName = loginName;
     }
 
+    @Override
+    public Map<String, Object> getProperties() {
+        return properties;
+    }
+
+    public void setProperties(Map<String, Object> properties) {
+        this.properties = properties;
+    }
 }

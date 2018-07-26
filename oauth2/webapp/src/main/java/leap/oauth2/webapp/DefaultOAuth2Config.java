@@ -45,6 +45,7 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Ap
     protected boolean login;
     protected boolean logout;
     protected boolean loginWithAccessToken;
+    protected boolean forceLookupUserInfo;
     protected String  authorizeUrl;
     protected String  tokenUrl;
     protected String  tokenInfoUrl;
@@ -107,6 +108,16 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Ap
     @ConfigProperty
     public void setLoginWithAccessToken(boolean loginWithAccessToken) {
         this.loginWithAccessToken = loginWithAccessToken;
+    }
+
+    @Override
+    public boolean isForceLookupUserInfo() {
+        return forceLookupUserInfo;
+    }
+
+    @ConfigProperty
+    public void setForceLookupUserInfo(boolean forceLookupUserInfo) {
+        this.forceLookupUserInfo = forceLookupUserInfo;
     }
 
     @Override

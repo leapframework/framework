@@ -15,6 +15,9 @@
  */
 package leap.core.security;
 
+import java.util.Collections;
+import java.util.Map;
+
 public interface UserPrincipal extends Principal {
 	
 	/**
@@ -27,4 +30,10 @@ public interface UserPrincipal extends Principal {
 	 */
 	String getLoginName();
 
+    /**
+     * Returns the details property.
+     */
+	default Map<String, Object> getProperties() {
+	    return Collections.emptyMap();
+    }
 }

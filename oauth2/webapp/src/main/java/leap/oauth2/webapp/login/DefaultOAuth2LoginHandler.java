@@ -30,6 +30,7 @@ import leap.oauth2.webapp.OAuth2Params;
 import leap.oauth2.webapp.OAuth2RequestParams;
 import leap.oauth2.webapp.OAuth2Config;
 import leap.oauth2.webapp.OAuth2ErrorHandler;
+import leap.oauth2.webapp.authc.OAuth2Authenticator;
 import leap.oauth2.webapp.client.OAuth2Client;
 import leap.oauth2.webapp.code.CodeVerifier;
 import leap.oauth2.webapp.token.at.AccessToken;
@@ -38,6 +39,7 @@ import leap.oauth2.webapp.token.id.IdToken;
 import leap.oauth2.webapp.token.id.IdTokenVerifier;
 import leap.oauth2.webapp.token.*;
 import leap.oauth2.webapp.user.UserDetailsLookup;
+import leap.oauth2.webapp.user.UserInfoLookup;
 import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.authc.AuthenticationContext;
@@ -56,6 +58,7 @@ public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
     protected @Inject AccessTokenStore      accessTokenStore;
     protected @Inject IdTokenVerifier       idTokenVerifier;
     protected @Inject CodeVerifier          codeVerifier;
+    protected @Inject UserInfoLookup        userInfoLookup;
     protected @Inject UserDetailsLookup     userDetailsLookup;
 
     @Override
@@ -158,6 +161,10 @@ public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
 
         UserPrincipal   user   = idtoken.getUserInfo();
         ClientPrincipal client = idtoken.getClientInfo();
+
+        if(config.isForceLookupUserInfo() && null != at) {
+            user = userInfoLookup.lookupUserInfo(at.getToken(), userId);
+        }
 
         if(null != userDetailsLookup && !Strings.isEmpty(userId)) {
             user = userDetailsLookup.lookupUserDetails(at.getToken(), userId);
