@@ -66,14 +66,23 @@ public class JwtTokenAuthenticator extends UsernameBasedTokenAuthenticator imple
 			if(Strings.isEmpty(username)||Strings.isEmpty(jti)) {
 				return false;
 			}
-			
-			UserDetails details = resolveUserDetails(context, username, claims);
-			if(null == details) {
-				return false;
-			}
 
-			user.set(details);
-			return true;
+			if(sc.getUserStore() != null) {
+				UserDetails details = resolveUserDetails(context, username, claims);
+				if (null == details) {
+					return false;
+				}else {
+					user.set(details);
+					return true;
+				}
+			}else {
+                SimpleUserDetails details = new SimpleUserDetails();
+                details.setId(jti);
+                details.setLoginName(username);
+                details.setName(username);
+                user.set(details);
+                return true;
+            }
 		}
 		
 		return false;
