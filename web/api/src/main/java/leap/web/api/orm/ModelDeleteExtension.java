@@ -16,6 +16,8 @@
 
 package leap.web.api.orm;
 
+import leap.web.api.mvc.params.DeleteOptions;
+
 public class ModelDeleteExtension implements ModelDeleteInterceptor {
 
     public static final ModelDeleteExtension EMPTY = new ModelDeleteExtension(null, null);
@@ -26,6 +28,16 @@ public class ModelDeleteExtension implements ModelDeleteInterceptor {
     public ModelDeleteExtension(ModelDeleteHandler handler, ModelDeleteInterceptor[] interceptors) {
         this.handler = handler;
         this.interceptors = null == interceptors ? new ModelDeleteInterceptor[0] : interceptors;
+    }
+
+    @Override
+    public boolean processDeleteOneOptions(ModelExecutorContext context, Object id, DeleteOptions options) {
+        for(ModelDeleteInterceptor interceptor : interceptors) {
+            if(interceptor.processDeleteOneOptions(context, id, options)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

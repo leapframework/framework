@@ -40,7 +40,7 @@ public interface ModelDeleteHandler {
     /**
      * Called after the delete execution has been executed.
      */
-    default DeleteOneResult postDeleteRecore(ModelExecutorContext context, Object id, DeleteOptions options, DeleteOneResult result) {
+    default DeleteOneResult postDeleteRecord(ModelExecutorContext context, Object id, DeleteOptions options, DeleteOneResult result) {
         return null;
     }
 

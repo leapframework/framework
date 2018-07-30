@@ -16,7 +16,13 @@
 
 package leap.web.api.orm;
 
+import leap.web.api.mvc.params.DeleteOptions;
+
 public interface ModelDeleteInterceptor {
+
+    default boolean processDeleteOneOptions(ModelExecutorContext context, Object id, DeleteOptions options) {
+        return false;
+    }
 
     default Object processDeleteOneResult(ModelExecutionContext context, Object id, boolean success) {
         return null;
