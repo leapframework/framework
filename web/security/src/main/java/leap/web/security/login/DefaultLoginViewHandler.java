@@ -95,7 +95,11 @@ public class DefaultLoginViewHandler implements LoginViewHandler,AppListener {
                     return request.getUriWithQueryString();
                 }
             }
-            return "/";
+            if(config.isLoginRedirectRoot()) {
+                return "/";
+            }else {
+                return request.getUri();
+            }
         }
         
         return returnUrl;

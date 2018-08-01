@@ -164,6 +164,17 @@ public interface SecurityConfig {
      * Default is true.
      */
     boolean isLoginEnabled();
+
+    /**
+     * Is redirect to root path after login success.
+     *
+     * <p/>
+     * If false will redirect to current request uri.
+     *
+     * <p/>
+     * Default is true.
+     */
+    boolean isLoginRedirectRoot();
 	
     /**
      * Returns the url for promote user login.

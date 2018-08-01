@@ -48,6 +48,7 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
     protected Boolean                  csrfEnabled                    = null;
     protected boolean                  corsIgnored                    = false;
     protected boolean                  loginEnabled                   = true;
+    protected boolean                  loginRedirectRoot              = true;
     protected boolean                  logoutEnabled                  = true;
     protected boolean                  authenticateAnyRequests        = true;
     protected boolean                  authorizeAnyRequests           = false;
@@ -382,6 +383,16 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
     public SecurityConfigurator setLoginEnabled(boolean loginEnabled) {
         this.loginEnabled = loginEnabled;
         return this;
+    }
+
+    @Override
+    public boolean isLoginRedirectRoot() {
+        return loginRedirectRoot;
+    }
+
+    @ConfigProperty
+    public void setLoginRedirectRoot(boolean loginRedirectRoot) {
+        this.loginRedirectRoot = loginRedirectRoot;
     }
 
     @Override
