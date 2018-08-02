@@ -18,6 +18,8 @@ package leap.web.api.spec.swagger;
 import leap.core.annotation.Inject;
 import leap.lang.New;
 import leap.lang.Strings;
+import leap.lang.http.HTTP;
+import leap.lang.http.Headers;
 import leap.web.Handler;
 import leap.web.Request;
 import leap.web.Response;
@@ -30,9 +32,11 @@ import leap.web.api.meta.ApiMetadataBuilder;
 import leap.web.api.meta.ApiMetadataContext;
 import leap.web.api.meta.ApiMetadataProcessor;
 import leap.web.api.spec.ApiSpecContext;
+import leap.web.assets.AssetStrategy;
 import leap.web.route.Route;
 import leap.web.route.Routes;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
 
@@ -40,7 +44,8 @@ public class SwaggerProcessor implements ApiConfigProcessor,ApiMetadataProcessor
 	
 	private static final String SWAGGER_JSON_FILE = "swagger.json";
 
-	protected @Inject Apis apis;
+	protected @Inject Apis          apis;
+	protected @Inject AssetStrategy assetStrategy;
 
 	@Override
     public void preProcess(ApiMetadataContext context, ApiMetadataBuilder m) {
@@ -82,14 +87,33 @@ public class SwaggerProcessor implements ApiConfigProcessor,ApiMetadataProcessor
             parts = Strings.split(parts[0], ',');
         }
         Set<String> partsSet = null == parts ? Collections.emptySet() : New.hashSet(parts);
-        w.write(new ApiSpecContextImpl(req, partsSet), api.getMetadata(), resp.getWriter());
+
+        ApiSpecContext context = new ApiSpecContextImpl(req, partsSet);
+        String json = toSwaggerJson(w, context, api.getMetadata());
+        String fingerprint = assetStrategy.getFingerprint(json.getBytes());
+
+        resp.setHeader(Headers.CACHE_CONTROL, "public, max-age=86400");
+        resp.setHeader(Headers.ETAG, "\"" + fingerprint + "\"");
+
+        String ifNoneMatch = req.getHeader(Headers.IF_NONE_MATCH);
+        if(!Strings.isEmpty(ifNoneMatch) && ifNoneMatch.equals("\"" + fingerprint + "\"")) {
+            resp.setStatus(HTTP.SC_NOT_MODIFIED);
+        }else {
+            resp.getWriter().write(json);
+        }
 	}
+
+    protected String toSwaggerJson(SwaggerJsonWriter w, ApiSpecContext context, ApiMetadata md) throws IOException {
+        StringBuilder out = new StringBuilder();
+        w.write(context, md, out);
+        return out.toString();
+    }
 	
 	protected String getJsonSpecPath(ApiConfig c) {
 		return c.getBasePath() + "/" + SWAGGER_JSON_FILE;
 	}
 
-    private static final class ApiSpecContextImpl implements ApiSpecContext {
+    protected static class ApiSpecContextImpl implements ApiSpecContext {
         private final Request     request;
         private final Set<String> parts;
 
