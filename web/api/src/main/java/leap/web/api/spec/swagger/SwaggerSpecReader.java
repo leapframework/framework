@@ -25,6 +25,7 @@ import leap.lang.http.HTTP;
 import leap.lang.io.IO;
 import leap.lang.json.JSON;
 import leap.lang.json.JsonObject;
+import leap.lang.json.JsonValue;
 import leap.lang.meta.*;
 import leap.lang.yaml.YAML;
 import leap.web.api.meta.ApiMetadataBuilder;
@@ -251,7 +252,7 @@ public class SwaggerSpecReader implements ApiSpecReader {
 
         JsonObject p = JsonObject.of(map);
 
-        readParameterBase(p, mp);
+        readParameterBase(null, p, mp);
         mp.setLocation(readParameterIn(mp.getName(), p.getString(IN)));
 
         return mp;
@@ -401,17 +402,17 @@ public class SwaggerSpecReader implements ApiSpecReader {
         return list;
     }
 
-    protected void readParameterBase(JsonObject p, MApiParameterBaseBuilder mp) {
-        readParameterBase(p, mp, SwaggerExtension.NOP);
+    protected void readParameterBase(String name, JsonObject p, MApiParameterBaseBuilder mp) {
+        readParameterBase(name, p, mp, SwaggerExtension.NOP);
     }
 
-    protected void readParameterBase(JsonObject p, MApiParameterBaseBuilder mp, SwaggerExtension ex) {
+    protected void readParameterBase(String name, JsonObject p, MApiParameterBaseBuilder mp, SwaggerExtension ex) {
         mp.setName(p.getString(NAME));
         mp.setTitle(p.getString(TITLE));
         mp.setSummary(p.getString(SUMMARY));
         mp.setDescription(p.getString(DESCRIPTION));
         mp.setRequired(p.get(REQUIRED, Boolean.class));
-        mp.setType(readParameterType(p, ex));
+        mp.setType(readParameterType(name, p, ex));
         mp.setDefaultValue(p.get(DEFAULT));
 
         MApiValidationBuilder v = new MApiValidationBuilder();
@@ -442,7 +443,7 @@ public class SwaggerSpecReader implements ApiSpecReader {
 
         JsonObject p = JsonObject.of(map);
 
-        readParameterBase(p, mp, ex);
+        readParameterBase(name, p, mp, ex);
         mp.setName(name);
 
         //yaml read all values to string.
@@ -493,16 +494,16 @@ public class SwaggerSpecReader implements ApiSpecReader {
         }
     }
 
-    protected MType readParameterType(JsonObject p) {
-        return readParameterType(p, SwaggerExtension.NOP);
+    protected MType readParameterType(String name, JsonObject p) {
+        return readParameterType(name, p, SwaggerExtension.NOP);
     }
 
-    protected MType readParameterType(JsonObject p, SwaggerExtension ex) {
+    protected MType readParameterType(String name, JsonObject p, SwaggerExtension ex) {
         JsonObject schema = p.getObject(SCHEMA);
         if(null != schema) {
             return readType(schema, ex);
         }else{
-            return readType(p, ex);
+            return readType(name, p, ex);
         }
     }
 
@@ -520,6 +521,10 @@ public class SwaggerSpecReader implements ApiSpecReader {
     }
 
     protected MType readType(JsonObject property, SwaggerExtension ex) {
+        return readType(null, property, ex);
+    }
+
+    protected MType readType(String name, JsonObject property, SwaggerExtension ex) {
         String ref = property.getString(REF);
         if(!Strings.isEmpty(ref)) {
             return readRefType(ref);
@@ -539,7 +544,7 @@ public class SwaggerSpecReader implements ApiSpecReader {
         }
 
         if(type.equals(OBJECT)) {
-            return readObjectType(property);
+            return readObjectType(name, property);
         }
 
         if(type.equals(ARRAY)) {
@@ -550,14 +555,25 @@ public class SwaggerSpecReader implements ApiSpecReader {
         return readSimpleType(type, format);
     }
 
-    protected MType readObjectType(JsonObject o) {
+    protected MType readObjectType(String name, JsonObject o) {
         JsonObject additionalProperties = o.getObject(ADDITIONAL_PROPERTIES);
 
-        if(null == additionalProperties || additionalProperties.asMap().isEmpty()) {
-            return MObjectType.TYPE;
+        if(null == additionalProperties) {
+            //check is nested model
+            Object property = o.get(PROPERTIES);
+            if(null != property && property instanceof Map) {
+                MApiModelBuilder model = readModel(name, o.asMap());
+                return model.toMComplexType().build();
+            }else {
+                return MObjectType.TYPE;
+            }
         }else{
-            MType valueType = readType(additionalProperties);
-            return new MDictionaryType(MSimpleTypes.STRING, valueType);
+            if(additionalProperties.asMap().isEmpty()) {
+                return MObjectType.TYPE;
+            }else {
+                MType valueType = readType(additionalProperties);
+                return new MDictionaryType(MSimpleTypes.STRING, valueType);
+            }
         }
     }
 

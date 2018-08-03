@@ -21,6 +21,7 @@ import leap.lang.Extensible;
 import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
 import leap.lang.meta.MComplexType;
+import leap.lang.meta.MComplexTypeBuilder;
 import leap.lang.meta.MProperty;
 import leap.web.api.annotation.ApiModel;
 import leap.web.api.annotation.ApiProperty;
@@ -80,6 +81,21 @@ public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> implem
         }
     }
 
+    public MComplexTypeBuilder toMComplexType() {
+        MComplexTypeBuilder ct = new MComplexTypeBuilder();
+        ct.setName(name);
+        ct.setTitle(title);
+        ct.setSummary(summary);
+        ct.setDescription(description);
+        ct.setEntity(entity);
+
+        for(MApiPropertyBuilder p : properties.values()) {
+            ct.addProperty(p.toMProperty());
+        }
+
+        return ct;
+    }
+
     public boolean isEntity() {
         return entity;
     }
@@ -109,6 +125,10 @@ public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> implem
 
     public Map<String, MApiPropertyBuilder> getProperties() {
         return properties;
+    }
+
+    public MApiPropertyBuilder getProperty(String name) {
+        return properties.get(name);
     }
 
     public void addProperty(MApiPropertyBuilder p) {

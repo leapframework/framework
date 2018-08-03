@@ -37,4 +37,12 @@ public abstract class MStructuralType extends MType {
 		return properties;
 	}
 
+	public MProperty getProperty(String name) {
+		for(MProperty p : properties) {
+			if(p.getName().equals(name)) {
+				return p;
+			}
+		}
+		return null;
+	}
 }

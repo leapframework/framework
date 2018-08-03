@@ -1,0 +1,55 @@
+{
+  "MT_BREAKDOWN_DETAIL_REQ": {
+    "type": "object",
+    "properties": {
+      "I_REQUEST": {
+        "type": "object",
+        "properties": {
+          "REQ_BASEINFO": {
+            "type": "object",
+            "properties": {
+              "REQ_TRACE_ID": {
+                "type": "string"
+              },
+              "REQ_SEND_TIME": {
+                "type": "string"
+              },
+              "REQ_SRC_SYS": {
+                "type": "string"
+              },
+              "REQ_TAR_SYS": {
+                "type": "string"
+              },
+              "REQ_SERVER_NAME": {
+                "type": "string"
+              },
+              "REQ_SYN_FLAG": {
+                "type": "string"
+              },
+              "REQ_BSN_ID": {
+                "type": "string"
+              },
+              "REQ_RETRY_TIMES": {
+                "type": "string"
+              },
+              "REQ_REPEAT_FLAG": {
+                "type": "string"
+              },
+              "REQ_REPEAT_CYCLE": {
+                "type": "string"
+              }
+            }
+          },
+          "MESSAGE": {
+            "type": "object",
+            "properties": {
+              "ID": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

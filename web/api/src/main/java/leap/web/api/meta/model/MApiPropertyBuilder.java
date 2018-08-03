@@ -19,6 +19,7 @@ import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
 import leap.lang.enums.Bool;
 import leap.lang.meta.MProperty;
+import leap.lang.meta.MPropertyBuilder;
 import leap.web.api.annotation.ApiProperty;
 
 public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> {
@@ -89,6 +90,35 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
             }
         }
 	}
+
+	public MPropertyBuilder toMProperty() {
+        MPropertyBuilder p = new MPropertyBuilder();
+
+        p.setName(name);
+        p.setTitle(title);
+        p.setSummary(summary);
+        p.setDescription(description);
+        p.setBeanProperty(beanProperty);
+        p.setType(type);
+        if(null != defaultValue) {
+            p.setDefaultValue(String.valueOf(defaultValue));
+        }
+        p.setEnumValues(enumValues);
+        p.setRequired(required);
+        p.setIdentity(identity);
+        p.setUnique(unique);
+        p.setReference(reference);
+        p.setDiscriminator(discriminator);
+        p.setSelectable(selectable);
+        p.setAggregatable(aggregatable);
+        p.setGroupable(groupable);
+        p.setCreatable(creatable);
+        p.setUpdatable(updatable);
+        p.setSortable(sortable);
+        p.setFilterable(filterable);
+
+        return p;
+    }
 
     @Override
     public void setDescription(String description) {

@@ -20,8 +20,13 @@ package tests.spec;
 
 import leap.core.annotation.Inject;
 import leap.lang.json.JSON;
+import leap.lang.meta.MComplexType;
+import leap.lang.meta.MProperty;
+import leap.lang.meta.MType;
 import leap.lang.resource.Resources;
 import leap.web.api.meta.ApiMetadata;
+import leap.web.api.meta.model.MApiModelBuilder;
+import leap.web.api.meta.model.MApiPropertyBuilder;
 import leap.web.api.meta.model.MApiSecurityDef;
 import leap.web.api.spec.swagger.SwaggerConstants;
 import leap.web.api.spec.swagger.SwaggerJsonWriter;
@@ -122,7 +127,23 @@ public class SwaggerJsonTest extends WebTestBase {
         assertContains(swagger, "/profile/common_api");
         assertContains(swagger, "\"/profile/mobile_api\":{}");
         assertContains(swagger, "/profile/web_api");
+    }
 
+    @Test
+    public void testReadNestedModel() {
+        String json = Resources.getContent("classpath:swagger/nested_model.json");
+
+        Map<String, Object> map = (Map)JSON.decodeMap(json).get("MT_BREAKDOWN_DETAIL_REQ");
+
+        MApiModelBuilder model = specReader.readModel("test", map);
+
+        MApiPropertyBuilder p = model.getProperty("I_REQUEST");
+        MType type = p.getType();
+        assertTrue(type.isComplexType());
+
+        MComplexType ct = type.asComplexType();
+        MProperty mp = ct.getProperty("REQ_BASEINFO");
+        assertTrue(mp.getType().isComplexType());
     }
 
     protected Map<String, Object> getAsMap(Map<String, Object> map, String key){
