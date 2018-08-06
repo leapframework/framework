@@ -7,7 +7,7 @@
     <parent>
         <artifactId>tests</artifactId>
         <groupId>org.leapframework</groupId>
-        <version>0.7.6b-SNAPSHOT</version>
+        <version>0.7.6b</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>orm-test-dyna</artifactId>
