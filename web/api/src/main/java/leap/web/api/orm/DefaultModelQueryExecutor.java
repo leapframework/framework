@@ -165,7 +165,8 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
                 RelationProperty rp = em.tryGetRelationProperty(join.getRelation());
                 if(null == rp) {
-                    throw new BadRequestException("No relation '" + join.getRelation() + "' in model '" + am.getName());
+                    throw new BadRequestException("No relation '" + join.getRelation() + "' in model '" + am.getName() +
+                                                  " or the relation is not joinable");
                 }
 
                 if(rp.isOptional()) {
