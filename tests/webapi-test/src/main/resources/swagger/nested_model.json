@@ -43,7 +43,39 @@
           "MESSAGE": {
             "type": "object",
             "properties": {
-              "ID": {
+              "CODE": {
+                "type": "string"
+              },
+              "MESSAGE": {
+                "type": "string"
+              },
+              "DATA": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "ID": {
+                      "type": "string"
+                    },
+                    "NUMBER": {
+                      "type": "string"
+                    },
+                    "DESC": {
+                      "type": "string"
+                    },
+                    "CREATED_TIME": {
+                      "type": "string"
+                    },
+                    "USER_NAME": {
+                      "type": "string"
+                    },
+                    "STATUS": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "TOTAL": {
                 "type": "string"
               }
             }

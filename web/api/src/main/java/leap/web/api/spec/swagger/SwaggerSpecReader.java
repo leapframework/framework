@@ -562,6 +562,9 @@ public class SwaggerSpecReader implements ApiSpecReader {
             //check is nested model
             Object property = o.get(PROPERTIES);
             if(null != property && property instanceof Map) {
+                if(null == name) {
+                    name = "Embedded";
+                }
                 MApiModelBuilder model = readModel(name, o.asMap());
                 return model.toMComplexType().build();
             }else {
