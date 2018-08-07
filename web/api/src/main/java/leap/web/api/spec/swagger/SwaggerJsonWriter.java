@@ -791,7 +791,13 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
         }
 
         if(type.isComplexType()) {
-            writeRefType(context, m, w, ((MComplexType)type).createTypeRef());
+            MComplexType ct = type.asComplexType();
+            if(m.getModels().containsKey(ct.getName())) {
+                writeRefType(context, m, w, ((MComplexType)type).createTypeRef());
+            }else {
+                MApiModel model = new MApiModelBuilder(ct).build();
+                writeModelWithinObject(context, m, w, model);
+            }
             return;
         }
         

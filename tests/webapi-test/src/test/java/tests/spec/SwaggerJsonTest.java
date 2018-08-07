@@ -25,6 +25,7 @@ import leap.lang.meta.MProperty;
 import leap.lang.meta.MType;
 import leap.lang.resource.Resources;
 import leap.web.api.meta.ApiMetadata;
+import leap.web.api.meta.ApiMetadataBuilder;
 import leap.web.api.meta.model.MApiModelBuilder;
 import leap.web.api.meta.model.MApiPropertyBuilder;
 import leap.web.api.meta.model.MApiSecurityDef;
@@ -130,7 +131,7 @@ public class SwaggerJsonTest extends WebTestBase {
     }
 
     @Test
-    public void testReadNestedModel() {
+    public void testReadNestedModel() throws IOException {
         String json = Resources.getContent("classpath:swagger/nested_model.json");
 
         Map<String, Object> map = (Map)JSON.decodeMap(json).get("MT_BREAKDOWN_DETAIL_REQ");
@@ -144,6 +145,23 @@ public class SwaggerJsonTest extends WebTestBase {
         MComplexType ct = type.asComplexType();
         MProperty mp = ct.getProperty("REQ_BASEINFO");
         assertTrue(mp.getType().isComplexType());
+
+        json = toJson(model);
+        map = JSON.parse(json).asJsonObject().getObject("definitions").getObject("test").asMap();
+        model = specReader.readModel("test", map);
+
+        String json1 = toJson(model);
+        assertEquals(json1, json);
+    }
+
+    protected String toJson(MApiModelBuilder model) throws IOException{
+        ApiMetadataBuilder mdb = new ApiMetadataBuilder();
+        mdb.setName("Test");
+        mdb.addModel(model);
+
+        StringBuilder out = new StringBuilder();
+        specWriter.write(mdb.build(), out);
+        return out.toString();
     }
 
     protected Map<String, Object> getAsMap(Map<String, Object> map, String key){
