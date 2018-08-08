@@ -11,12 +11,17 @@ import org.springframework.context.annotation.Configuration;
 public class AutoConfiguration {
 
     @Bean("hello")
+    public HelloBean helloBean1() {
+        return new HelloBean();
+    }
+
+    @Bean
     public Variable helloVariable() {
         return new HelloVariable();
     }
 
-    @Bean("hello")
-    public HelloBean helloBean() {
+    @Bean("helloBean")
+    public HelloBean helloBean2() {
         return new HelloBean();
     }
 

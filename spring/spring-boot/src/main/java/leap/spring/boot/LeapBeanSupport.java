@@ -17,6 +17,7 @@
 package leap.spring.boot;
 
 import leap.core.BeanFactorySupport;
+import leap.lang.Strings;
 import leap.lang.beans.BeanException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -28,6 +29,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class LeapBeanSupport implements BeanFactorySupport {
@@ -86,21 +88,17 @@ public class LeapBeanSupport implements BeanFactorySupport {
             return null;
         }
 
-        try {
-            Map<String, T> beans = (Map<String, T>)Global.context.getBeansOfType(type);
-            if(null == beans || beans.isEmpty()) {
-                return null;
-            }
-
-            T bean = beans.get(name);
-            if(null == bean) {
-                return null;
-            }
-
-            return (T) shouldReturn(bean);
-        }catch (NoSuchBeanDefinitionException e) {
+        Map<String, T> beans = getNamedBeans(type);
+        if(null == beans || beans.isEmpty()) {
             return null;
         }
+
+        T bean = beans.get(name);
+        if(null == bean) {
+            return null;
+        }
+
+        return (T) shouldReturn(bean);
     }
 
     @Override
@@ -108,7 +106,18 @@ public class LeapBeanSupport implements BeanFactorySupport {
         if(Global.context == null) {
             return null;
         }
-        return (Map<String,T>)Global.context.getBeansOfType(type);
+        Map<String, T> namedBeans = (Map<String,T>)Global.context.getBeansOfType(type);
+        if(namedBeans == null || namedBeans.isEmpty()) {
+            return namedBeans;
+        }
+
+        final String suffix = type.getSimpleName();
+        final Map<String, T> beans = new LinkedHashMap<>();
+        namedBeans.forEach((name, bean) -> {
+            name = Strings.removeEnd(name, suffix);
+            beans.put(name, bean);
+        });
+        return beans;
     }
 
     protected <T> T shouldReturn(T bean) {
