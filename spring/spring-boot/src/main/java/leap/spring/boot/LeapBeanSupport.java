@@ -19,7 +19,11 @@ package leap.spring.boot;
 import leap.core.BeanFactorySupport;
 import leap.lang.Strings;
 import leap.lang.beans.BeanException;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.AbstractApplicationContext;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -59,7 +63,19 @@ public class LeapBeanSupport implements BeanFactorySupport {
 
     @Override
     public <T> T tryGetBean(Class<T> type) throws BeanException {
-        if(Global.context == null || disabled.get()) {
+        if(Global.context == null) {
+            return null;
+        }
+
+        if(type == ApplicationContext.class) {
+            return (T)Global.context;
+        }
+
+        if(type == BeanFactory.class || type == DefaultListableBeanFactory.class) {
+            return (T)((AbstractApplicationContext)Global.context).getBeanFactory();
+        }
+
+        if(disabled.get()) {
             return null;
         }
 

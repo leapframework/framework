@@ -27,5 +27,11 @@
             <version>1.5.8.RELEASE</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <version>1.5.8.RELEASE</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>
