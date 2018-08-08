@@ -17,7 +17,6 @@
 package leap.spring.boot;
 
 import leap.core.BeanFactorySupport;
-import leap.lang.Strings;
 import leap.lang.beans.BeanException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -29,7 +28,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class LeapBeanSupport implements BeanFactorySupport {
@@ -50,7 +48,7 @@ public class LeapBeanSupport implements BeanFactorySupport {
 
     @Override
     public <T> T tryGetBean(String id) throws BeanException {
-        if(Global.context == null || disabled.get()) {
+        if(Global.context == null) {
             return null;
         }
 
@@ -75,14 +73,6 @@ public class LeapBeanSupport implements BeanFactorySupport {
             return (T)((AbstractApplicationContext)Global.context).getBeanFactory();
         }
 
-        if(disabled.get()) {
-            return null;
-        }
-
-        if(type.getName().startsWith(Global.LEAP_PACKAGE_PREFIX)) {
-            return null;
-        }
-
         try {
             return shouldReturn(Global.context.getBean(type));
         }catch (NoSuchBeanDefinitionException e) {
@@ -92,16 +82,22 @@ public class LeapBeanSupport implements BeanFactorySupport {
 
     @Override
     public <T> T tryGetBean(Class<? super T> type, String name) throws BeanException {
-        if(Global.context == null || disabled.get()) {
-            return null;
-        }
-
-        if(type.getName().startsWith(Global.LEAP_PACKAGE_PREFIX)) {
+        if(Global.context == null) {
             return null;
         }
 
         try {
-            return (T) shouldReturn(Global.context.getBean(type, name));
+            Map<String, T> beans = (Map<String, T>)Global.context.getBeansOfType(type);
+            if(null == beans || beans.isEmpty()) {
+                return null;
+            }
+
+            T bean = beans.get(name);
+            if(null == bean) {
+                return null;
+            }
+
+            return (T) shouldReturn(bean);
         }catch (NoSuchBeanDefinitionException e) {
             return null;
         }
@@ -109,14 +105,9 @@ public class LeapBeanSupport implements BeanFactorySupport {
 
     @Override
     public <T> Map<String, T> getNamedBeans(Class<? super T> type) {
-        if(Global.context == null || disabled.get()) {
+        if(Global.context == null) {
             return null;
         }
-
-        if(type.getName().startsWith(Global.LEAP_PACKAGE_PREFIX)) {
-            return null;
-        }
-
         return (Map<String,T>)Global.context.getBeansOfType(type);
     }
 

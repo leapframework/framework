@@ -746,6 +746,16 @@ public class BeanContainer implements BeanFactory {
 				}
 			}
 
+            for(BeanFactorySupport support : postSupports) {
+                Map<String, T> map = support.getNamedBeans(type);
+                if(null != map) {
+                    final Map<T, BeanDefinition> finalBeans = beans;
+                    map.forEach((name, bean) -> {
+                        finalBeans.put(bean, createBeanDefinition(type, bean, name, false));
+                    });
+                }
+            }
+
             if(cache) {
                 typedInstances.put(type, Collections.unmodifiableMap(beans));
             }
