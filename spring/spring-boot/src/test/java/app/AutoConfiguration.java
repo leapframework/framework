@@ -2,6 +2,7 @@ package app;
 
 import app.beans.HelloBean;
 import app.beans.HelloVariable;
+import app.beans.SpringBean;
 import leap.core.variable.Variable;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,4 +20,8 @@ public class AutoConfiguration {
         return new HelloBean();
     }
 
+    @Bean
+    public SpringBean springBean() {
+        return new SpringBean();
+    }
 }
