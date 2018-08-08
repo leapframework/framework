@@ -2,10 +2,15 @@ package app.beans;
 
 import leap.core.annotation.Inject;
 
-public class LeapBean {
+import java.util.List;
+
+public class LeapBean implements ListType {
 
     @Inject
     protected SpringBean springBean;
+
+    @Inject
+    protected List<ListType> beans;
 
     public SpringBean getSpringBean() {
         return springBean;
@@ -15,4 +20,11 @@ public class LeapBean {
         this.springBean = springBean;
     }
 
+    public List<ListType> getBeans() {
+        return beans;
+    }
+
+    public void setBeans(List<ListType> beans) {
+        this.beans = beans;
+    }
 }

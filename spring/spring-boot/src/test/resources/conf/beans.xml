@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.leapframework.org/schema/beans">
-    <bean class="app.beans.LeapBean"/>
+    <bean type="app.beans.ListType" class="app.beans.LeapBean"/>
 </beans>

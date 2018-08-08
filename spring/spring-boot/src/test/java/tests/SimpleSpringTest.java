@@ -1,10 +1,13 @@
 package tests;
 
 import app.beans.LeapBean;
+import app.beans.ListType;
 import app.beans.SpringBean;
 import leap.core.el.ExpressionLanguage;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 
 public class SimpleSpringTest extends AbstractTest {
 
@@ -36,5 +39,11 @@ public class SimpleSpringTest extends AbstractTest {
         assertNotNull(leapBean.getSpringBean());
         assertSame(springBean.getLeapBean(), leapBean);
         assertSame(leapBean.getSpringBean(), springBean);
+    }
+
+    @Test
+    public void testLeapInjectList() {
+        List<ListType> beans = leapBean.getBeans();
+        assertEquals(2, beans.size());
     }
 }

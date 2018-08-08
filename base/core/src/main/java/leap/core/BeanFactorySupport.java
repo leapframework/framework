@@ -19,6 +19,7 @@ package leap.core;
 import leap.lang.beans.BeanException;
 import leap.lang.beans.BeanFactoryBase;
 
+import java.util.List;
 import java.util.Map;
 
 public interface BeanFactorySupport extends BeanFactoryBase {
@@ -36,6 +37,10 @@ public interface BeanFactorySupport extends BeanFactoryBase {
     }
 
     default <T> Map<String, T> getNamedBeans(Class<? super T> type) {
+        return null;
+    }
+
+    default <T> List<T> getBeans(Class<T> type) {
         return null;
     }
 }

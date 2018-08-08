@@ -687,6 +687,17 @@ public class BeanContainer implements BeanFactory {
                 }
             }
 
+            for(BeanFactorySupport support : postSupports) {
+                List<T> list = (List<T>)support.getBeans(type);
+                if(null != list) {
+                    for (T t : list) {
+                        if(!beans.contains(t)) {
+                            beans.add(t);
+                        }
+                    }
+                }
+            }
+
             if(cache) {
                 typedBeansMap.put(key, beans);
             }

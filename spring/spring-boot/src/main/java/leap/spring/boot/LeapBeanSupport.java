@@ -29,7 +29,9 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public class LeapBeanSupport implements BeanFactorySupport {
@@ -114,9 +116,29 @@ public class LeapBeanSupport implements BeanFactorySupport {
         final String suffix = type.getSimpleName();
         final Map<String, T> beans = new LinkedHashMap<>();
         namedBeans.forEach((name, bean) -> {
-            name = Strings.removeEnd(name, suffix);
-            beans.put(name, bean);
+            if(shouldReturn(bean) != null) {
+                name = Strings.removeEnd(name, suffix);
+                beans.put(name, bean);
+            }
         });
+        return beans;
+    }
+
+    @Override
+    public <T> List<T> getBeans(Class<T> type) {
+        Map<String, T> namedBeans = (Map<String,T>)Global.context.getBeansOfType(type);
+        if(namedBeans == null || namedBeans.isEmpty()) {
+            return null;
+        }
+
+        List<T> beans = new ArrayList<>();
+
+        for(T bean : namedBeans.values()) {
+            if(shouldReturn(bean) != null) {
+                beans.add(bean);
+            }
+        }
+
         return beans;
     }
 
