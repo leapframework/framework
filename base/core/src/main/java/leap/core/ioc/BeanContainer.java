@@ -1555,7 +1555,7 @@ public class BeanContainer implements BeanFactory {
 		if(null == bd || !Iterables.any(bd.getProperties(), Predicates.<PropertyDefinition>nameEquals(name))){
 			//inject by bean's id
 			if(null != inject && !Strings.isEmpty(inject.id())){
-				injectedBean = factory.getBean(inject.id());
+				injectedBean = factory.tryGetBean(inject.id());
 			}else{
 				Class  beanType = null == inject ? null : inject.type();
                 if(Strings.isEmpty(beanName)) {
