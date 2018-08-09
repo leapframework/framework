@@ -19,6 +19,7 @@ package leap.spring.boot;
 import leap.core.AppContextInitializer;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.spring.boot.spel.SpringExpressionFactory;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -55,5 +56,10 @@ public class SpringConfiguration {
     @Bean
     public EnvironmentPostProcessor environmentPostProcessor() {
         return new SpringEnvPostProcessor();
+    }
+
+    @Bean
+    public SpringExpressionFactory springExpressionFactory() {
+        return new SpringExpressionFactory();
     }
 }
