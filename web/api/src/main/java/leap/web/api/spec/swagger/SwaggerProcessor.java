@@ -92,7 +92,6 @@ public class SwaggerProcessor implements ApiConfigProcessor,ApiMetadataProcessor
         String json = toSwaggerJson(w, context, api.getMetadata());
         String fingerprint = assetStrategy.getFingerprint(json.getBytes());
 
-        resp.setHeader(Headers.CACHE_CONTROL, "public, max-age=86400");
         resp.setHeader(Headers.ETAG, "\"" + fingerprint + "\"");
 
         String ifNoneMatch = req.getHeader(Headers.IF_NONE_MATCH);
