@@ -16,11 +16,15 @@
 package app.beans;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
 public class SpringBean implements ListType{
 
     @Autowired
     protected LeapBean leapBean;
+
+    @Autowired
+    protected AutowireCapableBeanFactory autowireFactory;
 
     public LeapBean getLeapBean() {
         return leapBean;
@@ -28,5 +32,13 @@ public class SpringBean implements ListType{
 
     public void setLeapBean(LeapBean leapBean) {
         this.leapBean = leapBean;
+    }
+
+    public AutowireCapableBeanFactory getAutowireFactory() {
+        return autowireFactory;
+    }
+
+    public void setAutowireFactory(AutowireCapableBeanFactory autowireFactory) {
+        this.autowireFactory = autowireFactory;
     }
 }

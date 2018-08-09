@@ -16,6 +16,7 @@
 package app.beans;
 
 import leap.core.annotation.Inject;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
 import java.util.List;
 
@@ -26,6 +27,9 @@ public class LeapBean implements ListType {
 
     @Inject
     protected List<ListType> beans;
+
+    @Inject
+    protected AutowireCapableBeanFactory autowireFactory;
 
     public SpringBean getSpringBean() {
         return springBean;
@@ -41,5 +45,13 @@ public class LeapBean implements ListType {
 
     public void setBeans(List<ListType> beans) {
         this.beans = beans;
+    }
+
+    public AutowireCapableBeanFactory getAutowireFactory() {
+        return autowireFactory;
+    }
+
+    public void setAutowireFactory(AutowireCapableBeanFactory autowireFactory) {
+        this.autowireFactory = autowireFactory;
     }
 }

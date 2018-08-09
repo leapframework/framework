@@ -47,6 +47,13 @@ public class SimpleSpringTest extends AbstractTest {
     }
 
     @Test
+    public void testAutowire(){
+        assertNotNull(springBean.getAutowireFactory());
+        assertNotNull(leapBean.getAutowireFactory());
+        assertSame(springBean.getAutowireFactory(), leapBean.getAutowireFactory());
+    }
+
+    @Test
     public void testCyclicAutowired() {
         assertNotNull(springBean);
         assertNotNull(springBean.getLeapBean());
