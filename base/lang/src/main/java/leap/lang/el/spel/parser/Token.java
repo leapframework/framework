@@ -50,6 +50,7 @@ enum Token {
 	VOID("void"),
 	VOLATILE("volatile"),
 	WHILE("while"),
+
     CONTAINS("contains"),
     STARTS_WITH("startsWith"),
     ENDS_WITH("endsWith"),

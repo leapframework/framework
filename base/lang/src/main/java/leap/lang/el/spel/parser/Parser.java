@@ -561,8 +561,10 @@ public class Parser {
                 lexer.nextToken();
                 expr = new AstProperty(context, expr, "*");
             } else {
-                if (lexer.token() != Token.IDENTIFIER) {
-                    throw new ElParseException("error");
+                Token token = lexer.token();
+                if (token != Token.IDENTIFIER &&
+                        !((token == Token.CONTAINS || token == Token.STARTS_WITH || token == Token.ENDS_WITH))) {
+                    throw new ElParseException("Expected identifier, but '" + lexer.token() + "'");
                 }
 
                 String name = lexer.stringVal();
