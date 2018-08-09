@@ -138,16 +138,27 @@ public class BorrowTest extends PoolTestBase {
     public void testSetupConnectionErrorOnBorrowNew() throws SQLException {
         ds.setMaxActive(1);
         ds.setDefaultAutoCommit(false);
-        ms.setSetAutoCommitError(true);
+        ms.setAutoCommitError(true);
 
         try {
-            try(Connection conn = ds.getConnection()){}
+            try (Connection conn = ds.getConnection()) {
+            }
             fail("should throw SQLException");
         }catch (SQLException e) {
             assertContains(e.getMessage(), "Set AutoCommit Error");
         }
 
-        ms.setSetAutoCommitError(false);
+        ms.setAutoCommitIllegalState(true);
+        try {
+            try (Connection conn = ds.getConnection()) {
+            }
+            fail("should throw SQLException");
+        }catch (SQLException e) {
+            assertContains(e.getMessage(), "Set AutoCommit IllegalState");
+        }
+        ms.setAutoCommitIllegalState(false);
+
+        ms.setAutoCommitError(false);
         try(Connection conn = ds.getConnection()) {}
     }
 
@@ -159,7 +170,7 @@ public class BorrowTest extends PoolTestBase {
             conn.setAutoCommit(true);
         }
 
-        ms.setSetAutoCommitError(true);
+        ms.setAutoCommitError(true);
         try {
             try(Connection conn = ds.getConnection()){}
             fail("should throw SQLException");
@@ -168,21 +179,21 @@ public class BorrowTest extends PoolTestBase {
         }
 
         //test abandon old one, creates a new.
-        ms.setSetAutoCommitError(false);
+        ms.setAutoCommitError(false);
         try(Connection conn = ds.getConnection()){
             conn.setAutoCommit(true);
         }
-        ms.setSetAutoCommitError(true);
-        ms.getSetAutoCommitErrorCount().set(1);
+        ms.setAutoCommitError(true);
+        ms.getAutoCommitErrorCount().set(1);
         try(Connection conn = ds.getConnection()){}
 
         //test abandon old one, throw exception.
-        ms.setSetAutoCommitError(false);
+        ms.setAutoCommitError(false);
         try(Connection conn = ds.getConnection()){
             conn.setAutoCommit(true);
         }
-        ms.setSetAutoCommitError(true);
-        ms.getSetAutoCommitErrorCount().set(2);
+        ms.setAutoCommitError(true);
+        ms.getAutoCommitErrorCount().set(2);
         try {
             try(Connection conn = ds.getConnection()){}
             fail("should throw SQLException");
@@ -190,7 +201,7 @@ public class BorrowTest extends PoolTestBase {
             assertContains(e.getMessage(), "Set AutoCommit Error");
         }
 
-        ms.setSetAutoCommitError(false);
+        ms.setAutoCommitError(false);
         try(Connection conn = ds.getConnection()) {}
     }
 

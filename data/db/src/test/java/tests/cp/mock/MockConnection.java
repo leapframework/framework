@@ -213,13 +213,17 @@ public class MockConnection extends ConnectionAdapter {
 
 	@Override
     public void setAutoCommit(boolean autoCommit) throws SQLException {
-        if(dataSource.isSetAutoCommitError()) {
-            AtomicInteger count = dataSource.getSetAutoCommitErrorCount();
+        if(dataSource.isAutoCommitError()) {
+            AtomicInteger count = dataSource.getAutoCommitErrorCount();
             if(count.get() < 0 || count.get() > 0) {
                 if(count.get() > 0){
                     count.decrementAndGet();
                 }
-                throw new SQLException("Set AutoCommit Error!");
+                if(dataSource.isAutoCommitIllegalState()) {
+                    throw new IllegalStateException("Set AutoCommit IllegalState!");
+                }else {
+                    throw new SQLException("Set AutoCommit Error!");
+                }
             }
         }
 		this.autoCommit = autoCommit;

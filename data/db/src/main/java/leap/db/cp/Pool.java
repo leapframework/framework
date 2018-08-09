@@ -158,7 +158,13 @@ class Pool {
 		}catch(SQLException e) {
             log.warn("Setup connection error: {}", e.getMessage(), e);
             se = e;
-        }
+        }catch (Throwable e) {
+		    /*MySQL
+                java.lang.IllegalMonitorStateException: null
+                    at com.mysql.jdbc.StatementImpl.executeQuery(StatementImpl.java:1436)
+		     */
+			se = new SQLException("Setup connection error: " + e.getMessage(), e);
+		}
 
         if(null != se) {
             if(null != conn) {
@@ -176,7 +182,7 @@ class Pool {
 
     protected void printConnections() {
         if(log.isInfoEnabled()) {
-            int maxPrint = 5;
+            int maxPrint = 20;
             int count = 0;
             for (PooledConnection conn : syncPool.connections()) {
                 count++;
@@ -184,8 +190,8 @@ class Pool {
                     break;
                 }
                 if (conn.isActive()) {
-                    log.info("connection busy duration {}ms\n{}",
-                            conn.getBusyDurationMs(),
+                    log.info("Connection busy duration {}seconds\n{}",
+                            conn.getBusyDurationMs() / 1000,
                             new StackTraceStringBuilder(conn.getStackTraceOnOpen()).toString(FRAMEWORK_PACKAGE));
                 }
             }
