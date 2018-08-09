@@ -31,6 +31,8 @@ import leap.lang.Classes;
 import leap.lang.Ordered;
 import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
+import leap.lang.meta.annotation.Filterable;
+import leap.lang.meta.annotation.Sortable;
 import leap.lang.reflect.ReflectClass;
 import leap.lang.reflect.ReflectMethod;
 import leap.orm.annotation.*;
@@ -39,8 +41,8 @@ import leap.orm.annotation.meta.MetaName;
 import leap.orm.config.OrmModelClassConfig;
 import leap.orm.config.OrmModelsConfig;
 import leap.orm.config.OrmModelsConfigs;
-import leap.orm.domain.Domains;
 import leap.orm.domain.Domain;
+import leap.orm.domain.Domains;
 import leap.orm.event.*;
 import leap.orm.event.reflect.ReflectCreateEntityListener;
 import leap.orm.event.reflect.ReflectDeleteEntityListener;
@@ -99,6 +101,8 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 			mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,NotEmpty.class));
 			mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,NotNull.class));
 			mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,Required.class));
+            mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,Filterable.class));
+            mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,Sortable.class));
 		}
     }
 
@@ -547,6 +551,18 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 			fmb.setNullable(false);
 		}
 	}
+
+    protected void mappingFieldColumnByAnnotation(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder fmb, Filterable a){
+        if(null != a){
+            fmb.setFilterable(a.value());
+        }
+    }
+
+    protected void mappingFieldColumnByAnnotation(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder fmb, Sortable a){
+        if(null != a){
+            fmb.setSortable(a.value());
+        }
+    }
 
 	protected void mappingManyToOneByClassAnnotation(MetadataContext context,EntityMappingBuilder emb,ManyToOne[] annotations) {
 		for(ManyToOne a : annotations){
