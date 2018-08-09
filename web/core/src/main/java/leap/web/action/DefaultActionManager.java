@@ -463,11 +463,15 @@ public class DefaultActionManager implements ActionManager {
                 resolver = new JsonArgumentResolver(app,route,argument);
             }
         }
+
         if(null == resolver){
             TypeInfo typeInfo = argument.getTypeInfo();
             if(typeInfo.isCollectionType()){
                 //Collection type resolver
-                resolver = new CollectionArgumentResolver(app, route, argument);
+                RequestBodyArgumentResolver bodyResolver = rbaf.declared  ? null :
+                        new RequestBodyArgumentResolver(app, route.getAction(), argument);
+
+                resolver = new CollectionArgumentResolver(app, route, argument, bodyResolver);
             }else if(typeInfo.isSimpleType()) {
                 //Simple type resolver
                 resolver = new SimpleArgumentResolver(app, route, argument);

@@ -30,6 +30,10 @@ public class RequestBodyArgumentResolver implements ArgumentResolver {
 	protected final boolean			  requestBodyDeclared;
 	protected final RequestBodyReader requestBodyReader;
 	protected final ArgumentResolver  nonRequestBodyResolver;
+
+	public RequestBodyArgumentResolver(App app, Action action, Argument argument) {
+		this(app, action, argument, null, false, null);
+	}
 	
 	public RequestBodyArgumentResolver(App app,
 									   Action action,
@@ -76,7 +80,11 @@ public class RequestBodyArgumentResolver implements ArgumentResolver {
             }
         }
 
-        return nonRequestBodyResolver.resolveValue(context, argument);
+        if(null != nonRequestBodyResolver) {
+            return nonRequestBodyResolver.resolveValue(context, argument);
+        }else {
+            return null;
+        }
 	}
 
 	protected RequestBodyReader getRequestBodyReader(App app,Argument argument) {
