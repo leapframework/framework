@@ -50,4 +50,13 @@ public class ScelCondTest extends TestBase {
         assertFalse(expr.test(New.hashMap("a", "s1")));
     }
 
+    @Test
+    public void testNot() {
+        ScelExpr expr = ScelParser.parse("not (a eq 's')");
+        assertEquals("not ( a eq 's' )", expr.toString());
+
+        expr = ScelParser.parse("not (a eq 's') and (c eq 1)");
+        assertEquals("not ( a eq 's' ) and ( c eq 1 )", expr.toString());
+    }
+
 }

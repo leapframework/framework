@@ -117,11 +117,12 @@ public class ScelParser extends AbstractStringParser {
                         break;
                     }
 
-                    scanName();
-                    if(scanOperator()){
-                        scanValue();
+                    if(scanName()) {
+                        if (scanOperator()) {
+                            scanValue();
+                        }
+                        andOr = true;
                     }
-                    andOr = true;
             }
         }
 
@@ -132,9 +133,14 @@ public class ScelParser extends AbstractStringParser {
         return new ScelExpr(nodes.toArray(new ScelNode[0]));
     }
 
-    private void scanName() {
+    private boolean scanName() {
         String alias = null;
         String name  = scanIdentifier(true);
+
+        if(name.equalsIgnoreCase("not")) {
+            nodes.add(new ScelNode(ScelToken.NOT, name));
+            return false;
+        }
 
         if(ch == '.') {
             nextChar();
@@ -143,6 +149,7 @@ public class ScelParser extends AbstractStringParser {
         }
 
         nodes.add(new ScelName(alias, name));
+        return true;
     }
 
     private boolean scanOperator() {
