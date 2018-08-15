@@ -61,6 +61,7 @@ public class ScelParser extends AbstractStringParser {
         op(ScelToken.NE);
         op(ScelToken.CO);
         op(ScelToken.SW);
+        op(ScelToken.IN);
         op(ScelToken.EW);
         op(ScelToken.PR);
     }
@@ -171,27 +172,39 @@ public class ScelParser extends AbstractStringParser {
         if(null == token) {
             error("Invalid operator '" + op + "'");
         }
-        nodes.add(new ScelNode(token, op));
 
-        if(token == ScelToken.IS) {
+        if(token == ScelToken.NOT) {
+            nodes.add(new ScelNode(ScelToken.IS_NOT, op));
             String s = nextLiteral();
-            if(s.equalsIgnoreCase("not")) {
-                nodes.add(new ScelNode(ScelToken.NOT, s));
-
+            if(!s.equalsIgnoreCase("null")) {
+                error("Expected 'null' but '" + s + "'");
+            }
+            nodes.add(new ScelNode(ScelToken.NULL, s));
+            return false;
+        } else if(token == ScelToken.IS) {
+            String s = nextLiteral();
+            if (s.equalsIgnoreCase("not")) {
+                nodes.add(new ScelNode(ScelToken.IS_NOT, op + " " + s));
                 s = nextLiteral();
-                if(!s.equalsIgnoreCase("null")) {
+                if (!s.equalsIgnoreCase("null")) {
                     error("Expected 'null' but '" + s + "'");
                 }
                 nodes.add(new ScelNode(ScelToken.NULL, s));
                 return false;
+            } else {
+                nodes.add(new ScelNode(token, op));
+                if (s.equalsIgnoreCase("null")) {
+                    nodes.add(new ScelNode(ScelToken.NULL, s));
+                    return false;
+                }
+                error("Unexpected literal '" + s + "' after IS");
             }
-
-            if(s.equalsIgnoreCase("null")) {
-                nodes.add(new ScelNode(ScelToken.NULL, s));
-                return false;
-            }
-
-            error("Unexpected literal '" + s + "' after IS");
+        } else if(token == ScelToken.IN) {
+            nodes.add(new ScelNode(token, op));
+            scanInValue();
+            return false;
+        } else {
+            nodes.add(new ScelNode(token, op));
         }
 
         if(token == ScelToken.PR) {
@@ -199,6 +212,54 @@ public class ScelParser extends AbstractStringParser {
         }
 
         return true;
+    }
+
+    private void scanInValue() {
+        skipWhitespaces();
+
+        int start = pos;
+        String s  = null;
+
+        if(ch == '(') {
+            for(;;) {
+                nextChar();
+
+                if(eof()) {
+                    error("Unclosed in value, expected ')'");
+                }
+
+                if(ch == ')') {
+                    s = substring(start + 1, pos).trim();
+                    nextChar();
+                    break;
+                }
+            }
+        }else {
+            for(;;) {
+                nextChar();
+
+                if(ch == ',') {
+                    nextChar();
+                    skipWhitespaces();
+                    continue;
+                }
+
+                if(eof() || isWhitespace()) {
+                    s = substring(start, pos).trim();
+                    break;
+                }
+            }
+        }
+
+        String[] parts = Strings.split(s, ',');
+        for(int i=0;i<parts.length;i++) {
+            String part = parts[i];
+            if(part.startsWith("'") && part.endsWith("'")) {
+                parts[i] = part.substring(1, part.length()-1);
+            }
+        }
+
+        nodes.add(new ScelNode(ScelToken.VALUE, Strings.join(parts, ',')));
     }
 
     private void scanValue() {
@@ -258,7 +319,7 @@ public class ScelParser extends AbstractStringParser {
         String value = Strings.replace(substring(start, end), "''", "'");
         if(!Strings.equals(ScelToken.NULL.name(),value.toUpperCase())){
             ScelToken last = nodes.get(nodes.size()-1).token;
-            if(last == ScelToken.NOT || last == ScelToken.IS){
+            if(last == ScelToken.IS_NOT || last == ScelToken.IS){
                 error("Invalid value of operation '" + last + "', it must be null");
             }
             nodes.add(new ScelNode(ScelToken.VALUE, value, quoted));

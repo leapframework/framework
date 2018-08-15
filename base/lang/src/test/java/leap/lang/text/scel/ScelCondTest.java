@@ -59,4 +59,27 @@ public class ScelCondTest extends TestBase {
         assertEquals("not ( a eq 's' ) and ( c eq 1 )", expr.toString());
     }
 
+    @Test
+    public void testIn() {
+        ScelExpr expr = ScelParser.parse("a in 1,2");
+        assertEquals("a in 1,2", expr.toString());
+
+        expr = ScelParser.parse("a in 1, 2");
+        assertEquals("a in 1,2", expr.toString());
+
+        expr = ScelParser.parse("a in (1,2)");
+        assertEquals("a in 1,2", expr.toString());
+
+        expr = ScelParser.parse("a in ('1','2')");
+        assertEquals("a in 1,2", expr.toString());
+    }
+
+    @Test
+    public void testIsNot() {
+        ScelExpr expr = ScelParser.parse("a is not null");
+        assertEquals("a is not null", expr.toString());
+
+        expr = ScelParser.parse("a is null");
+        assertEquals("a is null", expr.toString());
+    }
 }

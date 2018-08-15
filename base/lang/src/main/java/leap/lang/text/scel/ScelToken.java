@@ -38,6 +38,7 @@ public enum ScelToken {
 
     PR, //present
     IS,
+    IS_NOT,
     NOT,
     AND,
     OR

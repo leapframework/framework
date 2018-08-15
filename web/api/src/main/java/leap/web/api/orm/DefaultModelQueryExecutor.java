@@ -873,7 +873,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
                     String sqlOperator = toSqlOperator(op);
 
-                    if(op == ScelToken.IS || op == ScelToken.NOT){
+                    if(op == ScelToken.IS || op == ScelToken.IS_NOT){
                         where.append(alias).append('.').append(name).append(' ').append(sqlOperator);
                         continue;
                     }
@@ -1007,6 +1007,10 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             return "<>";
         }
 
+        if(op == ScelToken.NOT){
+            return "not";
+        }
+
         if(op == ScelToken.IN) {
             return "in";
         }
@@ -1019,9 +1023,10 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             return "is null";
         }
 
-        if(op == ScelToken.NOT || op == ScelToken.PR){
+        if(op == ScelToken.IS_NOT || op == ScelToken.PR) {
             return "is not null";
         }
+
         throw new IllegalStateException("Not supported operator '" + op + "'");
     }
 
