@@ -133,7 +133,7 @@ public class DefaultAuthzTokenManager implements AuthzTokenManager {
         if(Strings.isEmpty(authc.getScope())) {
             return client.getGrantedScope();
         }
-        return client.getGrantedScope() + "," + authc.getScope();
+        return client.getGrantedScope() + " " + authc.getScope();
     }
 
     @Override
