@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.leapframework</groupId>
 		<artifactId>leap-parent</artifactId>
-        <version>0.7.7b</version>
+        <version>0.7.8b-SNAPSHOT</version>
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
 	<artifactId>leap-oauth2-server</artifactId>
