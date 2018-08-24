@@ -19,6 +19,8 @@ package leap.lang.text.scel;
 import leap.lang.el.spel.SPEL;
 import leap.lang.expression.Expression;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class ScelExpr {
@@ -32,6 +34,19 @@ public class ScelExpr {
 
     public ScelNode[] nodes() {
         return nodes;
+    }
+
+    public ScelExpr accept(ScelVisitor visitor) {
+        List<ScelNode> list = new ArrayList<>();
+
+        for(ScelNode node : nodes) {
+            ScelNode newNode = visitor.visit(node);
+            if(null != newNode) {
+                list.add(newNode);
+            }
+        }
+
+        return new ScelExpr(list.toArray(new ScelNode[list.size()]));
     }
 
     @Override
