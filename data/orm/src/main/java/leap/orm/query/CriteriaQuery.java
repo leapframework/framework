@@ -37,6 +37,36 @@ public interface CriteriaQuery<T> extends Query<T> {
     String DEFAULT_ALIAS_NAME = "t";
 
     /**
+     * Returns the selection fields or null.
+     */
+    String[] getSelects();
+
+    /**
+     * Returns the where expression or null.
+     */
+    String getWhere();
+
+    /**
+     * Returns is distinct query or not.
+     */
+    boolean isDistinct();
+
+    /**
+     * Returns the group by expression or null.
+     */
+    String getGroupBy();
+
+    /**
+     * Returns the having expression or null.
+     */
+    String getHaving();
+
+    /**
+     * Returns the sql view or null.
+     */
+    String getSqlView();
+
+    /**
      * Sets the sql of from.
      *
      * <p/>

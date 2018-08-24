@@ -50,9 +50,9 @@ import java.util.function.Predicate;
 public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements CriteriaQuery<T>,QueryContext {
 
     protected SqlBuilder              builder;
-    protected Predicate<FieldMapping> selectFilter;
     protected String                  sqlView;
     protected List<JoinBuilder>       joins = new ArrayList<>(1);
+    protected String[]                selects;
     protected String                  where;
     protected ArrayParams             whereParameters;
     protected StringBuilder           joinByIdWhere;
@@ -65,6 +65,30 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 	    super(dao, targetType, em);
 	    Args.notNull(em,"entity mapping");
 	    this.builder = new SqlBuilder();
+    }
+
+    public String[] getSelects() {
+	    return selects;
+    }
+
+    public String getWhere() {
+	    return where;
+    }
+
+    public boolean isDistinct() {
+	    return distinct;
+    }
+
+    public String getGroupBy() {
+	    return groupBy;
+    }
+
+    public String getHaving() {
+	    return having;
+    }
+
+    public String getSqlView() {
+	    return sqlView;
     }
 
     @Override
@@ -484,10 +508,11 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
     @Override
     public CriteriaQuery<T> select(String... selection) {
+	    this.selects = selection;
 		if(null == selection || selection.length == 0){
-			builder.selects = null;
+			builder.columns = null;
 		}else{
-			builder.selects = columns(selection);
+			builder.columns = columns(this.selects);
 		}
 	    return this;
     }
@@ -508,14 +533,23 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                     select.add(fm.getFieldName());
                 }
             }
-            builder.selects = columns(select.toArray(new String[select.size()]));
+            this.select(select.toArray(new String[select.size()]));
         }
         return this;
     }
 
     @Override
     public CriteriaQuery<T> select(Predicate<FieldMapping> filter) {
-		this.selectFilter = filter;
+		//this.selectFilter = filter;
+        List<String> select = new ArrayList<>();
+        for(FieldMapping fm : em.getFieldMappings()) {
+            if(filter.test(fm)) {
+                select.add(fm.getFieldName());
+            }
+        }
+        if(!select.isEmpty()) {
+            this.select(select.toArray(new String[select.size()]));
+        }
 	    return this;
     }
 
@@ -884,7 +918,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
 	protected class SqlBuilder {
 		protected String   alias = "t";
-		protected String[] selects;
+		protected String[] columns;
 
 		private StringBuilder sql;
 		
@@ -1153,27 +1187,12 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 		protected SqlBuilder columns() {
 			sql.append(' ');
 			
-            if(null == selects || selects.length == 0){
-            	if(null == selectFilter) {
-                    SqlFactory sf = dao.getOrmContext().getSqlFactory();
-                    sql.append(sf.createSelectColumns(dao.getOrmContext(), em, alias));
-            	}else{
-            		int index = 0;
-            		for(FieldMapping fm : em.getFieldMappings()) {
-            			if(selectFilter.test(fm)) {
-                			if(index > 0) {
-                				sql.append(',');
-                			}
-                			
-                			sql.append(alias).append('.').append(fm.getColumnName());
-                			index++;
-            			}
-            		}
-            	}
-                
+            if(null == columns || columns.length == 0){
+                SqlFactory sf = dao.getOrmContext().getSqlFactory();
+                sql.append(sf.createSelectColumns(dao.getOrmContext(), em, alias));
             }else{
                 int index = 0;
-                for(String column : selects){
+                for(String column : columns){
                     if(index > 0){
                         sql.append(",");
                     }

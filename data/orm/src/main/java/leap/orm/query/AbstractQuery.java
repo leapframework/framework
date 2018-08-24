@@ -59,7 +59,6 @@ public abstract class AbstractQuery<T> implements Query<T>,QueryContext {
 
 	protected Limit  limit;
 	protected String orderBy;
-	protected String groupBy;
 	protected String having;
 
     private Sql querySql;

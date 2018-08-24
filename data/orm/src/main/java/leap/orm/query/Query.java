@@ -31,6 +31,11 @@ import java.util.List;
 import java.util.Map;
 
 public interface Query<T> {
+
+	/**
+	 * Returns the order by expression or null.
+	 */
+	String getOrderBy();
 	
 	/**
 	 * Sets the given name and value as query parameter.
