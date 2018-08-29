@@ -106,8 +106,11 @@ public class BeanConverter extends AbstractConverter<Object>{
                 Name nameAnnotation = a.annotationType().getAnnotation(Name.class);
 
                 if(null != nameAnnotation){
-                    name = (String)ReflectClass.of(a.getClass()).getMethod(nameAnnotation.value()).invoke(a);
-                    multiNames = true;
+                    String v = (String)ReflectClass.of(a.getClass()).getMethod(nameAnnotation.value()).invoke(a);
+                    if(!v.isEmpty()) {
+                        name = v;
+                        multiNames = true;
+                    }
                     break;
                 }
             }
