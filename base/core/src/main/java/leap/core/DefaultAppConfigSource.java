@@ -624,7 +624,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
         protected boolean     defaultOverride;
         protected boolean     hasDefaultDataSource = false;
-        protected Set<String> resources            = new HashSet<>();
+        protected Set<String> resources            = new LinkedHashSet<>();
 
         ConfigContext(Loader loader, boolean defaultOverride, boolean forProperty){
             this.loader = loader;

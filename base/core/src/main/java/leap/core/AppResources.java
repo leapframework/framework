@@ -47,6 +47,8 @@ public class AppResources {
     static final String CP_META_PREFIX      = "META-INF/conf";
     static final String CP_APP_PREFIX       = "conf";
 
+    static final String CP_MODULES_PREFIX_WITHTOU_START   = "META-INF/leap/modules";
+
     private static final String CP_CORE_LOCATION      = Strings.format("classpath*:{0}/**/*", CP_CORE_PREFIX);
     private static final String CP_FRAMEWORK_LOCATION = Strings.format("classpath*:{0}/**/*", CP_FRAMEWORK_PREFIX);
     private static final String CP_MODULES_LOCATION   = Strings.format("classpath*:{0}/**/*", CP_MODULES_PREFIX);
@@ -140,7 +142,7 @@ public class AppResources {
     }
 
     protected static boolean isModuleResource(String cp) {
-        return null != cp && cp.startsWith(CP_MODULES_PREFIX);
+        return null != cp && cp.startsWith(CP_MODULES_PREFIX_WITHTOU_START);
     }
 
     protected static boolean isMetaResource(String cp) {
@@ -241,7 +243,7 @@ public class AppResources {
         this.defaultSearchPatterns = patterns.toArray(new String[0]);
     }
 
-    protected int resolveSortOrder(Resource resource) {
+    protected float resolveSortOrder(Resource resource) {
         /* sort orders :
                 core         : 0
                 framework    : 1
@@ -261,35 +263,35 @@ public class AppResources {
                 test:conf_*  : 11
          */
 
-        int order = Integer.MAX_VALUE;
+        float order = 99999.0f;
 
         String cp = resource.getClasspath();
         if(null != cp) {
             if(isCoreResource(cp)) {
-                order = 0;
+                order = 0.0f;
             }else if(isFrameworkResource(cp)) {
-                order = 1;
+                order = 1.0f;
             }else if(isModuleResource(cp)) {
-                order = 2;
+                order = 2.0f;
             }else if(isMetaResource(cp)) {
-                order = 3;
+                order = 3.0f;
             }else if(isAppResource(cp)) {
 
                 if(isJarResource(resource)) {
-                    order = 4;
+                    order = 4.0f;
                 }else if(isTestResource(resource)) {
-                    order = 10;
+                    order = 10.0f;
                 }else {
-                    order = 8;
+                    order = 8.0f;
                 }
 
                 if(isAppProfiledResource(cp)) {
-                    order += 1;
+                    order += 1.0f;
                 }
             }
         }else {
             if(resource instanceof ServletResource) {
-                order = 6;
+                order = 6.0f;
             }
         }
 
@@ -334,13 +336,13 @@ public class AppResources {
         }
         */
 
-        int order = resolveSortOrder(resource);
+        float order = resolveSortOrder(resource);
         boolean defaultOverride = resolveDefaultOverride(resource);
 
         doAdd(resource, defaultOverride, order, path);
     }
 
-    private void doAdd(Resource resource, boolean defaultOverride, int order, String path) {
+    private void doAdd(Resource resource, boolean defaultOverride, float order, String path) {
         resourceUrls.add(resource.getURLString());
         sortedResources.add(new SimpleAppResource(resource, defaultOverride, order, path));
     }
