@@ -82,7 +82,7 @@ class JsonDecoder {
 
                 String name = k.toString();
 
-                BeanProperty bp = bt.tryGetProperty(name);
+                BeanProperty bp = findBeanProperty(bt, name);
                 if(bp == null) {
                     set.add(prefix + name);
                 }else if(v instanceof Map) {
@@ -105,5 +105,19 @@ class JsonDecoder {
             });
         }
 
+    }
+
+    private static BeanProperty findBeanProperty(BeanType bt, String name) {
+        BeanProperty bp = bt.tryGetProperty(name);
+        if (null == bp) {
+            for (BeanProperty bp1 : bt.getProperties()) {
+                JsonName jn = bp1.getAnnotation(JsonName.class);
+                if (null != jn && jn.value().equals(name)) {
+                    bp = bp1;
+                    break;
+                }
+            }
+        }
+        return bp;
     }
 }
