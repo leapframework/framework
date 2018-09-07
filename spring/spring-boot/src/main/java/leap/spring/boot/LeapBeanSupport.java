@@ -127,7 +127,11 @@ public class LeapBeanSupport implements BeanFactorySupport {
 
     @Override
     public <T> List<T> getBeans(Class<T> type) {
-        Map<String, T> namedBeans = (Map<String,T>)Global.context.getBeansOfType(type);
+        if(Global.context == null) {
+            return null;
+        }
+
+        Map<String, T> namedBeans = Global.context.getBeansOfType(type);
         if(namedBeans == null || namedBeans.isEmpty()) {
             return null;
         }
