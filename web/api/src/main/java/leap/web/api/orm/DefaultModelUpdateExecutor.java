@@ -170,7 +170,7 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
                 continue;
             }
 
-            tryHandleDateValue(entry, p);
+            tryHandleSpecialValue(entry, p);
         }
 
         Errors errors = dao.validate(em, properties, properties.keySet());

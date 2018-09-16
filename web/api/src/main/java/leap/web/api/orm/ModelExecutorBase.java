@@ -19,9 +19,12 @@
 package leap.web.api.orm;
 
 import leap.lang.Strings;
+import leap.lang.codec.Base64;
 import leap.lang.convert.Converts;
 import leap.lang.jdbc.JdbcTypeKind;
 import leap.lang.meta.MSimpleType;
+import leap.lang.meta.MSimpleTypeKind;
+import leap.lang.meta.MType;
 import leap.orm.OrmMetadata;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
@@ -53,14 +56,38 @@ public abstract class ModelExecutorBase {
         this.md  = dao.getOrmContext().getMetadata();
     }
 
-    protected void tryHandleDateValue(Map.Entry<String, Object> entry, MApiProperty p) {
+    protected void tryHandleSpecialValue(Map.Entry<String, Object> entry, MApiProperty p) {
         Object value = entry.getValue();
-        if(null != value && value instanceof String) {
+        if(null == value) {
+            return;
+        }
+
+        if(value instanceof String) {
             String string = (String) value;
-            if(Strings.isNotBlank(string)
-                    && ((MSimpleType) p.getType()).getJdbcType().getKind().equals(JdbcTypeKind.Temporal)) {
+            if(Strings.isBlank(string)) {
+                return;
+            }
+
+            if(!p.getType().isSimpleType()){
+                return;
+            }
+
+            MSimpleType type = p.getType().asSimpleType();
+
+            if(type.getJdbcType().getKind().equals(JdbcTypeKind.Temporal)) {
                 Date date = Converts.convert(string, Date.class);
                 entry.setValue(date);
+                return;
+            }
+
+            if(type.getSimpleTypeKind().equals(MSimpleTypeKind.BINARY)) {
+                try {
+                    byte[] data = Base64.decodeToBytes(string);
+                    entry.setValue(data);
+                    return;
+                }catch (Exception e) {
+
+                }
             }
         }
     }

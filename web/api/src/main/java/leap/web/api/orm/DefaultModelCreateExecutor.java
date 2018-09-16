@@ -123,7 +123,7 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
                 }
             }
 
-            tryHandleDateValue(entry, p);
+            tryHandleSpecialValue(entry, p);
         }
 
         //Removes the not creatable properties.
