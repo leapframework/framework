@@ -37,8 +37,15 @@
         <property name="jdbcUrl"         value="jdbc:postgresql://localhost:5432/leap" />
         <property name="username"        value="leap" />
         <property name="password"        value="leap" />
-    </bean>      
+    </bean>
+
+	<bean name="oracle" type="javax.sql.DataSource" class="leap.db.cp.PooledDataSource">
+        <property name="driverClassName" value="oracle.jdbc.OracleDriver" />
+        <property name="jdbcUrl"         value="jdbc:oracle:thin:@//localhost:1521/xe" />
+        <property name="username"        value="test" />
+        <property name="password"        value="test" />
+    </bean>
     -->
-    
+
     <import resource="beans_local.xml" check-existence="false"/>
 </beans>

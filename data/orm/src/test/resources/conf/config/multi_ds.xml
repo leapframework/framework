@@ -10,6 +10,10 @@
     <orm:models datasource="mysql">
         <orm:package name="leap.orm.tested"/>
     </orm:models>
+
+    <orm:models datasource="oracle">
+        <orm:package name="leap.orm.tested"/>
+    </orm:models>
     
     <orm:models datasource="derby">
         <orm:package name="leap.orm.tested"/>

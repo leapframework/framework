@@ -18,9 +18,11 @@ package leap.db.platform.postgresql;
 import leap.db.model.DbIndexBuilder;
 import leap.db.model.DbTableBuilder;
 import leap.db.platform.GenericDbMetadataReader;
-import leap.lang.jdbc.JDBC;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class PostgreSQL9MetadataReader extends GenericDbMetadataReader {
 
@@ -102,11 +104,6 @@ public class PostgreSQL9MetadataReader extends GenericDbMetadataReader {
         return executeSchemaQuery(connection, params, sql);
     }
 	
-	@Override
-    protected String getTableCatalog(ResultSet rs) throws SQLException {
-	    return super.getTableCatalog(rs);
-    }
-
 	@Override
     protected String getSchemaCatalog(ResultSet rs) throws SQLException {
 	    return null;

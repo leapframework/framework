@@ -51,7 +51,7 @@ public class MySql5MetadataReader extends GenericDbMetadataReader {
     }
 	
 	@Override
-    protected String getColumnSchema(ResultSet rs) throws SQLException {
+    protected String getColumnSchema(MetadataParameters parameters, ResultSet rs) throws SQLException {
 		return rs.getString(TABlE_CATALOG);
     }
 

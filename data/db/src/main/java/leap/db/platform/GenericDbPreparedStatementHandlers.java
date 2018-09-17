@@ -98,7 +98,7 @@ public class GenericDbPreparedStatementHandlers {
 					throw new IllegalStateException("No current value of sequence '" + sequenceName + "' returned");
 				}
 			}finally{
-				JDBC.closeResultSetAndStatement(rs);
+				JDBC.closeResultSetOnly(rs);
 				JDBC.closeStatementOnly(ps1);
 				
 				try {

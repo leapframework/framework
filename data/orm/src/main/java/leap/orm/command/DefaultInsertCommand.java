@@ -34,6 +34,7 @@ import leap.orm.sql.SqlFactory;
 import leap.orm.validation.EntityValidator;
 import leap.orm.value.EntityWrapper;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -42,9 +43,10 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
     protected final SqlFactory         sf;
     protected final EntityEventHandler eventHandler;
 
-    protected EntityWrapper entity;
-    protected Object        id;
-	protected Object        generatedId;
+    protected EntityWrapper       entity;
+    protected Map<String, Object> values;
+    protected Object              id;
+    protected Object              generatedId;
 
 	public DefaultInsertCommand(Dao dao,EntityMapping em) {
 	    super(dao,em);
@@ -174,6 +176,9 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
 
         //Creates map for saving.
         Map<String,Object> map = entity.toMap();
+        if(null != values) {
+            map.putAll(values);
+        }
 
         //Prepared id and serialization
         prepareIdAndSerialization(id, map);
@@ -203,7 +208,10 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
                 if (!Strings.isEmpty(fm.getSequenceName())) {
                     //the insertion sql must use $fieldName$
                     value = db.getDialect().getNextSequenceValueSqlString(fm.getSequenceName());
-                    entity.set(fm.getFieldName(), value);
+                    if(null == values) {
+                        values = new HashMap<>();
+                    }
+                    values.put(fm.getFieldName(), value);
                 } else {
                     Expression expression = fm.getInsertValue();
                     if (null != expression) {
