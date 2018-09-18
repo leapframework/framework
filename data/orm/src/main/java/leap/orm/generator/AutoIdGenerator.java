@@ -37,6 +37,7 @@ public class AutoIdGenerator implements IdGenerator {
 	protected @NotNull ValueGenerator uuidGenerator;
 	
 	protected int uuidLength = 38;
+	protected int minUuidLength = 36;
 	
 	@Inject(name="uuid")
 	public void setUuidGenerator(ValueGenerator uuidGenerator) {
@@ -114,9 +115,9 @@ public class AutoIdGenerator implements IdGenerator {
 	
 	protected void mappingUUID(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder fmb){
 		fmb.setInsertValue(uuidGenerator);
-		int length = fmb.getColumn().getLength() == null?uuidLength:fmb.getColumn().getLength();
-		if(length < uuidLength){
-			String warnInfo = "the column of field `"+fmb.getFieldName()+"` in "+emb.getEntityName()+" is an uuid field, it's length must longer than " + uuidLength;
+		int length = fmb.getColumn().getLength() == null? uuidLength : fmb.getColumn().getLength();
+		if(length < minUuidLength){
+			String warnInfo = "the column of field `"+fmb.getFieldName()+"` in "+emb.getEntityName()+" is an uuid field, it's length must >= " + minUuidLength;
 			log.warn(warnInfo);
 		}
 		fmb.getColumn().setLength(length);

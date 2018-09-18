@@ -76,7 +76,7 @@ public class PooledConnection extends ConnectionProxy implements Connection {
 	}
 	
 	long getBusyDurationMs() {
-		return System.currentTimeMillis() - lastBusyTime;
+		return lastBusyTime > 0 ? System.currentTimeMillis() - lastBusyTime : 0;
 	}
 
     boolean isCreated() {
@@ -100,7 +100,7 @@ public class PooledConnection extends ConnectionProxy implements Connection {
 
         long duration;
         if(s == STATE_BUSY) {
-            duration = System.currentTimeMillis() - lastBusyTime;
+            duration = getBusyDurationMs();
         }else if(s == STATE_LEAK) {
             duration = System.currentTimeMillis() - lastLeakTime;
         }else {
