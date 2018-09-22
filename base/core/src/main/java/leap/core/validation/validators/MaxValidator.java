@@ -23,7 +23,7 @@ import leap.core.validation.annotations.Max;
 
 public class MaxValidator extends AbstractConstraintValidator<Max,Number>{
 	
-	public static final String ERROR_CODE  = "largeThanMaxValue";
+	public static final String ERROR_CODE  = "graterThanMaxValue";
 	public static final String MESSAGE_KEY = MESSAGE_KEY_PREFIX + ERROR_CODE;
 	
 	protected long max;
