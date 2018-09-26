@@ -139,10 +139,11 @@ public abstract class AbstractView implements View {
 	
 	protected void exposeBuiltInAttributes(Request request) {
 		request.setAttribute("app", 	 request.app());
+		request.setAttribute("config",   request.app().config());
 		request.setAttribute("request",  request);
 		request.setAttribute("response", request.response());
-		request.setAttribute("session", request.getSession());
-		request.setAttribute("params",  request.getParameters());
+		request.setAttribute("session",  request.getSession());
+		request.setAttribute("params",   request.getParameters());
 	}
 
 	/**
