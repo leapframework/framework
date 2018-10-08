@@ -5,6 +5,8 @@
     <bean type="leap.core.AppConfigSupport"   class="leap.spring.boot.LeapConfigSupport" qualifier="pre"/>
     <bean type="leap.core.BeanFactorySupport" class="leap.spring.boot.LeapBeanSupport"/>
 
+    <bean class="leap.spring.boot.spel.SpringExpressionFactory"/>
+
     <!-- spring transaction integration -->
     <beans if-class-present="org.springframework.transaction.PlatformTransactionManager">
         <bean type="leap.core.transaction.TransactionProviderFactory"

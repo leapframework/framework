@@ -15,7 +15,9 @@
  */
 package leap.spring.boot.spel;
 
+import leap.core.annotation.Inject;
 import leap.core.variable.VariableEnvironment;
+import leap.lang.annotation.Init;
 import leap.lang.expression.Expression;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,17 +33,17 @@ import java.util.Map;
 
 public class SpringExpressionFactory {
 
-    @Autowired
+    @Inject
     protected VariableEnvironment env;
 
-    @Autowired
+    @Inject
     protected BeanFactory beanFactory;
 
     protected EnvPropertyAccessor       envProperty;
     protected SpelExpressionParser      spelParser;
     protected StandardEvaluationContext evalContext;
 
-    @PostConstruct
+    @Init
     public void init() {
         SpelParserConfiguration c = new SpelParserConfiguration(SpelCompilerMode.IMMEDIATE, this.getClass().getClassLoader());
         spelParser = new SpelExpressionParser(c);

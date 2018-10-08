@@ -57,9 +57,4 @@ public class SpringConfiguration {
     public EnvironmentPostProcessor environmentPostProcessor() {
         return new SpringEnvPostProcessor();
     }
-
-    @Bean
-    public SpringExpressionFactory springExpressionFactory() {
-        return new SpringExpressionFactory();
-    }
 }
