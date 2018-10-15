@@ -167,7 +167,8 @@ public class Converts {
 	protected static <T> Object doConvert(Object value,Class<T> targetType, Type genericType, ConvertContext context) {
 		Args.notNull(targetType,"targetType");
 
-		if(!CharSequence.class.isAssignableFrom(targetType) && !StringParsable.class.isAssignableFrom(targetType)){
+		if(!CharSequence.class.isAssignableFrom(targetType) &&
+				!Object.class.equals(targetType) && !StringParsable.class.isAssignableFrom(targetType)){
 			value = trimToNull(value);	
 		}
         
