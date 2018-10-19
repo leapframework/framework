@@ -21,6 +21,7 @@ import leap.orm.mapping.EntityMapping;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
+import leap.web.api.remote.RestResourceFactory;
 
 public interface ModelExecutorContext {
 
@@ -48,4 +49,14 @@ public interface ModelExecutorContext {
      * Required.
      */
     EntityMapping getEntityMapping();
+
+    /**
+     * Returns the {@link RestResourceFactory}
+     */
+    RestResourceFactory getRestResourceFactory();
+
+    /**
+     * Set the {@link RestResourceFactory}.
+     */
+    void setRestResourceFactory(RestResourceFactory restResourceFactory);
 }

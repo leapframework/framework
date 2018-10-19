@@ -22,14 +22,16 @@ import leap.web.api.Api;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
+import leap.web.api.remote.RestResourceFactory;
 
 public class SimpleModelExecutorContext implements ModelExecutorContext {
 
-    protected ApiConfig     ac;
-    protected ApiMetadata   amd;
-    protected MApiModel     apiModel;
-    protected Dao           dao;
-    protected EntityMapping entityMapping;
+    protected ApiConfig           ac;
+    protected ApiMetadata         amd;
+    protected MApiModel           apiModel;
+    protected Dao                 dao;
+    protected EntityMapping       entityMapping;
+    protected RestResourceFactory restResourceFactory;
 
     public SimpleModelExecutorContext(Api api, MApiModel am, Dao dao, EntityMapping em) {
         this(api.getConfig(), api.getMetadata(), am, dao, em);
@@ -72,4 +74,13 @@ public class SimpleModelExecutorContext implements ModelExecutorContext {
         return entityMapping;
     }
 
+    @Override
+    public RestResourceFactory getRestResourceFactory() {
+        return restResourceFactory;
+    }
+
+    @Override
+    public void setRestResourceFactory(RestResourceFactory restResourceFactory) {
+        this.restResourceFactory = restResourceFactory;
+    }
 }

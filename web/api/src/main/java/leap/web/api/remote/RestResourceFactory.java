@@ -21,6 +21,9 @@ import leap.orm.mapping.EntityMapping;
 
 public interface RestResourceFactory {
 
-    RestResource createRestResource(OrmContext context, EntityMapping em);
+    /**
+     * Returns null if not a remote entity.
+     */
+    RestResource getOrCreateResource(OrmContext context, EntityMapping em);
 
 }

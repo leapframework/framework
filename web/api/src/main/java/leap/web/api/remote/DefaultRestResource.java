@@ -10,7 +10,6 @@ import leap.lang.Strings;
 import leap.lang.http.ContentTypes;
 import leap.lang.http.HTTP.Method;
 import leap.lang.http.client.HttpRequest;
-import leap.lang.http.client.HttpResponse;
 import leap.lang.json.JSON;
 import leap.lang.json.JsonSettings;
 import leap.lang.logging.Log;
@@ -37,13 +36,13 @@ public class DefaultRestResource extends AbstractRestResource {
     }
 
     @Override
-    public <T> T insert(Class<T> entityClass, Object obj) {
+    public <T> T insert(Class<T> resultClass, Object obj) {
         String op = "";
         HttpRequest request = httpClient.request(buildOperationPath(op))
                 .ajax()
                 .setJson(JSON.encode(obj, JsonSettings.MIN))
                 .setMethod(Method.POST);
-        T val = send(entityClass, request, getAccessToken());
+        T val = send(resultClass, request, getAccessToken());
         return val;
     }
 
@@ -89,7 +88,7 @@ public class DefaultRestResource extends AbstractRestResource {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> RestQueryListResult<T> queryList(Class<T> entityClass, final QueryOptions options, Map<String, Object> filters) {
+    public <T> RestQueryListResult<T> queryList(Class<T> resultElementClass, final QueryOptions options, Map<String, Object> filters) {
         String op = "";
 
         HttpRequest request = httpClient.request(buildOperationPath(op))
@@ -99,7 +98,7 @@ public class DefaultRestResource extends AbstractRestResource {
         buildQueryOption(request, options);
 
         final Out<RestQueryListResult<T>> out = new Out<>();
-        final Type targetType = new TypeReference<List<T>>(entityClass) {
+        final Type targetType = new TypeReference<List<T>>(resultElementClass) {
         }.getType();
 
         send(request, getAccessToken(), (response) -> {
@@ -142,14 +141,11 @@ public class DefaultRestResource extends AbstractRestResource {
         return val == null ? 0 : val.intValue();
     }
 
-    @Override
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
     }
 
-    @Override
     public String getEndpoint() {
         return endpoint;
     }
-
 }

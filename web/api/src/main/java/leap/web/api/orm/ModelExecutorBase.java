@@ -32,6 +32,7 @@ import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.meta.model.MApiProperty;
+import leap.web.api.remote.RestResourceFactory;
 
 import java.util.Date;
 import java.util.Map;
@@ -45,6 +46,7 @@ public abstract class ModelExecutorBase {
     protected final Dao                 dao;
     protected final EntityMapping       em;
     protected final OrmMetadata         md;
+    protected final RestResourceFactory restResourceFactory;
 
     public ModelExecutorBase(ModelExecutorContext context) {
         this.context = context;
@@ -54,6 +56,7 @@ public abstract class ModelExecutorBase {
         this.dao = context.getDao();
         this.em  = context.getEntityMapping();
         this.md  = dao.getOrmContext().getMetadata();
+        this.restResourceFactory = context.getRestResourceFactory();
     }
 
     protected void tryHandleSpecialValue(Map.Entry<String, Object> entry, MApiProperty p) {

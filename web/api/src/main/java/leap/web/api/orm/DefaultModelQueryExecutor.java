@@ -54,20 +54,18 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
     protected final ModelAndMapping     modelAndMapping;
     protected final ModelQueryExtension ex;
-    protected final RestResourceFactory restResourceFactory;
 
     protected String   sqlView;
     protected String[] excludedFields;
 
     public DefaultModelQueryExecutor(ModelExecutorContext context) {
-        this(context, null, null);
+        this(context, null);
     }
 
-    public DefaultModelQueryExecutor(ModelExecutorContext context, ModelQueryExtension ex, RestResourceFactory restResourceFactory) {
+    public DefaultModelQueryExecutor(ModelExecutorContext context, ModelQueryExtension ex) {
         super(context);
         this.modelAndMapping = new ModelAndMapping(am, em);
         this.ex = null == ex ? ModelQueryExtension.EMPTY : ex;
-        this.restResourceFactory = restResourceFactory;
     }
 
     @Override
@@ -291,7 +289,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         opts.setLimit(ac.getExpandLimit() + 1);
 
         RestResource resource =
-                restResourceFactory.createRestResource(dao.getOrmContext(), targetEm);
+                restResourceFactory.getOrCreateResource(dao.getOrmContext(), targetEm);
 
         //根据不同类型的关系，计算引用的源字段、被引用字段
         String localFieldName;

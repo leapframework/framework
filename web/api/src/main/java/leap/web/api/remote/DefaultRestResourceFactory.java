@@ -32,7 +32,16 @@ public class DefaultRestResourceFactory implements RestResourceFactory {
     protected @Inject RestDatasourceManager dsm;
 
     @Override
-    public RestResource createRestResource(OrmContext context, EntityMapping em) {
+    public RestResource getOrCreateResource(OrmContext context, EntityMapping em) {
+        if(!em.isRemote()) {
+            return null;
+        }
+
+        RestResource rr = em.getExtension(RestResource.class);
+        if(null != rr) {
+            return rr;
+        }
+
         DefaultRestResource restResource = new DefaultRestResource();
         restResource.setHttpClient(httpClient);
         restResource.setTokenFetcher(tokenFetcher);
@@ -55,6 +64,7 @@ public class DefaultRestResourceFactory implements RestResourceFactory {
 
         restResource.setEndpoint(RestResourceBuilder.formatApiEndPoint(endpoint));
 
+        em.setExtension(RestResource.class, restResource);
         return restResource;
     }
 }

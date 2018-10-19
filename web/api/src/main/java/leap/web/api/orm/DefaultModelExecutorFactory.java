@@ -18,11 +18,9 @@ package leap.web.api.orm;
 
 import leap.core.annotation.Inject;
 import leap.lang.annotation.Init;
+import leap.orm.mapping.EntityMapping;
+import leap.web.api.remote.RestResource;
 import leap.web.api.remote.RestResourceFactory;
-import leap.web.api.remote.executors.RestModelCreateExecutor;
-import leap.web.api.remote.executors.RestModelDeleteExecutor;
-import leap.web.api.remote.executors.RestModelQueryExecutor;
-import leap.web.api.remote.executors.RestModelUpdateExecutor;
 
 public class DefaultModelExecutorFactory implements ModelExecutorFactory {
 
@@ -56,30 +54,26 @@ public class DefaultModelExecutorFactory implements ModelExecutorFactory {
 
     @Override
     public ModelCreateExecutor newCreateExecutor(ModelExecutorContext context) {
-        return context.getEntityMapping().isRemote() ?
-                    new RestModelCreateExecutor(context) :
-                    new DefaultModelCreateExecutor(context, createExtension);
+        return new DefaultModelCreateExecutor(handleContext(context), createExtension);
     }
 
     @Override
     public ModelUpdateExecutor newUpdateExecutor(ModelExecutorContext context) {
-        return context.getEntityMapping().isRemote() ?
-                    new RestModelUpdateExecutor(context) :
-                    new DefaultModelUpdateExecutor(context, updateExtension);
+        return new DefaultModelUpdateExecutor(handleContext(context), updateExtension);
     }
 
     @Override
     public ModelDeleteExecutor newDeleteExecutor(ModelExecutorContext context) {
-        return context.getEntityMapping().isRemote() ?
-                new RestModelDeleteExecutor(context) :
-                new DefaultModelDeleteExecutor(context, deleteExtension);
+        return new DefaultModelDeleteExecutor(handleContext(context), deleteExtension);
     }
 
     @Override
     public ModelQueryExecutor newQueryExecutor(ModelExecutorContext context) {
-        return context.getEntityMapping().isRemote() ?
-                new RestModelQueryExecutor(context) :
-                new DefaultModelQueryExecutor(context, queryExtension, restResourceFactory);
+        return new DefaultModelQueryExecutor(handleContext(context), queryExtension);
     }
 
+    protected ModelExecutorContext handleContext(ModelExecutorContext context) {
+        context.setRestResourceFactory(restResourceFactory);
+        return context;
+    }
 }

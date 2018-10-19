@@ -22,6 +22,7 @@ import leap.orm.mapping.EntityMapping;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
+import leap.web.api.remote.RestResourceFactory;
 
 public class DefaultModelExecutionContext extends MapAttributeAccessor implements ModelExecutionContext {
 
@@ -66,5 +67,15 @@ public class DefaultModelExecutionContext extends MapAttributeAccessor implement
     @Override
     public EntityMapping getEntityMapping() {
         return context.getEntityMapping();
+    }
+
+    @Override
+    public RestResourceFactory getRestResourceFactory() {
+        return context.getRestResourceFactory();
+    }
+
+    @Override
+    public void setRestResourceFactory(RestResourceFactory restResourceFactory) {
+        context.setRestResourceFactory(restResourceFactory);
     }
 }

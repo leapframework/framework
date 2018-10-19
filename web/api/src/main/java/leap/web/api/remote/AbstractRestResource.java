@@ -45,6 +45,8 @@ public abstract class AbstractRestResource implements RestResource {
         this.tokenFetcher = tokenFetcher;
     }
 
+    protected abstract String getEndpoint();
+
     protected AccessToken getAccessToken() {
         Request request = Request.tryGetCurrent();
         if (request == null) {
