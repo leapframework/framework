@@ -18,6 +18,10 @@ package leap.web.api.orm;
 
 import leap.core.annotation.Inject;
 import leap.lang.annotation.Init;
+import leap.web.api.remote.executors.RestModelCreateExecutor;
+import leap.web.api.remote.executors.RestModelDeleteExecutor;
+import leap.web.api.remote.executors.RestModelQueryExecutor;
+import leap.web.api.remote.executors.RestModelUpdateExecutor;
 
 public class DefaultModelExecutorFactory implements ModelExecutorFactory {
 
@@ -49,22 +53,30 @@ public class DefaultModelExecutorFactory implements ModelExecutorFactory {
 
     @Override
     public ModelCreateExecutor newCreateExecutor(ModelExecutorContext context) {
-        return new DefaultModelCreateExecutor(context, createExtension);
+        return context.getEntityMapping().isRemote() ?
+                    new RestModelCreateExecutor(context) :
+                    new DefaultModelCreateExecutor(context, createExtension);
     }
 
     @Override
     public ModelUpdateExecutor newUpdateExecutor(ModelExecutorContext context) {
-        return new DefaultModelUpdateExecutor(context, updateExtension);
+        return context.getEntityMapping().isRemote() ?
+                    new RestModelUpdateExecutor(context) :
+                    new DefaultModelUpdateExecutor(context, updateExtension);
     }
 
     @Override
     public ModelDeleteExecutor newDeleteExecutor(ModelExecutorContext context) {
-        return new DefaultModelDeleteExecutor(context, deleteExtension);
+        return context.getEntityMapping().isRemote() ?
+                new RestModelDeleteExecutor(context) :
+                new DefaultModelDeleteExecutor(context, deleteExtension);
     }
 
     @Override
     public ModelQueryExecutor newQueryExecutor(ModelExecutorContext context) {
-        return new DefaultModelQueryExecutor(context, queryExtension);
+        return context.getEntityMapping().isRemote() ?
+                new RestModelQueryExecutor(context) :
+                new DefaultModelQueryExecutor(context, queryExtension);
     }
 
 }
