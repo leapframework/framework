@@ -33,6 +33,7 @@ public class RestdConfig {
     protected OrmContext ormContext;
     protected boolean    readonly;
     protected boolean    noDataSource;
+    protected boolean    allowRemoteEntity;
 
     protected Set<String>        includedModels = new LinkedHashSet<>();
     protected Set<String>        excludedModels = new LinkedHashSet<>();
@@ -70,6 +71,14 @@ public class RestdConfig {
 
     public void setNoDataSource(boolean noDataSource) {
         this.noDataSource = noDataSource;
+    }
+
+    public boolean isAllowRemoteEntity() {
+        return allowRemoteEntity;
+    }
+
+    public void setAllowRemoteEntity(boolean allowRemoteEntity) {
+        this.allowRemoteEntity = allowRemoteEntity;
     }
 
     public Set<String> getIncludedModels() {

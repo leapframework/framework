@@ -113,12 +113,14 @@ public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataP
     protected void processRestdApi(Api api, RestdContext context) {
         ApiConfigurator c = api.getConfigurator();
 
+        final RestdConfig rc = context.getConfig();
+
         for(RestdProcessor p : processors) {
             p.preProcessApi(c, context);
         }
 
         for(RestdModel model : context.getModels()) {
-        	if(model.getEntityMapping().isRemote()){
+        	if(model.getEntityMapping().isRemote() && !rc.isAllowRemoteEntity()){
         		continue;
         	}
             for(RestdProcessor p : processors) {
@@ -127,7 +129,7 @@ public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataP
         }
 
         for(RestdModel model : context.getModels()) {
-        	if(model.getEntityMapping().isRemote()){
+        	if(model.getEntityMapping().isRemote() && !rc.isAllowRemoteEntity()){
         		continue;
         	}
             for(RestdProcessor p : processors) {
