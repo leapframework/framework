@@ -19,6 +19,7 @@
 package leap.web.api.orm;
 
 import leap.web.api.mvc.params.DeleteOptions;
+import leap.web.api.remote.RestResource;
 
 public class DefaultModelDeleteExecutor extends ModelExecutorBase implements ModelDeleteExecutor {
 
@@ -46,10 +47,19 @@ public class DefaultModelDeleteExecutor extends ModelExecutorBase implements Mod
         }
 
         if(null == result) {
-            if (!options.isCascadeDelete()) {
-                result = new DeleteOneResult(dao.delete(em, id) > 0);
-            } else {
-                result = new DeleteOneResult(dao.cascadeDelete(em, id));
+            if(!em.isRemote()) {
+                if (!options.isCascadeDelete()) {
+                    result = new DeleteOneResult(dao.delete(em, id) > 0);
+                } else {
+                    result = new DeleteOneResult(dao.cascadeDelete(em, id));
+                }
+            }else {
+                RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), em);
+                if(restResource.delete(id, options)){
+                    result = new DeleteOneResult(true);
+                }else {
+                    result = new DeleteOneResult(false);
+                }
             }
         }
 

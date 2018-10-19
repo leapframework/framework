@@ -46,6 +46,8 @@ public abstract class ModelExecutorBase {
     protected final Dao                 dao;
     protected final EntityMapping       em;
     protected final OrmMetadata         md;
+    protected final boolean             remote;
+    protected final boolean             local;
     protected final RestResourceFactory restResourceFactory;
 
     public ModelExecutorBase(ModelExecutorContext context) {
@@ -56,6 +58,8 @@ public abstract class ModelExecutorBase {
         this.dao = context.getDao();
         this.em  = context.getEntityMapping();
         this.md  = dao.getOrmContext().getMetadata();
+        this.remote = em.isRemote();
+        this.local  = !remote;
         this.restResourceFactory = context.getRestResourceFactory();
     }
 

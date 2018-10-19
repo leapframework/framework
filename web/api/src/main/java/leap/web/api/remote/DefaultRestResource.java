@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import leap.core.value.Record;
+import leap.core.value.SimpleRecord;
 import leap.lang.Out;
 import leap.lang.Strings;
 import leap.lang.http.ContentTypes;
@@ -47,6 +49,11 @@ public class DefaultRestResource extends AbstractRestResource {
     }
 
     @Override
+    public Record create(Map<String, Object> properties) {
+        return new SimpleRecord(insert(Map.class, properties));
+    }
+
+    @Override
     public boolean delete(Object id, DeleteOptions options) {
         String op = Strings.format("/{0}", id);
 
@@ -57,19 +64,30 @@ public class DefaultRestResource extends AbstractRestResource {
         if (options != null && options.isCascadeDelete()) {
             request.addQueryParam("cascade_delete", "true");
         }
-        send(null, request, getAccessToken());
-        return true;
+
+        return Boolean.TRUE == send(Boolean.class, request, getAccessToken());
     }
 
     @Override
-    public void update(Object id, Object partial) {
+    public boolean update(Object id, Object partial) {
         String op = Strings.format("/{0}", id);
 
         HttpRequest request = httpClient.request(buildOperationPath(op))
                 .ajax()
                 .setJson(JSON.encode(partial, JsonSettings.MIN))
                 .setMethod(Method.PATCH);
-        send(null, request, getAccessToken());
+
+        return Boolean.TRUE == send(Boolean.class, request, getAccessToken());
+    }
+
+    @Override
+    public Record find(Object id, QueryOptionsBase options) {
+        Map<String, Object> map = find(Map.class, id, options);
+        if(null == map) {
+            return null;
+        }else {
+            return new SimpleRecord(map);
+        }
     }
 
     @Override

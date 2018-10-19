@@ -106,6 +106,11 @@ public abstract class AbstractRestResource implements RestResource {
             String content = response.getString();
             log.debug("status:{},Received response : {}", response.getStatus(), content);
             if (response.is2xx()) {
+                if(Boolean.class.equals(targetType)) {
+                    out.set((T)Boolean.TRUE);
+                    return;
+                }
+
                 if (Strings.isEmpty(content)) {
                     return;
                 }
@@ -114,12 +119,16 @@ public abstract class AbstractRestResource implements RestResource {
                 }
                 return;
             }
+            if(response.isNotFound()) {
+                return;
+            }
             throw new RestResourceInvokeException(response);
-            //throw new RuntimeException("REMOTE_SERVICE_INVOKE_FAILED");
         });
+
         if (out.isEmpty()) {
             return null;
         }
+
         return out.get();
     }
 

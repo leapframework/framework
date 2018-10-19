@@ -42,13 +42,12 @@ import leap.web.api.mvc.params.QueryOptionsBase;
 import leap.web.api.query.*;
 import leap.web.api.remote.RestQueryListResult;
 import leap.web.api.remote.RestResource;
-import leap.web.api.remote.RestResourceBuilder;
-import leap.web.api.remote.RestResourceFactory;
 import leap.web.exception.BadRequestException;
 
 import java.lang.reflect.Array;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class DefaultModelQueryExecutor extends ModelExecutorBase implements ModelQueryExecutor {
 
@@ -90,20 +89,24 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
         Record record;
 
-        CriteriaQuery<Record> query = createCriteriaQuery().whereById(id);
-        applySelect(query, options, new HashMap<>());
+        if(!em.isRemote()) {
+            CriteriaQuery<Record> query = createCriteriaQuery().whereById(id);
+            applySelect(query, options, new HashMap<>());
 
-        if(null != ex.handler) {
-            ex.handler.preQueryOne(context, id, query);
+            if (null != ex.handler) {
+                ex.handler.preQueryOne(context, id, query);
+            }
+            record = query.firstOrNull();
+        }else {
+            RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), em);
+            record = restResource.find(id, options);
         }
-
-        record = query.firstOrNull();
 
         if(null != ex.handler && null != record) {
             ex.handler.postQueryOne(context, id, record);
         }
 
-        if(null != record && null != options) {
+        if(!em.isRemote() && null != record && null != options) {
             Expand[] expands = ExpandParser.parse(options.getExpand());
             if (expands.length > 0) {
                 for (Expand expand : expands) {
@@ -119,8 +122,18 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
     @Override
     public QueryListResult queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback) {
-        ModelExecutionContext context = new DefaultModelExecutionContext(this.context);
+        //todo: review query remote entity.
+        if(remote) {
+            RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), em);
 
+            RestQueryListResult<Map> result = restResource.queryList(Map.class, options);
+
+            Object records = result.getList().stream().map(m -> new SimpleRecord(m)).collect(Collectors.toList());
+
+            return new QueryListResult((List<Record>)records, result.getCount(), null);
+        }
+
+        ModelExecutionContext context = new DefaultModelExecutionContext(this.context);
         if(null == options) {
             options = new QueryOptions();
         }
@@ -289,7 +302,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         opts.setLimit(ac.getExpandLimit() + 1);
 
         RestResource resource =
-                restResourceFactory.getOrCreateResource(dao.getOrmContext(), targetEm);
+                restResourceFactory.createResource(dao.getOrmContext(), targetEm);
 
         //根据不同类型的关系，计算引用的源字段、被引用字段
         String localFieldName;

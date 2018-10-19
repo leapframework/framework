@@ -27,10 +27,12 @@ import leap.lang.Enumerables;
 import leap.lang.New;
 import leap.orm.command.InsertCommand;
 import leap.orm.mapping.EntityMapping;
+import leap.orm.mapping.Mappings;
 import leap.orm.mapping.RelationMapping;
 import leap.orm.mapping.RelationProperty;
 import leap.web.api.meta.model.MApiProperty;
 import leap.web.api.mvc.params.Partial;
+import leap.web.api.remote.RestResource;
 import leap.web.exception.BadRequestException;
 
 import java.util.*;
@@ -139,58 +141,67 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
             ex.handler.preCreateRecord(context, properties);
         }
 
-        InsertCommand insert = dao.cmdInsert(em.getEntityName()).from(properties);
-        if(null != id) {
-            insert.withId(id);
-        }
+        Object createdId;
+        Record record;
 
-        if(relationProperties.isEmpty()) {
-            executeInsert(insert);
-        }else{
+        if(!em.isRemote()) {
+            InsertCommand insert = dao.cmdInsert(em.getEntityName()).from(properties);
+            if (null != id) {
+                insert.withId(id);
+            }
 
-            dao.doTransaction((conn) -> {
+            if (relationProperties.isEmpty()) {
                 executeInsert(insert);
+            } else {
+                dao.doTransaction((conn) -> {
+                    executeInsert(insert);
 
-                for(Map.Entry<RelationProperty, Object[]> entry : relationProperties.entrySet()) {
-                    //valid for many-to-many only ?
+                    for (Map.Entry<RelationProperty, Object[]> entry : relationProperties.entrySet()) {
+                        //valid for many-to-many only ?
 
-                    RelationProperty rp = entry.getKey();
+                        RelationProperty rp = entry.getKey();
 
-                    RelationMapping rm = em.getRelationMapping(rp.getRelationName());
-                    if(rm.isManyToMany()) {
-                        EntityMapping joinEntity = md.getEntityMapping(rm.getJoinEntityName());
+                        RelationMapping rm = em.getRelationMapping(rp.getRelationName());
+                        if (rm.isManyToMany()) {
+                            EntityMapping joinEntity = md.getEntityMapping(rm.getJoinEntityName());
 
-                        RelationMapping manyToOne1 = joinEntity.tryGetKeyRelationMappingOfTargetEntity(em.getEntityName());
+                            RelationMapping manyToOne1 = joinEntity.tryGetKeyRelationMappingOfTargetEntity(em.getEntityName());
 
-                        String localName;
-                        String targetName;
+                            String localName;
+                            String targetName;
 
-                        if(joinEntity.getKeyFieldMappings()[0].getFieldName().equals(manyToOne1.getJoinFields()[0].getLocalFieldName())){
-                            localName  = joinEntity.getKeyFieldNames()[0];
-                            targetName = joinEntity.getKeyFieldNames()[1];
-                        }else{
-                            localName  = joinEntity.getKeyFieldNames()[1];
-                            targetName = joinEntity.getKeyFieldNames()[0];
+                            if (joinEntity.getKeyFieldMappings()[0].getFieldName().equals(manyToOne1.getJoinFields()[0].getLocalFieldName())) {
+                                localName = joinEntity.getKeyFieldNames()[0];
+                                targetName = joinEntity.getKeyFieldNames()[1];
+                            } else {
+                                localName = joinEntity.getKeyFieldNames()[1];
+                                targetName = joinEntity.getKeyFieldNames()[0];
+                            }
+
+                            Object localId = insert.id();
+
+                            List<Map<String, Object>> batchId = new ArrayList<>();
+
+                            for (Object targetId : entry.getValue()) {
+                                batchId.add(New.hashMap(localName, localId, targetName, targetId));
+                            }
+
+                            dao.batchInsert(joinEntity, batchId);
                         }
-
-                        Object localId = insert.id();
-
-                        List<Map<String,Object>> batchId = new ArrayList<>();
-
-                        for(Object targetId : entry.getValue()) {
-                            batchId.add(New.hashMap(localName, localId, targetName, targetId));
-                        }
-
-                        dao.batchInsert(joinEntity, batchId);
                     }
-                }
 
-            });
+                });
+            }
+
+            createdId = insert.id();
+            record    = dao.find(em, createdId);
+        }else {
+            RestResource restResource =
+                    restResourceFactory.createResource(dao.getOrmContext(), em);
+            record = restResource.create(properties);
+            createdId = Mappings.getId(em, record);
         }
 
-        Object createdId = insert.id();
-
-        Record record = dao.find(em, createdId);
         record.put("$id", createdId);
 
         Object entity = ex.postCreateRecord(context, createdId, record);

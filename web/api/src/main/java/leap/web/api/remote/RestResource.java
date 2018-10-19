@@ -1,5 +1,6 @@
 package leap.web.api.remote;
 
+import leap.core.value.Record;
 import leap.web.api.mvc.params.CountOptions;
 import leap.web.api.mvc.params.DeleteOptions;
 import leap.web.api.mvc.params.QueryOptions;
@@ -15,14 +16,24 @@ public interface RestResource {
     <T> T insert(Class<T> resultClass, Object obj);
 
     /**
+     * Creates a new record.
+     */
+    Record create(Map<String, Object> properties);
+
+    /**
+     * Updates a record.
+     */
+    boolean update(Object id, Object partial);
+
+    /**
      * Deletes a record.
      */
     boolean delete(Object id, DeleteOptions options);
 
     /**
-     * Updates a record.
+     * Query one by id.
      */
-    void update(Object id, Object partial);
+    Record find(Object id, QueryOptionsBase options);
 
     /**
      * Finds the record by the given id.

@@ -24,6 +24,6 @@ public interface RestResourceFactory {
     /**
      * Returns null if not a remote entity.
      */
-    RestResource getOrCreateResource(OrmContext context, EntityMapping em);
+    RestResource createResource(OrmContext context, EntityMapping em);
 
 }

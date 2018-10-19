@@ -28,6 +28,7 @@ import leap.orm.mapping.RelationMapping;
 import leap.orm.mapping.RelationProperty;
 import leap.web.api.meta.model.MApiProperty;
 import leap.web.api.mvc.params.Partial;
+import leap.web.api.remote.RestResource;
 import leap.web.exception.BadRequestException;
 
 import java.util.*;
@@ -110,7 +111,19 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
             ex.handler.processUpdateProperties(context, id, properties);
         }
 
-        int affected = doUpdate(context, id, properties, true);
+        int affected;
+
+        if(!em.isRemote()) {
+            affected = doUpdate(context, id, properties, true);
+        }else {
+            RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), em);
+            if(restResource.update(id, properties)) {
+                affected = 1;
+            }else {
+                affected = 0;
+            }
+        }
+
         Object entity = ex.postUpdateProperties(context, id, affected);
 
         return new UpdateOneResult(affected, entity);

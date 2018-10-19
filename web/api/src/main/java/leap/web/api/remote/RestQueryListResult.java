@@ -23,18 +23,18 @@ import java.util.List;
 public final class RestQueryListResult<T> {
 
     private final List<T> list;
-    private final long         count;
+    private final long    count;
 
     public RestQueryListResult(List<T> list, long count) {
         this.list = list;
         this.count = count;
     }
 
-	public List<T> getList() {
-		return list;
-	}
+    public List<T> getList() {
+        return list;
+    }
 
-	public long getCount() {
-		return count;
-	}
+    public long getCount() {
+        return count;
+    }
 }

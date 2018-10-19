@@ -32,39 +32,48 @@ public class DefaultRestResourceFactory implements RestResourceFactory {
     protected @Inject RestDatasourceManager dsm;
 
     @Override
-    public RestResource getOrCreateResource(OrmContext context, EntityMapping em) {
+    public RestResource createResource(OrmContext context, EntityMapping em) {
         if(!em.isRemote()) {
             return null;
         }
 
-        RestResource rr = em.getExtension(RestResource.class);
-        if(null != rr) {
-            return rr;
+        RestResourceInfo rri = em.getExtension(RestResourceInfo.class);
+        if(null == rri) {
+            String basePath = em.getRemoteSettings().getEndpoint();
+            if(Strings.isEmpty(basePath) && null != em.getRemoteSettings().getDataSource()) {
+                RestDataSource ds = dsm.tryGetDataSource(em.getRemoteSettings().getDataSource());
+                if(null == ds) {
+                    throw new IllegalStateException("Remote dataSource '" + em.getRemoteSettings().getDataSource() +
+                            "' not found, check entity '" + em.getEntityName() + "'");
+                }
+                basePath = ds.getEndpoint();
+            }
+
+            if(Strings.isEmpty(basePath)) {
+                throw new IllegalStateException("Remote endpoint must be configured, check entity '" + em.getEntityName() + "'");
+            }
+
+            String endpoint = Paths.suffixWithSlash(basePath) + em.getRemoteSettings().getRelativePath();
+            rri = new RestResourceInfo(RestResourceBuilder.formatApiEndPoint(endpoint));
+            em.setExtension(RestResourceInfo.class, rri);
         }
 
         DefaultRestResource restResource = new DefaultRestResource();
         restResource.setHttpClient(httpClient);
         restResource.setTokenFetcher(tokenFetcher);
-
-        String basePath = em.getRemoteSettings().getEndpoint();
-        if(Strings.isEmpty(basePath) && null != em.getRemoteSettings().getDataSource()) {
-            RestDataSource ds = dsm.tryGetDataSource(em.getRemoteSettings().getDataSource());
-            if(null == ds) {
-                throw new IllegalStateException("Remote dataSource '" + em.getRemoteSettings().getDataSource() +
-                                                "' not found, check entity '" + em.getEntityName() + "'");
-            }
-            basePath = ds.getEndpoint();
-        }
-
-        if(Strings.isEmpty(basePath)) {
-            throw new IllegalStateException("Remote endpoint must be configured, check entity '" + em.getEntityName() + "'");
-        }
-
-        String endpoint = Paths.suffixWithSlash(basePath) + em.getRemoteSettings().getRelativePath();
-
-        restResource.setEndpoint(RestResourceBuilder.formatApiEndPoint(endpoint));
-
-        em.setExtension(RestResource.class, restResource);
+        restResource.setEndpoint(rri.getEndpoint());
         return restResource;
+    }
+
+    public static final class RestResourceInfo {
+        protected final String endpoint;
+
+        public RestResourceInfo(String endpoint) {
+            this.endpoint = endpoint;
+        }
+
+        public String getEndpoint() {
+            return endpoint;
+        }
     }
 }
