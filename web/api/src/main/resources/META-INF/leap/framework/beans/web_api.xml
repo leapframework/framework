@@ -75,5 +75,7 @@
 	<bean type="leap.web.api.remote.ds.RestDatasourceManager"
 		class="leap.web.api.remote.ds.DefaultRestDataSourceManager" primary="true"/>
 	<bean class="leap.web.api.remote.TokenFetcher" />
+    <bean type="leap.web.api.remote.RestResourceFactory"
+          class="leap.web.api.remote.DefaultRestResourceFactory" primary="true"/>
 
 </beans>

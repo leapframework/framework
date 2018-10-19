@@ -10,8 +10,6 @@ import leap.web.api.mvc.params.QueryOptionsBase;
 
 public interface RestResource {
 
-	RestOrmContext getOrmContext();
-
 	void setEndpoint(String endpoint);
 
 	String getEndpoint();
@@ -38,5 +36,4 @@ public interface RestResource {
         return queryList(entityClass,options, null);
     }
 
-    HttpResponse getResponse();
 }

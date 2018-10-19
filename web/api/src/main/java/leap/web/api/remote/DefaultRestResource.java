@@ -23,147 +23,133 @@ import leap.web.api.mvc.params.QueryOptionsBase;
 import leap.web.api.remote.json.TypeReference;
 
 public class DefaultRestResource extends AbstractRestResource {
-	private final Log log=LogFactory.get(DefaultRestResource.class);
+    private final Log log = LogFactory.get(DefaultRestResource.class);
 
-	private String endpoint;
+    private String      endpoint;
+    private AccessToken at;
 
-	private RestOrmContext ormContext;
+    @Override
+    protected AccessToken getAccessToken() {
+        if (at != null) {
+            return at;
+        }
+        return super.getAccessToken();
+    }
 
-	private AccessToken at;
+    @Override
+    public <T> T insert(Class<T> entityClass, Object obj) {
+        String op = "";
+        HttpRequest request = httpClient.request(buildOperationPath(op))
+                .ajax()
+                .setJson(JSON.encode(obj, JsonSettings.MIN))
+                .setMethod(Method.POST);
+        T val = send(entityClass, request, getAccessToken());
+        return val;
+    }
 
-	@Override
-	protected AccessToken getAccessToken() {
-		if(at!=null){
-			return at;
-		}
-		return super.getAccessToken();
-	};
+    @Override
+    public boolean delete(Object id, DeleteOptions options) {
+        String op = Strings.format("/{0}", id);
 
-	public void setAccessToken(AccessToken token){
-		this.at=token;
-	}
+        HttpRequest request = httpClient.request(buildOperationPath(op))
+                .ajax()
+                .setMethod(Method.DELETE);
 
-	@Override
-	public <T> T insert(Class<T> entityClass, Object obj) {
-		String op="";
-		HttpRequest request=httpClient.request(buildOperationPath(op))
-				.ajax()
-				.setJson(JSON.encode(obj, JsonSettings.MIN))
-				.setMethod(Method.POST);
-		T val= send(entityClass, request, getAccessToken());
-		return val;
-	}
+        if (options != null && options.isCascadeDelete()) {
+            request.addQueryParam("cascade_delete", "true");
+        }
+        send(null, request, getAccessToken());
+        return true;
+    }
 
-	@Override
-	public boolean delete(Object id, DeleteOptions options) {
-		String op=Strings.format("/{0}", id);
+    @Override
+    public void update(Object id, Object partial) {
+        String op = Strings.format("/{0}", id);
 
-		HttpRequest request=httpClient.request(buildOperationPath(op))
-				.ajax()
-				.setMethod(Method.DELETE);
+        HttpRequest request = httpClient.request(buildOperationPath(op))
+                .ajax()
+                .setJson(JSON.encode(partial, JsonSettings.MIN))
+                .setMethod(Method.PATCH);
+        send(null, request, getAccessToken());
+    }
 
-		if(options!=null && options.isCascadeDelete()){
-			request.addQueryParam("cascade_delete", "true");
-		}
-		send(null, request, getAccessToken());
-		return true;
-	}
+    @Override
+    public <T> T find(Class<T> entityClass, Object id, QueryOptionsBase options) {
+        String op = Strings.format("/{0}", id);
 
-	@Override
-	public void update(Object id, Object partial) {
-		String op=Strings.format("/{0}", id);
+        HttpRequest request = httpClient.request(buildOperationPath(op))
+                .ajax()
+                .setMethod(Method.GET);
 
-		HttpRequest request=httpClient.request(buildOperationPath(op))
-				.ajax()
-				.setJson(JSON.encode(partial, JsonSettings.MIN))
-				.setMethod(Method.PATCH);
-		send(null, request, getAccessToken());
-	}
+        buildQueryOption(request, options);
 
-	@Override
-	public <T> T find(Class<T> entityClass, Object id, QueryOptionsBase options) {
-		String op=Strings.format("/{0}", id);
+        T val = send(entityClass, request, getAccessToken());
+        return val;
+    }
 
-		HttpRequest request=httpClient.request(buildOperationPath(op))
-				.ajax()
-				.setMethod(Method.GET);
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> RestQueryListResult<T> queryList(Class<T> entityClass, final QueryOptions options, Map<String, Object> filters) {
+        String op = "";
 
-		buildQueryOption(request,options);
+        HttpRequest request = httpClient.request(buildOperationPath(op))
+                .ajax()
+                .setMethod(Method.GET);
 
-		T val= send(entityClass, request, getAccessToken());
-		return val;
-	}
+        buildQueryOption(request, options);
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T> RestQueryListResult<T> queryList(Class<T> entityClass, final QueryOptions options, Map<String, Object> filters) {
-		String op="";
+        final Out<RestQueryListResult<T>> out = new Out<>();
+        final Type targetType = new TypeReference<List<T>>(entityClass) {
+        }.getType();
 
-		HttpRequest request=httpClient.request(buildOperationPath(op))
-				.ajax()
-				.setMethod(Method.GET);
+        send(request, getAccessToken(), (response) -> {
+            String content = response.getString();
+            log.debug("status:{},Received response : {}", response.getStatus(), content);
+            if (response.is2xx()) {
+                List<T> list = new ArrayList<>();
+                if (Strings.isNotEmpty(content) && ContentTypes.APPLICATION_JSON_TYPE.isCompatible(response.getContentType())) {
+                    list = (List<T>) decode(targetType, content);
+                }
+                int    count    = list.size();
+                String countStr = response.getHeader("X-Total-Count");
+                if (options.isTotal() && Strings.isNotBlank(countStr)) {
+                    count = Integer.parseInt(countStr);
+                }
+                out.accept(new RestQueryListResult<T>(list, count));
+                return;
+            }
+            throw new RestResourceInvokeException(response);
+        });
+        if (out.isEmpty()) {
+            return null;
+        }
+        return out.get();
+    }
 
-		buildQueryOption(request,options);
+    @Override
+    public int count(CountOptions options) {
+        String op = "/count";
 
-		final Out<RestQueryListResult<T>> out=new Out<>();
-		final Type targetType=new TypeReference<List<T>>(entityClass){}.getType();
+        HttpRequest request = httpClient.request(buildOperationPath(op))
+                .ajax()
+                .setMethod(Method.GET);
 
-		send(request,getAccessToken(),(response)->{
-			String content = response.getString();
-	        log.debug("status:{},Received response : {}",response.getStatus(), content);
-	        if(response.is2xx()){
-	        	List<T> list=new ArrayList<>();
-	        	if(Strings.isNotEmpty(content) && ContentTypes.APPLICATION_JSON_TYPE.isCompatible(response.getContentType())){
-	        		list=(List<T>)decode(targetType,content);
-	        	}
-	        	int count=list.size();
-	        	String countStr=response.getHeader("X-Total-Count");
-	        	if(options.isTotal() && Strings.isNotBlank(countStr)){
-	        		count=Integer.parseInt(countStr);
-	        	}
-	        	out.accept(new RestQueryListResult<T>(list, count));
-	        	return;
-	        }
-	        throw new RestResourceInvokeException(response);
-		});
-		if(out.isEmpty()){
-			return null;
-		}
-		return out.get();
-	}
+        if (options != null && Strings.isNotEmpty(options.getFilters())) {
+            request.addQueryParam("filters", options.getFilters());
+        }
 
-	@Override
-	public int count(CountOptions options) {
-		String op="/count";
+        Integer val = send(Integer.class, request, getAccessToken());
+        return val == null ? 0 : val.intValue();
+    }
 
-		HttpRequest request=httpClient.request(buildOperationPath(op))
-				.ajax()
-				.setMethod(Method.GET);
+    @Override
+    public void setEndpoint(String endpoint) {
+        this.endpoint = endpoint;
+    }
 
-		if(options!=null && Strings.isNotEmpty(options.getFilters())){
-			request.addQueryParam("filters", options.getFilters());
-		}
-
-		Integer val= send(Integer.class, request, getAccessToken());
-		return val==null?0:val.intValue();
-	}
-
-	@Override
-	public void setEndpoint(String endpoint) {
-		this.endpoint=endpoint;
-	}
-
-	@Override
-	public String getEndpoint() {
-		return endpoint;
-	}
-
-	public RestOrmContext getOrmContext() {
-		return ormContext;
-	}
-
-	public void setOrmContext(RestOrmContext ormContext) {
-		this.ormContext = ormContext;
-	}
+    @Override
+    public String getEndpoint() {
+        return endpoint;
+    }
 
 }

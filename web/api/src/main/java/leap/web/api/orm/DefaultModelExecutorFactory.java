@@ -18,6 +18,7 @@ package leap.web.api.orm;
 
 import leap.core.annotation.Inject;
 import leap.lang.annotation.Init;
+import leap.web.api.remote.RestResourceFactory;
 import leap.web.api.remote.executors.RestModelCreateExecutor;
 import leap.web.api.remote.executors.RestModelDeleteExecutor;
 import leap.web.api.remote.executors.RestModelQueryExecutor;
@@ -37,6 +38,8 @@ public class DefaultModelExecutorFactory implements ModelExecutorFactory {
 
     protected @Inject ModelDeleteHandler       deleteHandler;
     protected @Inject ModelDeleteInterceptor[] deleteInterceptors;
+
+    protected @Inject RestResourceFactory restResourceFactory;
 
     private ModelCreateExtension createExtension;
     private ModelUpdateExtension updateExtension;
@@ -76,7 +79,7 @@ public class DefaultModelExecutorFactory implements ModelExecutorFactory {
     public ModelQueryExecutor newQueryExecutor(ModelExecutorContext context) {
         return context.getEntityMapping().isRemote() ?
                 new RestModelQueryExecutor(context) :
-                new DefaultModelQueryExecutor(context, queryExtension);
+                new DefaultModelQueryExecutor(context, queryExtension, restResourceFactory);
     }
 
 }
