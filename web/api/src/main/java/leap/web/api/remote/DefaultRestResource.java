@@ -26,8 +26,16 @@ import leap.web.api.remote.json.TypeReference;
 public class DefaultRestResource extends AbstractRestResource {
     private final Log log = LogFactory.get(DefaultRestResource.class);
 
-    private String      endpoint;
-    private AccessToken at;
+    protected String      endpoint;
+    protected AccessToken at;
+
+    public void setEndpoint(String endpoint) {
+        this.endpoint = endpoint;
+    }
+
+    public String getEndpoint() {
+        return endpoint;
+    }
 
     @Override
     protected AccessToken getAccessToken() {
@@ -157,13 +165,5 @@ public class DefaultRestResource extends AbstractRestResource {
 
         Integer val = send(Integer.class, request, getAccessToken());
         return val == null ? 0 : val.intValue();
-    }
-
-    public void setEndpoint(String endpoint) {
-        this.endpoint = endpoint;
-    }
-
-    public String getEndpoint() {
-        return endpoint;
     }
 }

@@ -58,10 +58,14 @@ public class DefaultRestResourceFactory implements RestResourceFactory {
             em.setExtension(RestResourceInfo.class, rri);
         }
 
+        return doCreateResource(context, em, rri);
+    }
+
+    protected RestResource doCreateResource(OrmContext context, EntityMapping em, RestResourceInfo info) {
         DefaultRestResource restResource = new DefaultRestResource();
         restResource.setHttpClient(httpClient);
         restResource.setTokenFetcher(tokenFetcher);
-        restResource.setEndpoint(rri.getEndpoint());
+        restResource.setEndpoint(info.getEndpoint());
         return restResource;
     }
 

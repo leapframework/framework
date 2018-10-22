@@ -37,11 +37,11 @@ public abstract class AbstractRestResource implements RestResource {
     protected @Inject HttpClient   httpClient;
     protected @Inject TokenFetcher tokenFetcher;
 
-    protected void setHttpClient(HttpClient httpClient) {
+    public void setHttpClient(HttpClient httpClient) {
         this.httpClient = httpClient;
     }
 
-    protected void setTokenFetcher(TokenFetcher tokenFetcher) {
+    public void setTokenFetcher(TokenFetcher tokenFetcher) {
         this.tokenFetcher = tokenFetcher;
     }
 
