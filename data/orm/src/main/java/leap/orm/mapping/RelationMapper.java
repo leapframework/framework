@@ -96,7 +96,7 @@ public class RelationMapper implements Mapper {
             }
 
             //create many-to-many for another side.
-            if(RelationType.MANY_TO_MANY.equals(type)) {
+            if(RelationType.MANY_TO_MANY.equals(type) && !rmb.isEmbedded()) {
                 RelationMappingBuilder inverse = findRelation(targetEmb, emb, RelationType.MANY_TO_MANY, rmb.getInverseRelationName());
                 if(null == inverse) {
                     //create the virtual inverse relation in target entity.
@@ -243,6 +243,10 @@ public class RelationMapper implements Mapper {
 
 		//resolve relation's name
         autoSetRelationName(emb, targetEmb, rmb);
+
+        if(rmb.isEmbedded()) {
+            return;
+        }
 
 		EntityMappingBuilder joinEmb = verifyJoinEntity(context, emb, targetEmb, rmb);
 		if(null == joinEmb){

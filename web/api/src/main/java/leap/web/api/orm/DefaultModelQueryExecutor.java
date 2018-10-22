@@ -20,13 +20,14 @@ package leap.web.api.orm;
 
 import leap.core.value.Record;
 import leap.core.value.SimpleRecord;
+import leap.lang.Enumerable;
+import leap.lang.Enumerables;
 import leap.lang.Strings;
 import leap.lang.convert.Converts;
 import leap.lang.text.scel.ScelExpr;
 import leap.lang.text.scel.ScelName;
 import leap.lang.text.scel.ScelNode;
 import leap.lang.text.scel.ScelToken;
-import leap.orm.enums.RemoteType;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
 import leap.orm.mapping.RelationMapping;
@@ -292,15 +293,20 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         	throw new IllegalStateException("Can't find target entity '" + rp.getTargetEntityName() + "'");
         }
 
-        if(targetEm.isRemote() && RemoteType.rest.equals(targetEm.getRemoteSettings().getRemoteType())){
+        if(targetEm.isRemote() && targetEm.getRemoteSettings().isRest()){
         	expandByRest(expand, records, rp);
         }else{
         	expandByDb(expand, records, rp);
         }
     }
 
-    private void expandByRest(Expand expand, List<Record> records, RelationProperty rp){
+    protected void expandByRest(Expand expand, List<Record> records, RelationProperty rp){
     	RelationMapping rm = em.getRelationMapping(rp.getRelationName());
+    	if(rm.isEmbedded()) {
+            expandByRestEmbedded(expand, records, rp, rm);
+            return;
+        }
+
 		EntityMapping targetEm=this.md.getEntityMapping(rm.getTargetEntityName());
 
         QueryOptions opts =new QueryOptions();
@@ -397,23 +403,28 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 		}
     }
 
-	private void expandByDb(Expand expand, List<Record> records, RelationProperty rp) {
-		RelationMapping       rm          = em.getRelationMapping(rp.getRelationName());
-		CriteriaQuery<Record> expandQuery = dao.createCriteriaQuery(rp.getTargetEntityName()).limit(ac.getExpandLimit() + 1);
+	protected void expandByDb(Expand expand, List<Record> records, RelationProperty rp) {
+		RelationMapping rm = em.getRelationMapping(rp.getRelationName());
+		if(rm.isEmbedded()) {
+            expandByDbEmbedded(expand, records, rp, rm);
+		    return;
+        }
+
+        CriteriaQuery<Record> expandQuery = dao.createCriteriaQuery(rp.getTargetEntityName()).limit(ac.getExpandLimit() + 1);
 
         //根据不同类型的关系，计算引用的源字段、被引用字段
         String localFieldName;
         String referredFieldName;
 
         if(rm.isOneToMany()){
-        	RelationMapping inverseRm= this.md.getEntityMapping(rm.getTargetEntityName()).getRelationMapping(rm.getInverseRelationName());
-        	localFieldName=inverseRm.getJoinFields()[0].getReferencedFieldName();
-        	referredFieldName=inverseRm.getJoinFields()[0].getLocalFieldName();
+            RelationMapping inverseRm= this.md.getEntityMapping(rm.getTargetEntityName()).getRelationMapping(rm.getInverseRelationName());
+            localFieldName=inverseRm.getJoinFields()[0].getReferencedFieldName();
+            referredFieldName=inverseRm.getJoinFields()[0].getLocalFieldName();
         }else if(rm.isManyToMany()){
-        	RelationMapping joinRm= this.md.getEntityMapping(rm.getJoinEntityName()).tryGetRelationMappingOfTargetEntity(em.getEntityName());
-        	localFieldName=em.getKeyFieldNames()[0];
-        	referredFieldName=joinRm.getJoinFields()[0].getLocalFieldName();
-        	expandQuery.join(rm.getJoinEntityName(), "_jt_");
+            RelationMapping joinRm= this.md.getEntityMapping(rm.getJoinEntityName()).tryGetRelationMappingOfTargetEntity(em.getEntityName());
+            localFieldName=em.getKeyFieldNames()[0];
+            referredFieldName=joinRm.getJoinFields()[0].getLocalFieldName();
+            expandQuery.join(rm.getJoinEntityName(), "_jt_");
         }else{
             localFieldName= rm.getJoinFields()[0].getLocalFieldName();
             referredFieldName=rm.getJoinFields()[0].getReferencedFieldName();
@@ -424,35 +435,35 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         //获取所有被引用记录的id
         Set<Object> fks=new HashSet<>();
         for (Record record : records) {
-    		Object fk = record.get(localFieldName);
-    		if(fk==null ||fks.contains(fk)){
-    			continue;
-    		}
-    		fks.add(fk);
-		}
+            Object fk = record.get(localFieldName);
+            if(fk==null ||fks.contains(fk)){
+                continue;
+            }
+            fks.add(fk);
+        }
 
         if(rm.isManyToMany()){
-        	expandQuery.where(Strings.format("_jt_.{0} in :fks", referredFieldName))
-            .param("fks", fks.toArray());
+            expandQuery.where(Strings.format("_jt_.{0} in :fks", referredFieldName))
+                    .param("fks", fks.toArray());
         }else{
-        	expandQuery.where(Strings.format("{0} in :fks", referredFieldName))
-            .param("fks", fks.toArray());
+            expandQuery.where(Strings.format("{0} in :fks", referredFieldName))
+                    .param("fks", fks.toArray());
         }
 
         //构造expand时，要返回引用记录的字段
         if(Strings.isEmpty(expand.getSelect())) {
-        	 if(rm.isManyToMany()){
-        		 expandQuery.select("*",Strings.format("_jt_.{0} as {1}",referredFieldName, referredFieldAlias));
-        	 }else {
-                 referredFieldAlias = referredFieldName;
-             }
+            if(rm.isManyToMany()){
+                expandQuery.select("*",Strings.format("_jt_.{0} as {1}",referredFieldName, referredFieldAlias));
+            }else {
+                referredFieldAlias = referredFieldName;
+            }
         }else{
-        	if(rm.isManyToMany()){
-       		 	applySelect(expandQuery, expand.getSelect(),Strings.format("_jt_.{0} as {1}",referredFieldName, referredFieldAlias));
-	       	 }else{
+            if(rm.isManyToMany()){
+                applySelect(expandQuery, expand.getSelect(),Strings.format("_jt_.{0} as {1}",referredFieldName, referredFieldAlias));
+            }else{
                 applySelect(expandQuery, expand.getSelect(),referredFieldName);
                 referredFieldAlias = referredFieldName;
-	       	 }
+            }
         }
         List<Record> resultList= expandQuery.list();
         if(resultList.size() > ac.getExpandLimit()) {
@@ -464,44 +475,103 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         for (Record referred :resultList ) {
 
             Object fkVal;
-        	List<Record> fieldToValList;
+            List<Record> fieldToValList;
 
-        	if(rm.isManyToMany()){
-        		fkVal=referred.remove(referredFieldAlias);
-        		if(fkVal==null){
-        			fkVal=referred.remove(referredFieldAlias.toUpperCase());
-        		}
-        		if(fkVal==null){
-        			fkVal=referred.remove(referredFieldAlias.toLowerCase());
-        		}
-        	}else{
-        		fkVal=referred.get(referredFieldAlias);
-        	}
+            if(rm.isManyToMany()){
+                fkVal=referred.remove(referredFieldAlias);
+                if(fkVal==null){
+                    fkVal=referred.remove(referredFieldAlias.toUpperCase());
+                }
+                if(fkVal==null){
+                    fkVal=referred.remove(referredFieldAlias.toLowerCase());
+                }
+            }else{
+                fkVal=referred.get(referredFieldAlias);
+            }
 
-			if(referredRecords.containsKey(fkVal)){
-				fieldToValList=referredRecords.get(fkVal);
-			}else{
-				fieldToValList=new ArrayList<>();
-				referredRecords.put(fkVal, fieldToValList);
-			}
-			fieldToValList.add(referred);
-		}
+            if(referredRecords.containsKey(fkVal)){
+                fieldToValList=referredRecords.get(fkVal);
+            }else{
+                fieldToValList=new ArrayList<>();
+                referredRecords.put(fkVal, fieldToValList);
+            }
+            fieldToValList.add(referred);
+        }
 
         //填充expand指定的属性
         for (Record record : records) {
-        	Object fk = record.get(localFieldName);
-        	List<Record> fieldToRecords=referredRecords.get(fk);
-        	if(rp.isMany()) {
+            Object fk = record.get(localFieldName);
+            List<Record> fieldToRecords=referredRecords.get(fk);
+            if(rp.isMany()) {
                 record.put(rp.getName(),null == fieldToRecords ? Collections.emptyList() : fieldToRecords);
             }else{
-            	if(fieldToRecords!=null && fieldToRecords.size()>0){
-            		record.put(rp.getName(),fieldToRecords.get(0));
-            	}else{
-            		record.put(rp.getName(), null);
-            	}
+                if(fieldToRecords!=null && fieldToRecords.size()>0){
+                    record.put(rp.getName(),fieldToRecords.get(0));
+                }else{
+                    record.put(rp.getName(), null);
+                }
             }
-		}
+        }
 	}
+
+    protected void expandByRestEmbedded(Expand expand, List<Record> records, RelationProperty rp, RelationMapping rm) {
+
+    }
+
+    protected void expandByDbEmbedded(Expand expand, List<Record> records, RelationProperty rp, RelationMapping rm) {
+        //calc target ids
+        Set<Object> ids = new HashSet<>();
+        records.forEach(r -> calcIdsByEmbeddedField(ids, r, rm.getEmbeddedFileName()));
+        if(ids.isEmpty()) {
+            return;
+        }
+
+        //expand by target ids
+        EntityMapping targetEm = md.getEntityMapping(rm.getTargetEntityName());
+        String idFieldName = targetEm.getKeyFieldNames()[0];
+
+        CriteriaQuery<Record> expandQuery =
+                dao.createCriteriaQuery(targetEm).where(idFieldName + " in ?", ids);
+        if(!Strings.isEmpty(expand.getSelect())) {
+            applySelect(expandQuery, expand.getSelect(), false, idFieldName);
+        }
+
+        List<Record> totalExpanded = expandQuery.limit(ac.getExpandLimit() + 1).list();
+        if(totalExpanded.size() > ac.getExpandLimit()) {
+            throw new BadRequestException("Expanded records of '" + rp.getName() + "' exceed max limit " + ac.getExpandLimit());
+        }
+        Map<Object, Record> totalExpandedMap =
+                totalExpanded.stream().collect(Collectors.toMap((r)-> r.get(idFieldName), r -> r));
+
+        for(Record record : records) {
+            Object embeddedIds  = record.get(rm.getEmbeddedFileName());
+            List   expandedList = new ArrayList();
+            if(null != embeddedIds) {
+                for (Object embeddedId : Enumerables.of(embeddedIds)) {
+                    Record expandedRecord = totalExpandedMap.get(embeddedId);
+                    if(null != expandedRecord) {
+                        expandedList.add(expandedRecord);
+                    }
+                }
+            }
+            record.put(rp.getName(), expandedList);
+        }
+    }
+
+    protected void calcIdsByEmbeddedField(Set<Object> ids, Record record, String embeddedFieldName) {
+        Object embeddedIds = record.get(embeddedFieldName);
+        if(null != embeddedIds) {
+            Enumerable<Object> enumerable = Enumerables.tryOf(embeddedIds);
+            if(null == enumerable) {
+                throw new BadRequestException("The embedded ids must be array at field '" + embeddedFieldName + "'");
+            }
+            for(Object item : enumerable) {
+                if(!ids.contains(item)) {
+                    ids.add(item);
+                }
+            }
+        }
+    }
 
     /**
      * @see DefaultModelQueryExecutor#expand(Expand expand, Record... records)
@@ -618,13 +688,17 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         query.select(fields.toArray(new String[fields.size()]));
     }
 
+    protected void applySelect(CriteriaQuery query, String select, String... requiredFields) {
+        applySelect(query, select, true, requiredFields);
+    }
+
     /**
      * 设置查询字段
      * @param query 查询语句
      * @param select 待查询字段
      * @param requiredFields select中必须包含的字段，如果不包含，则自动添加该字段
      */
-    protected void applySelect(CriteriaQuery query, String select, String... requiredFields) {
+    protected void applySelect(CriteriaQuery query, String select, boolean exclude, String... requiredFields) {
         if(Strings.equals("*", select)) {
             return;
         }
@@ -646,7 +720,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             fields.add(p.getFieldName());
         }
 
-        if(null != excludedFields) {
+        if(exclude && null != excludedFields) {
             for(String name : excludedFields) {
                 fields.remove(name);
             }
