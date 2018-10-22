@@ -244,6 +244,11 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
     @Override
     public QueryListResult count(CountOptions options, Consumer<CriteriaQuery> callback) {
+        if(remote) {
+            RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), em);
+            return new QueryListResult(null, restResource.count(options), null);
+        }
+
         ModelExecutionContext context = new DefaultModelExecutionContext(this.context);
 
         CriteriaQuery<Record> query = createCriteriaQuery();
