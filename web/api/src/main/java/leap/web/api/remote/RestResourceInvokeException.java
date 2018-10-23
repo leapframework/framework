@@ -10,7 +10,7 @@ public class RestResourceInvokeException extends ResponseException {
     private final HttpResponse response;
 
     public  RestResourceInvokeException(HttpResponse response){
-        super(response.getStatus(), new Content() {
+        super(response.getStatus(), String.valueOf(response.getStatus()), new Content() {
             @Override
             public String getContentType(Request request) throws Throwable {
                 return response.getContentType().toString();

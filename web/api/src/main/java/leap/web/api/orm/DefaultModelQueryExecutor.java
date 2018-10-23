@@ -515,7 +515,74 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 	}
 
     protected void expandByRestEmbedded(Expand expand, List<Record> records, RelationProperty rp, RelationMapping rm) {
+        Set<Object> ids = new HashSet<>();
+        records.forEach(r -> calcIdsByEmbeddedField(ids, r, rm.getEmbeddedFileName()));
+        if(ids.isEmpty()) {
+            return;
+        }
 
+        EntityMapping targetEm = md.getEntityMapping(rm.getTargetEntityName());
+        String idFieldName = targetEm.getKeyFieldNames()[0];
+
+        RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), targetEm);
+
+        List<Map> totalExpanded = new ArrayList<>();
+        for(List<Object> partOfIds : split(ids, 50)) {
+            String filter = idFieldName + " in (" + joinInIds(partOfIds) + ")";
+            QueryOptions options = new QueryOptions();
+            options.setFilters(filter);
+            totalExpanded.addAll(restResource.queryList(Map.class, options).getList());
+        }
+
+        Map<Object, Map> totalExpandedMap =
+                totalExpanded.stream().collect(Collectors.toMap((r)-> r.get(idFieldName), r -> r));
+
+        for(Record record : records) {
+            Object embeddedIds  = record.get(rm.getEmbeddedFileName());
+            List   expandedList = new ArrayList();
+            if(null != embeddedIds) {
+                for (Object embeddedId : Enumerables.of(embeddedIds)) {
+                    Map expandedRecord = totalExpandedMap.get(embeddedId);
+                    if(null != expandedRecord) {
+                        expandedList.add(expandedRecord);
+                    }
+                }
+            }
+            record.put(rp.getName(), expandedList);
+        }
+    }
+
+    private String joinInIds(List<Object> ids) {
+        StringBuilder s = new StringBuilder();
+        for(int i=0;i<ids.size();i++) {
+            if(i > 0) {
+                s.append(',');
+            }
+            s.append("'");
+            s.append(ids.get(i));
+            s.append("'");
+        }
+        return s.toString();
+    }
+
+    private List<List<Object>> split(Set<Object> set, int num) {
+        List<List<Object>> list = new ArrayList<>();
+
+        int j=0;
+        List<Object> itemList = new ArrayList<>();
+        list.add(itemList);
+        for(Object item : set) {
+            if(j == num) {
+                j = 0;
+                itemList = new ArrayList<>();
+                list.add(itemList);
+            }else {
+                j++;
+            }
+            itemList.add(item);
+        }
+
+        return list;
     }
 
     protected void expandByDbEmbedded(Expand expand, List<Record> records, RelationProperty rp, RelationMapping rm) {
