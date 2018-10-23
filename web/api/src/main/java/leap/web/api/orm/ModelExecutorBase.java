@@ -24,7 +24,6 @@ import leap.lang.convert.Converts;
 import leap.lang.jdbc.JdbcTypeKind;
 import leap.lang.meta.MSimpleType;
 import leap.lang.meta.MSimpleTypeKind;
-import leap.lang.meta.MType;
 import leap.orm.OrmMetadata;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
@@ -40,15 +39,14 @@ import java.util.Map;
 public abstract class ModelExecutorBase {
 
     protected final ModelExecutorContext context;
-    protected final ApiConfig           ac;
-    protected final ApiMetadata         amd;
-    protected final MApiModel           am;
-    protected final Dao                 dao;
-    protected final EntityMapping       em;
-    protected final OrmMetadata         md;
-    protected final boolean             remote;
-    protected final boolean             local;
-    protected final RestResourceFactory restResourceFactory;
+    protected final ApiConfig            ac;
+    protected final ApiMetadata          amd;
+    protected final MApiModel            am;
+    protected final Dao                  dao;
+    protected final EntityMapping        em;
+    protected final OrmMetadata          md;
+    protected final boolean              remoteRest;
+    protected final RestResourceFactory  restResourceFactory;
 
     public ModelExecutorBase(ModelExecutorContext context) {
         this.context = context;
@@ -58,8 +56,7 @@ public abstract class ModelExecutorBase {
         this.dao = context.getDao();
         this.em  = context.getEntityMapping();
         this.md  = dao.getOrmContext().getMetadata();
-        this.remote = em.isRemote();
-        this.local  = !remote;
+        this.remoteRest = em.isRemoteRest();
         this.restResourceFactory = context.getRestResourceFactory();
     }
 

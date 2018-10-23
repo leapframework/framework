@@ -144,7 +144,7 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
         Object createdId;
         Record record;
 
-        if(!em.isRemote()) {
+        if(!em.isRemoteRest()) {
             InsertCommand insert = dao.cmdInsert(em.getEntityName()).from(properties);
             if (null != id) {
                 insert.withId(id);

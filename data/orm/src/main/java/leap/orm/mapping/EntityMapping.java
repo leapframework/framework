@@ -381,6 +381,13 @@ public class EntityMapping extends ExtensibleBase {
     }
 
     /**
+     * Returns true if this entity is a remote rest entity.
+     */
+    public boolean isRemoteRest() {
+        return remote && remoteSettings.isRest();
+    }
+
+    /**
      * Returns the validators for validating the entity.
      */
 	public EntityValidator[] getValidators() {

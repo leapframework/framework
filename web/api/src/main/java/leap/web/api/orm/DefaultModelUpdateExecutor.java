@@ -113,7 +113,7 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
 
         int affected;
 
-        if(!em.isRemote()) {
+        if(!em.isRemoteRest()) {
             affected = doUpdate(context, id, properties, true);
         }else {
             RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), em);

@@ -47,7 +47,7 @@ public class DefaultModelDeleteExecutor extends ModelExecutorBase implements Mod
         }
 
         if(null == result) {
-            if(!em.isRemote()) {
+            if(!em.isRemoteRest()) {
                 if (!options.isCascadeDelete()) {
                     result = new DeleteOneResult(dao.delete(em, id) > 0);
                 } else {

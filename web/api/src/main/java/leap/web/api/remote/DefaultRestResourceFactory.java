@@ -33,7 +33,7 @@ public class DefaultRestResourceFactory implements RestResourceFactory {
 
     @Override
     public RestResource createResource(OrmContext context, EntityMapping em) {
-        if(!em.isRemote()) {
+        if(!em.isRemoteRest()) {
             return null;
         }
 

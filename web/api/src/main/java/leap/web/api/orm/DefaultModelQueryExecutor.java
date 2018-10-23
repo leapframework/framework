@@ -90,7 +90,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
         Record record;
 
-        if(!em.isRemote()) {
+        if(!em.isRemoteRest()) {
             CriteriaQuery<Record> query = createCriteriaQuery().whereById(id);
             applySelect(query, options, new HashMap<>());
 
@@ -107,7 +107,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             ex.handler.postQueryOne(context, id, record);
         }
 
-        if(!em.isRemote() && null != record && null != options) {
+        if(!em.isRemoteRest() && null != record && null != options) {
             Expand[] expands = ExpandParser.parse(options.getExpand());
             if (expands.length > 0) {
                 for (Expand expand : expands) {
@@ -124,7 +124,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
     @Override
     public QueryListResult queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback) {
         //todo: review query remote entity.
-        if(remote) {
+        if(remoteRest) {
             RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), em);
 
             RestQueryListResult<Map> result = restResource.queryList(Map.class, options);
@@ -245,7 +245,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
     @Override
     public QueryListResult count(CountOptions options, Consumer<CriteriaQuery> callback) {
-        if(remote) {
+        if(remoteRest) {
             RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), em);
             return new QueryListResult(null, restResource.count(options), null);
         }
@@ -293,7 +293,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         	throw new IllegalStateException("Can't find target entity '" + rp.getTargetEntityName() + "'");
         }
 
-        if(targetEm.isRemote() && targetEm.getRemoteSettings().isRest()){
+        if(targetEm.isRemoteRest()){
         	expandByRest(expand, records, rp);
         }else{
         	expandByDb(expand, records, rp);
