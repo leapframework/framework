@@ -58,7 +58,7 @@ class SimpleFileResource extends AbstractResource implements FileResource {
 		Args.notNull(path, "path");
 		this.file = new File(path);
 		this.path = Paths.normalize(path);
-		this.path1 = file.isDirectory() ? path + "/" : path;
+		this.path1 = file.isDirectory() && !path.endsWith("/") ? path + "/" : path;
 		this.classpath = classpath;
 	}
 
