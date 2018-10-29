@@ -76,4 +76,12 @@ public class DefaultModelExecutorFactory implements ModelExecutorFactory {
         context.setRestResourceFactory(restResourceFactory);
         return context;
     }
+
+    @Override
+    public RelationQueryExecutor newRelationQueryExecutor(RelationExecutorContext context) {
+        ModelExecutorContext targetExecutorContext = context.newTargetExecutorContext();
+        ModelQueryExecutor   targetQueryExecutor   = newQueryExecutor(targetExecutorContext);
+
+        return new DefaultRelationQueryExecutor((RelationExecutorContext) handleContext(context), targetQueryExecutor);
+    }
 }

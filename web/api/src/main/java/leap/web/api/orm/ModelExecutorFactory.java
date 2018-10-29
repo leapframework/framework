@@ -38,4 +38,8 @@ public interface ModelExecutorFactory {
      */
     ModelQueryExecutor newQueryExecutor(ModelExecutorContext context);
 
+    /**
+     * Returns a new {@link RelationQueryExecutor}.
+     */
+    RelationQueryExecutor newRelationQueryExecutor(RelationExecutorContext context);
 }
