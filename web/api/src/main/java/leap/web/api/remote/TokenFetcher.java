@@ -66,6 +66,10 @@ public class TokenFetcher extends DefaultCodeVerifier {
 	}
 
 	public AccessToken refreshAccessToken(AccessToken old) {
+		if(old instanceof MappedAccessToken) {
+		    tokenMappings.remove(((MappedAccessToken) old).getRawToken());
+        }
+
 		if (null == config.getTokenUrl()) {
 			throw new IllegalStateException("The tokenUrl must be configured");
 		}

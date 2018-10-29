@@ -84,7 +84,6 @@ public abstract class AbstractRestResource implements RestResource {
         }
         HttpResponse response = request.send();
         if (response.getStatus() == HTTP.SC_UNAUTHORIZED && at != null) {
-            ((TimeExpirableSeconds) at).setExpiresIn(0);
             at = tokenFetcher.refreshAccessToken(at);
             request.addHeader(Headers.AUTHORIZATION, OAuth2Constants.BEARER + " " + at.getToken());
             response = request.send();
