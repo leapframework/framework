@@ -175,4 +175,9 @@ public class RelationMapping {
     public boolean isSetNullOnCascadeDelete() {
         return null != onCascadeDelete && onCascadeDelete == CascadeDeleteAction.SET_NULL;
     }
+
+    @Override
+    public String toString() {
+        return name + ":" + type;
+    }
 }

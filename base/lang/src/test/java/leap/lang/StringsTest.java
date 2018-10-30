@@ -99,4 +99,11 @@ public class StringsTest extends ConcurrentTestCase {
 
         assertEquals("abc...hijk", Strings.abbreviatePrefix("abcdefghijk", 3, 10, marker3));
     }
+
+    @Test
+    public void testLowerUnderscore() {
+		assertEquals("qqq", Strings.lowerUnderscore("QQQ"));
+        assertEquals("q_qq", Strings.lowerUnderscore("qQq"));
+        assertEquals("q_qq", Strings.lowerUnderscore("qQQ"));
+	}
 }

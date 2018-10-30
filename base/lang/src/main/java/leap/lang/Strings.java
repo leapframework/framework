@@ -1068,8 +1068,7 @@ public class Strings {
 			char p = buf.charAt(i-1);
 			if (
 				(Character.isLowerCase( p ) || Character.isDigit(p) ) &&
-				Character.isUpperCase( buf.charAt(i) ) &&
-				Character.isLowerCase( buf.charAt(i+1) )
+				Character.isUpperCase( buf.charAt(i))
 			) {
 				buf.insert(i++, c);
 			}

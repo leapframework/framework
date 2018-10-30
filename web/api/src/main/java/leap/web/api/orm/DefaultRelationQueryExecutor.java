@@ -103,6 +103,10 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase implements R
             return queryListRemoteTarget(id, options);
         }
 
+        if(rm.isEmbedded()) {
+
+        }
+
         return iqe.queryListByRelation(id, options);
     }
 
@@ -119,6 +123,11 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase implements R
         throw new IllegalStateException("queryListRemoteTarget not implemented");
     }
 
+    protected QueryListResult queryListEmbedded(Object id, QueryOptions options) {
+        //todo:
+        throw new IllegalStateException("queryListEmbedded not implemented");
+    }
+
     protected static class InverseQueryExecutor extends DefaultModelQueryExecutor{
         private final RelationMapping rm;
 
@@ -129,7 +138,7 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase implements R
 
         public QueryOneResult queryOneByRelation(Object relatedId, QueryOptionsBase options) {
             CriteriaQuery<Record> query =
-                    createCriteriaQuery().joinById(em.getEntityName(), rm.getName(), "j", relatedId);
+                    createCriteriaQuery().joinById(rm.getTargetEntityName(), rm.getName(), "j", relatedId);
 
             Map<String, ModelAndMapping> joinedModels = New.hashMap("j", new ModelAndMapping(am, em));
 
@@ -144,7 +153,7 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase implements R
 
         public QueryListResult queryListByRelation(Object relatedId, QueryOptions options) {
             CriteriaQuery<Record> query =
-                    createCriteriaQuery().joinById(em.getEntityName(), rm.getName(), "j", relatedId);
+                    createCriteriaQuery().joinById(rm.getTargetEntityName(), rm.getName(), "j", relatedId);
 
             Map<String, ModelAndMapping> joinedModels = New.hashMap("j", new ModelAndMapping(am, em));
 
