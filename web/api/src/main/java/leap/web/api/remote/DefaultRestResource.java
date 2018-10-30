@@ -17,17 +17,25 @@ import leap.lang.json.JsonSettings;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.oauth2.webapp.token.at.AccessToken;
+import leap.orm.mapping.EntityMapping;
 import leap.web.api.mvc.params.CountOptions;
 import leap.web.api.mvc.params.DeleteOptions;
 import leap.web.api.mvc.params.QueryOptions;
 import leap.web.api.mvc.params.QueryOptionsBase;
 import leap.web.api.remote.json.TypeReference;
+import leap.web.api.restd.CrudUtils;
 
 public class DefaultRestResource extends AbstractRestResource {
     private final Log log = LogFactory.get(DefaultRestResource.class);
 
+    protected final EntityMapping em;
+
     protected String      endpoint;
     protected AccessToken at;
+
+    public DefaultRestResource(EntityMapping em) {
+        this.em = em;
+    }
 
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
@@ -63,7 +71,7 @@ public class DefaultRestResource extends AbstractRestResource {
 
     @Override
     public boolean delete(Object id, DeleteOptions options) {
-        String op = Strings.format("/{0}", id);
+        String op = idPath(id);
 
         HttpRequest request = httpClient.request(buildOperationPath(op))
                 .ajax()
@@ -78,7 +86,7 @@ public class DefaultRestResource extends AbstractRestResource {
 
     @Override
     public boolean update(Object id, Object partial) {
-        String op = Strings.format("/{0}", id);
+        String op = idPath(id);
 
         HttpRequest request = httpClient.request(buildOperationPath(op))
                 .ajax()
@@ -100,7 +108,7 @@ public class DefaultRestResource extends AbstractRestResource {
 
     @Override
     public <T> T find(Class<T> entityClass, Object id, QueryOptionsBase options) {
-        String op = Strings.format("/{0}", id);
+        String op = idPath(id);
 
         HttpRequest request = httpClient.request(buildOperationPath(op))
                 .ajax()
@@ -110,6 +118,12 @@ public class DefaultRestResource extends AbstractRestResource {
 
         T val = send(entityClass, request, getAccessToken());
         return val;
+    }
+
+    @Override
+    public <T> T findRelationOne(Class<T> resultClass, String relationPath, Object id, QueryOptionsBase options) {
+        //todo:
+        return null;
     }
 
     @SuppressWarnings("unchecked")
@@ -165,5 +179,9 @@ public class DefaultRestResource extends AbstractRestResource {
 
         Integer val = send(Integer.class, request, getAccessToken());
         return val == null ? 0 : val.intValue();
+    }
+
+    protected String idPath(Object id) {
+        return null == em ? "/" + id : CrudUtils.getIdPath(em, id);
     }
 }

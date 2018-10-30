@@ -29,7 +29,6 @@ import leap.web.action.Argument;
 import leap.web.action.ArgumentBuilder;
 import leap.web.action.FuncActionBuilder;
 import leap.web.api.Api;
-import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.*;
 import leap.web.api.mvc.ApiResponse;
 import leap.web.api.orm.ModelExecutorFactory;
@@ -211,26 +210,7 @@ public abstract class CrudOperationBase extends RestdOperationBase {
     }
 
     protected String getIdPath(RestdModel model) {
-        EntityMapping em = model.getEntityMapping();
-
-        if(em.getKeyFieldNames().length == 1) {
-            return "/{" + em.getKeyFieldNames()[0] + "}";
-        }else{
-            StringBuilder p = new StringBuilder();
-            p.append('/');
-
-            for(int i=0;i<em.getKeyFieldNames().length;i++) {
-                String name = em.getKeyFieldNames()[i];
-
-                if(i > 0) {
-                    p.append(',');
-                }
-
-                p.append('{').append(name).append('}');
-            }
-
-            return p.toString();
-        }
+        return CrudUtils.getIdPathTemplate(model);
     }
 
     private MApiParameterBuilder newIdParameter(RestdModel model, FieldMapping id) {

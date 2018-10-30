@@ -41,6 +41,11 @@ public interface RestResource {
     <T> T find(Class<T> entityClass, Object id, QueryOptionsBase options);
 
     /**
+     * Finds the record of many-to-one relation by the given id.
+     */
+    <T> T findRelationOne(Class<T> resultClass, String relationPath, Object id, QueryOptionsBase options);
+
+    /**
      * Query the records of model.
      */
     default <T> RestQueryListResult<T> queryList(Class<T> entityClass, QueryOptions options) {

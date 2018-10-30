@@ -40,7 +40,7 @@ public class RestResourceBuilder {
     }
 
     public RestResource build() {
-        DefaultRestResource res = AppContext.factory().inject(new DefaultRestResource());
+        DefaultRestResource res = AppContext.factory().inject(new DefaultRestResource(entityMapping));
         if (entityMapping != null) {
             RestDatasourceManager manager = getDataSourceManager();
             RestDataSource        ds      = manager.tryGetDataSource(entityMapping.getRemoteSettings().getDataSource());
