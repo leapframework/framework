@@ -20,9 +20,12 @@ package leap.web.api.orm;
 
 import leap.core.value.Record;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public final class QueryListResult {
+
+    public static QueryListResult EMPTY = new QueryListResult(new ArrayList<>(), 0);
 
     public final List<Record> list;
     public final long         count;

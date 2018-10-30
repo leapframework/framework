@@ -560,7 +560,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
     }
 
-    private String joinInIds(List<Object> ids) {
+    protected String joinInIds(List<Object> ids) {
         StringBuilder s = new StringBuilder();
         for(int i=0;i<ids.size();i++) {
             if(i > 0) {
@@ -573,7 +573,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         return s.toString();
     }
 
-    private List<List<Object>> split(Set<Object> set, int num) {
+    protected List<List<Object>> split(Set<Object> set, int num) {
         List<List<Object>> list = new ArrayList<>();
 
         int j=0;
@@ -633,7 +633,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
     }
 
-    protected void calcIdsByEmbeddedField(Set<Object> ids, Record record, String embeddedFieldName) {
+    public void calcIdsByEmbeddedField(Set<Object> ids, Record record, String embeddedFieldName) {
         Object embeddedIds = record.get(embeddedFieldName);
         if(null != embeddedIds) {
             Enumerable<Object> enumerable = Enumerables.tryOf(embeddedIds);

@@ -30,8 +30,7 @@ import leap.web.api.remote.RestResource;
 import leap.web.api.restd.CrudUtils;
 import leap.web.exception.BadRequestException;
 
-import java.util.Arrays;
-import java.util.Map;
+import java.util.*;
 
 public class DefaultRelationQueryExecutor extends ModelExecutorBase implements RelationQueryExecutor {
 
@@ -99,15 +98,30 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase implements R
             return queryListRemoteSource(id, options);
         }
 
-        if(tem.isRemoteRest()) {
-            return queryListRemoteTarget(id, options);
-        }
-
         if(rm.isEmbedded()) {
             return queryListEmbedded(id, options);
         }
 
+        if(tem.isRemoteRest()) {
+            return queryListRemoteTarget(id, options);
+        }
+
         return iqe.queryListByRelation(id, options);
+    }
+
+    protected QueryListResult queryListEmbedded(Object id, QueryOptions options) {
+        Record record = dao.createCriteriaQuery(em).whereById(id).select(rm.getEmbeddedFileName()).firstOrNull();
+        if(null == record) {
+            throw new BadRequestException("Record " + em.getEntityName() + "(" + id + ") not found");
+        }
+
+        Set<Object> embeddedIds = new HashSet<>();
+        iqe.calcIdsByEmbeddedField(embeddedIds, record, rm.getEmbeddedFileName());
+        if(embeddedIds.isEmpty()) {
+            return QueryListResult.EMPTY;
+        }
+
+        return iqe.queryListByIds(embeddedIds, options);
     }
 
     protected QueryListResult queryListRemoteSource(Object id, QueryOptions options) {
@@ -121,11 +135,6 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase implements R
     protected QueryListResult queryListRemoteTarget(Object id, QueryOptions options) {
         //todo:
         throw new IllegalStateException("queryListRemoteTarget not implemented");
-    }
-
-    protected QueryListResult queryListEmbedded(Object id, QueryOptions options) {
-        //todo:
-        throw new IllegalStateException("queryListEmbedded not implemented");
     }
 
     protected static class InverseQueryExecutor extends DefaultModelQueryExecutor{
@@ -158,6 +167,26 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase implements R
             Map<String, ModelAndMapping> joinedModels = New.hashMap("j", new ModelAndMapping(am, em));
 
             return doQueryListResult(query, joinedModels, options, null, null);
+        }
+
+        public QueryListResult queryListByIds(Set<Object> ids, QueryOptions options) {
+            String idFieldName = em.getKeyFieldNames()[0];
+            if(remoteRest) {
+                String filter = idFieldName + " in (" + joinInIds(new ArrayList<>(ids)) + ")";
+                if(Strings.isEmpty(options.getFilters())) {
+                    options.setFilters(filter);
+                }else {
+                    options.setFilters("(" + options.getFilters() + ") and (" + filter + ")");
+                }
+                RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), em);
+                RestQueryListResult<Record> result = restResource.queryList(options);
+                return new QueryListResult(result.getList(), result.getCount());
+            }else {
+                CriteriaQuery<Record> query =
+                        createCriteriaQuery().where(idFieldName + " in ?", ids);
+
+                return doQueryListResult(query, new HashMap<>(), options, null, null);
+            }
         }
     }
 }
