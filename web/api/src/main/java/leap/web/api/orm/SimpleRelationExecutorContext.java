@@ -68,6 +68,8 @@ public class SimpleRelationExecutorContext extends SimpleModelExecutorContext im
 
     @Override
     public ModelExecutorContext newInverseExecutorContext() {
-        return new SimpleModelExecutorContext(ac, amd, dao, iam, iem);
+        SimpleModelExecutorContext c = new SimpleModelExecutorContext(ac, amd, dao, iam, iem);
+        c.setRestResourceFactory(restResourceFactory);
+        return c;
     }
 }

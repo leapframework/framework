@@ -19,6 +19,7 @@ package leap.web.api.restd;
 import leap.lang.Beans;
 import leap.orm.mapping.EntityMapping;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class CrudUtils {
@@ -55,6 +56,25 @@ public class CrudUtils {
             return getIdPath(em, (Map)id);
         }else {
             return getIdPath(em, Beans.toMap(id));
+        }
+    }
+
+    public static Object getSingleOrMap(Map<String, Object> record, String... fields) {
+        if(fields.length == 0) {
+            return null;
+        }
+
+        if(fields.length == 1) {
+            return record.get(fields[0]);
+        }else {
+            Map<String, Object> result = new LinkedHashMap<>();
+            for(String field: fields) {
+                Object v = record.get(field);
+                if(null != v) {
+                    result.put(field, v);
+                }
+            }
+            return result.isEmpty() ? null : result;
         }
     }
 

@@ -20,7 +20,6 @@ import leap.core.value.Record;
 import leap.lang.New;
 import leap.lang.Strings;
 import leap.orm.mapping.EntityMapping;
-import leap.orm.mapping.Mappings;
 import leap.orm.mapping.RelationMapping;
 import leap.orm.mapping.RelationType;
 import leap.orm.query.CriteriaQuery;
@@ -28,6 +27,7 @@ import leap.web.api.mvc.params.QueryOptions;
 import leap.web.api.mvc.params.QueryOptionsBase;
 import leap.web.api.remote.RestQueryListResult;
 import leap.web.api.remote.RestResource;
+import leap.web.api.restd.CrudUtils;
 import leap.web.exception.BadRequestException;
 
 import java.util.Arrays;
@@ -85,9 +85,9 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase implements R
             throw new BadRequestException("Record " + em.getEntityName() + "(" + id + ") not found");
         }
 
-        Object targetId = Mappings.getId(tem, record);
+        Object targetId = CrudUtils.getSingleOrMap(record, fields);
         if (null == targetId) {
-            return null;
+            return new QueryOneResult(null);
         }
 
         return iqe.queryOne(targetId, options);
@@ -104,7 +104,7 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase implements R
         }
 
         if(rm.isEmbedded()) {
-
+            return queryListEmbedded(id, options);
         }
 
         return iqe.queryListByRelation(id, options);
