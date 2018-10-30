@@ -102,7 +102,7 @@ public class DeleteOperation extends CrudOperationBase implements CrudOperation 
         public Object apply(ActionParams params) {
             MApiModel am = api.getMetadata().getModel(model.getName());
 
-            ModelExecutorContext context = new SimpleModelExecutorContext(api, am, dao, model.getEntityMapping());
+            ModelExecutorContext context = new SimpleModelExecutorContext(api, dao, am, em);
             ModelDeleteExecutor executor = newDeleteExecutor(context);
 
             Object        id      = id(params);

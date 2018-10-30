@@ -60,7 +60,7 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
         this.ac  = api.getConfig();
         this.amd = api.getMetadata();
         this.am  = api.getMetadata().getModel(modelClass);
-        this.mec = new SimpleModelExecutorContext(api, am, dao, em);
+        this.mec = new SimpleModelExecutorContext(api, dao, am, em);
     }
 
     /**

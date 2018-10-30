@@ -33,13 +33,13 @@ public class SimpleModelExecutorContext implements ModelExecutorContext {
     protected EntityMapping       entityMapping;
     protected RestResourceFactory restResourceFactory;
 
-    public SimpleModelExecutorContext(Api api, MApiModel am, Dao dao, EntityMapping em) {
-        this(api.getConfig(), api.getMetadata(), am, dao, em);
+    public SimpleModelExecutorContext(Api api, Dao dao, MApiModel am, EntityMapping em) {
+        this(api.getConfig(), api.getMetadata(), dao, am, em);
     }
 
-    public SimpleModelExecutorContext(ApiConfig ac, ApiMetadata amd, MApiModel am, Dao dao, EntityMapping em) {
+    public SimpleModelExecutorContext(ApiConfig ac, ApiMetadata md, Dao dao, MApiModel am, EntityMapping em) {
         this.ac = ac;
-        this.amd = amd;
+        this.amd = md;
         this.apiModel = am;
         this.dao = dao;
         this.entityMapping = em;

@@ -33,7 +33,7 @@ public class SimpleRelationExecutorContext extends SimpleModelExecutorContext im
     public SimpleRelationExecutorContext(Api api, Dao dao,
                                          MApiModel am, EntityMapping em, RelationMapping rm, String relationPath,
                                          MApiModel iam, EntityMapping iem, RelationMapping irm) {
-        super(api, am, dao, em);
+        super(api, dao, am, em);
         this.iam = iam;
         this.iem = iem;
         this.rm  = rm;
@@ -68,6 +68,6 @@ public class SimpleRelationExecutorContext extends SimpleModelExecutorContext im
 
     @Override
     public ModelExecutorContext newInverseExecutorContext() {
-        return new SimpleModelExecutorContext(ac, amd, iam, dao, iem);
+        return new SimpleModelExecutorContext(ac, amd, dao, iam, iem);
     }
 }

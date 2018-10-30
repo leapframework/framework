@@ -80,23 +80,17 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
         return new QueryFunction(context.getApi(), context.getDao(), model);
     }
 
-    protected class QueryFunction implements Function<ActionParams, Object> {
-        protected final Api        api;
-        protected final Dao        dao;
-        protected final RestdModel model;
+    protected class QueryFunction extends CrudFunction implements Function<ActionParams, Object> {
 
         public QueryFunction(Api api, Dao dao, RestdModel model) {
-            this.api = api;
-            this.dao = dao;
-            this.model = model;
+            super(api, dao, model);
         }
 
         @Override
         public Object apply(ActionParams params) {
-            ApiMetadata amd = api.getMetadata();
-            MApiModel   am  = amd.getModel(model.getName());
+            MApiModel am = am();
 
-            ModelExecutorContext context  = new SimpleModelExecutorContext(api, am, dao, model.getEntityMapping());
+            ModelExecutorContext context  = new SimpleModelExecutorContext(api, dao, am, em);
             ModelQueryExecutor   executor = newQueryExecutor(context);
 
             QueryOptions options = params.get(0);

@@ -87,10 +87,9 @@ public class FindOperation extends CrudOperationBase implements CrudOperation {
 
         @Override
         public Object apply(ActionParams params) {
-            ApiMetadata amd = api.getMetadata();
-            MApiModel   am  = amd.getModel(model.getName());
+            MApiModel am = am();
 
-            ModelExecutorContext context  = new SimpleModelExecutorContext(api, am, dao, model.getEntityMapping());
+            ModelExecutorContext context  = new SimpleModelExecutorContext(api, dao, am, em);
             ModelQueryExecutor   executor = newQueryExecutor(context);
 
             Object           id      = id(params);

@@ -88,12 +88,12 @@ public class UpdateOperation extends CrudOperationBase implements CrudOperation 
 
         @Override
         public Object apply(ActionParams params) {
-            MApiModel am = api.getMetadata().getModel(model.getName());
+            MApiModel am = am();
 
             Object             id     = id(params);
             Map<String,Object> record = record(params);
 
-            ModelExecutorContext context  = new SimpleModelExecutorContext(api, am, dao, em);
+            ModelExecutorContext context  = new SimpleModelExecutorContext(api, dao, am, em);
             ModelUpdateExecutor  executor = newUpdateExecutor(context);
 
             UpdateOneResult result = executor.partialUpdateOne(id, record);

@@ -223,19 +223,28 @@ public abstract class CrudOperationBase extends RestdOperationBase {
     }
 
     protected abstract static class CrudFunction implements Function<ActionParams, Object> {
-        protected final Api        api;
-        protected final Dao        dao;
-        protected final RestdModel model;
+        protected final Api           api;
+        protected final Dao           dao;
+        protected final RestdModel    model;
         protected final EntityMapping em;
 
         protected final int idLen;
+
+        private MApiModel am;
 
         protected CrudFunction(Api api, Dao dao, RestdModel model) {
             this.api = api;
             this.dao = dao;
             this.model = model;
-            this.em = model.getEntityMapping();
+            this.em    = model.getEntityMapping();
             this.idLen = em.getKeyFieldMappings().length;
+        }
+
+        protected MApiModel am() {
+            if(null == am) {
+                am = api.getMetadata().getModel(model.getName());
+            }
+            return am;
         }
 
         protected final Object id(ActionParams params) {

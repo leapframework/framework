@@ -37,7 +37,7 @@ public class DefaultModelQueryExecutorTest extends ModelExecutorTestBase {
         MApiModel     am = amd.getModel(ormModel);
         EntityMapping em = dao.getOrmContext().getMetadata().getEntityMapping(ormModel);
 
-        ModelExecutorContext      context  = new SimpleModelExecutorContext(ac, amd, am, dao, em);
+        ModelExecutorContext      context  = new SimpleModelExecutorContext(ac, amd, dao, am, em);
         DefaultModelQueryExecutor executor = new DefaultModelQueryExecutor(context);
 
         return executor;
