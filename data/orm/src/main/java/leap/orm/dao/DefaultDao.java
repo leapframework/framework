@@ -1117,9 +1117,6 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 
 	/**
 	 * 对远程实体进行检查，屏蔽Rest实体的dao操作，对远程db实体，动态切换dao
-	 * @param originalEm
-	 * @param func
-	 * @return
 	 */
 	private <T> T runInWrapperContext(EntityMapping originalEm,Function<WrapperContext,T> func){
 		WrapperContext context=new WrapperContext(this,originalEm);
@@ -1127,7 +1124,7 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 			return func.apply(context);
 		}
 		if(RemoteType.rest.equals(originalEm.getRemoteSettings().getRemoteType())){
-			throw new RuntimeException("remote rest entity isn't supported.");
+			throw new RuntimeException("remote rest entity not supported.");
 		}
 		String remoteDs=originalEm.getRemoteSettings().getDataSource();
 		OrmContext targetOrmContext= Orm.context(remoteDs);
