@@ -24,32 +24,21 @@ import leap.web.api.meta.model.MApiModel;
 
 public class SimpleRelationExecutorContext extends SimpleModelExecutorContext implements RelationExecutorContext {
 
-    private final MApiModel       tam;
-    private final EntityMapping   tem;
     private final RelationMapping rm;
     private final String          rp;
+    private final EntityMapping   iem;
+    private final MApiModel       iam;
     private final RelationMapping irm;
 
     public SimpleRelationExecutorContext(Api api, Dao dao,
-                                         MApiModel am, MApiModel tam,
-                                         EntityMapping em, EntityMapping tem,
-                                         RelationMapping rm, String relationPath, RelationMapping irm) {
+                                         MApiModel am, EntityMapping em, RelationMapping rm, String relationPath,
+                                         MApiModel iam, EntityMapping iem, RelationMapping irm) {
         super(api, am, dao, em);
-        this.tam = tam;
-        this.tem = tem;
+        this.iam = iam;
+        this.iem = iem;
         this.rm  = rm;
         this.rp  = relationPath;
         this.irm = irm;
-    }
-
-    @Override
-    public MApiModel getTargetApiModel() {
-        return tam;
-    }
-
-    @Override
-    public EntityMapping getTargetEntityMapping() {
-        return tem;
     }
 
     @Override
@@ -63,12 +52,22 @@ public class SimpleRelationExecutorContext extends SimpleModelExecutorContext im
     }
 
     @Override
+    public MApiModel getInverseApiModel() {
+        return iam;
+    }
+
+    @Override
+    public EntityMapping getInverseEntityMapping() {
+        return iem;
+    }
+
+    @Override
     public RelationMapping getInverseRelation() {
         return irm;
     }
 
     @Override
-    public ModelExecutorContext newTargetExecutorContext() {
-        return new SimpleModelExecutorContext(ac, amd, tam, dao, tem);
+    public ModelExecutorContext newInverseExecutorContext() {
+        return new SimpleModelExecutorContext(ac, amd, iam, dao, iem);
     }
 }

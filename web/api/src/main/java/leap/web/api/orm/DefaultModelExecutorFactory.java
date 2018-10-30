@@ -79,9 +79,6 @@ public class DefaultModelExecutorFactory implements ModelExecutorFactory {
 
     @Override
     public RelationQueryExecutor newRelationQueryExecutor(RelationExecutorContext context) {
-        ModelExecutorContext targetExecutorContext = context.newTargetExecutorContext();
-        ModelQueryExecutor   targetQueryExecutor   = newQueryExecutor(targetExecutorContext);
-
-        return new DefaultRelationQueryExecutor((RelationExecutorContext) handleContext(context), targetQueryExecutor);
+        return new DefaultRelationQueryExecutor((RelationExecutorContext) handleContext(context));
     }
 }

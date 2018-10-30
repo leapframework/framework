@@ -17,11 +17,13 @@
 package leap.web.api.orm;
 
 import leap.core.value.Record;
+import leap.lang.New;
 import leap.lang.Strings;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.Mappings;
 import leap.orm.mapping.RelationMapping;
 import leap.orm.mapping.RelationType;
+import leap.orm.query.CriteriaQuery;
 import leap.web.api.mvc.params.QueryOptions;
 import leap.web.api.mvc.params.QueryOptionsBase;
 import leap.web.api.remote.RestQueryListResult;
@@ -32,19 +34,19 @@ import java.util.Arrays;
 
 public class DefaultRelationQueryExecutor extends ModelExecutorBase implements RelationQueryExecutor {
 
-    protected final ModelQueryExecutor tqe;
-    protected final EntityMapping      tem;
-    protected final RelationMapping    rm;
-    protected final String             rp;
-    protected final RelationMapping    irm;
+    protected final EntityMapping        tem;
+    protected final RelationMapping      rm;
+    protected final String               rp;
+    protected final RelationMapping      irm;
+    protected final InverseQueryExecutor iqe;
 
-    public DefaultRelationQueryExecutor(RelationExecutorContext context, ModelQueryExecutor targetQueryExecutor) {
+    public DefaultRelationQueryExecutor(RelationExecutorContext context) {
         super(context);
-        this.tqe = targetQueryExecutor;
-        this.tem = context.getTargetEntityMapping();
+        this.tem = context.getInverseEntityMapping();
         this.rm  = context.getRelation();
         this.rp  = !Strings.isEmpty(context.getRelationPath()) ? context.getRelationPath() : Strings.lowerUnderscore(rm.getName());
         this.irm = context.getInverseRelation();
+        this.iqe = new InverseQueryExecutor(context.newInverseExecutorContext(), irm);
     }
 
     @Override
@@ -61,7 +63,20 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase implements R
             return queryOneRemoteTarget(id, options);
         }
 
-        return queryOneAllLocals(id, options);
+        return iqe.queryOneByRelation(id, options);
+    }
+
+    protected QueryOneResult queryOneAllLocals(Object id, QueryOptionsBase options) {
+        CriteriaQuery<Record> query =
+                dao.createCriteriaQuery(tem).joinById(em.getEntityName(), irm.getName(), "j", id);
+
+        //todo:
+        //applySelect(query, options, New.hashMap("j", new ModelAndMapping(am, em)));
+
+        //return queryOneRemoteTarget(id, options);
+        Record record = query.firstOrNull();
+
+        return new QueryOneResult(record);
     }
 
     protected QueryOneResult queryOneRemoteSource(Object id, QueryOptionsBase options) {
@@ -87,12 +102,7 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase implements R
             return null;
         }
 
-        return tqe.queryOne(targetId, options);
-    }
-
-    protected QueryOneResult queryOneAllLocals(Object id, QueryOptionsBase options) {
-        //TODO: optimize use local join.
-        return queryOneRemoteTarget(id, options);
+        return iqe.queryOne(targetId, options);
     }
 
     @Override
@@ -100,6 +110,16 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase implements R
         if (remoteRest) {
             return queryListRemoteSource(id, options);
         }
+
+        if(tem.isRemoteRest()) {
+            return queryListRemoteTarget(id, options);
+        }
+
+        return queryListAllLocals(id, options);
+    }
+
+    protected QueryListResult queryListAllLocals(Object id, QueryOptions options) {
+
         return null;
     }
 
@@ -116,7 +136,25 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase implements R
         throw new IllegalStateException("queryListRemoteTarget not implemented");
     }
 
-    protected QueryListResult queryListAllLocals(Object id, QueryOptions options) {
-        return null;
+    protected static class InverseQueryExecutor extends DefaultModelQueryExecutor{
+        private final RelationMapping rm;
+
+        public InverseQueryExecutor(ModelExecutorContext context, RelationMapping rm) {
+            super(context);
+            this.rm = rm;
+        }
+
+        public QueryOneResult queryOneByRelation(Object relatedId, QueryOptionsBase options) {
+            CriteriaQuery<Record> query =
+                    dao.createCriteriaQuery(em).joinById(em.getEntityName(), rm.getName(), "j", relatedId);
+
+            applySelect(query, options, New.hashMap("j", new ModelAndMapping(am, em)));
+
+            Record record = query.firstOrNull();
+
+            expandOne(record, options);
+
+            return new QueryOneResult(record);
+        }
     }
 }

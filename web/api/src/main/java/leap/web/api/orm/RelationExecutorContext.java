@@ -23,16 +23,6 @@ import leap.web.api.meta.model.MApiModel;
 public interface RelationExecutorContext extends ModelExecutorContext {
 
     /**
-     * Required. Returns the api model for returning data.
-     */
-    MApiModel getTargetApiModel();
-
-    /**
-     * Required. Returns the entity for returning data.
-     */
-    EntityMapping getTargetEntityMapping();
-
-    /**
      * Required. Returns the relation of primary entity.
      */
     RelationMapping getRelation();
@@ -43,6 +33,16 @@ public interface RelationExecutorContext extends ModelExecutorContext {
     String getRelationPath();
 
     /**
+     * Required. Returns the api model for returning data.
+     */
+    MApiModel getInverseApiModel();
+
+    /**
+     * Required. Returns the entity for returning data.
+     */
+    EntityMapping getInverseEntityMapping();
+
+    /**
      * Required. Returns the inverse relation of {@link #getRelation()} at target entity.
      */
     RelationMapping getInverseRelation();
@@ -50,5 +50,5 @@ public interface RelationExecutorContext extends ModelExecutorContext {
     /**
      * Creates a new {@link ModelExecutorContext} for target entity.
      */
-    ModelExecutorContext newTargetExecutorContext();
+    ModelExecutorContext newInverseExecutorContext();
 }

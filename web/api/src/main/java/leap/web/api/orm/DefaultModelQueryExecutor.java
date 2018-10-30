@@ -82,6 +82,12 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
     @Override
     public QueryOneResult queryOne(Object id, QueryOptionsBase options) {
+        if(remoteRest) {
+            RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), em);
+            Record record = restResource.find(id, options);
+            return new QueryOneResult(record);
+        }
+
         ModelExecutionContext context = new DefaultModelExecutionContext(this.context);
 
         if(null != ex.handler) {
@@ -90,24 +96,27 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
         Record record;
 
-        if(!em.isRemoteRest()) {
-            CriteriaQuery<Record> query = createCriteriaQuery().whereById(id);
-            applySelect(query, options, new HashMap<>());
+        CriteriaQuery<Record> query = createCriteriaQuery().whereById(id);
+        applySelect(query, options, new HashMap<>());
 
-            if (null != ex.handler) {
-                ex.handler.preQueryOne(context, id, query);
-            }
-            record = query.firstOrNull();
-        }else {
-            RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), em);
-            record = restResource.find(id, options);
+        if (null != ex.handler) {
+            ex.handler.preQueryOne(context, id, query);
         }
+        record = query.firstOrNull();
 
         if(null != ex.handler && null != record) {
             ex.handler.postQueryOne(context, id, record);
         }
 
-        if(!em.isRemoteRest() && null != record && null != options) {
+        expandOne(record, options);
+
+        Object entity = ex.processQueryOneRecord(context, id, record);
+
+        return new QueryOneResult(record, entity);
+    }
+
+    protected void expandOne(Record record, QueryOptionsBase options) {
+        if(null != record && null != options) {
             Expand[] expands = ExpandParser.parse(options.getExpand());
             if (expands.length > 0) {
                 for (Expand expand : expands) {
@@ -115,10 +124,6 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                 }
             }
         }
-
-        Object entity = ex.processQueryOneRecord(context, id, record);
-
-        return new QueryOneResult(record, entity);
     }
 
     @Override
