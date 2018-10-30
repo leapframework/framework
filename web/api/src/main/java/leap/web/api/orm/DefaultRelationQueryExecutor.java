@@ -31,6 +31,7 @@ import leap.web.api.remote.RestResource;
 import leap.web.exception.BadRequestException;
 
 import java.util.Arrays;
+import java.util.Map;
 
 public class DefaultRelationQueryExecutor extends ModelExecutorBase implements RelationQueryExecutor {
 
@@ -64,19 +65,6 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase implements R
         }
 
         return iqe.queryOneByRelation(id, options);
-    }
-
-    protected QueryOneResult queryOneAllLocals(Object id, QueryOptionsBase options) {
-        CriteriaQuery<Record> query =
-                dao.createCriteriaQuery(tem).joinById(em.getEntityName(), irm.getName(), "j", id);
-
-        //todo:
-        //applySelect(query, options, New.hashMap("j", new ModelAndMapping(am, em)));
-
-        //return queryOneRemoteTarget(id, options);
-        Record record = query.firstOrNull();
-
-        return new QueryOneResult(record);
     }
 
     protected QueryOneResult queryOneRemoteSource(Object id, QueryOptionsBase options) {
@@ -115,12 +103,7 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase implements R
             return queryListRemoteTarget(id, options);
         }
 
-        return queryListAllLocals(id, options);
-    }
-
-    protected QueryListResult queryListAllLocals(Object id, QueryOptions options) {
-
-        return null;
+        return iqe.queryListByRelation(id, options);
     }
 
     protected QueryListResult queryListRemoteSource(Object id, QueryOptions options) {
@@ -146,15 +129,26 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase implements R
 
         public QueryOneResult queryOneByRelation(Object relatedId, QueryOptionsBase options) {
             CriteriaQuery<Record> query =
-                    dao.createCriteriaQuery(em).joinById(em.getEntityName(), rm.getName(), "j", relatedId);
+                    createCriteriaQuery().joinById(em.getEntityName(), rm.getName(), "j", relatedId);
 
-            applySelect(query, options, New.hashMap("j", new ModelAndMapping(am, em)));
+            Map<String, ModelAndMapping> joinedModels = New.hashMap("j", new ModelAndMapping(am, em));
+
+            applySelect(query, options, joinedModels);
 
             Record record = query.firstOrNull();
 
             expandOne(record, options);
 
             return new QueryOneResult(record);
+        }
+
+        public QueryListResult queryListByRelation(Object relatedId, QueryOptions options) {
+            CriteriaQuery<Record> query =
+                    createCriteriaQuery().joinById(em.getEntityName(), rm.getName(), "j", relatedId);
+
+            Map<String, ModelAndMapping> joinedModels = New.hashMap("j", new ModelAndMapping(am, em));
+
+            return doQueryListResult(query, joinedModels, options, null, null);
         }
     }
 }

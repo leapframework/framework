@@ -137,6 +137,17 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             return new QueryListResult(result.getList(), result.getCount());
         }
 
+        CriteriaQuery<Record> query = createCriteriaQuery();
+        Map<String, ModelAndMapping> joinedModels = new HashMap<>();
+
+        return doQueryListResult(query, joinedModels, options, filters, callback);
+    }
+
+    protected QueryListResult doQueryListResult(CriteriaQuery<Record> query,
+                                                Map<String, ModelAndMapping> joinedModels,
+                                                QueryOptions options,
+                                                Map<String, Object> filters,
+                                                Consumer<CriteriaQuery> callback) {
         ModelExecutionContext context = new DefaultModelExecutionContext(this.context);
         if(null == options) {
             options = new QueryOptions();
@@ -147,8 +158,6 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             ex.handler.processQueryListOptions(context, options);
         }
 
-        CriteriaQuery<Record> query = createCriteriaQuery();
-
         long count = -1;
         List<Record> list;
 
@@ -156,14 +165,10 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             applyOrderBy(query, options.getOrderBy());
         }
 
-        Map<String, ModelAndMapping> joinedModels = null;
-
         if(!Strings.isEmpty(options.getJoins())) {
             Join[] joins = JoinParser.parse(options.getJoins());
 
             Set<String> relations = new HashSet<>();
-
-            joinedModels = new HashMap<>(joins.length);
 
             for(Join join : joins) {
 
@@ -182,7 +187,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                 RelationProperty rp = em.tryGetRelationProperty(join.getRelation());
                 if(null == rp) {
                     throw new BadRequestException("No relation '" + join.getRelation() + "' in model '" + am.getName() +
-                                                  " or the relation is not joinable");
+                            " or the relation is not joinable");
                 }
 
                 if(rp.isOptional()) {
