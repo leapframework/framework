@@ -27,16 +27,18 @@ public class SimpleRelationExecutorContext extends SimpleModelExecutorContext im
     private final MApiModel       tam;
     private final EntityMapping   tem;
     private final RelationMapping rm;
+    private final String          rp;
     private final RelationMapping irm;
 
     public SimpleRelationExecutorContext(Api api, Dao dao,
                                          MApiModel am, MApiModel tam,
                                          EntityMapping em, EntityMapping tem,
-                                         RelationMapping rm, RelationMapping irm) {
+                                         RelationMapping rm, String relationPath, RelationMapping irm) {
         super(api, am, dao, em);
         this.tam = tam;
         this.tem = tem;
         this.rm  = rm;
+        this.rp  = relationPath;
         this.irm = irm;
     }
 
@@ -53,6 +55,11 @@ public class SimpleRelationExecutorContext extends SimpleModelExecutorContext im
     @Override
     public RelationMapping getRelation() {
         return rm;
+    }
+
+    @Override
+    public String getRelationPath() {
+        return rp;
     }
 
     @Override

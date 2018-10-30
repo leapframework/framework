@@ -17,12 +17,15 @@
 package leap.web.api.orm;
 
 import leap.core.value.Record;
+import leap.lang.Strings;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.Mappings;
 import leap.orm.mapping.RelationMapping;
 import leap.orm.mapping.RelationType;
 import leap.web.api.mvc.params.QueryOptions;
 import leap.web.api.mvc.params.QueryOptionsBase;
+import leap.web.api.remote.RestQueryListResult;
+import leap.web.api.remote.RestResource;
 import leap.web.exception.BadRequestException;
 
 import java.util.Arrays;
@@ -32,14 +35,15 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase implements R
     protected final ModelQueryExecutor tqe;
     protected final EntityMapping      tem;
     protected final RelationMapping    rm;
+    protected final String             rp;
     protected final RelationMapping    irm;
-
 
     public DefaultRelationQueryExecutor(RelationExecutorContext context, ModelQueryExecutor targetQueryExecutor) {
         super(context);
         this.tqe = targetQueryExecutor;
         this.tem = context.getTargetEntityMapping();
         this.rm  = context.getRelation();
+        this.rp  = !Strings.isEmpty(context.getRelationPath()) ? context.getRelationPath() : Strings.lowerUnderscore(rm.getName());
         this.irm = context.getInverseRelation();
     }
 
@@ -61,8 +65,11 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase implements R
     }
 
     protected QueryOneResult queryOneRemoteSource(Object id, QueryOptionsBase options) {
-        //todo:
-        throw new IllegalStateException("queryOneRemote not implemented");
+        RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), em);
+
+        Record record = restResource.findRelationOne(rp, id, options);
+
+        return new QueryOneResult(record);
     }
 
     protected QueryOneResult queryOneRemoteTarget(Object id, QueryOptionsBase options) {
@@ -97,8 +104,11 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase implements R
     }
 
     protected QueryListResult queryListRemoteSource(Object id, QueryOptions options) {
-        //todo:
-        throw new IllegalStateException("queryListRemoteSource not implemented");
+        RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), em);
+
+        RestQueryListResult<Record> result = restResource.queryRelationList(rp, id, options);
+
+        return new QueryListResult(result.getList(), result.getCount());
     }
 
     protected QueryListResult queryListRemoteTarget(Object id, QueryOptions options) {
@@ -107,9 +117,6 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase implements R
     }
 
     protected QueryListResult queryListAllLocals(Object id, QueryOptions options) {
-
-
-
         return null;
     }
 }

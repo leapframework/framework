@@ -1,10 +1,5 @@
 package leap.web.api.remote;
 
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import leap.core.value.Record;
 import leap.core.value.SimpleRecord;
 import leap.lang.Out;
@@ -24,6 +19,11 @@ import leap.web.api.mvc.params.QueryOptions;
 import leap.web.api.mvc.params.QueryOptionsBase;
 import leap.web.api.remote.json.TypeReference;
 import leap.web.api.restd.CrudUtils;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class DefaultRestResource extends AbstractRestResource {
     private final Log log = LogFactory.get(DefaultRestResource.class);
@@ -97,33 +97,27 @@ public class DefaultRestResource extends AbstractRestResource {
     }
 
     @Override
-    public Record find(Object id, QueryOptionsBase options) {
-        Map<String, Object> map = find(Map.class, id, options);
-        if(null == map) {
-            return null;
-        }else {
-            return new SimpleRecord(map);
-        }
-    }
-
-    @Override
     public <T> T find(Class<T> entityClass, Object id, QueryOptionsBase options) {
         String op = idPath(id);
 
-        HttpRequest request = httpClient.request(buildOperationPath(op))
-                .ajax()
-                .setMethod(Method.GET);
-
-        buildQueryOption(request, options);
-
-        T val = send(entityClass, request, getAccessToken());
-        return val;
+        return doFind(entityClass, buildOperationPath(op), options);
     }
 
     @Override
     public <T> T findRelationOne(Class<T> resultClass, String relationPath, Object id, QueryOptionsBase options) {
-        //todo:
-        return null;
+        String op = idPath(id) + "/" + relationPath;
+
+        return doFind(resultClass, buildOperationPath(op), options);
+    }
+
+    protected <T> T doFind(Class<T> resultClass, String url, QueryOptionsBase options) {
+        HttpRequest request = httpClient.request(url)
+                                        .ajax()
+                                        .setMethod(Method.GET);
+
+        buildQueryOption(request, options);
+
+        return send(resultClass, request, getAccessToken());
     }
 
     @SuppressWarnings("unchecked")
@@ -131,9 +125,19 @@ public class DefaultRestResource extends AbstractRestResource {
     public <T> RestQueryListResult<T> queryList(Class<T> resultElementClass, final QueryOptions options, Map<String, Object> filters) {
         String op = "";
 
-        HttpRequest request = httpClient.request(buildOperationPath(op))
-                .ajax()
-                .setMethod(Method.GET);
+        return doQueryList(resultElementClass, buildOperationPath(op), options);
+    }
+
+    @Override
+    public <T> RestQueryListResult<T> queryRelationList(Class<T> resultElementClass, String relationPath, Object id, QueryOptions options) {
+        String op = idPath(id) + "/" + relationPath;
+        return doQueryList(resultElementClass, buildOperationPath(op), options);
+    }
+
+    protected <T> RestQueryListResult<T> doQueryList(Class<T> resultElementClass, String url, QueryOptions options) {
+        HttpRequest request = httpClient.request(url)
+                                        .ajax()
+                                        .setMethod(Method.GET);
 
         buildQueryOption(request, options);
 

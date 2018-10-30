@@ -127,11 +127,9 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         if(remoteRest) {
             RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), em);
 
-            RestQueryListResult<Map> result = restResource.queryList(Map.class, options);
+            RestQueryListResult<Record> result = restResource.queryList(options);
 
-            Object records = result.getList().stream().map(m -> new SimpleRecord(m)).collect(Collectors.toList());
-
-            return new QueryListResult((List<Record>)records, result.getCount(), null);
+            return new QueryListResult(result.getList(), result.getCount());
         }
 
         ModelExecutionContext context = new DefaultModelExecutionContext(this.context);

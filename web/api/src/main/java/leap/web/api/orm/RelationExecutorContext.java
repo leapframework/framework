@@ -38,6 +38,11 @@ public interface RelationExecutorContext extends ModelExecutorContext {
     RelationMapping getRelation();
 
     /**
+     * Optional. The path at uri of relation (without prefix '/').
+     */
+    String getRelationPath();
+
+    /**
      * Required. Returns the inverse relation of {@link #getRelation()} at target entity.
      */
     RelationMapping getInverseRelation();

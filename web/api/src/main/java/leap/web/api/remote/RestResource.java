@@ -1,12 +1,15 @@
 package leap.web.api.remote;
 
 import leap.core.value.Record;
+import leap.core.value.SimpleRecord;
 import leap.web.api.mvc.params.CountOptions;
 import leap.web.api.mvc.params.DeleteOptions;
 import leap.web.api.mvc.params.QueryOptions;
 import leap.web.api.mvc.params.QueryOptionsBase;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public interface RestResource {
 
@@ -33,7 +36,14 @@ public interface RestResource {
     /**
      * Query one by id.
      */
-    Record find(Object id, QueryOptionsBase options);
+    default Record find(Object id, QueryOptionsBase options) {
+        Map<String, Object> map = find(Map.class, id, options);
+        if(null == map) {
+            return null;
+        }else {
+            return new SimpleRecord(map);
+        }
+    }
 
     /**
      * Finds the record by the given id.
@@ -43,19 +53,60 @@ public interface RestResource {
     /**
      * Finds the record of many-to-one relation by the given id.
      */
+    default Record findRelationOne(String relationPath, Object id, QueryOptionsBase options) {
+        Map<String, Object> map = findRelationOne(Map.class, relationPath, id, options);
+        if(null == map) {
+            return null;
+        }else {
+            return new SimpleRecord(map);
+        }
+    }
+
+    /**
+     * Finds the record of many-to-one relation by the given id.
+     */
     <T> T findRelationOne(Class<T> resultClass, String relationPath, Object id, QueryOptionsBase options);
 
     /**
      * Query the records of model.
      */
-    default <T> RestQueryListResult<T> queryList(Class<T> entityClass, QueryOptions options) {
-        return queryList(entityClass, options, null);
+    default RestQueryListResult<Record> queryList(QueryOptions options) {
+        RestQueryListResult<Map> result = queryList(Map.class, options, null);
+
+        Object records =
+                result.getList().stream().map(m -> new SimpleRecord(m)).collect(Collectors.toList());
+
+        return new RestQueryListResult((List<Record>)records, result.getCount());
+    }
+
+    /**
+     * Query the records of model.
+     */
+    default <T> RestQueryListResult<T> queryList(Class<T> resultElementClass, QueryOptions options) {
+        return queryList(resultElementClass, options, null);
     }
 
     /**
      * Query list of resources.
      */
     <T> RestQueryListResult<T> queryList(Class<T> resultElementClass, QueryOptions options, Map<String, Object> filters);
+
+    /**
+     * Query the records of relation.
+     */
+    default RestQueryListResult<Record> queryRelationList(String relationPath, Object id, QueryOptions options){
+        RestQueryListResult<Map> result = queryRelationList(Map.class, relationPath, id, options);
+
+        Object records =
+                result.getList().stream().map(m -> new SimpleRecord(m)).collect(Collectors.toList());
+
+        return new RestQueryListResult((List<Record>)records, result.getCount());
+    }
+
+    /**
+     * Query the records of relation.
+     */
+    <T> RestQueryListResult<T> queryRelationList(Class<T> resultElementClass, String relationPath, Object id, QueryOptions options);
 
     /**
      * Count the total records of resources.
