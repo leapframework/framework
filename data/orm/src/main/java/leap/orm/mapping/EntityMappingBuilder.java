@@ -21,6 +21,7 @@ import leap.lang.exception.ObjectExistsException;
 import leap.orm.enums.RemoteType;
 import leap.orm.event.EntityListenersBuilder;
 import leap.orm.interceptor.EntityExecutionInterceptor;
+import leap.orm.metadata.MetadataException;
 import leap.orm.model.Model;
 import leap.orm.validation.EntityValidator;
 
@@ -233,6 +234,33 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
         this.remote = remote;
     }
 
+    public boolean mayBeJoinEntityOf(EntityMappingBuilder e1, EntityMappingBuilder e2) {
+        List<FieldMappingBuilder> keyFields = getIdFieldMappings();
+        if(null == keyFields || keyFields.isEmpty()) {
+            return false;
+        }
+
+        final String[] idFields1 = e1.getIdFieldNames();
+        final String[] idFields2 = e2.getIdFieldNames();
+
+        if(keyFields.size() != idFields1.length + idFields2.length) {
+            return false;
+        }
+
+        RelationMappingBuilder rm1 =
+                findIdRelationByTargetFields(e1.getEntityName(), idFields1);
+        if(null == rm1) {
+            return false;
+        }
+
+        RelationMappingBuilder rm2 =
+                findIdRelationByTargetFields(e2.getEntityName(), idFields2);
+        if(null == rm2) {
+            return false;
+        }
+
+        return true;
+    }
 
     public List<FieldMappingBuilder> getFieldMappings() {
         return fieldMappings;

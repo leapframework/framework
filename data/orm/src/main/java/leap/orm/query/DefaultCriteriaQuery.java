@@ -852,18 +852,9 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
             if(relation.isManyToMany()) {
                 EntityMapping joinEntity = context.getOrm().getMetadata().getEntityMapping(relation.getJoinEntityName());
 
-                RelationMapping rjoin   = joinEntity.tryGetKeyRelationMappingOfTargetEntity(context.getSource().getEntityName());
-                RelationMapping rtarget = joinEntity.tryGetKeyRelationMappingOfTargetEntity(relation.getTargetEntityName());
-
-                if(null == rjoin) {
-                    rjoin = joinEntity.tryGetRefRelationMappingOfTargetEntity(context.getSource().getEntityName());
-                }
-
-                if(null == rtarget) {
-                    rtarget = joinEntity.tryGetRefRelationMappingOfTargetEntity(relation.getTargetEntityName());
-                }
-
-                String joinEntityAlias = context.getSourceAlias() + "_" + this.alias;
+                final String sourceEntityName = context.getSource().getEntityName();
+                final String targetEntityName = relation.getTargetEntityName();
+                final String joinAlias        = context.getSourceAlias() + "_" + this.alias;
 
                 if(this.type == JoinType.LEFT) {
                     sqlBuilder.append(" left");
@@ -872,18 +863,21 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                 sqlBuilder.append(" join ")
                         .append(joinEntity.getEntityName())
                         .append(" ")
-                        .append(joinEntityAlias)
+                        .append(joinAlias)
                         .append(" on ");
 
                 int i = 0;
-                for(JoinFieldMapping jf : rjoin.getJoinFields()) {
-                    if(i > 0) {
-                        sqlBuilder.append(" and ");
+                for(JoinFieldMapping jf : relation.getJoinFields()) {
+                    if(Strings.equalsIgnoreCase(sourceEntityName, jf.getReferencedEntityName())) {
+                        if(i > 0) {
+                            sqlBuilder.append(" and ");
+                        }
+
+                        sqlBuilder.append(context.getSourceAlias()).append('.').append(jf.getReferencedFieldName())
+                                .append('=')
+                                .append(joinAlias).append('.').append(jf.getLocalFieldName());
+                        i++;
                     }
-                    sqlBuilder.append(context.getSourceAlias()).append('.').append(jf.getReferencedFieldName())
-                            .append('=')
-                            .append(joinEntityAlias).append('.').append(jf.getLocalFieldName());
-                    i++;
                 }
 
                 if(this.type == JoinType.LEFT) {
@@ -897,14 +891,17 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                         .append(" on ");
 
                 i=0;
-                for(JoinFieldMapping jf : rtarget.getJoinFields()) {
-                    if(i > 0) {
-                        sqlBuilder.append(" and ");
+                for(JoinFieldMapping jf : relation.getJoinFields()) {
+                    if(Strings.equalsIgnoreCase(targetEntityName, jf.getReferencedEntityName())) {
+                        if(i > 0) {
+                            sqlBuilder.append(" and ");
+                        }
+
+                        sqlBuilder.append(joinAlias).append('.').append(jf.getLocalFieldName())
+                                  .append('=')
+                                  .append(this.alias).append('.').append(jf.getReferencedFieldName());
+                        i++;
                     }
-                    sqlBuilder.append(this.alias).append('.').append(jf.getReferencedFieldName())
-                            .append('=')
-                            .append(joinEntityAlias).append('.').append(jf.getLocalFieldName());
-                    i++;
                 }
 
                 return;
@@ -1227,30 +1224,32 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         }
 
         protected SqlBuilder join() {
+            final JoinContext jc = new JoinContext() {
+                @Override
+                public EntityMapping getSource() {
+                    return em;
+                }
+
+                @Override
+                public OrmContext getOrm() {
+                    return context;
+                }
+
+                @Override
+                public String getSourceAlias() {
+                    return alias;
+                }
+
+                @Override
+                public List<JoinBuilder> getAllJoins() {
+                    return joins;
+                }
+            };
+
             for(JoinBuilder join : joins) {
-                JoinContext joinContext = new JoinContext() {
-                    @Override
-                    public EntityMapping getSource() {
-                        return em;
-                    }
-
-                    @Override
-                    public OrmContext getOrm() {
-                        return context;
-                    }
-
-                    @Override
-                    public String getSourceAlias() {
-                        return alias;
-                    }
-
-                    @Override
-                    public List<JoinBuilder> getAllJoins() {
-                        return joins;
-                    }
-                };
-                join.build(sql,joinContext);
+                join.build(sql, jc);
             }
+
             return this;
         }
 		
