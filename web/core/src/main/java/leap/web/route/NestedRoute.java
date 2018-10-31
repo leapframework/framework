@@ -33,9 +33,16 @@ public interface NestedRoute extends Route {
     Action NOP_ACTION = new HandlerAction((req, resp) -> {});
 
     /**
+     * @deprecated use {@link #matchNested(String, String, Map, Map)} instead.
+     */
+    default Route match(String method, String path, Map<String,Object> inParameters, Map<String,String> outVariables) {
+        return matchNested(method, path, inParameters, outVariables);
+    }
+
+    /**
      * Returns a matched {@link Route} or <code>null</code> if no route matched.
      */
-    Route match(String method, String path, Map<String,Object> inParameters, Map<String,String> outVariables);
+    Route matchNested(String method, String path, Map<String,Object> inParameters, Map<String,String> outVariables);
 
     /**
      * todo: doc

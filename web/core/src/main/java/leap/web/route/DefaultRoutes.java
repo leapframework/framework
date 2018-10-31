@@ -152,11 +152,11 @@ public class DefaultRoutes implements Routes {
 					continue;
 				}
 				
-				if(route.getPathTemplate().match(path, outVariables)){
+				if(route.match(path, outVariables)){
 
 					if(route instanceof NestedRoute) {
                         NestedRoute nestedRoute = (NestedRoute)route;
-						route = nestedRoute.match(method, path, inParameters, outVariables);
+						route = nestedRoute.matchNested(method, path, inParameters, outVariables);
                         if(null != route && !nestedRoute.isCheckAmbiguity()) {
                             return route;
                         }
