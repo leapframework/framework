@@ -379,6 +379,33 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
 		return this;
 	}
 
+	public RelationMappingBuilder findManyToOneRelationByLocalField(String name) {
+	    for(RelationMappingBuilder rm : relationMappings) {
+	        if(RelationType.MANY_TO_ONE == rm.getType()) {
+	            for(JoinFieldMappingBuilder jf : rm.getJoinFields()) {
+	                if(jf.getLocalFieldName().equalsIgnoreCase(name)) {
+	                    return rm;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    public RelationMappingBuilder findSingleOrNullByTargetEntity(RelationType type, String targetEntityName) {
+	    List<RelationMappingBuilder> found = new ArrayList<>();
+	    for(RelationMappingBuilder rm : relationMappings) {
+	        if(rm.getType() == type && rm.getTargetEntityName().equalsIgnoreCase(targetEntityName)) {
+	            found.add(rm);
+            }
+        }
+        if(found.size() == 1) {
+            return found.get(0);
+        }else {
+            return null;
+        }
+    }
+
     public RelationMappingBuilder getRelationMapping(String name) {
         for(RelationMappingBuilder rm : relationMappings) {
             if(rm.getName().equalsIgnoreCase(name)) {

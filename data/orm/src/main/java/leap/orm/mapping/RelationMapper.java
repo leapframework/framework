@@ -23,7 +23,6 @@ import leap.db.model.DbForeignKeyColumn;
 import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
-import leap.lang.enums.Bool;
 import leap.orm.annotation.Relational;
 import leap.orm.metadata.MetadataException;
 import leap.orm.naming.NamingStrategy;
@@ -251,12 +250,35 @@ public class RelationMapper implements Mapper {
 		EntityMappingBuilder joinEmb = verifyJoinEntity(context, emb, targetEmb, rmb);
 		if(null == joinEmb){
 			//create join entity
-			createManyToManyJoinEntity(context, emb, targetEmb, rmb);
+			joinEmb = createManyToManyJoinEntity(context, emb, targetEmb, rmb);
 		}else{
 			//verify join entity
 			verifyManyToManyJoinEntity(context, emb, targetEmb, joinEmb, rmb);
 		}
+
+		/*todo:
+		//check and set join fields
+        if(null == rmb.getJoinFields() || rmb.getJoinFields().isEmpty()) {
+            autoCreateManyToManyJoinFields(emb, targetEmb, rmb, joinEmb);
+        }
+        */
 	}
+
+    protected void autoCreateManyToManyJoinFields(EntityMappingBuilder entity, EntityMappingBuilder target,
+                                                  RelationMappingBuilder rmb, EntityMappingBuilder join) {
+
+	    List<FieldMappingBuilder> keyFields = join.getKeyFieldMappings();
+	    if(null == keyFields || keyFields.isEmpty()) {
+	        throw new MetadataException("Primary key fields must be exists at join entity '" + join.getEntityName() + "'");
+        }
+
+        List<JoinFieldMapping> joinFields = new ArrayList<>();
+        if(keyFields.size() == entity.getKeyFieldMappings().size() + target.getKeyFieldMappings().size()) {
+            for(FieldMappingBuilder keyField : keyFields) {
+
+            }
+        }
+    }
 
 	protected EntityMappingBuilder verifyTargetEntity(MappingConfigContext context,EntityMappingBuilder emb,RelationMappingBuilder rmb) {
 		//check target entity exists
@@ -456,7 +478,7 @@ public class RelationMapper implements Mapper {
 		emb.getTable().addForeignKey(fk);
 	}
 
-	protected void createManyToManyJoinEntity(MappingConfigContext   context,
+	protected EntityMappingBuilder createManyToManyJoinEntity(MappingConfigContext   context,
 											  EntityMappingBuilder   emb,
 											  EntityMappingBuilder   targetEmb,
 											  RelationMappingBuilder rmb) {
@@ -493,6 +515,7 @@ public class RelationMapper implements Mapper {
 
 		rmb.setJoinEntityName(joinEntityName);
 		context.addEntityMapping(joinEmb);
+		return joinEmb;
 	}
 
     protected RelationMappingBuilder createManyToManyRelation(EntityMappingBuilder emb, EntityMappingBuilder target, EntityMappingBuilder join, int i) {
@@ -626,26 +649,44 @@ public class RelationMapper implements Mapper {
     protected void resolveToManyRelation(MappingConfigContext context,
                                          EntityMappingBuilder emb, EntityMappingBuilder targetEntity,
                                          RelationPropertyBuilder rp, String relation) {
+
+        if(!Strings.isEmpty(relation)) {
+            RelationMappingBuilder rm = emb.getRelationMapping(relation);
+            if(null == rm) {
+                throw new MappingConfigException("No relation '" + relation + "' exists at entity '" + emb.getEntityName());
+            }
+            updateToManyRelationProperty(context, rp, rm);
+            return;
+        }
+
         //find many-to-one relation in local entity
-        RelationMappingBuilder rm = findRelation(emb, targetEntity, RelationType.ONE_TO_MANY, relation);
+        RelationMappingBuilder rm = emb.findSingleOrNullByTargetEntity(RelationType.ONE_TO_MANY, targetEntity.getEntityName());
         if(null != rm) {
-            rp.setRelationName(rm.getName());
-            rp.setOptional(rm.isOptional());
+            updateToManyRelationProperty(context, rp, rm);
             return;
         }
 
         //find many-to-many relation in local entity.
-        rm = findRelation(emb, targetEntity, RelationType.MANY_TO_MANY, relation);
+        rm = emb.findSingleOrNullByTargetEntity(RelationType.MANY_TO_MANY, targetEntity.getEntityName());
         if(null != rm) {
-            rp.setRelationName(rm.getName());
-            rp.setOptional(rm.isOptional());
-            setManyToManyJoinEntity(rp, context.getEntityMapping(rm.getJoinEntityName()));
+            updateToManyRelationProperty(context, rp, rm);
             return ;
         }
 
         throw new MappingConfigException("No unique to-many relation " + relation + " between entity '" +
                 emb.getEntityClass() + "' and target entity '" +
                 targetEntity.getEntityName() + "'");
+    }
+
+    protected void updateToManyRelationProperty(MappingConfigContext context, RelationPropertyBuilder rp, RelationMappingBuilder rm) {
+        if(rm.getType() == RelationType.ONE_TO_MANY) {
+            rp.setRelationName(rm.getName());
+            rp.setOptional(rm.isOptional());
+        }else {
+            rp.setRelationName(rm.getName());
+            rp.setOptional(rm.isOptional());
+            setManyToManyJoinEntity(rp, context.getEntityMapping(rm.getJoinEntityName()));
+        }
     }
 
     protected void setManyToManyJoinEntity(RelationPropertyBuilder rp, EntityMappingBuilder joinEntity) {
@@ -656,15 +697,23 @@ public class RelationMapper implements Mapper {
                                         EntityMappingBuilder emb, EntityMappingBuilder targetEntity,
                                         RelationPropertyBuilder rp, String relation) {
 
-        //find many-to-one in local entity.
-        RelationMappingBuilder rm = findRelation(emb,targetEntity, RelationType.MANY_TO_ONE, relation);
+        if(!Strings.isEmpty(relation)) {
+            RelationMappingBuilder rm = emb.getRelationMapping(relation);
+            if(null == rm) {
+                throw new MappingConfigException("No relation '" + relation + "' exists at entity '" + emb.getEntityName());
+            }
+            rp.setRelationName(rm.getName());
+            rp.setOptional(rm.isOptional());
+            return;
+        }
 
+        //find many-to-one in local entity.
+        RelationMappingBuilder rm = emb.findSingleOrNullByTargetEntity(RelationType.MANY_TO_ONE, targetEntity.getEntityName());
         if(null == rm) {
             throw new MappingConfigException("No unique many-to-one relation " + relation + " in entity '" +
                     emb.getEntityClass() + "' for target entity '" +
                     targetEntity.getEntityName() + "'");
         }
-
         rp.setRelationName(rm.getName());
         rp.setOptional(rm.isOptional());
     }
@@ -683,11 +732,16 @@ public class RelationMapper implements Mapper {
         }
 
         if(Strings.isEmpty(relation)) {
-
-            if(rms.size() == 1) {
-                return rms.get(0);
+            if(rms.size() > 1) {
+                return null;
+            }else {
+                RelationMappingBuilder inverse = rms.get(0);
+                if(Strings.isEmpty(inverse.getInverseRelationName())) {
+                    return inverse;
+                }else {
+                    return null;
+                }
             }
-
         }else{
 
             for(RelationMappingBuilder rm : rms) {
