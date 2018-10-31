@@ -100,6 +100,29 @@ public class DbForeignKeyBuilder implements Buildable<DbForeignKey>,JsonParsable
 		return this;
 	}
 
+	public boolean matchColumns(DbForeignKeyBuilder fk) {
+        if(columns.size() != fk.columns.size()) {
+            return false;
+        }
+
+        if(!getForeignTable().equalsIgnoreCase(fk.getForeignTable())) {
+            return false;
+        }
+
+        for(int i=0;i<columns.size();i++) {
+            DbForeignKeyColumn c1 = columns.get(i);
+            DbForeignKeyColumn c2 = fk.columns.get(i);
+            if(!c1.getLocalColumnName().equalsIgnoreCase(c2.getLocalColumnName())) {
+                return false;
+            }
+            if(!c1.getForeignColumnName().equalsIgnoreCase(c2.getForeignColumnName())) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
 	@Override
     public DbForeignKey build() {
 	    return new DbForeignKey(name, foreignTable, columns.toArray(new DbForeignKeyColumn[columns.size()]), onUpdate, onDelete);

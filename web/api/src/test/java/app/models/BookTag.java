@@ -6,35 +6,30 @@ import leap.orm.annotation.ManyToOne;
 import leap.orm.model.Model;
 
 @AutoCreateTable
-public class BookTag extends Model  {
+public class BookTag extends Model {
 
-	@Id(generator = "shortid")
-	private String id;
+    @Id
+    @ManyToOne(target = Book.class)
+    private String bookId;
 
-	@ManyToOne(target=Book.class)
-	private String bookId;
+    @Id
+    @ManyToOne(target = Tag.class)
+    private String tagId;
 
-	@ManyToOne(target=Tag.class)
-	private String tagId;
+    public String getBookId() {
+        return bookId;
+    }
 
-	public String getId() {
-		return id;
-	}
-	public void setId(String id) {
-		this.id = id;
-	}
-	public String getBookId() {
-		return bookId;
-	}
-	public void setBookId(String bookId) {
-		this.bookId = bookId;
-	}
-	public String getTagId() {
-		return tagId;
-	}
-	public void setTagId(String tagId) {
-		this.tagId = tagId;
-	}
+    public void setBookId(String bookId) {
+        this.bookId = bookId;
+    }
 
+    public String getTagId() {
+        return tagId;
+    }
+
+    public void setTagId(String tagId) {
+        this.tagId = tagId;
+    }
 
 }

@@ -239,16 +239,6 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
 		return fieldMappings;
 	}
 
-	public List<FieldMappingBuilder> getKeyFieldMappings() {
-		List<FieldMappingBuilder> keys = new ArrayList<FieldMappingBuilder>();
-		for(FieldMappingBuilder fmb : getFieldMappings()){
-			if(fmb.isId()){
-				keys.add(fmb);
-			}
-		}
-		return keys;
-	}
-
 	public FieldMappingBuilder findFieldMappingByName(String name){
 		for(FieldMappingBuilder fmb : getFieldMappings()){
 			if(Strings.equalsIgnoreCase(name, fmb.getFieldName())){
@@ -284,11 +274,6 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
 		return this;
 	}
 
-	public EntityMappingBuilder addPrimaryKey(FieldMappingBuilder fm){
-		fieldMappings.add(0,fm);
-		return this;
-	}
-
 	public boolean hasPrimaryKey(){
 		for(FieldMappingBuilder fm : this.fieldMappings){
 			if(fm.isId()){
@@ -297,6 +282,15 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
 		}
 		return false;
 	}
+
+    public boolean isIdField(String name) {
+        FieldMappingBuilder fm = findFieldMappingByName(name);
+        return null != fm && fm.isId();
+    }
+
+    public String[] getIdFieldNames() {
+        return getIdFieldMappings().stream().map(f -> f.getFieldName()).toArray(String[]::new);
+    }
 
 	public List<FieldMappingBuilder> getIdFieldMappings(){
 		List<FieldMappingBuilder> list = New.arrayList();
@@ -379,14 +373,27 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
 		return this;
 	}
 
-	public RelationMappingBuilder findManyToOneRelationByLocalField(String name) {
+	public RelationMappingBuilder findIdRelationByTargetFields(String targetEntity, String... referencedFields) {
 	    for(RelationMappingBuilder rm : relationMappings) {
-	        if(RelationType.MANY_TO_ONE == rm.getType()) {
-	            for(JoinFieldMappingBuilder jf : rm.getJoinFields()) {
-	                if(jf.getLocalFieldName().equalsIgnoreCase(name)) {
-	                    return rm;
-                    }
+	        if(!rm.getTargetEntityName().equalsIgnoreCase(targetEntity)) {
+	            continue;
+            }
+            if(rm.getJoinFields().size() != referencedFields.length) {
+                continue;
+            }
+            boolean match = true;
+            for(String name : referencedFields) {
+                if(!rm.getJoinFields().stream().anyMatch((jf) -> jf.getReferencedFieldName().equalsIgnoreCase(name))){
+                    match = false;
+                    break;
                 }
+                if(rm.getJoinFields().stream().anyMatch((jf) -> !isIdField(jf.getLocalFieldName()))) {
+                    match = false;
+                    break;
+                }
+            }
+            if(match) {
+                return rm;
             }
         }
         return null;

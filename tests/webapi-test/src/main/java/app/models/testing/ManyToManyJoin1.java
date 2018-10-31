@@ -24,15 +24,14 @@ import leap.orm.model.Model;
 public class ManyToManyJoin1 extends Model {
 
     @Id
-    public String id;
-
-    @Column
-    public String col;
-
     @ManyToOne(target = ManyToManyModel1.class)
     public String model1Id;
 
+    @Id
     @ManyToOne(target = ManyToManyModel2.class)
     public String model2Id;
+
+    @Column
+    public String col;
 
 }
