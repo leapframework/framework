@@ -47,6 +47,7 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
     protected boolean               secondary;
     protected DbColumnBuilder       column;
     protected boolean               columnNameDeclared;
+    protected String				uniqueName;
     protected String                sequenceName;
     protected IdGenerator           idGenerator;
     protected Boolean               nullable;
@@ -215,8 +216,16 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
     public String getColumnName() {
         return column.getName();
     }
-	
-	public MType getDataType() {
+
+    public String getUniqueName() {
+        return uniqueName;
+    }
+
+    public void setUniqueName(String uniqueName) {
+        this.uniqueName = uniqueName;
+    }
+
+    public MType getDataType() {
 		return dataType;
 	}
 

@@ -24,9 +24,8 @@ import leap.orm.interceptor.EntityExecutionInterceptor;
 import leap.orm.model.Model;
 import leap.orm.validation.EntityValidator;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.function.Predicate;
 
 public class EntityMappingBuilder extends ExtensibleBase implements Buildable<EntityMapping> {
 
@@ -44,78 +43,78 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
     protected boolean        autoGenerateColumns;
     protected Boolean        queryFilterEnabled;
     protected boolean        autoValidate;
-    protected boolean        remote=false;
-    private RemoteSettings    remoteSettings;
+    protected boolean        remote;
+    protected RemoteSettings remoteSettings;
 
-    protected List<FieldMappingBuilder>    fieldMappings = new ArrayList<>();
-	protected EntityExecutionInterceptor   insertInterceptor;
-	protected EntityExecutionInterceptor   updateInterceptor;
-	protected EntityExecutionInterceptor   deleteInterceptor;
-	protected EntityExecutionInterceptor   findInterceptor;
-	protected Class<? extends Model>       modelClass;
-	protected DbTable					   physicalTable;
-	protected List<EntityValidator>        validators;
-	protected List<RelationMappingBuilder> relationMappings = new ArrayList<>();
-    protected List<RelationPropertyBuilder>relationProperties = new ArrayList<>();
-    protected EntityListenersBuilder       listeners = new EntityListenersBuilder();
+    protected List<FieldMappingBuilder>     fieldMappings      = new ArrayList<>();
+    protected EntityExecutionInterceptor    insertInterceptor;
+    protected EntityExecutionInterceptor    updateInterceptor;
+    protected EntityExecutionInterceptor    deleteInterceptor;
+    protected EntityExecutionInterceptor    findInterceptor;
+    protected Class<? extends Model>        modelClass;
+    protected DbTable                       physicalTable;
+    protected List<EntityValidator>         validators;
+    protected List<RelationMappingBuilder>  relationMappings   = new ArrayList<>();
+    protected List<RelationPropertyBuilder> relationProperties = new ArrayList<>();
+    protected EntityListenersBuilder        listeners          = new EntityListenersBuilder();
 
-	public Class<?> getSourceClass(){
-		return null != entityClass ? entityClass : modelClass;
-	}
+    public Class<?> getSourceClass() {
+        return null != entityClass ? entityClass : modelClass;
+    }
 
     public boolean isModelClass() {
         return null != getSourceClass() && Model.class.isAssignableFrom(getSourceClass());
     }
 
-	public Class<?> getEntityClass() {
-		return entityClass;
-	}
+    public Class<?> getEntityClass() {
+        return entityClass;
+    }
 
-	@SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked")
     public EntityMappingBuilder setEntityClass(Class<?> entityClass) {
-		this.entityClass = entityClass;
+        this.entityClass = entityClass;
 
-		if(null != entityClass && Model.class.isAssignableFrom(entityClass)){
-			setModelClass((Class<? extends Model>)entityClass);
-		}
+        if (null != entityClass && Model.class.isAssignableFrom(entityClass)) {
+            setModelClass((Class<? extends Model>) entityClass);
+        }
 
-		return this;
-	}
+        return this;
+    }
 
     public EntityMappingBuilder setExtendedEntityClass(Class<?> cls) {
         this.extendedEntityClass = cls;
         return this;
     }
 
-	public String getEntityName() {
-		return entityName;
-	}
+    public String getEntityName() {
+        return entityName;
+    }
 
-	public EntityMappingBuilder setEntityName(String entityName) {
-		this.entityName = entityName;
-		return this;
-	}
+    public EntityMappingBuilder setEntityName(String entityName) {
+        this.entityName = entityName;
+        return this;
+    }
 
-	public boolean isAbstract(){
-		return _abstract;
-	}
+    public boolean isAbstract() {
+        return _abstract;
+    }
 
-	public EntityMappingBuilder setAbstract(boolean isAbstract){
-		this._abstract = isAbstract;
-		return this;
-	}
+    public EntityMappingBuilder setAbstract(boolean isAbstract) {
+        this._abstract = isAbstract;
+        return this;
+    }
 
-	public DbTableBuilder getTable() {
-		if(null == table){
-			table = new DbTableBuilder();
-		}
-		return table;
-	}
+    public DbTableBuilder getTable() {
+        if (null == table) {
+            table = new DbTableBuilder();
+        }
+        return table;
+    }
 
-	public EntityMappingBuilder setTable(DbTableBuilder table) {
-		this.table = table;
-		return this;
-	}
+    public EntityMappingBuilder setTable(DbTableBuilder table) {
+        this.table = table;
+        return this;
+    }
 
     public DbTableBuilder getSecondaryTable() {
         return secondaryTable;
@@ -126,71 +125,71 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
     }
 
     public String getTableCatalog() {
-		return getTable().getCatalog();
-	}
+        return getTable().getCatalog();
+    }
 
-	public EntityMappingBuilder setTableCatalog(String tableCatalog) {
-		getTable().setCatalog(tableCatalog);
-		return this;
-	}
+    public EntityMappingBuilder setTableCatalog(String tableCatalog) {
+        getTable().setCatalog(tableCatalog);
+        return this;
+    }
 
-	public String getTableSchema() {
-		return getTable().getSchema();
-	}
+    public String getTableSchema() {
+        return getTable().getSchema();
+    }
 
-	public EntityMappingBuilder setTableSchema(String tableSchema) {
-		getTable().setSchema(tableSchema);
-		return this;
-	}
+    public EntityMappingBuilder setTableSchema(String tableSchema) {
+        getTable().setSchema(tableSchema);
+        return this;
+    }
 
-	public String getTablePrefix() {
-		return tablePrefix;
-	}
+    public String getTablePrefix() {
+        return tablePrefix;
+    }
 
-	public EntityMappingBuilder setTablePrefix(String tablePrefix) {
-		this.tablePrefix = tablePrefix;
-		return this;
-	}
+    public EntityMappingBuilder setTablePrefix(String tablePrefix) {
+        this.tablePrefix = tablePrefix;
+        return this;
+    }
 
-	public String getDynamicTableName() {
-		return dynamicTableName;
-	}
+    public String getDynamicTableName() {
+        return dynamicTableName;
+    }
 
-	public EntityMappingBuilder setDynamicTableName(String dynamicTableName) {
-		this.dynamicTableName = dynamicTableName;
-		return this;
-	}
+    public EntityMappingBuilder setDynamicTableName(String dynamicTableName) {
+        this.dynamicTableName = dynamicTableName;
+        return this;
+    }
 
-	public String getTableName() {
-		return getTable().getName();
-	}
+    public String getTableName() {
+        return getTable().getName();
+    }
 
-	public String getTableNameWithPrefix() {
-		return Strings.concat(tablePrefix,getTableName());
-	}
+    public String getTableNameWithPrefix() {
+        return Strings.concat(tablePrefix, getTableName());
+    }
 
-	public EntityMappingBuilder setTableName(String tableName) {
-		getTable().setName(tableName);
-		return this;
-	}
+    public EntityMappingBuilder setTableName(String tableName) {
+        getTable().setName(tableName);
+        return this;
+    }
 
-	public boolean isTableNameDeclared() {
-		return tableNameDeclared;
-	}
+    public boolean isTableNameDeclared() {
+        return tableNameDeclared;
+    }
 
-	public EntityMappingBuilder setTableNameDeclared(boolean tableNameDeclared) {
-		this.tableNameDeclared = tableNameDeclared;
-		return this;
-	}
+    public EntityMappingBuilder setTableNameDeclared(boolean tableNameDeclared) {
+        this.tableNameDeclared = tableNameDeclared;
+        return this;
+    }
 
-	public boolean isIdDeclared() {
-		return idDeclared;
-	}
+    public boolean isIdDeclared() {
+        return idDeclared;
+    }
 
-	public EntityMappingBuilder setIdDeclared(boolean idDeclared) {
-		this.idDeclared = idDeclared;
-		return this;
-	}
+    public EntityMappingBuilder setIdDeclared(boolean idDeclared) {
+        this.idDeclared = idDeclared;
+        return this;
+    }
 
     public boolean isAutoCreateTable() {
         return autoCreateTable;
@@ -236,52 +235,52 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
 
 
     public List<FieldMappingBuilder> getFieldMappings() {
-		return fieldMappings;
-	}
+        return fieldMappings;
+    }
 
-	public FieldMappingBuilder findFieldMappingByName(String name){
-		for(FieldMappingBuilder fmb : getFieldMappings()){
-			if(Strings.equalsIgnoreCase(name, fmb.getFieldName())){
-				return fmb;
-			}
-		}
-		return null;
-	}
+    public FieldMappingBuilder findFieldMappingByName(String name) {
+        for (FieldMappingBuilder fmb : getFieldMappings()) {
+            if (Strings.equalsIgnoreCase(name, fmb.getFieldName())) {
+                return fmb;
+            }
+        }
+        return null;
+    }
 
-	public FieldMappingBuilder findFieldMappingByColumn(String column){
-		for(FieldMappingBuilder fmb : getFieldMappings()){
-			if(Strings.equalsIgnoreCase(column, fmb.getColumn().getName())){
-				return fmb;
-			}
-		}
-		return null;
-	}
+    public FieldMappingBuilder findFieldMappingByColumn(String column) {
+        for (FieldMappingBuilder fmb : getFieldMappings()) {
+            if (Strings.equalsIgnoreCase(column, fmb.getColumn().getName())) {
+                return fmb;
+            }
+        }
+        return null;
+    }
 
-	public FieldMappingBuilder findFieldMappingByMetaName(String name){
-		for(FieldMappingBuilder fmb : getFieldMappings()){
-			if(Strings.equalsIgnoreCase(name, fmb.getMetaFieldName())){
-				return fmb;
-			}
-			if(null != fmb.getReservedMetaFieldName() && Strings.equalsIgnoreCase(name, fmb.getReservedMetaFieldName().getFieldName())) {
-				return fmb;
-			}
-		}
-		return null;
-	}
+    public FieldMappingBuilder findFieldMappingByMetaName(String name) {
+        for (FieldMappingBuilder fmb : getFieldMappings()) {
+            if (Strings.equalsIgnoreCase(name, fmb.getMetaFieldName())) {
+                return fmb;
+            }
+            if (null != fmb.getReservedMetaFieldName() && Strings.equalsIgnoreCase(name, fmb.getReservedMetaFieldName().getFieldName())) {
+                return fmb;
+            }
+        }
+        return null;
+    }
 
-	public EntityMappingBuilder addFieldMapping(FieldMappingBuilder fm){
-		fieldMappings.add(fm);
-		return this;
-	}
+    public EntityMappingBuilder addFieldMapping(FieldMappingBuilder fm) {
+        fieldMappings.add(fm);
+        return this;
+    }
 
-	public boolean hasPrimaryKey(){
-		for(FieldMappingBuilder fm : this.fieldMappings){
-			if(fm.isId()){
-				return true;
-			}
-		}
-		return false;
-	}
+    public boolean hasPrimaryKey() {
+        for (FieldMappingBuilder fm : this.fieldMappings) {
+            if (fm.isId()) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public boolean isIdField(String name) {
         FieldMappingBuilder fm = findFieldMappingByName(name);
@@ -292,107 +291,136 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
         return getIdFieldMappings().stream().map(f -> f.getFieldName()).toArray(String[]::new);
     }
 
-	public List<FieldMappingBuilder> getIdFieldMappings(){
-		List<FieldMappingBuilder> list = New.arrayList();
-		for(FieldMappingBuilder fm : this.fieldMappings){
-			if(fm.isId()){
-				list.add(fm);
-			}
-		}
-		return list;
-	}
-
-	public EntityExecutionInterceptor getInsertInterceptor() {
-		return insertInterceptor;
-	}
-
-	public EntityMappingBuilder setInsertInterceptor(EntityExecutionInterceptor insertHandler) {
-		this.insertInterceptor = insertHandler;
-		return this;
-	}
-
-	public EntityExecutionInterceptor getUpdateInterceptor() {
-		return updateInterceptor;
-	}
-
-	public EntityMappingBuilder setUpdateInterceptor(EntityExecutionInterceptor updateHandler) {
-		this.updateInterceptor = updateHandler;
-		return this;
-	}
-
-	public EntityExecutionInterceptor getDeleteInterceptor() {
-		return deleteInterceptor;
-	}
-
-	public EntityMappingBuilder setDeleteInterceptor(EntityExecutionInterceptor deleteHandler) {
-		this.deleteInterceptor = deleteHandler;
-		return this;
-	}
-
-	public EntityExecutionInterceptor getFindInterceptor() {
-		return findInterceptor;
-	}
-
-	public EntityMappingBuilder setFindInterceptor(EntityExecutionInterceptor findHandler) {
-		this.findInterceptor = findHandler;
-		return this;
-	}
-
-	public Class<? extends Model> getModelClass() {
-		return modelClass;
-	}
-
-	public EntityMappingBuilder setModelClass(Class<? extends Model> modelClass) {
-		this.modelClass = modelClass;
-		return this;
-	}
-
-	public DbTable getPhysicalTable() {
-		return physicalTable;
-	}
-
-	public EntityMappingBuilder setPhysicalTable(DbTable physicalTable) {
-		this.physicalTable = physicalTable;
-		return this;
-	}
-
-	public List<EntityValidator> getValidators() {
-		if(null == validators){
-			validators = new ArrayList<EntityValidator>();
-		}
-		return validators;
-	}
-
-	public EntityMappingBuilder setValidators(List<EntityValidator> validators) {
-		this.validators = validators;
-		return this;
-	}
-
-	public EntityMappingBuilder addValidator(EntityValidator validator){
-		getValidators().add(validator);
-		return this;
-	}
-
-	public RelationMappingBuilder findIdRelationByTargetFields(String targetEntity, String... referencedFields) {
-	    for(RelationMappingBuilder rm : relationMappings) {
-	        if(!rm.getTargetEntityName().equalsIgnoreCase(targetEntity)) {
-	            continue;
+    public List<FieldMappingBuilder> getIdFieldMappings() {
+        List<FieldMappingBuilder> list = New.arrayList();
+        for (FieldMappingBuilder fm : this.fieldMappings) {
+            if (fm.isId()) {
+                list.add(fm);
             }
-            if(rm.getJoinFields().size() != referencedFields.length) {
+        }
+        return list;
+    }
+
+    public List<UniqueMappingBuilder> getNamedUniqueMappings() {
+        Map<String, UniqueMappingBuilder> uniques = new LinkedHashMap<>();
+
+        fieldMappings.forEach(f -> {
+            if(!Strings.isEmpty(f.getUniqueName())) {
+                UniqueMappingBuilder unique = uniques.get(f.getUniqueName().toLowerCase());
+                if(null == unique) {
+                    unique = new UniqueMappingBuilder(f.getUniqueName());
+                    uniques.put(f.getUniqueName().toLowerCase(), unique);
+                }
+                unique.getFields().add(f.getFieldName());
+            }
+        });
+
+        return new ArrayList<>(uniques.values());
+    }
+
+    public EntityExecutionInterceptor getInsertInterceptor() {
+        return insertInterceptor;
+    }
+
+    public EntityMappingBuilder setInsertInterceptor(EntityExecutionInterceptor insertHandler) {
+        this.insertInterceptor = insertHandler;
+        return this;
+    }
+
+    public EntityExecutionInterceptor getUpdateInterceptor() {
+        return updateInterceptor;
+    }
+
+    public EntityMappingBuilder setUpdateInterceptor(EntityExecutionInterceptor updateHandler) {
+        this.updateInterceptor = updateHandler;
+        return this;
+    }
+
+    public EntityExecutionInterceptor getDeleteInterceptor() {
+        return deleteInterceptor;
+    }
+
+    public EntityMappingBuilder setDeleteInterceptor(EntityExecutionInterceptor deleteHandler) {
+        this.deleteInterceptor = deleteHandler;
+        return this;
+    }
+
+    public EntityExecutionInterceptor getFindInterceptor() {
+        return findInterceptor;
+    }
+
+    public EntityMappingBuilder setFindInterceptor(EntityExecutionInterceptor findHandler) {
+        this.findInterceptor = findHandler;
+        return this;
+    }
+
+    public Class<? extends Model> getModelClass() {
+        return modelClass;
+    }
+
+    public EntityMappingBuilder setModelClass(Class<? extends Model> modelClass) {
+        this.modelClass = modelClass;
+        return this;
+    }
+
+    public DbTable getPhysicalTable() {
+        return physicalTable;
+    }
+
+    public EntityMappingBuilder setPhysicalTable(DbTable physicalTable) {
+        this.physicalTable = physicalTable;
+        return this;
+    }
+
+    public List<EntityValidator> getValidators() {
+        if (null == validators) {
+            validators = new ArrayList<EntityValidator>();
+        }
+        return validators;
+    }
+
+    public EntityMappingBuilder setValidators(List<EntityValidator> validators) {
+        this.validators = validators;
+        return this;
+    }
+
+    public EntityMappingBuilder addValidator(EntityValidator validator) {
+        getValidators().add(validator);
+        return this;
+    }
+
+    public RelationMappingBuilder findIdRelationByTargetFields(String targetEntity, String... referencedFields) {
+        return findRelationByTargetFields(targetEntity, referencedFields, (f) -> f.isId());
+    }
+
+    public RelationMappingBuilder findUniqueRelationByTargetFields(String uniqueName, String targetEntity, String... referencedFields) {
+        return findRelationByTargetFields(targetEntity, referencedFields, (f) -> Strings.equalsIgnoreCase(uniqueName, f.getUniqueName()));
+    }
+
+    protected RelationMappingBuilder findRelationByTargetFields(String targetEntity, String[] referencedFields, Predicate<FieldMappingBuilder> test) {
+        for (RelationMappingBuilder rm : relationMappings) {
+            if (!rm.getTargetEntityName().equalsIgnoreCase(targetEntity)) {
+                continue;
+            }
+            if (rm.getJoinFields().size() != referencedFields.length) {
                 continue;
             }
             boolean match = true;
-            for(String name : referencedFields) {
-                if(!rm.getJoinFields().stream().anyMatch((jf) -> jf.getReferencedFieldName().equalsIgnoreCase(name))){
+            for (String name : referencedFields) {
+                if (!rm.getJoinFields().stream().anyMatch((jf) -> jf.getReferencedFieldName().equalsIgnoreCase(name))) {
                     match = false;
                     break;
                 }
-                if(rm.getJoinFields().stream().anyMatch((jf) -> !isIdField(jf.getLocalFieldName()))) {
-                    match = false;
-                    break;
+
+                for(JoinFieldMappingBuilder jf : rm.getJoinFields()) {
+                    FieldMappingBuilder fm = findFieldMappingByName(jf.getLocalFieldName());
+                    if(null == fm || !test.test(fm)) {
+                        match = false;
+                        break;
+                    }
                 }
             }
-            if(match) {
+            if (match) {
                 return rm;
             }
         }
@@ -400,44 +428,44 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
     }
 
     public RelationMappingBuilder findSingleOrNullByTargetEntity(RelationType type, String targetEntityName) {
-	    List<RelationMappingBuilder> found = new ArrayList<>();
-	    for(RelationMappingBuilder rm : relationMappings) {
-	        if(rm.getType() == type && rm.getTargetEntityName().equalsIgnoreCase(targetEntityName)) {
-	            found.add(rm);
+        List<RelationMappingBuilder> found = new ArrayList<>();
+        for (RelationMappingBuilder rm : relationMappings) {
+            if (rm.getType() == type && rm.getTargetEntityName().equalsIgnoreCase(targetEntityName)) {
+                found.add(rm);
             }
         }
-        if(found.size() == 1) {
+        if (found.size() == 1) {
             return found.get(0);
-        }else {
+        } else {
             return null;
         }
     }
 
     public RelationMappingBuilder getRelationMapping(String name) {
-        for(RelationMappingBuilder rm : relationMappings) {
-            if(rm.getName().equalsIgnoreCase(name)) {
+        for (RelationMappingBuilder rm : relationMappings) {
+            if (rm.getName().equalsIgnoreCase(name)) {
                 return rm;
             }
         }
         return null;
     }
 
-	public List<RelationMappingBuilder> getRelationMappings() {
-		return relationMappings;
-	}
+    public List<RelationMappingBuilder> getRelationMappings() {
+        return relationMappings;
+    }
 
-	public EntityMappingBuilder addRelationMapping(RelationMappingBuilder relationMapping){
+    public EntityMappingBuilder addRelationMapping(RelationMappingBuilder relationMapping) {
         //check exists
-        if(!Strings.isEmpty(relationMapping.getName()) && null != getRelationMapping(relationMapping.getName())) {
-            throw new ObjectExistsException("The relation '"+ relationMapping.getName() + "' already exists in entity '" + entity() + "'");
+        if (!Strings.isEmpty(relationMapping.getName()) && null != getRelationMapping(relationMapping.getName())) {
+            throw new ObjectExistsException("The relation '" + relationMapping.getName() + "' already exists in entity '" + entity() + "'");
         }
-		relationMappings.add(relationMapping);
-		return this;
-	}
+        relationMappings.add(relationMapping);
+        return this;
+    }
 
     public RelationPropertyBuilder getRelationProperty(String name) {
-        for(RelationPropertyBuilder rp : relationProperties) {
-            if(rp.getName().equalsIgnoreCase(name)) {
+        for (RelationPropertyBuilder rp : relationProperties) {
+            if (rp.getName().equalsIgnoreCase(name)) {
                 return rp;
             }
         }
@@ -449,7 +477,7 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
     }
 
     public EntityMappingBuilder addRelationProperty(RelationPropertyBuilder p) {
-        if(null != getRelationProperty(p.getName())) {
+        if (null != getRelationProperty(p.getName())) {
             throw new ObjectExistsException("The relation property '" + p.getName() + "' already exists in entity '" + entity() + "'");
         }
         relationProperties.add(p);
@@ -471,55 +499,73 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
 
     @Override
     public EntityMapping build() {
-		Collections.sort(fieldMappings, Comparators.ORDERED_COMPARATOR);
+        Collections.sort(fieldMappings, Comparators.ORDERED_COMPARATOR);
 
-		List<FieldMapping>    fields         = Builders.buildList(fieldMappings);
-		List<RelationMapping> relations      = Builders.buildList(relationMappings);
-		DbTable			      table          = buildTable(fields,relations);
+        List<FieldMapping>    fields         = Builders.buildList(fieldMappings);
+        List<RelationMapping> relations      = Builders.buildList(relationMappings);
+        DbTable               table          = buildTable(fields, relations);
         DbTable               secondaryTable = buildSecondaryTable(fields, relations);
 
-	    EntityMapping em =
-                new EntityMapping(entityName,dynamicTableName,entityClass,extendedEntityClass,
-                                 table,secondaryTable, fields,
-	    						 insertInterceptor,updateInterceptor,deleteInterceptor,findInterceptor,
-	    						 modelClass,validators,
-                                 relations,
-                                 Builders.buildArray(relationProperties, new RelationProperty[0]),
-                                 autoCreateTable,queryFilterEnabled == null ? false : queryFilterEnabled,
-                                 autoValidate,
-                                 remote, remoteSettings,
-                                 listeners.build());
+        EntityMapping em =
+                new EntityMapping(entityName, dynamicTableName, entityClass, extendedEntityClass,
+                        table, secondaryTable, fields,
+                        insertInterceptor, updateInterceptor, deleteInterceptor, findInterceptor,
+                        modelClass, validators,
+                        relations,
+                        Builders.buildArray(relationProperties, new RelationProperty[0]),
+                        autoCreateTable, queryFilterEnabled == null ? false : queryFilterEnabled,
+                        autoValidate,
+                        remote, remoteSettings,
+                        listeners.build());
 
         em.getExtensions().putAll(extensions);
 
         return em;
     }
 
-	public DbSchemaObjectName getTableSchemaObjectName() {
-		return new DbSchemaObjectName(getTableCatalog(),getTableSchema(),getTableNameWithPrefix());
-	}
+    public DbSchemaObjectName getTableSchemaObjectName() {
+        return new DbSchemaObjectName(getTableCatalog(), getTableSchema(), getTableNameWithPrefix());
+    }
 
-	protected DbTable buildTable(List<FieldMapping> fields, List<RelationMapping> relations){
-		DbTableBuilder table = getTable();
+    protected DbTable buildTable(List<FieldMapping> fields, List<RelationMapping> relations) {
+        DbTableBuilder table = getTable();
 
-		if(!Strings.isEmpty(tablePrefix)){
-			table.setName(getTableNameWithPrefix());
-		}
+        if (!Strings.isEmpty(tablePrefix)) {
+            table.setName(getTableNameWithPrefix());
+        }
 
         //columns
-		for(FieldMapping fm : fields){
-            if(!fm.isSecondary()) {
+        for (FieldMapping fm : fields) {
+            if (!fm.isSecondary()) {
                 table.addColumn(fm.getColumn());
             }
-		}
+        }
+
+        //uniques
+        for(UniqueMappingBuilder unique : getNamedUniqueMappings()) {
+            DbIndexBuilder ix = new DbIndexBuilder();
+            ix.setName("uix_" + unique.getName());
+            ix.setUnique(true);
+            for(String name : unique.getFields()) {
+                FieldMappingBuilder fm = findFieldMappingByName(name);
+                if(null == fm) {
+                    throw new IllegalStateException("No field '" + name +
+                                "' exists, check unique '" + unique.getName() + "' at entity " + entityName);
+                }
+                ix.addColumnName(fm.getColumnName());
+            }
+            if(!table.getIndexes().stream().anyMatch(ix1 -> ix1.matchUnique(ix))) {
+                table.addIndex(ix);
+            }
+        }
 
         //todo: indexes
 
-		return table.build();
-	}
+        return table.build();
+    }
 
-    protected DbTable buildSecondaryTable(List<FieldMapping> fields, List<RelationMapping> relations){
-        if(null == secondaryTable) {
+    protected DbTable buildSecondaryTable(List<FieldMapping> fields, List<RelationMapping> relations) {
+        if (null == secondaryTable) {
             return null;
         }
 
@@ -529,11 +575,11 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
         fk.setForeignTable(table.getTableName());
 
         //columns
-        for(FieldMapping fm : fields) {
-            if(fm.isPrimaryKey()) {
+        for (FieldMapping fm : fields) {
+            if (fm.isPrimaryKey()) {
                 fk.addColumn(new DbForeignKeyColumn(fm.getColumnName(), fm.getColumnName()));
             }
-            if(fm.isPrimaryKey() || fm.isSecondary()) {
+            if (fm.isPrimaryKey() || fm.isSecondary()) {
                 secondaryTable.addColumn(fm.getColumn());
             }
         }
@@ -543,11 +589,11 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
         return secondaryTable.build();
     }
 
-	public RemoteSettings getRemoteSettings() {
-		return remoteSettings;
-	}
+    public RemoteSettings getRemoteSettings() {
+        return remoteSettings;
+    }
 
-	public void setRemoteSettings(RemoteSettings remoteSettings) {
-		this.remoteSettings = remoteSettings;
-	}
+    public void setRemoteSettings(RemoteSettings remoteSettings) {
+        this.remoteSettings = remoteSettings;
+    }
 }

@@ -94,6 +94,21 @@ public class DbIndexBuilder implements Buildable<DbIndex>,JsonParsable {
 		}
 		return this;
 	}
+
+	public boolean matchUnique(DbIndexBuilder ix) {
+        if(unique != ix.unique) {
+            return false;
+        }
+        if(columnNames.size() != ix.columnNames.size()) {
+            return false;
+        }
+        for(int i=0;i<columnNames.size();i++) {
+            if(!columnNames.get(i).equalsIgnoreCase(ix.columnNames.get(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
 	
 	@Override
     public DbIndex build() {

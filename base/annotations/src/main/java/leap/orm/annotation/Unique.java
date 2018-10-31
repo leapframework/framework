@@ -23,5 +23,10 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD,ElementType.METHOD,ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Unique {
-    
+
+    /**
+     * The unique name.
+     */
+    String value() default "";
+
 }

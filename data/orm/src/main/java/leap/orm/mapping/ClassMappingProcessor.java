@@ -369,7 +369,11 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 
     protected boolean mappingFieldColumnByAnnotation(MetadataContext context,EntityMappingBuilder emb,FieldMappingBuilder f,Unique a){
         if(null != a) {
-            f.getColumn().setUnique(true);
+            if(Strings.isEmpty(a.value())) {
+                f.getColumn().setUnique(true);
+            }else {
+                f.setUniqueName(a.value());
+            }
             return true;
         }
 		return false;

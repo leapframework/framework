@@ -275,10 +275,10 @@ public class RelationMapper implements Mapper {
 	        throw new MetadataException("Primary key fields must be exists at join entity '" + join.getEntityName() + "'");
         }
 
-        List<JoinFieldMappingBuilder> m2mJfs = new ArrayList<>();
+        final int totalFields = entity.getIdFieldMappings().size() + target.getIdFieldMappings().size();
 
 	    //find id join fields.
-        if(keyFields.size() == entity.getIdFieldMappings().size() + target.getIdFieldMappings().size()) {
+        if(keyFields.size() == totalFields) {
             RelationMappingBuilder rm1 =
                     join.findIdRelationByTargetFields(entity.getEntityName(), entity.getIdFieldNames());
 
@@ -286,33 +286,54 @@ public class RelationMapper implements Mapper {
                     join.findIdRelationByTargetFields(target.getEntityName(), target.getIdFieldNames());
 
             if(null != rm1 && null != rm2) {
-
-                for(JoinFieldMappingBuilder jf : rm1.getJoinFields()) {
-                    JoinFieldMappingBuilder m2mJf = new JoinFieldMappingBuilder();
-                    m2mJf.setLocalFieldName(jf.getLocalFieldName());
-                    m2mJf.setReferencedFieldName(jf.getReferencedFieldName());
-                    m2mJf.setLocalPrimaryKey(true);
-                    m2mJf.setLocalColumnName(jf.getLocalColumnName());
-                    m2mJf.setReferencedEntityName(entity.getEntityName());
-                    m2mJfs.add(m2mJf);
-                }
-
-                for(JoinFieldMappingBuilder jf : rm2.getJoinFields()) {
-                    JoinFieldMappingBuilder m2mJf = new JoinFieldMappingBuilder();
-                    m2mJf.setLocalFieldName(jf.getLocalFieldName());
-                    m2mJf.setReferencedFieldName(jf.getReferencedFieldName());
-                    m2mJf.setLocalPrimaryKey(true);
-                    m2mJf.setLocalColumnName(jf.getLocalColumnName());
-                    m2mJf.setReferencedEntityName(target.getEntityName());
-                    m2mJfs.add(m2mJf);
-                }
-
-                rmb.getJoinFields().addAll(m2mJfs);
+                addManyToManyJoinFields(entity, target, rmb, rm1, rm2);
                 return;
             }
         }
 
+        if(keyFields.size() == 1){
+            //find unique join fields.
+            for(UniqueMappingBuilder unique : join.getNamedUniqueMappings()) {
+                if(unique.getFields().size() == totalFields) {
+                    RelationMappingBuilder rm1 =
+                            join.findUniqueRelationByTargetFields(unique.getName(), entity.getEntityName(), entity.getIdFieldNames());
+
+                    RelationMappingBuilder rm2 =
+                            join.findUniqueRelationByTargetFields(unique.getName(), target.getEntityName(), target.getIdFieldNames());
+
+                    if(null != rm1 && null != rm2) {
+                        addManyToManyJoinFields(entity, target, rmb, rm1, rm2);
+                        return;
+                    }
+                }
+            }
+        }
+
         throw new MetadataException("Can't found valid many-to-many join fields at join entity '" + join.getEntityName() + "'");
+    }
+
+    protected void addManyToManyJoinFields(EntityMappingBuilder entity, EntityMappingBuilder target, RelationMappingBuilder rmb,
+                                           RelationMappingBuilder rm1, RelationMappingBuilder rm2) {
+
+        for(JoinFieldMappingBuilder jf : rm1.getJoinFields()) {
+            JoinFieldMappingBuilder m2mJf = new JoinFieldMappingBuilder();
+            m2mJf.setLocalFieldName(jf.getLocalFieldName());
+            m2mJf.setReferencedFieldName(jf.getReferencedFieldName());
+            m2mJf.setLocalPrimaryKey(true);
+            m2mJf.setLocalColumnName(jf.getLocalColumnName());
+            m2mJf.setReferencedEntityName(entity.getEntityName());
+            rmb.getJoinFields().add(m2mJf);
+        }
+
+        for(JoinFieldMappingBuilder jf : rm2.getJoinFields()) {
+            JoinFieldMappingBuilder m2mJf = new JoinFieldMappingBuilder();
+            m2mJf.setLocalFieldName(jf.getLocalFieldName());
+            m2mJf.setReferencedFieldName(jf.getReferencedFieldName());
+            m2mJf.setLocalPrimaryKey(true);
+            m2mJf.setLocalColumnName(jf.getLocalColumnName());
+            m2mJf.setReferencedEntityName(target.getEntityName());
+            rmb.getJoinFields().add(m2mJf);
+        }
     }
 
 	protected EntityMappingBuilder verifyTargetEntity(MappingConfigContext context,EntityMappingBuilder emb,RelationMappingBuilder rmb) {
