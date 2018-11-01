@@ -24,14 +24,16 @@ import leap.htpl.HtplTemplateResolver;
 import leap.lang.Strings;
 import leap.lang.http.ContentTypes;
 import leap.lang.http.MimeTypes;
+import leap.lang.resource.Resource;
 import leap.lang.servlet.ServletResource;
 import leap.web.App;
+import leap.web.view.AbstractServletOrClassResourceViewResolver;
 import leap.web.view.AbstractServletResourceViewResolver;
 import leap.web.view.View;
 
 import java.util.Locale;
 
-public class WebHtplViewResolver extends AbstractServletResourceViewResolver implements HtplTemplateResolver {
+public class WebHtplViewResolver extends AbstractServletOrClassResourceViewResolver implements HtplTemplateResolver {
 
 	@Inject
 	protected HtplEngine engine;
@@ -49,9 +51,8 @@ public class WebHtplViewResolver extends AbstractServletResourceViewResolver imp
 		this.contentType = contentType;
 	}
 
-	@Override
-    protected View loadView(String prefix, String suffix, String viewName, Locale locale, String resourcePath, ServletResource resource) {
-
+    @Override
+    protected View loadView(String prefix, String suffix, String viewName, Locale locale, String resourcePath, Resource resource) {
 		boolean isDebug = app.config().isDebug();
 		boolean isLazy  = app.config().isLazyTemplate();
 		WebHtplView view;
@@ -72,7 +73,8 @@ public class WebHtplViewResolver extends AbstractServletResourceViewResolver imp
 		
 		return view;
     }
-	
+
+    /*
 	protected ServletResource resolveJspResource(String prefix, String viewPath, Locale locale) {
 		String jspPath = null;
 		
@@ -89,6 +91,7 @@ public class WebHtplViewResolver extends AbstractServletResourceViewResolver imp
 		}
 		return null;
 	}
+	*/
 
 	@Override
     public void postCreate(BeanFactory beanFactory) throws Throwable {
@@ -101,7 +104,7 @@ public class WebHtplViewResolver extends AbstractServletResourceViewResolver imp
 
 	@Override
     public HtplTemplate resolveTemplate(String templateName, Locale locale) {
-		ServletResource resource = getLocaleResource(prefix,suffix, templateName, locale);
+		Resource resource = getLocaleResource(prefix, suffix, templateName, locale);
 		
 		if(null != resource && resource.exists()){
 			return engine.createTemplate(new WebHtplResource(prefix,suffix,resource, locale), templateName);

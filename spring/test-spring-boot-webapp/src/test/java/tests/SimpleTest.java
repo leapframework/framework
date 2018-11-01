@@ -37,6 +37,17 @@ public class SimpleTest {
     }
 
     @Test
+    public void testHello() {
+        client.get("/hello").assertContentContains("<p>Hello</p>");
+        client.get("/hello.html").assertContentContains("<p>Hello</p>");
+    }
+
+    @Test
+    public void testOAuth2View() {
+        client.get("/oauth2/login").assertSuccess();
+    }
+
+    @Test
     public void testStatic() {
         client.get("/static/t.js").assertContentContains("function _(){}");
     }

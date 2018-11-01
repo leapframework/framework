@@ -22,6 +22,7 @@ import leap.lang.resource.Resource;
 import org.springframework.core.io.ClassPathResource;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -57,6 +58,16 @@ public class LeapResource extends AbstractResource implements Resource {
     @Override
     public boolean isOpen() {
         return wrapped.isOpen();
+    }
+
+    @Override
+    public boolean isFile() {
+        try {
+            File file = wrapped.getFile();
+            return null != file;
+        }catch (IOException e) {
+            return false;
+        }
     }
 
     @Override

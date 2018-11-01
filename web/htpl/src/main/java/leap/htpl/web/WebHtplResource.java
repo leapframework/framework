@@ -23,97 +23,100 @@ import leap.htpl.resolver.SimpleHtplResource;
 import leap.lang.Locales;
 import leap.lang.Strings;
 import leap.lang.path.Paths;
+import leap.lang.resource.Resource;
 import leap.lang.servlet.ServletResource;
 import leap.lang.servlet.Servlets;
 
 public class WebHtplResource extends SimpleHtplResource {
-	
-	private final String		  prefix;
-	private final String		  suffix;
-	private final ServletResource sr;
 
-	public WebHtplResource(String prefix,String suffix, ServletResource sr, Locale locale) {
-	    super(sr,locale);
-	    this.prefix = Paths.suffixWithoutSlash(prefix);
-	    this.suffix = suffix;
-	    this.sr     = sr;
+    private final String   prefix;
+    private final String   suffix;
+    private final Resource resource;
+    private final ServletResource sr;
+
+    public WebHtplResource(String prefix, String suffix, Resource resource, Locale locale) {
+        super(resource, locale);
+        this.prefix = Paths.suffixWithoutSlash(prefix);
+        this.suffix = suffix;
+        this.resource = resource;
+        this.sr = resource instanceof ServletResource ? (ServletResource)resource : null;
     }
-	
+
     @Override
     public ServletResource getServletResource() {
-	    return sr;
+        return sr;
     }
-    
-	@Override
+
+    @Override
     public boolean isServletResource() {
-		return true;
-	}
-	
-	@Override
+        return null != sr;
+    }
+
+    @Override
     public File getFile() {
-		return sr.getFile();
-	}
+        return resource.getFile();
+    }
 
-	@Override
+    @Override
     public String getFileName() {
-		return sr.getFilename();
-	}
+        return resource.getFilename();
+    }
 
-	@Override
-    public HtplResource tryGetRelative(String relativePath,Locale locale, boolean ensureTemplate) {
-		String[] paths;
-		
-		if(!Strings.isEmpty(Paths.getFileExtension(relativePath))){
-			paths = Locales.getLocaleFilePaths(locale, relativePath);
-		}else{
-			paths = Locales.getLocalePaths(locale, relativePath, suffix);
-		}
-		
-		HtplResource r = null;
-		
-		for(String path : paths){
-			ServletResource rr = sr.createRelative(path);
-			if(null != rr && rr.exists()){
-				r = new WebHtplResource(prefix, suffix, rr, locale);
-				break;
-			}
-		}
-		
-		if(ensureTemplate && null != r && !r.getFileName().endsWith(suffix)) {
-			return null;
-		}
-		return r;
-	}
+    @Override
+    public HtplResource tryGetRelative(String relativePath, Locale locale, boolean ensureTemplate) {
+        String[] paths;
 
-	@Override
-    public HtplResource tryGetAbsolute(String absolutePath,Locale locale, boolean ensureTemplate) {
-		absolutePath = Paths.prefixWithSlash(absolutePath);
-		
-		if(null != prefix){
-			absolutePath = prefix + absolutePath;
-		}
-		
-		String[] paths;
-		if(!Strings.isEmpty(Paths.getFileExtension(absolutePath))){
-			paths = Locales.getLocaleFilePaths(locale, absolutePath);
-		}else{
-			paths = Locales.getLocalePaths(locale, absolutePath, suffix);
-		}
-		
-		HtplResource r = null;
-		
-		for(String path : paths){
-			ServletResource ar = Servlets.getResource(sr.getServletContext(), path);
-			if(null != ar && ar.exists()){
-				r = new WebHtplResource(prefix, suffix, ar, locale);
-				break;
-			}
-		}
-		
-		if(ensureTemplate && null != r && !r.getFileName().endsWith(suffix)) {
-			return null;
-		}
-		return r;
-	}
+        if (!Strings.isEmpty(Paths.getFileExtension(relativePath))) {
+            paths = Locales.getLocaleFilePaths(locale, relativePath);
+        } else {
+            paths = Locales.getLocalePaths(locale, relativePath, suffix);
+        }
+
+        HtplResource r = null;
+
+        for (String path : paths) {
+            ServletResource rr = sr.createRelative(path);
+            if (null != rr && rr.exists()) {
+                r = new WebHtplResource(prefix, suffix, rr, locale);
+                break;
+            }
+        }
+
+        if (ensureTemplate && null != r && !r.getFileName().endsWith(suffix)) {
+            return null;
+        }
+        return r;
+    }
+
+    @Override
+    public HtplResource tryGetAbsolute(String absolutePath, Locale locale, boolean ensureTemplate) {
+        absolutePath = Paths.prefixWithSlash(absolutePath);
+
+        if (null != prefix) {
+            absolutePath = prefix + absolutePath;
+        }
+
+        String[] paths;
+        if (!Strings.isEmpty(Paths.getFileExtension(absolutePath))) {
+            paths = Locales.getLocaleFilePaths(locale, absolutePath);
+        } else {
+            paths = Locales.getLocalePaths(locale, absolutePath, suffix);
+        }
+
+        HtplResource r = null;
+
+        for (String path : paths) {
+            ServletResource ar = Servlets.getResource(sr.getServletContext(), path);
+            if (null != ar && ar.exists()) {
+                r = new WebHtplResource(prefix, suffix, ar, locale);
+                break;
+            }
+        }
+
+        if (ensureTemplate && null != r && !r.getFileName().endsWith(suffix)) {
+            return null;
+        }
+        return r;
+    }
 
 }
