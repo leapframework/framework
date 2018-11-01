@@ -262,13 +262,13 @@ public class RelationMapper implements Mapper {
 
         if(keyFields.size() == 1){
             //find unique join fields.
-            for(UniqueMappingBuilder unique : join.getNamedUniqueMappings()) {
-                if(unique.getFields().size() == totalFields) {
+            for(UniqueKeyBuilder key : join.getKeys()) {
+                if(key.getFields().size() == totalFields) {
                     RelationMappingBuilder rm1 =
-                            join.findUniqueRelationByTargetFields(unique.getName(), entity.getEntityName(), entity.getIdFieldNames());
+                            join.findUniqueRelationByTargetFields(key.getName(), entity.getEntityName(), entity.getIdFieldNames());
 
                     RelationMappingBuilder rm2 =
-                            join.findUniqueRelationByTargetFields(unique.getName(), target.getEntityName(), target.getIdFieldNames());
+                            join.findUniqueRelationByTargetFields(key.getName(), target.getEntityName(), target.getIdFieldNames());
 
                     if(null != rm1 && null != rm2) {
                         addManyToManyJoinFields(entity, target, rmb, rm1, rm2);

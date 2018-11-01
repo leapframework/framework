@@ -19,17 +19,22 @@ package leap.orm.mapping;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UniqueMappingBuilder {
+public class UniqueKeyBuilder {
 
     protected String       name;
     protected List<String> fields = new ArrayList<>();
 
-    public UniqueMappingBuilder() {
+    public UniqueKeyBuilder() {
 
     }
 
-    public UniqueMappingBuilder(String name) {
+    public UniqueKeyBuilder(String name) {
         this.name = name;
+    }
+
+    public UniqueKeyBuilder(String name, List<String> fields) {
+        this.name = name;
+        this.fields.addAll(fields);
     }
 
     public String getName() {
@@ -46,5 +51,13 @@ public class UniqueMappingBuilder {
 
     public void setFields(List<String> fields) {
         this.fields = fields;
+    }
+
+    public void addField(String field) {
+        fields.add(field);
+    }
+
+    public boolean containsField(String field) {
+        return fields.stream().anyMatch(name -> name.equalsIgnoreCase(field));
     }
 }

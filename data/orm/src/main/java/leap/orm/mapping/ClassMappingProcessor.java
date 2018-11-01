@@ -82,6 +82,8 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 
     @Override
     public void postMappingEntity(MetadataContext context, EntityMappingBuilder emb) throws MetadataException {
+        mappingEntityKeys(context, emb);
+
         Index[] indexes = emb.getEntityClass().getAnnotationsByType(Index.class);
         for(Index index : indexes) {
             mappingTableIndex(context, emb, index);
@@ -368,12 +370,8 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
     }
 
     protected boolean mappingFieldColumnByAnnotation(MetadataContext context,EntityMappingBuilder emb,FieldMappingBuilder f,Unique a){
-        if(null != a) {
-            if(Strings.isEmpty(a.value())) {
-                f.getColumn().setUnique(true);
-            }else {
-                f.setUniqueName(a.value());
-            }
+        if(null != a && Strings.isEmpty(a.value())) {
+            f.getColumn().setUnique(true);
             return true;
         }
 		return false;
@@ -412,6 +410,24 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
             */
         }
         return false;
+    }
+
+    protected void mappingEntityKeys(MetadataContext context, EntityMappingBuilder emb) {
+        for(FieldMappingBuilder fm : emb.getFieldMappings()) {
+            Annotation[] annotations = fm.getAnnotations();
+            if(null != annotations) {
+                Unique unique = Classes.getAnnotation(annotations, Unique.class);
+                if(null != unique && !Strings.isEmpty(unique.value())) {
+                    String name = unique.value();
+                    UniqueKeyBuilder key = emb.getKey(name);
+                    if(null == key) {
+                        key = new UniqueKeyBuilder(name);
+                        emb.addKey(key);
+                    }
+                    key.addField(fm.getFieldName());
+                }
+            }
+        }
     }
 
     protected boolean mappingTableIndex(MetadataContext context, EntityMappingBuilder emb, Index a){

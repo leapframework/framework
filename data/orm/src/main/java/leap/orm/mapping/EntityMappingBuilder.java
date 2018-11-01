@@ -18,14 +18,15 @@ package leap.orm.mapping;
 import leap.db.model.*;
 import leap.lang.*;
 import leap.lang.exception.ObjectExistsException;
-import leap.orm.enums.RemoteType;
 import leap.orm.event.EntityListenersBuilder;
 import leap.orm.interceptor.EntityExecutionInterceptor;
-import leap.orm.metadata.MetadataException;
 import leap.orm.model.Model;
 import leap.orm.validation.EntityValidator;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 public class EntityMappingBuilder extends ExtensibleBase implements Buildable<EntityMapping> {
@@ -57,7 +58,9 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
     protected List<EntityValidator>         validators;
     protected List<RelationMappingBuilder>  relationMappings   = new ArrayList<>();
     protected List<RelationPropertyBuilder> relationProperties = new ArrayList<>();
+    protected List<UniqueKeyBuilder>        keys               = new ArrayList<>();
     protected EntityListenersBuilder        listeners          = new EntityListenersBuilder();
+
 
     public Class<?> getSourceClass() {
         return null != entityClass ? entityClass : modelClass;
@@ -329,23 +332,6 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
         return list;
     }
 
-    public List<UniqueMappingBuilder> getNamedUniqueMappings() {
-        Map<String, UniqueMappingBuilder> uniques = new LinkedHashMap<>();
-
-        fieldMappings.forEach(f -> {
-            if(!Strings.isEmpty(f.getUniqueName())) {
-                UniqueMappingBuilder unique = uniques.get(f.getUniqueName().toLowerCase());
-                if(null == unique) {
-                    unique = new UniqueMappingBuilder(f.getUniqueName());
-                    uniques.put(f.getUniqueName().toLowerCase(), unique);
-                }
-                unique.getFields().add(f.getFieldName());
-            }
-        });
-
-        return new ArrayList<>(uniques.values());
-    }
-
     public EntityExecutionInterceptor getInsertInterceptor() {
         return insertInterceptor;
     }
@@ -422,7 +408,11 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
     }
 
     public RelationMappingBuilder findUniqueRelationByTargetFields(String uniqueName, String targetEntity, String... referencedFields) {
-        return findRelationByTargetFields(targetEntity, referencedFields, (f) -> Strings.equalsIgnoreCase(uniqueName, f.getUniqueName()));
+        final UniqueKeyBuilder key = getKey(uniqueName);
+        if(null == key) {
+            return null;
+        }
+        return findRelationByTargetFields(targetEntity, referencedFields, (f) -> key.containsField(f.getFieldName()));
     }
 
     protected RelationMappingBuilder findRelationByTargetFields(String targetEntity, String[] referencedFields, Predicate<FieldMappingBuilder> test) {
@@ -512,6 +502,24 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
         return this;
     }
 
+    public List<UniqueKeyBuilder> getKeys() {
+        return keys;
+    }
+
+    public UniqueKeyBuilder getKey(String name) {
+        Optional<UniqueKeyBuilder> key =
+                keys.stream().filter(k -> k.getName().equalsIgnoreCase(name)).findFirst();
+        return key.isPresent() ? key.get() : null;
+    }
+
+    public EntityMappingBuilder addKey(UniqueKeyBuilder key) {
+        if(null != getKey(key.getName())) {
+            throw new ObjectExistsException("Unique key '" + key.getName() + "' already exists in entity '" + entity() + "'");
+        }
+        keys.add(key);
+        return this;
+    }
+
     public EntityListenersBuilder listeners() {
         return listeners;
     }
@@ -570,15 +578,15 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
         }
 
         //uniques
-        for(UniqueMappingBuilder unique : getNamedUniqueMappings()) {
+        for(UniqueKeyBuilder key : getKeys()) {
             DbIndexBuilder ix = new DbIndexBuilder();
-            ix.setName("uix_" + unique.getName());
+            ix.setName("key_" + key.getName());
             ix.setUnique(true);
-            for(String name : unique.getFields()) {
+            for(String name : key.getFields()) {
                 FieldMappingBuilder fm = findFieldMappingByName(name);
                 if(null == fm) {
                     throw new IllegalStateException("No field '" + name +
-                                "' exists, check unique '" + unique.getName() + "' at entity " + entityName);
+                                "' exists, check unique '" + key.getName() + "' at entity " + entityName);
                 }
                 ix.addColumnName(fm.getColumnName());
             }
