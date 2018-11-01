@@ -49,6 +49,7 @@ public class SimpleTest {
 
     @Test
     public void testStatic() {
+        client.get("/t.js").assertContentContains("function _(){}");
         client.get("/static/t.js").assertContentContains("function _(){}");
     }
 }
