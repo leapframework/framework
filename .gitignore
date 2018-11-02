@@ -27,3 +27,4 @@ target
 derby.log
 .rsa_key
 .secret
+mem.h2.db
