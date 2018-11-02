@@ -16,25 +16,40 @@
 
 package leap.spring.boot;
 
+import leap.core.transaction.LocalTransactionProviderFactory;
 import leap.core.transaction.TransactionProvider;
 import leap.core.transaction.TransactionProviderFactory;
 import leap.lang.annotation.Init;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 
-public class LeapTransactionProviderFactory implements TransactionProviderFactory {
+public class LeapTransactionProviderFactory extends LocalTransactionProviderFactory implements TransactionProviderFactory {
+
+    private static final Log log = LogFactory.get(LeapTransactionProviderFactory.class);
 
     private PlatformTransactionManager txm;
 
     @Init
     private void init() {
-        txm = Global.context.getBean(PlatformTransactionManager.class);
+        try {
+            txm = Global.context.getBean(PlatformTransactionManager.class);
+            log.info("Spring PlatformTransactionManager found, use it");
+        }catch (NoSuchBeanDefinitionException e){
+            log.info("Spring PlatformTransactionManager not found, use local");
+        }
     }
 
     @Override
     public TransactionProvider getTransactionProvider(DataSource dataSource) {
-        return new LeapTransactionProvider(txm,dataSource);
+        if(null == txm) {
+            return super.getTransactionProvider(dataSource);
+        }else {
+            return new LeapTransactionProvider(txm,dataSource);
+        }
     }
 
 }
