@@ -16,6 +16,7 @@
 
 package tests;
 
+import junit.framework.TestCase;
 import leap.webunit.client.OkTHttpClient;
 import leap.webunit.client.THttpClient;
 import org.junit.Test;
@@ -23,10 +24,11 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import tapp.Application;
+import tapp.model.Simple;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
-public class SimpleTest {
+public class SimpleTest extends TestCase {
 
     protected final THttpClient client = new OkTHttpClient(8080);
 
@@ -51,5 +53,10 @@ public class SimpleTest {
     public void testStatic() {
         client.get("/t.js").assertContentContains("function _(){}");
         client.get("/static/t.js").assertContentContains("function _(){}");
+    }
+
+    @Test
+    public void testOrmModel() {
+        assertNull(Simple.findOrNull("1"));
     }
 }
