@@ -50,9 +50,16 @@ public class SimpleTest extends TestCase {
     }
 
     @Test
+    public void testTheme() {
+        client.get("/theme").assertContentContains("<p>default</p>");
+        client.get("/assets/t1.js").assertContentContains("function _(){}");
+    }
+
+    @Test
     public void testStatic() {
         client.get("/t.js").assertContentContains("function _(){}");
         client.get("/static/t.js").assertContentContains("function _(){}");
+        client.get("/assets/t.js").assertContentContains("function _(){}");
     }
 
     @Test
