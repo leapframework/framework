@@ -32,7 +32,6 @@
 package leap.web.view;
 
 import leap.lang.resource.Resource;
-import leap.lang.servlet.ServletResource;
 import leap.web.App;
 import leap.web.Request;
 
@@ -46,11 +45,7 @@ public abstract class AbstractResourceView<R extends Resource> extends AbstractV
     public AbstractResourceView(App app, String path, R resource) {
         super(app, path);
         this.resource = resource;
-        this.resourcePath = resource instanceof ServletResource  ?
-                                ((ServletResource) resource).getPathWithinContext() :
-                                (
-                                    resource.hasClasspath() ? resource.getClasspath() : resource.getURLString()
-                                );
+        this.resourcePath = resource.getPath();
     }
 
     @Override

@@ -26,7 +26,6 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.path.Paths;
 import leap.lang.resource.Resource;
-import leap.lang.servlet.ServletResource;
 
 import java.util.Locale;
 
@@ -84,15 +83,7 @@ public abstract class AbstractResourceViewResolver<R extends Resource>
             return null;
         }
 
-        return loadView(prefix, suffix, viewName, locale, getPathWithinContext(resource), resource);
-    }
-
-    protected String getPathWithinContext(R resource) {
-        return resource instanceof ServletResource  ?
-                ((ServletResource) resource).getPathWithinContext() :
-                (
-                        resource.hasClasspath() ? resource.getClasspath() : resource.getURLString()
-                );
+        return loadView(prefix, suffix, viewName, locale, resource.getPath(), resource);
     }
 
     protected R getLocaleResource(String prefix, String suffix, String viewPath,Locale locale) {

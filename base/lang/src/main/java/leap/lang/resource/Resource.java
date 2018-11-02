@@ -201,4 +201,16 @@ public interface Resource extends InputStreamSource {
 	 */
 	String getDescription();
 
+	/**
+	 * Return the path within context or file path, or full url.
+	 */
+	default String getPath() {
+	    if(hasClasspath()) {
+	        return getClasspath();
+        }
+        if(isFile()) {
+            return getFilepath();
+        }
+        return getURLString();
+	}
 }

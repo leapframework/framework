@@ -28,6 +28,7 @@ import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.path.Paths;
+import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
 import leap.lang.resource.Resources;
 import leap.lang.servlet.ServletResource;
@@ -125,7 +126,10 @@ public class DefaultThemeManager implements ThemeManager,PostCreateBean {
 		String themeName = path.substring(webConfig.getThemesLocation().length() + 1,path.length() - 1);
 		log.debug("Found theme '" + themeName + "' in path '" + path + "'");
 		
-		ServletResource dir = Servlets.getResource(app.getServletContext(), path);
+		Resource dir = Servlets.getResource(app.getServletContext(), path);
+		if(null == dir || !dir.exists()) {
+		    dir = Resources.getResource("classpath:META-INF/resources" + path);
+        }
 		
 		SimpleTheme.Builder theme = new SimpleTheme.Builder();
 		
@@ -137,9 +141,9 @@ public class DefaultThemeManager implements ThemeManager,PostCreateBean {
 		themes.put(themeName, theme.build());
 	}
 	
-	protected MessageSource getThemeBasedMessageSource(String themeName,ServletResource themeDir) throws Throwable {
+	protected MessageSource getThemeBasedMessageSource(String themeName, Resource themeDir) throws Throwable {
 		//TODO : config theme based messages directory
-		ServletResource messagesDir = themeDir.createRelative("messages");
+		Resource messagesDir = themeDir.createRelative("messages");
 		if(null != messagesDir && messagesDir.exists()){
 			ResourceSet rs = Resources.scan(messagesDir, "**/*.*");
 			if(!rs.isEmpty()){
@@ -153,11 +157,11 @@ public class DefaultThemeManager implements ThemeManager,PostCreateBean {
 		return null;
 	}
 	
-	protected AssetSource getThemeBasedAssetSource(String themeName, ServletResource themeDir) throws Throwable {
+	protected AssetSource getThemeBasedAssetSource(String themeName, Resource themeDir) throws Throwable {
 		//TODO: config theme based assets directory
-		ServletResource assetsDir = themeDir.createRelative("static");
+		Resource assetsDir = themeDir.createRelative("static");
 		if(null != assetsDir && assetsDir.exists()){
-			String location = assetsDir.getPathWithinContext();
+			String location = assetsDir.getPath();
 			
 			ServletAssetResolver resolver = app.factory().createBean(ServletAssetResolver.class);
 			resolver.setPrefix(Paths.prefixAndSuffixWithSlash(location));
@@ -173,11 +177,11 @@ public class DefaultThemeManager implements ThemeManager,PostCreateBean {
 		return null;
 	}
 	
-	protected ViewSource getThemeBasedViewSource(String themeName,ServletResource themeDir) throws Throwable {
+	protected ViewSource getThemeBasedViewSource(String themeName,Resource themeDir) throws Throwable {
 		//TODO : config theme based views directory
-		ServletResource viewsDir = themeDir.createRelative("views");
+		Resource viewsDir = themeDir.createRelative("views");
 		if(null != viewsDir && viewsDir.exists()){
-			String location = viewsDir.getPathWithinContext();
+			String location = viewsDir.getPath();
 			
 			ServletResourceViewSource themeViewSource = new ServletResourceViewSource();
 			themeViewSource.setLocation(location);
