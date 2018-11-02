@@ -19,6 +19,8 @@ package leap.spring.boot;
 import leap.core.AppContextInitializer;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.lang.resource.Resource;
+import leap.lang.resource.Resources;
 import leap.spring.boot.spel.SpringExpressionFactory;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor;
@@ -32,8 +34,19 @@ public class SpringConfiguration {
     private static final Log log = LogFactory.get(SpringConfiguration.class);
 
     static {
+        boolean enabled = false;
+        Resource resource = Resources.getResource("classpath:instrument");
+        if(null != resource && resource.exists()) {
+            if("enabled".equals(resource.getContent())) {
+                log.info("Instrument enabled by '{}'", resource.getURLString());
+                enabled = true;
+            }
+        }
+
         //Disable instrumentation.
-        AppContextInitializer.setInstrumentDisabled(true);
+        if(!enabled) {
+            AppContextInitializer.setInstrumentDisabled(true);
+        }
     }
 
     @Bean
