@@ -104,7 +104,7 @@ public class ServletAsset extends AbstractAsset implements Asset {
 	protected void createAssetResources(String assetPath, ServletResource sr) {
 		//Find minified resource, filename.js -> filename.min.js
 	
-		String filepath = sr.getPathWithinContext();
+		String filepath = sr.getPath();
 		
 		String minifiedFilepath = getMinifiedFilepath(filepath);
 		

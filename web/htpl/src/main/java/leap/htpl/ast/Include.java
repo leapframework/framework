@@ -31,6 +31,7 @@ import leap.htpl.exception.HtplParseException;
 import leap.htpl.exception.HtplRenderException;
 import leap.lang.Strings;
 import leap.lang.expression.Expression;
+import leap.lang.resource.Resource;
 import leap.lang.servlet.ServletResource;
 
 public class Include extends Node implements HtplRenderable {
@@ -39,10 +40,10 @@ public class Include extends Node implements HtplRenderable {
 	private final String     fragmentName;
 	private final boolean    required;
 
-    private Expression      expression;
-	private HtplTemplate    template; //included template
-	private Fragment 	    fragment;
-	private ServletResource resource; //included servlet resource
+    private Expression   expression;
+	private HtplTemplate template; //included template
+	private Fragment     fragment;
+	private Resource     resource; //included resource
 	
 	public Include(String templateName) {
 		this(templateName,null,true);
@@ -192,7 +193,7 @@ public class Include extends Node implements HtplRenderable {
 			
 		}else if(null != resource){
 			if(context.isDebug()) {
-				writer.append("<!--#include \"" + resource.getPathWithinContext() + "\"-->\n");
+				writer.append("<!--#include \"" + resource.getPath() + "\"-->\n");
 			}
 			includeServletResource(tpl, context, writer, resource);
 			if(context.isDebug()) {
@@ -221,7 +222,7 @@ public class Include extends Node implements HtplRenderable {
 		return true;
 	}
 	
-	protected void includeServletResource(HtplTemplate tpl, HtplContext context, HtplWriter writer, ServletResource sr) throws IOException {
+	protected void includeServletResource(HtplTemplate tpl, HtplContext context, HtplWriter writer, Resource sr) throws IOException {
 		leap.web.Request r = null;
 		
 		if(context.getRequest() instanceof leap.web.Request) {
@@ -234,7 +235,7 @@ public class Include extends Node implements HtplRenderable {
 		javax.servlet.http.HttpServletResponse resp = r.response().getServletResponse();
 		
 		try {
-	        req.getRequestDispatcher(sr.getPathWithinContext()).include(req, resp);
+	        req.getRequestDispatcher(sr.getPath()).include(req, resp);
 
 	        //TODO : optimize
 	        Enumeration<String> vars = req.getAttributeNames();
@@ -243,7 +244,7 @@ public class Include extends Node implements HtplRenderable {
 	        	context.setLocalVariable(var, req.getAttribute(var));
 	        }
         } catch (javax.servlet.ServletException e) {
-        	throw new HtplRenderException("Error including resource '" + resource.getPathWithinContext() + "', " + e.getMessage(), e);
+        	throw new HtplRenderException("Error including resource '" + resource.getPath() + "', " + e.getMessage(), e);
         }
 	}
 }

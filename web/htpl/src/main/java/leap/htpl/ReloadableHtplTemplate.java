@@ -22,6 +22,7 @@ import leap.lang.Out;
 import leap.lang.io.IO;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.lang.resource.Resource;
 import leap.lang.servlet.ServletResource;
 
 import java.io.IOException;
@@ -210,7 +211,7 @@ public class ReloadableHtplTemplate extends AbstractHtplTemplate implements Htpl
         }
 
 		@Override
-        public ServletResource getServletResource() {
+        public Resource getServletResource() {
 			return wrapped.getServletResource();
 		}
 	}

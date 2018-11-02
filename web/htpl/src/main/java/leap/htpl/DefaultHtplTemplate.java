@@ -103,7 +103,7 @@ public class DefaultHtplTemplate extends AbstractHtplTemplate implements HtplTem
             }
 
 			if(context.isDebug() && null != resource) {
-				String path = resource.isServletResource() ? resource.getServletResource().getPathWithinContext() : resource.getFileName();
+				String path = resource.isResource() ? resource.getServletResource().getPath() : resource.getFileName();
 				if(null != path) {
 					writer.append("<!--file: " + path + "-->\n");
 				}

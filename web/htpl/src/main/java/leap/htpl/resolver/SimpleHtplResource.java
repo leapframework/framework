@@ -42,7 +42,7 @@ public class SimpleHtplResource implements HtplResource {
         Args.notNull(r, "resource");
         this.r = r;
         this.locale = locale;
-        this.source = getSource(r);
+        this.source = r.getPath();
         this.file = r.isFile() ? r.getFile() : null;
         try {
             this.lastModified = r.lastModified();
@@ -128,17 +128,5 @@ public class SimpleHtplResource implements HtplResource {
     @Override
     public String toString() {
         return r.toString();
-    }
-
-    protected String getSource(Resource r) {
-        if (r instanceof ContextResource) {
-            return ((ContextResource) r).getPathWithinContext();
-        }
-
-        if (null != r.getClasspath()) {
-            return r.getClasspath();
-        }
-
-        return r.getURLString();
     }
 }

@@ -42,16 +42,16 @@ public class ServletAssetResource extends AbstractAssetResource {
 	    
 		this.debug		   = debug;
 		this.resource      = resource;
-		this.serverPath    = resource.getPathWithinContext();
+		this.serverPath    = resource.getPath();
 		this.lastModified  = resource.lastModified();
         this.lastChecked   = System.currentTimeMillis();
 
 		if(Strings.isEmpty(fingerprint)) {
-			this.generateFingerprint(resource.getPathWithinContext());
+			this.generateFingerprint(resource.getPath());
 		}else{
 			this.fingerprint = fingerprint;
 			log.debug("Got a fingerprint '{}' of {} resource '{}'", 
-					  fingerprint, debug ? "debug" : "production", resource.getPathWithinContext());
+					  fingerprint, debug ? "debug" : "production", resource.getPath());
 		}
 		
 		this.resolveClientPathAndUrl();

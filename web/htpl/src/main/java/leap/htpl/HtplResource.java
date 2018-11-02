@@ -23,6 +23,7 @@ import java.util.Locale;
 import leap.lang.Out;
 import leap.lang.Sourced;
 import leap.lang.Strings;
+import leap.lang.resource.Resource;
 import leap.lang.servlet.ServletResource;
 
 public interface HtplResource extends Sourced {
@@ -102,10 +103,14 @@ public interface HtplResource extends Sourced {
 	}
 	
 	default boolean isServletResource() {
-		return false;
+		return getServletResource() instanceof ServletResource;
+	}
+
+	default boolean isResource() {
+		return null != getServletResource();
 	}
 	
-	default ServletResource getServletResource() {
+	default Resource getServletResource() {
 		return null;
 	}
 }

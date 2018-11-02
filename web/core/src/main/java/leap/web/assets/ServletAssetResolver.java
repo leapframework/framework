@@ -85,15 +85,15 @@ public class ServletAssetResolver extends AbstractAssetResolver implements PostC
 			return null;
 		}
 
-		ServletAsset asset = cache.get(resource.getPathWithinContext());
+		ServletAsset asset = cache.get(resource.getPath());
         if(null != asset && asset.isExpired()) {
-            cache.remove(resource.getPathWithinContext());
+            cache.remove(resource.getPath());
             asset = null;
         }
 
 		if(null == asset){
 			asset = new ServletAsset(manager,path,resource);
-			cache.put(resource.getPathWithinContext(), asset);
+			cache.put(resource.getPath(), asset);
 		}
 		return asset;
 	}
