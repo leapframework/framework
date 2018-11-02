@@ -24,8 +24,8 @@ import leap.lang.Strings;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.path.Paths;
-import leap.lang.servlet.ServletResource;
-import leap.lang.servlet.Servlets;
+import leap.lang.resource.Resource;
+import leap.web.Utils;
 
 import java.util.List;
 import java.util.Locale;
@@ -80,7 +80,7 @@ public class ServletAssetResolver extends AbstractAssetResolver implements PostC
 
 		if(isExcluded(path)) return null;
 
-		ServletResource resource = getLocaleResource(getResourcePath(prefix,path),locale);
+		Resource resource = getLocaleResource(getResourcePath(prefix,path),locale);
 		if(null == resource || !resource.exists()){
 			return null;
 		}
@@ -106,7 +106,7 @@ public class ServletAssetResolver extends AbstractAssetResolver implements PostC
 		return false;
 	}
 
-	protected ServletResource getLocaleResource(String resourcePath,Locale locale){
+	protected Resource getLocaleResource(String resourcePath, Locale locale){
 		String suffix     = "." + Paths.getFileExtension(resourcePath);
 		String pathPrefix = resourcePath.substring(0,resourcePath.length() - suffix.length());
 
@@ -116,7 +116,7 @@ public class ServletAssetResolver extends AbstractAssetResolver implements PostC
 		//{pathPrefix}_{lang}_{COUNTRY}{suffix}
 		if(!Strings.isEmpty(country)){
 			String path = pathPrefix + "_" + locale.getLanguage() + "_" + country + suffix;
-			ServletResource resource = Servlets.getResource(servletContext, path);
+			Resource resource = Utils.getResource(servletContext, path);
 			if(null != resource && resource.exists()){
 				return resource;
 			}
@@ -125,7 +125,7 @@ public class ServletAssetResolver extends AbstractAssetResolver implements PostC
 		//{pathPrefix_{lang}{suffix}
 		if(!Strings.isEmpty(lang)){
 			String path = pathPrefix + "_" + locale.getLanguage() + suffix;
-			ServletResource resource = Servlets.getResource(servletContext, path);
+			Resource resource = Utils.getResource(servletContext, path);
 			if(null != resource && resource.exists()){
 				return resource;
 			}
@@ -133,7 +133,7 @@ public class ServletAssetResolver extends AbstractAssetResolver implements PostC
 
 		//{pathPrefix}{suffix}
 		String path = pathPrefix + suffix;
-		ServletResource resource = Servlets.getResource(servletContext, path);
+		Resource resource = Utils.getResource(servletContext, path);
 		if(null != resource && resource.exists()){
 			return resource;
 		}

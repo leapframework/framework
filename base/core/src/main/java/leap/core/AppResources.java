@@ -16,7 +16,9 @@
 
 package leap.core;
 
-import leap.lang.*;
+import leap.lang.Classes;
+import leap.lang.Strings;
+import leap.lang.Try;
 import leap.lang.annotation.Internal;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -28,7 +30,6 @@ import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
 import leap.lang.resource.Resources;
 import leap.lang.servlet.ServletResource;
-import leap.lang.servlet.Servlets;
 import leap.lang.servlet.SimpleServletResource;
 
 import javax.servlet.ServletContext;

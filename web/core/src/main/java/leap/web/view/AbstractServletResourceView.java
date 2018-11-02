@@ -15,12 +15,12 @@
  */
 package leap.web.view;
 
-import leap.lang.servlet.ServletResource;
+import leap.lang.resource.Resource;
 import leap.web.App;
 
-public abstract class AbstractServletResourceView extends AbstractResourceView<ServletResource> {
+public abstract class AbstractServletResourceView extends AbstractResourceView<Resource> {
 	
-	public AbstractServletResourceView(App app,String path, ServletResource resource){
+	public AbstractServletResourceView(App app,String path, Resource resource){
 		super(app, path, resource);
 	}
 	

@@ -15,22 +15,21 @@
  */
 package leap.web.view;
 
-import java.util.Enumeration;
-import java.util.Locale;
-import java.util.ResourceBundle;
+import leap.core.i18n.MessageSource;
+import leap.lang.resource.Resource;
+import leap.web.App;
+import leap.web.Request;
 
 import javax.servlet.http.HttpSession;
 import javax.servlet.jsp.jstl.core.Config;
 import javax.servlet.jsp.jstl.fmt.LocalizationContext;
-
-import leap.core.i18n.MessageSource;
-import leap.lang.servlet.ServletResource;
-import leap.web.App;
-import leap.web.Request;
+import java.util.Enumeration;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 public class JstlView extends RequestDispatchView {
 
-	public JstlView(App app, String path, ServletResource resource) {
+	public JstlView(App app, String path, Resource resource) {
 	    super(app, path, resource);
     }
 

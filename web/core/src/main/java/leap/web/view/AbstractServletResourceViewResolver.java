@@ -15,14 +15,14 @@
  */
 package leap.web.view;
 
-import leap.lang.servlet.ServletResource;
-import leap.lang.servlet.Servlets;
+import leap.lang.resource.Resource;
+import leap.web.Utils;
 
-public abstract class AbstractServletResourceViewResolver extends AbstractResourceViewResolver<ServletResource> {
+public abstract class AbstractServletResourceViewResolver extends AbstractResourceViewResolver<Resource> {
 
     @Override
-    protected ServletResource loadResource(String path) {
-        return Servlets.getResource(servletContext, path);
+    protected Resource loadResource(String path) {
+        return Utils.getResource(servletContext, path);
     }
 
 }

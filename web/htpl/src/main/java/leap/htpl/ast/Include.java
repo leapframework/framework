@@ -222,8 +222,7 @@ public class Include extends Node implements HtplRenderable {
 	}
 	
 	protected void includeServletResource(HtplTemplate tpl, HtplContext context, HtplWriter writer, Resource sr) throws IOException {
-		leap.web.Request r = null;
-		
+		leap.web.Request r;
 		if(context.getRequest() instanceof leap.web.Request) {
 			r = (leap.web.Request)context.getRequest();
 		}else{

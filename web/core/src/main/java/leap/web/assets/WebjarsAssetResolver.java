@@ -30,12 +30,12 @@ public class WebjarsAssetResolver extends ServletAssetResolver {
 	protected static final String WEBJARS_PREFIX = "/webjars";
 	
 	@Override
-    protected ServletResource getLocaleResource(String resourcePath, Locale locale) {
+    protected Resource getLocaleResource(String resourcePath, Locale locale) {
 		if(Strings.startsWith(resourcePath, WEBJARS_PREFIX + "/")) {
 			return super.getLocaleResource(resourcePath, locale);
 		}
-		
-		ServletResource sr = super.getLocaleResource(getResourcePath(WEBJARS_PREFIX, resourcePath), locale);
+
+		Resource sr = super.getLocaleResource(getResourcePath(WEBJARS_PREFIX, resourcePath), locale);
 		if(null != sr && sr.exists()) {
 			return sr;
 		}

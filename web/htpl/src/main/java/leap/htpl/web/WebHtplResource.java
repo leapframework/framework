@@ -26,40 +26,21 @@ import leap.lang.path.Paths;
 import leap.lang.resource.Resource;
 import leap.lang.servlet.ServletResource;
 import leap.lang.servlet.Servlets;
+import leap.web.Utils;
+
+import javax.servlet.ServletContext;
 
 public class WebHtplResource extends SimpleHtplResource {
 
-    private final String   prefix;
-    private final String   suffix;
-    private final Resource resource;
-    private final ServletResource sr;
+    private final ServletContext servletContext;
+    private final String         prefix;
+    private final String         suffix;
 
-    public WebHtplResource(String prefix, String suffix, Resource resource, Locale locale) {
+    public WebHtplResource(ServletContext servletContext, String prefix, String suffix, Resource resource, Locale locale) {
         super(resource, locale);
+        this.servletContext = servletContext;
         this.prefix = Paths.suffixWithoutSlash(prefix);
         this.suffix = suffix;
-        this.resource = resource;
-        this.sr = resource instanceof ServletResource ? (ServletResource)resource : null;
-    }
-
-    @Override
-    public ServletResource getResource() {
-        return sr;
-    }
-
-    @Override
-    public boolean isServletResource() {
-        return null != sr;
-    }
-
-    @Override
-    public File getFile() {
-        return resource.getFile();
-    }
-
-    @Override
-    public String getFileName() {
-        return resource.getFilename();
     }
 
     @Override
@@ -75,9 +56,9 @@ public class WebHtplResource extends SimpleHtplResource {
         HtplResource r = null;
 
         for (String path : paths) {
-            ServletResource rr = sr.createRelative(path);
+            Resource rr = resource.createRelativeUnchecked(path);
             if (null != rr && rr.exists()) {
-                r = new WebHtplResource(prefix, suffix, rr, locale);
+                r = new WebHtplResource(servletContext, prefix, suffix, rr, locale);
                 break;
             }
         }
@@ -106,9 +87,9 @@ public class WebHtplResource extends SimpleHtplResource {
         HtplResource r = null;
 
         for (String path : paths) {
-            ServletResource ar = Servlets.getResource(sr.getServletContext(), path);
+            Resource ar = Utils.getResource(servletContext, path);
             if (null != ar && ar.exists()) {
-                r = new WebHtplResource(prefix, suffix, ar, locale);
+                r = new WebHtplResource(servletContext,prefix, suffix, ar, locale);
                 break;
             }
         }

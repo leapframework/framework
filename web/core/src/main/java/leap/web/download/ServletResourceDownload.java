@@ -18,9 +18,9 @@ package leap.web.download;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.resource.Resource;
-import leap.lang.servlet.Servlets;
 import leap.web.Request;
 import leap.web.Response;
+import leap.web.Utils;
 
 /**
  * A file content in webapp.
@@ -41,7 +41,7 @@ public class ServletResourceDownload extends AbstractDownload {
 	@Override
     protected Resource getResource(Request request, Response response) throws Throwable {
 		log.debug("Returning war file content of path : {}",path);
-		return Servlets.getResource(request.getServletContext(), path);
+		return Utils.getResource(request.getServletContext(), path);
     }
 	
 }

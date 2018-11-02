@@ -15,22 +15,19 @@
  */
 package leap.htpl.jsp;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.servlet.jsp.JspException;
-
 import leap.htpl.HtplContext;
 import leap.htpl.HtplTemplate;
 import leap.htpl.web.WebHtplContext;
 import leap.lang.Classes;
 import leap.lang.Strings;
 import leap.lang.resource.Resource;
-import leap.lang.servlet.ServletResource;
-import leap.lang.servlet.Servlets;
 import leap.web.Request;
 import leap.web.Utils;
+
+import javax.servlet.jsp.JspException;
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Renders a template file.

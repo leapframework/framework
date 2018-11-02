@@ -35,6 +35,7 @@ import leap.lang.servlet.ServletResource;
 import leap.lang.servlet.Servlets;
 import leap.web.App;
 import leap.web.Request;
+import leap.web.Utils;
 import leap.web.assets.Asset;
 import leap.web.assets.AssetSource;
 import leap.web.assets.ServletAssetResolver;
@@ -111,14 +112,23 @@ public class DefaultThemeManager implements ThemeManager,PostCreateBean {
 	}
 	
 	protected void loadThemes() throws Throwable {
-		ServletResource themesDir = Servlets.getResource(app.getServletContext(), webConfig.getThemesLocation());
+		Resource themesDir = Utils.getResource(app.getServletContext(), webConfig.getThemesLocation());
 		if(themesDir.exists()){
-			Set<String> themePaths = app.getServletContext().getResourcePaths(webConfig.getThemesLocation());
-			for(String themePath : themePaths){
-				if(themePath.endsWith("/")){
-					loadTheme(themePath);
-				}
-			}
+		    if(themesDir instanceof ServletResource) {
+                Set<String> themePaths = app.getServletContext().getResourcePaths(webConfig.getThemesLocation());
+                for(String themePath : themePaths){
+                    if(themePath.endsWith("/")){
+                        loadTheme(themePath);
+                    }
+                }
+            }else {
+                for(Resource resource : Resources.scan(themesDir, "*") ){
+                    String themePath = Strings.removeStart(resource.getURLString(), themesDir.getURLString());
+                    if(themePath.endsWith("/")){
+                        loadTheme(themePath);
+                    }
+                }
+            }
 		}
 	}
 	
@@ -126,11 +136,8 @@ public class DefaultThemeManager implements ThemeManager,PostCreateBean {
 		String themeName = path.substring(webConfig.getThemesLocation().length() + 1,path.length() - 1);
 		log.debug("Found theme '" + themeName + "' in path '" + path + "'");
 		
-		Resource dir = Servlets.getResource(app.getServletContext(), path);
-		if(null == dir || !dir.exists()) {
-		    dir = Resources.getResource("classpath:META-INF/resources" + path);
-        }
-		
+		Resource dir = Utils.getResource(app.getServletContext(), path);
+
 		SimpleTheme.Builder theme = new SimpleTheme.Builder();
 		
 		theme.setName(themeName)

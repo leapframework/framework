@@ -22,7 +22,6 @@ import leap.lang.Locales;
 import leap.lang.Out;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
-import leap.lang.resource.ContextResource;
 import leap.lang.resource.Resource;
 
 import java.io.*;
@@ -31,29 +30,26 @@ import java.util.Locale;
 public class SimpleHtplResource implements HtplResource {
     private static final Log log = LogFactory.get(SimpleHtplResource.class);
 
-    private final Resource r;
-    private final Locale   locale;
-    private final String   source;
-    private final File     file;
+    protected final Resource resource;
+    protected final Locale   locale;
+    protected final String   source;
+    protected final File     file;
 
-    private long lastModified;
+    private long lastModified = 0L;
 
-    public SimpleHtplResource(Resource r, Locale locale) {
-        Args.notNull(r, "resource");
-        this.r = r;
+    public SimpleHtplResource(Resource resource, Locale locale) {
+        Args.notNull(resource, "resource");
+        this.resource = resource;
         this.locale = locale;
-        this.source = r.getPath();
-        this.file = r.isFile() ? r.getFile() : null;
-        try {
-            this.lastModified = r.lastModified();
-        } catch (IOException e) {
-            throw new HtplException(e.getMessage(), e);
+        this.source = resource.getPath();
+        this.file = resource.isFile() ? resource.getFile() : null;
+        if(null != file) {
+            try {
+                this.lastModified = resource.lastModified();
+            } catch (IOException e) {
+                throw new HtplException(e.getMessage(), e);
+            }
         }
-    }
-
-    @Override
-    public Locale getLocale() {
-        return locale;
     }
 
     @Override
@@ -62,8 +58,18 @@ public class SimpleHtplResource implements HtplResource {
     }
 
     @Override
+    public Resource getResource() {
+        return resource;
+    }
+
+    @Override
+    public Locale getLocale() {
+        return locale;
+    }
+
+    @Override
     public Reader getReader() throws IOException {
-        return r.getInputStreamReader();
+        return resource.getInputStreamReader();
     }
 
     @Override
@@ -112,7 +118,7 @@ public class SimpleHtplResource implements HtplResource {
 
             for (String path : paths) {
                 try {
-                    Resource rr = r.createRelative(path);
+                    Resource rr = resource.createRelative(path);
                     if (null != rr && rr.exists()) {
                         return new SimpleHtplResource(rr, locale);
                     }
@@ -127,6 +133,6 @@ public class SimpleHtplResource implements HtplResource {
 
     @Override
     public String toString() {
-        return r.toString();
+        return resource.toString();
     }
 }

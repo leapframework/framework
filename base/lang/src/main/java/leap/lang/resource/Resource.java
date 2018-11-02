@@ -20,10 +20,7 @@ import leap.lang.Charsets;
 import leap.lang.exception.NestedIOException;
 import leap.lang.io.InputStreamSource;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -149,6 +146,17 @@ public interface Resource extends InputStreamSource {
 	 * @throws IOException if the relative resource cannot be determined
 	 */
 	Resource createRelative(String relativePath) throws IOException;
+
+    /**
+     * Throws {@link UncheckedIOException} instead of {@link IOException}
+     */
+	default Resource createRelativeUnchecked(String relativePath) throws UncheckedIOException {
+	    try {
+	        return createRelative(relativePath);
+        }catch (IOException e) {
+	        throw new UncheckedIOException("Err create relative resource '" + relativePath + "'", e);
+        }
+    }
 	
 	/**
 	 * Converts this resource to {@link SimpleFileResource} if this resource is a {@link File}.
