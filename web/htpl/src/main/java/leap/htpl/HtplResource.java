@@ -101,16 +101,32 @@ public interface HtplResource extends Sourced {
 	default HtplResource tryGetAbsolute(String absolutePath,Locale locale, boolean ensureTempalte) {
 		return null;
 	}
-	
-	default boolean isServletResource() {
-		return getServletResource() instanceof ServletResource;
+
+    /**
+     * Returns true if the underlying resource is a {@link Resource}.
+     */
+	default boolean isResource() {
+		return null != getResource();
 	}
 
-	default boolean isResource() {
-		return null != getServletResource();
-	}
-	
-	default Resource getServletResource() {
+    /**
+     * Returns the {@link Resource} object or null.
+     */
+	default Resource getResource() {
 		return null;
 	}
+
+    /**
+     * Returns true if the underlying resource is a {@link ServletResource}.
+     */
+    default boolean isServletResource() {
+        return getResource() instanceof ServletResource;
+    }
+
+    /**
+     * Returns the {@link ServletResource} object or null.
+     */
+	default ServletResource getServletResource() {
+	    return isServletResource() ? (ServletResource)getResource() : null;
+    }
 }

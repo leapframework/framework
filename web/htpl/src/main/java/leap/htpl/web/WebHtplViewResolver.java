@@ -25,10 +25,8 @@ import leap.lang.Strings;
 import leap.lang.http.ContentTypes;
 import leap.lang.http.MimeTypes;
 import leap.lang.resource.Resource;
-import leap.lang.servlet.ServletResource;
 import leap.web.App;
 import leap.web.view.AbstractServletOrClassResourceViewResolver;
-import leap.web.view.AbstractServletResourceViewResolver;
 import leap.web.view.View;
 
 import java.util.Locale;

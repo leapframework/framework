@@ -32,7 +32,6 @@ import leap.htpl.exception.HtplRenderException;
 import leap.lang.Strings;
 import leap.lang.expression.Expression;
 import leap.lang.resource.Resource;
-import leap.lang.servlet.ServletResource;
 
 public class Include extends Node implements HtplRenderable {
 
@@ -218,7 +217,7 @@ public class Include extends Node implements HtplRenderable {
 		if(jsp == null){
 			return false;
 		}
-		this.resource = jsp.getServletResource();
+		this.resource = jsp.getResource();
 		return true;
 	}
 	

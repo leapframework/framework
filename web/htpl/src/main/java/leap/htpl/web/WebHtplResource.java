@@ -43,7 +43,7 @@ public class WebHtplResource extends SimpleHtplResource {
     }
 
     @Override
-    public ServletResource getServletResource() {
+    public ServletResource getResource() {
         return sr;
     }
 
