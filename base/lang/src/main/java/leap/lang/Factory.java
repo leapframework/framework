@@ -48,11 +48,22 @@ public class Factory {
         return object;
     }
 
+	public static <T> T tryNewInstance(Class<T> type) throws FactoryException {
+		Args.notNull(type);
+
+		Resource resource = getSingleClassNameResource(type);
+		if(null == resource || !resource.exists()){
+			return null;
+		}
+
+		return newInstance(type, resource);
+	}
+
 	public static <T> T newInstance(Class<T> type) throws ObjectNotFoundException,FactoryException {
 		Args.notNull(type);
 		
 		Resource resource = getSingleClassNameResource(type);
-		if(null == resource){
+		if(null == resource || !resource.exists()){
 			throw new ObjectNotFoundException("no instance of service class '" + type.getName() + "'");
 		}
 		
