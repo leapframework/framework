@@ -44,11 +44,7 @@ public class SimpleHtplResource implements HtplResource {
         this.source = resource.getPath();
         this.file = resource.isFile() ? resource.getFile() : null;
         if(null != file) {
-            try {
-                this.lastModified = resource.lastModified();
-            } catch (IOException e) {
-                throw new HtplException(e.getMessage(), e);
-            }
+            this.lastModified = file.lastModified();
         }
     }
 
