@@ -18,6 +18,7 @@ package leap.core.config.reader;
 
 import leap.core.AppConfig;
 import leap.core.AppConfigException;
+import leap.core.config.AppProperty;
 import leap.core.config.AppPropertyContext;
 import leap.core.config.AppPropertyLoaderConfig;
 import leap.core.config.AppPropertyReader;
@@ -271,10 +272,20 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
 
     protected void putProperty(AppPropertyContext context, Resource resource, String key, String value, boolean override) {
         if(!override && context.hasProperty(key)) {
-            throw new AppConfigException("Found duplicate property '" + key + "' in resources : [" +
-                                         context.getPropertySource(key) + "]" + ", " + LogUtils.getUrl(resource));
+            AppProperty prop = context.getProperty(key);
+            if(null != prop) {
+                if(prop.isOverride()) {
+                    log.debug("Skip {} at {}, a override one already exists", key, LogUtils.getUrl(resource));
+                    return;
+                }
+                throw new AppConfigException("Found duplicate property '" + key + "' in resources : [" +
+                        prop.getSource() + "]" + ", " + LogUtils.getUrl(resource));
+            }else {
+                throw new AppConfigException("Found duplicate property '" + key + "' in '" + LogUtils.getUrl(resource) +
+                                             "', the array property with same name already exists!");
+            }
         }
-        context.putProperty(resource, key, value);
+        context.putProperty(resource, key, value, override);
     }
 
     protected void readProperty(AppPropertyContext context, Resource resource, XmlReader reader, String prefix) {

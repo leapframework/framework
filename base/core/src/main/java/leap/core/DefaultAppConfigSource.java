@@ -485,8 +485,8 @@ public class DefaultAppConfigSource implements AppConfigSource {
             }
         }
 
-        protected void putProperty(Object source, String name, String value) {
-            properties.put(name, new SimpleAppProperty(source, name, value));
+        protected void putProperty(Object source, String name, String value, boolean override) {
+            properties.put(name, new SimpleAppProperty(source, name, value, override));
         }
 
         protected String resolveProperty(String name) {
@@ -699,12 +699,8 @@ public class DefaultAppConfigSource implements AppConfigSource {
         }
 
         @Override
-        public String getPropertySource(String name) {
-            AppProperty p = loader.properties.get(name);
-            if(null != p) {
-                return null != p.getSource() ? p.getSource().toString() : "";
-            }
-            return "";
+        public AppProperty getProperty(String name) {
+            return loader.properties.get(name);
         }
 
         @Override
@@ -734,7 +730,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
         }
 
         @Override
-        public void putProperty(Object source, String name, String value) {
+        public void putProperty(Object source, String name, String value, boolean override) {
             if(name.endsWith("[]")) {
                 name = name.substring(0, name.length()-2);
                 List<String> list = loader.arrayProperties.get(name);
@@ -744,8 +740,13 @@ public class DefaultAppConfigSource implements AppConfigSource {
                 }
                 list.add(value);
             }else{
-                loader.putProperty(source, name, value);
+                loader.putProperty(source, name, value, override);
             }
+        }
+
+        @Override
+        public void putProperty(Object source, String name, String value) {
+            putProperty(source, name, value, false);
         }
 
         @Override
