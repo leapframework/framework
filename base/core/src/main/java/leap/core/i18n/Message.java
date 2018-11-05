@@ -15,20 +15,32 @@
  */
 package leap.core.i18n;
 
+import leap.lang.expression.CompositeExpression;
+import leap.lang.expression.Expression;
+
 public final class Message {
-	private final Object source;
-	private final String string;
-	
-	protected Message(Object source,String string){
-		this.source = source;
-		this.string = string;
-	}
 
-	public Object getSource() {
-		return source;
-	}
+    private final Object              source;
+    private final CompositeExpression expression;
 
-	public String getString() {
-		return string;
-	}
+    protected Message(Object source, String string) {
+        this(source, new CompositeExpression(string));
+    }
+
+    protected Message(Object source, CompositeExpression expression) {
+        this.source = source;
+        this.expression = expression;
+    }
+
+    public Object getSource() {
+        return source;
+    }
+
+    public String getString() {
+        return (String)expression.getValue();
+    }
+
+    public Expression getExpression() {
+        return expression;
+    }
 }

@@ -73,4 +73,12 @@ public class AppContextTest extends AppTestBase {
 		message = ms.getMessage(Locales.forName("zh_CN"),"test.prop.message1");
 		assertTrue(Strings.contains(message, "属性"));
 	}
+
+	@Test
+	public void testMessageSourceWithExpr() {
+        MessageSource ms = AppContext.current().getMessageSource();
+
+	    String message = ms.getMessage("test.expr.simple");
+	    assertEquals("The name: hello", message);
+    }
 }

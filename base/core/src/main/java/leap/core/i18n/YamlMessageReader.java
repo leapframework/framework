@@ -27,7 +27,7 @@ import leap.lang.Strings;
 import leap.lang.resource.Resource;
 import leap.lang.yaml.YamlProperties;
 
-public class YamlMessageReader implements MessageReader,AppConfigAware {
+public class YamlMessageReader extends AbstractMessageReader implements MessageReader,AppConfigAware {
 	
 	protected Charset charset;
 	
@@ -76,6 +76,6 @@ public class YamlMessageReader implements MessageReader,AppConfigAware {
 										 "', check the file : " + resource.getURLString());	
 		}
 		
-		context.addMessage(locale, name, new Message(resource.getURLString(), props.get(name)));
+		context.addMessage(locale, name, createMessage(resource.getURLString(), props.get(name)));
 	}
 }

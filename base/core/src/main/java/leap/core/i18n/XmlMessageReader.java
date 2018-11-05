@@ -26,7 +26,7 @@ import leap.lang.resource.Resources;
 import leap.lang.xml.XML;
 import leap.lang.xml.XmlReader;
 
-public class XmlMessageReader implements MessageReader {
+public class XmlMessageReader extends AbstractMessageReader {
 	
 	private static final String MESSAGES_ELEMENT           = "messages";
 	private static final String IMPORT_ELEMENT             = "import";
@@ -143,11 +143,11 @@ public class XmlMessageReader implements MessageReader {
 			
 			if(null != message){
 				throw new AppConfigException("Message key '" + key + "' in locale '" + locale + 
-											 "' aleady exists in '" + message.getSource() + 
+											 "' already exists in '" + message.getSource() +
 											 "', check the file : " + reader.getSource());	
 			}
 		}
 		
-		context.addMessage(locale, key, new Message(reader.getSource(), value));
+		context.addMessage(locale, key, createMessage(reader.getSource(), value));
  	}
 }

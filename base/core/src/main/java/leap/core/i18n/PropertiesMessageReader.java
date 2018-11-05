@@ -27,7 +27,7 @@ import java.nio.charset.Charset;
 import java.util.Locale;
 import java.util.Properties;
 
-public class PropertiesMessageReader implements MessageReader,AppConfigAware {
+public class PropertiesMessageReader extends AbstractMessageReader implements AppConfigAware {
 	
 	protected Charset charset;
 	
@@ -77,6 +77,6 @@ public class PropertiesMessageReader implements MessageReader,AppConfigAware {
 										 "', check the file : " + resource.getURLString());	
 		}
 		
-		context.addMessage(locale, name, new Message(resource.getURLString(), props.getProperty(name)));
+		context.addMessage(locale, name, createMessage(resource.getURLString(), props.getProperty(name)));
 	}
 }
