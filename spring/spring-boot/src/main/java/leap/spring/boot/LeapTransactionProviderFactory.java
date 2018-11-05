@@ -35,6 +35,9 @@ public class LeapTransactionProviderFactory extends LocalTransactionProviderFact
 
     @Init
     private void init() {
+        if(null == Global.context()) {
+            return;
+        }
         try {
             txm = Global.context.getBean(PlatformTransactionManager.class);
             log.info("Spring PlatformTransactionManager found, use it");
