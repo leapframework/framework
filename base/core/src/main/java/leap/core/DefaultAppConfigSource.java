@@ -699,6 +699,15 @@ public class DefaultAppConfigSource implements AppConfigSource {
         }
 
         @Override
+        public String getPropertySource(String name) {
+            AppProperty p = loader.properties.get(name);
+            if(null != p) {
+                return null != p.getSource() ? p.getSource().toString() : "";
+            }
+            return "";
+        }
+
+        @Override
         public Set<String> getAdditionalPackages() {
             return loader.config.additionalPackages;
         }

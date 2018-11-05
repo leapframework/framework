@@ -271,7 +271,8 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
 
     protected void putProperty(AppPropertyContext context, Resource resource, String key, String value, boolean override) {
         if(!override && context.hasProperty(key)) {
-            throw new AppConfigException("Found duplicate property '" + key + "' in resource : " + LogUtils.getUrl(resource));
+            throw new AppConfigException("Found duplicate property '" + key + "' in resources : [" +
+                                         context.getPropertySource(key) + "]" + ", " + LogUtils.getUrl(resource));
         }
         context.putProperty(resource, key, value);
     }
