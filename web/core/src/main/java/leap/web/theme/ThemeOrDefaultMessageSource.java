@@ -16,6 +16,7 @@
 package leap.web.theme;
 
 import java.util.Locale;
+import java.util.Map;
 
 import leap.core.i18n.AbstractMessageSource;
 import leap.core.i18n.MessageSource;
@@ -31,11 +32,11 @@ public class ThemeOrDefaultMessageSource extends AbstractMessageSource implement
 	}
 	
 	@Override
-	public String tryGetMessage(Locale locale, String key, Object... args) {
-		String m = themeMessageSource.tryGetMessage(locale, key, args);
+	public String tryGetMessage(Locale locale, String key, Map<String, Object> vars, Object... args) {
+		String m = themeMessageSource.tryGetMessage(locale, key, vars, args);
 		
 		if(null == m){
-			m = defaultMessageSource.tryGetMessage(locale, key, args);
+			m = defaultMessageSource.tryGetMessage(locale, key, vars, args);
 		}
 		
 		return m;

@@ -43,24 +43,24 @@ public class ResourceMessageSource extends AbstractMessageSource implements AppC
     }
 	
 	@Override
-    public String tryGetMessage(Locale locale, String key, Object... args) {
+	public String tryGetMessage(Locale locale, String key, Map<String, Object> vars, Object... args) {
 		if(null == locale){
-			locale = defaultLocale;	
+			locale = defaultLocale;
 		}
-		
+
 		Map<String, Message> localeMessages = cachedLocaleMessages.get(locale);
 		if(null == localeMessages){
 			synchronized (this.cachedLocaleMessages) {
 				localeMessages = new ConcurrentHashMap<>();
 				cachedLocaleMessages.put(locale, localeMessages);
-			}			
+			}
 		}
-		
+
 		Message message = localeMessages.get(key);
 		if(message == UNRESOLVED_MESSAGE){
 			return null;
 		}
-		
+
 		if(null == message){
 			message = doGetMessage(key, locale);
 			if(null == message){
@@ -70,15 +70,15 @@ public class ResourceMessageSource extends AbstractMessageSource implements AppC
 				localeMessages.put(key, message);
 			}
 		}
-		
-	    return formatMessage(message, args);
-    }
-    
-	protected String formatMessage(Message message,Object... args){
+
+		return formatMessage(message, vars, args);
+	}
+
+	protected String formatMessage(Message message, Map<String, Object> vars, Object... args){
 		if(args == null || args.length == 0){
-			return message.getString();
+			return message.getString(vars);
 		}else{
-			return Strings.format(message.getString(), args);
+			return Strings.format(message.getString(vars), args);
 		}
 	}
 	

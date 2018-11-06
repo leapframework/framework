@@ -15,7 +15,9 @@
  */
 package leap.core.i18n;
 
+import java.util.Collections;
 import java.util.Locale;
+import java.util.Map;
 
 import leap.lang.exception.ObjectNotFoundException;
 
@@ -49,7 +51,17 @@ public interface MessageSource {
 	 * <p>
 	 * Returns <code>null</code> if the given key not exists for the given {@link Locale}.
 	 */
-	String tryGetMessage(Locale locale,String key,Object... args);
+	default String tryGetMessage(Locale locale, String key, Object... args) {
+	    return tryGetMessage(locale, key, Collections.emptyMap(), args);
+    }
+
+    /**
+     * Returns a formatted {@link String} of the given key for the given {@link Locale}.
+     *
+     * <p>
+     * Returns <code>null</code> if the given key not exists for the given {@link Locale}.
+     */
+    String tryGetMessage(Locale locale, String key, Map<String, Object> vars, Object... args);
 
 	/**
 	 * Returns a formatted {@link String} of the given key.

@@ -18,6 +18,9 @@ package leap.core.i18n;
 import leap.lang.expression.CompositeExpression;
 import leap.lang.expression.Expression;
 
+import java.util.Collections;
+import java.util.Map;
+
 public final class Message {
 
     private final Object              source;
@@ -36,8 +39,8 @@ public final class Message {
         return source;
     }
 
-    public String getString() {
-        return (String)expression.getValue();
+    public String getString(Map<String, Object> vars) {
+        return (String)expression.getValue(null == vars ? Collections.emptyMap() : vars);
     }
 
     public Expression getExpression() {

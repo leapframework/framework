@@ -72,9 +72,14 @@ public class ViewTest extends HtplTestCase {
     }
 
     @Test
-    public void testInteceptor() {
+    public void testInterceptor() {
         String html = get("/html?__view_name__=1").getContent();
 
         assertTrue(html.startsWith("<!--view name:/html-->"));
+    }
+
+    @Test
+    public void testVarMessage() {
+	    get("/test/var_msg").assertContentContains("Hello vars");
     }
 }
