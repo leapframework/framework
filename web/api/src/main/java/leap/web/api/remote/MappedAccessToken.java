@@ -2,6 +2,8 @@ package leap.web.api.remote;
 
 import leap.oauth2.webapp.token.at.AccessToken;
 
+import java.util.Map;
+
 /**
  * 服务端使用客户端at，转换后的新access_token
  * @author fulsh
@@ -60,4 +62,8 @@ public class MappedAccessToken implements AccessToken {
 		this.rawToken = rawToken;
 	}
 
+	@Override
+	public Map<String, Object> getClaims() {
+		return this.at.getClaims();
+	}
 }

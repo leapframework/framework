@@ -86,10 +86,10 @@ public class JwtTokenVerifier implements TokenVerifier {
 
         SimpleTokenInfo tokenInfo = new SimpleTokenInfo();
 
-        String userId   = (String)jwtDetail.remove(JWT.CLAIM_SUBJECT);
+        String userId   = (String)jwtDetail.get(JWT.CLAIM_SUBJECT);
         tokenInfo.setUserId(userId);
-        tokenInfo.setScope((String)jwtDetail.remove("scope"));
-        tokenInfo.setClientId((String)jwtDetail.remove(JWT.CLAIM_AUDIENCE));
+        tokenInfo.setScope((String)jwtDetail.get("scope"));
+        tokenInfo.setClientId((String)jwtDetail.get(JWT.CLAIM_AUDIENCE));
 
         tokenInfo.setCreated(System.currentTimeMillis());
         Object exp = jwtDetail.get(JWT.CLAIM_EXPIRATION_TIME);
@@ -98,6 +98,7 @@ public class JwtTokenVerifier implements TokenVerifier {
             long nowTimeInSecond = System.currentTimeMillis()/1000L;
             tokenInfo.setExpiresIn((int)(expirationTimeSecond-nowTimeInSecond));
         }
+        tokenInfo.setClaims(jwtDetail);
         return tokenInfo;
     }
 

@@ -15,6 +15,16 @@
  */
 package leap.core.security;
 
+import java.util.Collections;
+import java.util.Map;
+
 public interface ClientPrincipal extends Principal {
+
+    /**
+     * Returns the details property.
+     */
+    default Map<String, Object> getProperties() {
+        return Collections.emptyMap();
+    }
 
 }

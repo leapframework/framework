@@ -18,6 +18,8 @@ package leap.oauth2.webapp.token;
 
 import leap.core.security.UserPrincipal;
 
+import java.util.Map;
+
 public interface TokenInfo {
 
     /**
@@ -46,4 +48,6 @@ public interface TokenInfo {
     default UserPrincipal getUserInfo() {
         return null;
     }
+
+    Map<String, Object> getClaims();
 }

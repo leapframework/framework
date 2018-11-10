@@ -132,8 +132,7 @@ public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCrea
         }
 
         if(!Strings.isEmpty(clientId)) {
-            //todo : client info lookup
-            client = new OAuth2Client(clientId);
+            client = new OAuth2Client(clientId, tokenInfo.getClaims());
         }
 
         OAuth2Authentication authc = new SimpleOAuth2Authentication(at, user, client);

@@ -91,14 +91,15 @@ public class DefaultTokenInfoLookup implements TokenInfoLookup {
     }
 
     protected TokenInfo createTokenInfo(Map<String, Object> map) {
-        SimpleTokenInfo details = new SimpleTokenInfo();
+        SimpleTokenInfo info = new SimpleTokenInfo();
 
-        details.setClientId((String)map.remove("client_id"));
-        details.setUserId((String)map.remove("user_id"));
-        details.setCreated(System.currentTimeMillis());
-        details.setExpiresIn(((Integer)map.remove("expires_in")));
-        details.setScope((String)map.remove("scope"));
+        info.setClientId((String)map.get("client_id"));
+        info.setUserId((String)map.get("user_id"));
+        info.setCreated(System.currentTimeMillis());
+        info.setExpiresIn(((Integer)map.get("expires_in")));
+        info.setScope((String)map.get("scope"));
+        info.setClaims(map);
 
-        return details;
+        return info;
     }
 }

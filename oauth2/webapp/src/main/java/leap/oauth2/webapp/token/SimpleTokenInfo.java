@@ -19,12 +19,16 @@ package leap.oauth2.webapp.token;
 import leap.core.security.UserPrincipal;
 import leap.lang.expirable.TimeExpirableSeconds;
 
+import java.util.Collections;
+import java.util.Map;
+
 public class SimpleTokenInfo extends TimeExpirableSeconds implements TokenInfo {
 
-    protected String        clientId;
-    protected String        userId;
-    protected String        scope;
-    protected UserPrincipal userInfo;
+    protected String              clientId;
+    protected String              userId;
+    protected String              scope;
+    protected UserPrincipal       userInfo;
+    protected Map<String, Object> claims = Collections.emptyMap();
 
     public String getClientId() {
         return clientId;
@@ -57,5 +61,14 @@ public class SimpleTokenInfo extends TimeExpirableSeconds implements TokenInfo {
 
     public void setUserInfo(UserPrincipal userInfo) {
         this.userInfo = userInfo;
+    }
+
+    @Override
+    public Map<String, Object> getClaims() {
+        return claims;
+    }
+
+    public void setClaims(Map<String, Object> claims) {
+        this.claims = claims;
     }
 }

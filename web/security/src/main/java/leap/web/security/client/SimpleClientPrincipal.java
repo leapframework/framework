@@ -17,9 +17,13 @@ package leap.web.security.client;
 
 import leap.core.security.ClientPrincipal;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 public class SimpleClientPrincipal implements ClientPrincipal {
 
-    protected String id;
+    protected String              id;
+    protected Map<String, Object> properties = new LinkedHashMap<>();
 
     public SimpleClientPrincipal() {
 
@@ -29,9 +33,20 @@ public class SimpleClientPrincipal implements ClientPrincipal {
         this.id = id;
     }
 
+    public SimpleClientPrincipal(String id, Map<String, Object> properties) {
+        this.id = id;
+        if(null != properties) {
+            this.properties.putAll(properties);
+        }
+    }
+
     @Override
     public Object getId() {
         return id;
     }
 
+    @Override
+    public Map<String, Object> getProperties() {
+        return properties;
+    }
 }
