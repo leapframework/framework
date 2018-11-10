@@ -170,7 +170,7 @@ public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
         }
 
         if(null == client && !Strings.isEmpty(clientId)) {
-            client = new OAuth2Client(clientId);
+            client = new OAuth2Client(clientId, idtoken.getClaims());
         }
 
         OAuth2LoginAuthentication authc = new OAuth2LoginAuthentication(user, idtoken);
