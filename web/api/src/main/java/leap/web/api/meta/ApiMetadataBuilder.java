@@ -50,7 +50,17 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
 	public ApiMetadataBuilder(String basePath) {
 		this.basePath = basePath;
 	}
-	
+
+	public ApiMetadataBuilder withPathMap(Map<String, MApiPathBuilder> map) {
+        this.paths = map;
+        return this;
+    }
+
+    public ApiMetadataBuilder withModelMap(Map<String, MApiModelBuilder> map) {
+        this.models = map;
+        return this;
+    }
+
 	public String getBasePath() {
 		return basePath;
 	}
