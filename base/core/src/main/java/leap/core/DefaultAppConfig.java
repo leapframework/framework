@@ -478,7 +478,11 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 		}
 		
 		String secret = Randoms.nextString(32);
-		IO.writeString(secretFile, secret, Charsets.UTF_8);
+
+		if(getBooleanProperty("app.config.save-generated-secret", true)) {
+            IO.writeString(secretFile, secret, Charsets.UTF_8);
+        }
+
 		return secret;
 	}
 	
