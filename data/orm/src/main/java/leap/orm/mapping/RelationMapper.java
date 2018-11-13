@@ -106,8 +106,15 @@ public class RelationMapper implements Mapper {
                 //find one-to-many in target entity.
                 RelationMappingBuilder inverse = findRelation(targetEmb, emb, RelationType.ONE_TO_MANY, rmb.getInverseRelationName());
                 if(null == inverse) {
+                    inverse = createInverseOneToManyRelation(emb, targetEmb, rmb);
+
+                    //is inverse already created?
+                    if(isInverseAlreadyCreated(emb, targetEmb, inverse)) {
+                        continue;
+                    }
+
                     //create the virtual inverse one-to-many relation in target entity.
-                    targetEmb.addRelationMapping(createInverseOneToManyRelation(emb, targetEmb, rmb));
+                    targetEmb.addRelationMapping(inverse);
                 }else{
                     inverse.setInverseRelationName(rmb.getName());
                     rmb.setInverseRelationName(inverse.getName());
@@ -129,6 +136,15 @@ public class RelationMapper implements Mapper {
                 continue;
             }
         }
+    }
+
+    protected boolean isInverseAlreadyCreated(EntityMappingBuilder emb, EntityMappingBuilder targetEmb, RelationMappingBuilder inverse) {
+        RelationMappingBuilder existence = targetEmb.getRelationMapping(inverse.getName());
+        if(null == existence) {
+            return false;
+        }
+        return existence.getTargetEntityName().equalsIgnoreCase(inverse.getTargetEntityName())
+                && existence.getType().equals(inverse.getType());
     }
 
     protected RelationMappingBuilder findManyToManyRelation(EntityMappingBuilder emb, String targetEntityName, String joinEntityName) {
