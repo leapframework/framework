@@ -39,6 +39,7 @@ import java.lang.invoke.LambdaMetafactory;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -167,6 +168,12 @@ public class AopInstrumentation extends AsmInstrumentProcessor {
 
             //static method not supported.
             if(ASM.isStatic(mn)) {
+                continue;
+            }
+
+            final int SYNTHETIC = 0x00001000; //from Modifier
+            final boolean isSynthetic = (mn.access & SYNTHETIC) != 0; // Modifier.isSynthetic()
+            if(isSynthetic) {
                 continue;
             }
 
