@@ -61,6 +61,28 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
     protected List<UniqueKeyBuilder>        keys               = new ArrayList<>();
     protected EntityListenersBuilder        listeners          = new EntityListenersBuilder();
 
+    public EntityMappingBuilder copyNew() {
+        EntityMappingBuilder c = new EntityMappingBuilder();
+
+        c.entityName = entityName;
+        c.entityClass = entityClass;
+        c.extendedEntityClass = extendedEntityClass;
+        c._abstract = _abstract;
+        c.table = null == table ? null : new DbTableBuilder(table.build());
+        c.secondaryTable = null == secondaryTable ? null : new DbTableBuilder(secondaryTable.build());
+        c.tablePrefix = tablePrefix;
+        c.dynamicTableName = dynamicTableName;
+        c.tableNameDeclared = tableNameDeclared;
+        c.idDeclared = idDeclared;
+        c.autoCreateTable = autoCreateTable;
+        c.autoGenerateColumns = autoGenerateColumns;
+        c.queryFilterEnabled = queryFilterEnabled;
+        c.autoValidate = autoValidate;
+        c.remote = remote;
+        c.remoteSettings = Beans.copyNew(remoteSettings);
+
+        return c;
+    }
 
     public Class<?> getSourceClass() {
         return null != entityClass ? entityClass : modelClass;
@@ -239,26 +261,26 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
 
     public boolean mayBeJoinEntityOf(EntityMappingBuilder e1, EntityMappingBuilder e2) {
         List<FieldMappingBuilder> keyFields = getIdFieldMappings();
-        if(null == keyFields || keyFields.isEmpty()) {
+        if (null == keyFields || keyFields.isEmpty()) {
             return false;
         }
 
         final String[] idFields1 = e1.getIdFieldNames();
         final String[] idFields2 = e2.getIdFieldNames();
 
-        if(keyFields.size() != idFields1.length + idFields2.length) {
+        if (keyFields.size() != idFields1.length + idFields2.length) {
             return false;
         }
 
         RelationMappingBuilder rm1 =
                 findIdRelationByTargetFields(e1.getEntityName(), idFields1);
-        if(null == rm1) {
+        if (null == rm1) {
             return false;
         }
 
         RelationMappingBuilder rm2 =
                 findIdRelationByTargetFields(e2.getEntityName(), idFields2);
-        if(null == rm2) {
+        if (null == rm2) {
             return false;
         }
 
@@ -409,7 +431,7 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
 
     public RelationMappingBuilder findUniqueRelationByTargetFields(String uniqueName, String targetEntity, String... referencedFields) {
         final UniqueKeyBuilder key = getKey(uniqueName);
-        if(null == key) {
+        if (null == key) {
             return null;
         }
         return findRelationByTargetFields(targetEntity, referencedFields, (f) -> key.containsField(f.getFieldName()));
@@ -430,9 +452,9 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
                     break;
                 }
 
-                for(JoinFieldMappingBuilder jf : rm.getJoinFields()) {
+                for (JoinFieldMappingBuilder jf : rm.getJoinFields()) {
                     FieldMappingBuilder fm = findFieldMappingByName(jf.getLocalFieldName());
-                    if(null == fm || !test.test(fm)) {
+                    if (null == fm || !test.test(fm)) {
                         match = false;
                         break;
                     }
@@ -513,7 +535,7 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
     }
 
     public EntityMappingBuilder addKey(UniqueKeyBuilder key) {
-        if(null != getKey(key.getName())) {
+        if (null != getKey(key.getName())) {
             throw new ObjectExistsException("Unique key '" + key.getName() + "' already exists in entity '" + entity() + "'");
         }
         keys.add(key);
@@ -578,19 +600,19 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
         }
 
         //uniques
-        for(UniqueKeyBuilder key : getKeys()) {
+        for (UniqueKeyBuilder key : getKeys()) {
             DbIndexBuilder ix = new DbIndexBuilder();
             ix.setName("key_" + key.getName());
             ix.setUnique(true);
-            for(String name : key.getFields()) {
+            for (String name : key.getFields()) {
                 FieldMappingBuilder fm = findFieldMappingByName(name);
-                if(null == fm) {
+                if (null == fm) {
                     throw new IllegalStateException("No field '" + name +
-                                "' exists, check unique '" + key.getName() + "' at entity " + entityName);
+                            "' exists, check unique '" + key.getName() + "' at entity " + entityName);
                 }
                 ix.addColumnName(fm.getColumnName());
             }
-            if(!table.getIndexes().stream().anyMatch(ix1 -> ix1.matchUnique(ix))) {
+            if (!table.getIndexes().stream().anyMatch(ix1 -> ix1.matchUnique(ix))) {
                 table.addIndex(ix);
             }
         }

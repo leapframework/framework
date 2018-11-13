@@ -20,6 +20,7 @@ import leap.lang.beans.BeanType;
 import leap.lang.beans.DynaBean;
 import leap.lang.convert.Converts;
 import leap.lang.exception.ObjectNotFoundException;
+import leap.lang.reflect.Reflection;
 
 import java.lang.reflect.Array;
 import java.util.*;
@@ -90,6 +91,15 @@ public class Beans {
 		}else{
 			return BeanType.of(bean.getClass()).toMap(bean);
 		}
+	}
+
+	public static <T> T copyNew(T from) {
+		if(null == from) {
+			return null;
+		}
+		T to = (T)Reflection.newInstance(from.getClass());
+		copyProperties(from, to);
+		return to;
 	}
     
     public static void copyProperties(Object from,Object to) {
