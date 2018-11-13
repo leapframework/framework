@@ -696,9 +696,31 @@ public class RelationMapper implements Mapper {
                     resolveToOneRelation(context, emb, targetEntity, rp, relation);
                 }
 
+                //check already created?
+                if(isRelationPropertyAlreadyCreated(emb, rp)) {
+                    continue;
+                }
+
                 emb.addRelationProperty(rp);
             }
         }
+    }
+
+    protected boolean isRelationPropertyAlreadyCreated(EntityMappingBuilder emb, RelationPropertyBuilder rp) {
+        RelationPropertyBuilder exists = emb.getRelationProperty(rp.getName());
+        if(null == exists) {
+            return false;
+        }
+        if(!exists.getTargetEntityName().equalsIgnoreCase(rp.getTargetEntityName())) {
+            return false;
+        }
+        if(exists.getBeanProperty() != rp.getBeanProperty()) {
+            return false;
+        }
+        if(!exists.getRelationName().equalsIgnoreCase(rp.getRelationName())){
+            return false;
+        }
+        return true;
     }
 
     protected void resolveToManyRelation(MappingConfigContext context,
