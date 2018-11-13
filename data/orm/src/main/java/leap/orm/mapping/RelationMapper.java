@@ -109,7 +109,7 @@ public class RelationMapper implements Mapper {
                     inverse = createInverseOneToManyRelation(emb, targetEmb, rmb);
 
                     //is inverse already created?
-                    if(isInverseAlreadyCreated(emb, targetEmb, inverse)) {
+                    if(isInverseAlreadyCreated(targetEmb, inverse)) {
                         continue;
                     }
 
@@ -128,7 +128,15 @@ public class RelationMapper implements Mapper {
                 if(null == inverse) {
                     //create the virtual inverse relation in target entity.
                     EntityMappingBuilder joinEmb = context.getEntityMapping(rmb.getJoinEntityName());
-                    targetEmb.addRelationMapping(createInverseManyToManyRelation(emb, targetEmb, joinEmb, rmb));
+
+                    inverse = createInverseManyToManyRelation(emb, targetEmb, joinEmb, rmb);
+
+                    //is inverse already created?
+                    if(isInverseAlreadyCreated(targetEmb, inverse)) {
+                        continue;
+                    }
+
+                    targetEmb.addRelationMapping(inverse);
                 }else{
                     inverse.setInverseRelationName(rmb.getName());
                     rmb.setInverseRelationName(inverse.getName());
@@ -138,8 +146,8 @@ public class RelationMapper implements Mapper {
         }
     }
 
-    protected boolean isInverseAlreadyCreated(EntityMappingBuilder emb, EntityMappingBuilder targetEmb, RelationMappingBuilder inverse) {
-        RelationMappingBuilder existence = targetEmb.getRelationMapping(inverse.getName());
+    protected boolean isInverseAlreadyCreated(EntityMappingBuilder emb, RelationMappingBuilder inverse) {
+        RelationMappingBuilder existence = emb.getRelationMapping(inverse.getName());
         if(null == existence) {
             return false;
         }
