@@ -34,6 +34,7 @@ import java.util.*;
 public class EntityMapping extends ExtensibleBase {
 	private static final Log log = LogFactory.get(EntityMapping.class);
 
+	protected final EntityMappingBuilder       builder;
     protected final String                     entityName;
     protected final String                     dynamicTableName;
     protected final Class<?>                   entityClass;
@@ -76,7 +77,8 @@ public class EntityMapping extends ExtensibleBase {
     private final Map<String,RelationMapping> targetEntityRelations;
     private final Map<String,RelationMapping> referenceToRelations;
 
-	public EntityMapping(String entityName, String dynamicTableName,
+	public EntityMapping(EntityMappingBuilder builder,
+	                     String entityName, String dynamicTableName,
                          Class<?> entityClass, Class<?> extendedEntityClass, DbTable table, DbTable secondaryTable, List<FieldMapping> fieldMappings,
                          EntityExecutionInterceptor insertInterceptor, EntityExecutionInterceptor updateInterceptor,
                          EntityExecutionInterceptor deleteInterceptor, EntityExecutionInterceptor findInterceptor,
@@ -93,6 +95,7 @@ public class EntityMapping extends ExtensibleBase {
 		Args.notEmpty(fieldMappings,"field mappings");
         Args.notNull(listeners);
 
+        this.builder           = builder;
 		this.entityName		   = entityName;
         this.dynamicTableName  = dynamicTableName;
 	    this.entityClass       = entityClass;
@@ -143,6 +146,13 @@ public class EntityMapping extends ExtensibleBase {
         if(null != secondaryTable && keyFieldNames.length != 1) {
             throw new IllegalStateException("Entity with secondary table must has one key field only");
         }
+    }
+
+    /**
+     * Returns the builder to build this object.
+     */
+    public EntityMappingBuilder getBuilder() {
+        return builder;
     }
 
     /**

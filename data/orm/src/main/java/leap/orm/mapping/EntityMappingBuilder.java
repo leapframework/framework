@@ -61,7 +61,8 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
     protected List<UniqueKeyBuilder>        keys               = new ArrayList<>();
     protected EntityListenersBuilder        listeners          = new EntityListenersBuilder();
 
-    public EntityMappingBuilder copyNew() {
+    /*
+    public EntityMappingBuilder shallowCopy() {
         EntityMappingBuilder c = new EntityMappingBuilder();
 
         c.entityName = entityName;
@@ -80,9 +81,27 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
         c.autoValidate = autoValidate;
         c.remote = remote;
         c.remoteSettings = Beans.copyNew(remoteSettings);
+        c.fieldMappings.addAll(fieldMappings);
+        c.insertInterceptor = insertInterceptor;
+        c.updateInterceptor = updateInterceptor;
+        c.deleteInterceptor = deleteInterceptor;
+        c.findInterceptor = findInterceptor;
+        c.modelClass = modelClass;
+        c.physicalTable = physicalTable;
+
+        if(null != validators) {
+            c.validators = new ArrayList<>();
+            c.validators.addAll(validators);
+        }
+
+        c.relationMappings.addAll(relationMappings);
+        c.relationProperties.addAll(relationProperties);
+        c.keys.addAll(keys);
+        c.listeners = listeners;
 
         return c;
     }
+    */
 
     public Class<?> getSourceClass() {
         return null != entityClass ? entityClass : modelClass;
@@ -565,7 +584,8 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
         DbTable               secondaryTable = buildSecondaryTable(fields, relations);
 
         EntityMapping em =
-                new EntityMapping(entityName, dynamicTableName, entityClass, extendedEntityClass,
+                new EntityMapping(this,
+                        entityName, dynamicTableName, entityClass, extendedEntityClass,
                         table, secondaryTable, fields,
                         insertInterceptor, updateInterceptor, deleteInterceptor, findInterceptor,
                         modelClass, validators,
