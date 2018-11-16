@@ -78,6 +78,8 @@ public interface DbDialect {
     default boolean useTableAliasAfterUpdate() {
         return false;
     }
+
+	String getStatementDelimiter();
 	
 	/**
 	 * returns <code>true</code> if this db platform supoorts the given on delete {@link DbCascadeAction}.

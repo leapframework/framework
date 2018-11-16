@@ -15,36 +15,20 @@
  */
 package leap.db.platform;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.function.Predicate;
-
 import leap.db.DbCommand;
 import leap.db.DbCommands;
 import leap.db.DbExecution;
 import leap.db.command.*;
-import leap.db.model.DbColumn;
-import leap.db.model.DbForeignKey;
-import leap.db.model.DbIndex;
-import leap.db.model.DbPrimaryKey;
-import leap.db.model.DbSchema;
-import leap.db.model.DbSchemaObjectName;
-import leap.db.model.DbSequence;
-import leap.db.model.DbTable;
-import leap.lang.Args;
-import leap.lang.Arrays2;
-import leap.lang.Assert;
-import leap.lang.Collections2;
-import leap.lang.Confirm;
-import leap.lang.New;
+import leap.db.model.*;
+import leap.lang.*;
 import leap.lang.collection.ListEnumerable;
 import leap.lang.exception.ObjectExistsException;
 import leap.lang.jdbc.ConnectionCallbackWithResult;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.function.Predicate;
 
 public class GenericDbCommands extends ListEnumerable<DbCommand> implements DbCommands{
 	
@@ -233,6 +217,11 @@ public class GenericDbCommands extends ListEnumerable<DbCommand> implements DbCo
         }
 
         @Override
+        public String[] getScripts() {
+            return sqls().toArray(new String[0]);
+        }
+
+		@Override
         public List<String> sqls() {
             List<String> sqls = new ArrayList<>();
 
