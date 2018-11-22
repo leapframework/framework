@@ -132,6 +132,7 @@ public abstract class RestdOperationBase {
     }
 
     protected void postConfigure(RestdContext context, RestdModel model, RouteBuilder route) {
+        route.setCsrfEnabled(false);
         postConfigure(context, model, route, null);
     }
 
