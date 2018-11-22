@@ -287,7 +287,7 @@ public class BeanConfigurator {
                     if(Classes.isSimpleValueType(v.getType())) {
                         value = Converts.convert(prop, v.getType(), v.getGenericType());
                     }else{
-                        value = JSON.decode(prop, v.getType());
+                        value = JSON.decode(prop, v.getType(), v.getGenericType());
                     }
                     v.setValue(bean, value);
                 } catch (Exception e) {
