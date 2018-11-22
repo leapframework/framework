@@ -675,6 +675,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 
 		if(!f.isColumnNameDeclared() && !Strings.isEmpty(d.getDefaultColumnName())) {
 		    c.setName(d.getDefaultColumnName());
+		    f.setColumnNameDeclared(true);
 		}
 
 		f.trySetNullable(d.getNullable());
