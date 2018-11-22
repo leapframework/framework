@@ -53,6 +53,10 @@ public class DefaultRestResource extends AbstractRestResource {
         return super.getAccessToken();
     }
 
+    public void setAccessToken(AccessToken token){
+        this.at=token;
+    }
+
     @Override
     public <T> T insert(Class<T> resultClass, Object obj) {
         String op = "";

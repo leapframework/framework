@@ -37,12 +37,31 @@ public abstract class AbstractRestResource implements RestResource {
     protected @Inject HttpClient   httpClient;
     protected @Inject TokenFetcher tokenFetcher;
 
+    private Consumer<HttpRequest>  preSendHandler;
+    private Consumer<HttpResponse> postSendHandler;
+
     public void setHttpClient(HttpClient httpClient) {
         this.httpClient = httpClient;
     }
 
     public void setTokenFetcher(TokenFetcher tokenFetcher) {
         this.tokenFetcher = tokenFetcher;
+    }
+
+    public Consumer<HttpRequest> getPreSendHandler() {
+        return preSendHandler;
+    }
+
+    public void setPreSendHandler(Consumer<HttpRequest> preSendHandler) {
+        this.preSendHandler = preSendHandler;
+    }
+
+    public Consumer<HttpResponse> getPostSendHandler() {
+        return postSendHandler;
+    }
+
+    public void setPostSendHandler(Consumer<HttpResponse> postSendHandler) {
+        this.postSendHandler = postSendHandler;
     }
 
     protected abstract String getEndpoint();
@@ -82,6 +101,10 @@ public abstract class AbstractRestResource implements RestResource {
         if (at != null) {
             request.addHeader(Headers.AUTHORIZATION, OAuth2Constants.BEARER + " " + at.getToken());
         }
+        if(this.preSendHandler!=null){
+            preSendHandler.accept(request);
+        }
+
         HttpResponse response = request.send();
         if (response.getStatus() == HTTP.SC_UNAUTHORIZED && at != null) {
             at = tokenFetcher.refreshAccessToken(at);
@@ -89,6 +112,10 @@ public abstract class AbstractRestResource implements RestResource {
             response = request.send();
         }
         consumer.accept(response);
+
+        if(this.postSendHandler!=null){
+            postSendHandler.accept(response);
+        }
     }
 
     /**
@@ -105,8 +132,8 @@ public abstract class AbstractRestResource implements RestResource {
             String content = response.getString();
             log.debug("status:{},Received response : {}", response.getStatus(), content);
             if (response.is2xx()) {
-                if(Boolean.class.equals(targetType)) {
-                    out.set((T)Boolean.TRUE);
+                if (Boolean.class.equals(targetType)) {
+                    out.set((T) Boolean.TRUE);
                     return;
                 }
 
@@ -118,7 +145,7 @@ public abstract class AbstractRestResource implements RestResource {
                 }
                 return;
             }
-            if(response.isNotFound()) {
+            if (response.isNotFound()) {
                 return;
             }
             throw new RestResourceInvokeException(response);

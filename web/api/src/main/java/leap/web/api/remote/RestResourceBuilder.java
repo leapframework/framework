@@ -1,15 +1,5 @@
 package leap.web.api.remote;
 
-import java.net.Inet6Address;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.function.Consumer;
-
-import javax.servlet.http.HttpServletRequest;
-
 import leap.core.AppContext;
 import leap.lang.Assert;
 import leap.lang.Strings;
@@ -19,21 +9,31 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.path.Paths;
 import leap.oauth2.webapp.token.at.AccessToken;
-import leap.orm.Orm;
-import leap.orm.OrmContext;
 import leap.orm.enums.RemoteType;
 import leap.orm.mapping.EntityMapping;
 import leap.web.Request;
 import leap.web.api.remote.ds.RestDataSource;
 import leap.web.api.remote.ds.RestDatasourceManager;
 
+import javax.servlet.http.HttpServletRequest;
+import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.function.Consumer;
+
 public class RestResourceBuilder {
     private static Log logger = LogFactory.get(RestResourceBuilder.class);
 
     private static String localIP;
 
-    private String        endpoint;
-    private EntityMapping entityMapping;
+    private String                 endpoint;
+    private EntityMapping          entityMapping;
+    private AccessToken            accessToken;
+    private Consumer<HttpRequest>  preSendHandler;
+    private Consumer<HttpResponse> postSendHandler;
 
     public static RestResourceBuilder newBuilder() {
         return new RestResourceBuilder();
@@ -41,10 +41,15 @@ public class RestResourceBuilder {
 
     public RestResource build() {
         DefaultRestResource res = AppContext.factory().inject(new DefaultRestResource(entityMapping));
+        res.setPreSendHandler(this.preSendHandler);
+        res.setPostSendHandler(this.postSendHandler);
+        if(accessToken!=null){
+            res.setAccessToken(accessToken);
+        }
         if (entityMapping != null) {
-            RestDatasourceManager manager = getDataSourceManager();
-            RestDataSource        ds      = manager.tryGetDataSource(entityMapping.getRemoteSettings().getDataSource());
-            String basePath = entityMapping.getRemoteSettings().getEndpoint();
+            RestDatasourceManager manager  = getDataSourceManager();
+            RestDataSource        ds       = manager.tryGetDataSource(entityMapping.getRemoteSettings().getDataSource());
+            String                basePath = entityMapping.getRemoteSettings().getEndpoint();
             if (ds != null && Strings.isNotEmpty(ds.getEndpoint())) {
                 basePath = ds.getEndpoint();
             }
@@ -131,6 +136,33 @@ public class RestResourceBuilder {
 
     public RestResourceBuilder setEndpoint(String endpoint) {
         this.endpoint = endpoint;
+        return this;
+    }
+
+    public AccessToken getAccessToken() {
+        return accessToken;
+    }
+
+    public RestResourceBuilder setAccessToken(AccessToken accessToken) {
+        this.accessToken = accessToken;
+        return this;
+    }
+
+    public Consumer<HttpRequest> getPreSendHandler() {
+        return preSendHandler;
+    }
+
+    public RestResourceBuilder setPreSendHandler(Consumer<HttpRequest> preSendHandler) {
+        this.preSendHandler = preSendHandler;
+        return this;
+    }
+
+    public Consumer<HttpResponse> getPostSendHandler() {
+        return postSendHandler;
+    }
+
+    public RestResourceBuilder setPostSendHandler(Consumer<HttpResponse> postSendHandler) {
+        this.postSendHandler = postSendHandler;
         return this;
     }
 
