@@ -1144,10 +1144,7 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 //            definition.append(getColumnCommentString(column, column.getComment()));
 //        }
         
-        if(supportsColumnCommentInDefinition() && !Strings.isEmpty(column.getComment())){
-        	definition.append(' ').append(getColumnCommentDefinition(column));
-        }
-        
+
         if(column.isUnique() && supportsUniqueInColumnDefinition()){
         	definition.append(' ').append(getColumnUniqueDefinition(column));
         }
@@ -1158,6 +1155,10 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 			}else{
         		log.warn("Unsupported auto increment column in " + db.getPlatform().getName());
 			}
+        }
+
+        if(supportsColumnCommentInDefinition() && !Strings.isEmpty(column.getComment())){
+            definition.append(' ').append(getColumnCommentDefinition(column));
         }
         
         return definition.toString();
