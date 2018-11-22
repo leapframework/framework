@@ -673,7 +673,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 			c.trySetTypeCode(d.getType().getCode());
 		}
 
-		if(Strings.isEmpty(c.getName()) && !Strings.isEmpty(d.getDefaultColumnName())) {
+		if(!f.isColumnNameDeclared() && !Strings.isEmpty(d.getDefaultColumnName())) {
 		    c.setName(d.getDefaultColumnName());
 		}
 
