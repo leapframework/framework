@@ -146,6 +146,11 @@ public interface SecurityConfigurator {
 	 */
 	SecurityConfigurator setAuthenticationTokenEnabled(boolean tokenAuthenticationEnabled);
 
+	/**
+	 * Sets the value of {@link SecurityConfig#getDefaultAuthenticationExpires()}
+	 */
+	SecurityConfigurator setDefaultAuthenticationExpires(int defaultAuthenticationExpires);
+	
     /**
      * Sets the value of {@link SecurityConfig#isLoginEnabled()}
      */

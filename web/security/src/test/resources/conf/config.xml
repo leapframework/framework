@@ -12,4 +12,6 @@
         <property name="jdbc.username">sa</property>
     </properties>
     
+    <property name="websecurity.defaultAuthenticationExpires">36000</property>
+    
 </config>

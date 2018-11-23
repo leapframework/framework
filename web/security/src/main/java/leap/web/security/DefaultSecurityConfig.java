@@ -334,6 +334,12 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
     }
 
     @ConfigProperty
+    public SecurityConfigurator setDefaultAuthenticationExpires(int defaultAuthenticationExpires) {
+        this.defaultAuthenticationExpires = defaultAuthenticationExpires;
+        return this;
+    }
+
+    @ConfigProperty
     public void setAuthenticationTokenCookieName(String authenticationTokenCookieName) {
         this.authenticationTokenCookieName = authenticationTokenCookieName;
     }
