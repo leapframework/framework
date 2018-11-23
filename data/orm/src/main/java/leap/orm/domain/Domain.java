@@ -17,6 +17,7 @@ package leap.orm.domain;
 
 import leap.lang.*;
 import leap.lang.annotation.Nullable;
+import leap.lang.enums.Bool;
 import leap.lang.expression.Expression;
 import leap.lang.jdbc.JdbcType;
 import leap.orm.generator.IdGenerator;
@@ -38,6 +39,8 @@ public class Domain implements Sourced,Named {
 	private final Boolean	   update;
 	private final Expression   insertValue;
 	private final Expression   updateValue;
+	private final Boolean	   filterable;
+	private final Boolean	   sortable;
     private final Boolean      filter;
     private final Expression   filterValue;
     private final Expression   filterIfValue;
@@ -46,8 +49,9 @@ public class Domain implements Sourced,Named {
     private final IdGenerator  idGenerator;
 
 	public Domain(Object source, String name, String defaultColumnName, JdbcType type, Integer length, Integer precision, Integer scale,
-                  Boolean nullable, String defaultValue, Boolean insert, Expression insertValue, Boolean update,
-                   Expression updateValue, Boolean filter, Expression filterValue,Expression filterIfValue, Float sortOrder, boolean autoMapping, IdGenerator idGenerator) {
+                  Boolean nullable, String defaultValue, Boolean insert, Expression insertValue, Boolean update, Expression updateValue,
+				  Boolean filterable, Boolean sortable,
+				  Boolean filter, Expression filterValue,Expression filterIfValue, Float sortOrder, boolean autoMapping, IdGenerator idGenerator) {
 		Args.notEmpty(name,"name");
 		this.source = source;
 	    this.name = name;
@@ -62,6 +66,8 @@ public class Domain implements Sourced,Named {
         this.insertValue = insertValue;
 	    this.update = update;
 	    this.updateValue = updateValue;
+	    this.filterable = filterable;
+	    this.sortable = sortable;
         this.filter = filter;
         this.filterValue = filterValue;
         this.filterIfValue=filterIfValue;
@@ -123,7 +129,15 @@ public class Domain implements Sourced,Named {
         return updateValue;
     }
 
-    public Boolean getFilter() {
+	public Boolean getFilterable() {
+		return filterable;
+	}
+
+	public Boolean getSortable() {
+		return sortable;
+	}
+
+	public Boolean getFilter() {
         return filter;
     }
 

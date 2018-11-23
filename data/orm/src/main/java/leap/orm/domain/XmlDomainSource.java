@@ -61,6 +61,8 @@ public class XmlDomainSource implements DomainSource {
     private static final String INSERT_VALUE     = "insert-value";
     private static final String UPDATE           = "update";
     private static final String UPDATE_VALUE     = "update-value";
+    private static final String FILTERABLE       = "filterable";
+    private static final String SORTABLER        = "sortable";
     private static final String FILTERED         = "filtered";
     private static final String FILTERED_VALUE   = "filtered-value";
     private static final String DEFAULT_VALUE    = "default-value";
@@ -239,6 +241,8 @@ public class XmlDomainSource implements DomainSource {
         String  insertValue  = reader.getAttribute(INSERT_VALUE);
 		Boolean update       = reader.resolveBooleanAttribute(UPDATE);
 		String  updateValue  = reader.getAttribute(UPDATE_VALUE);
+		Boolean filterable   = reader.resolveBooleanAttribute(FILTERABLE);
+        Boolean sortable     = reader.resolveBooleanAttribute(SORTABLER);
         Boolean filter       = reader.resolveBooleanAttribute(FILTERED);
         String  filterValue  = reader.getAttribute(FILTERED_VALUE);
         String  idGenerator  = reader.getAttribute(ID_GENERATOR);
@@ -300,26 +304,28 @@ public class XmlDomainSource implements DomainSource {
         }
 
 		return new DomainBuilder(reader.getSource())
-										.setName(name)
-                                        .setDefaultColumnName(columnName)
-										.setType(type)
-										.setNullable(nullable)
-										.setLength(length)
-										.setPrecision(precision)
-										.setScale(scale)
-										.setDefaultValue(defaultValue)
-										.setInsert(insert)
-										.setUpdate(update)
-										.setInsertValue(insertValueExpression)
-										.setUpdateValue(updateValueExpression)
-                                        .setFilter(filter)
-                                        .setFilterValue(filterValueExpression)
-                                        .setFilterIfValue(filteredIfExpression)
-                                        .setSortOrder(sortOrder)
-                                        .addAliases(readAlias(reader))
-                                        .setAutoMapping(autoMapping)
-                                        .setIdGenerator(idGeneratorBean)
-                                        .setOverride(override);
+                        .setName(name)
+                        .setDefaultColumnName(columnName)
+                        .setType(type)
+                        .setNullable(nullable)
+                        .setLength(length)
+                        .setPrecision(precision)
+                        .setScale(scale)
+                        .setDefaultValue(defaultValue)
+                        .setInsert(insert)
+                        .setUpdate(update)
+                        .setInsertValue(insertValueExpression)
+                        .setUpdateValue(updateValueExpression)
+                        .setFilterable(filterable)
+                        .setSortable(sortable)
+                        .setFilter(filter)
+                        .setFilterValue(filterValueExpression)
+                        .setFilterIfValue(filteredIfExpression)
+                        .setSortOrder(sortOrder)
+                        .addAliases(readAlias(reader))
+                        .setAutoMapping(autoMapping)
+                        .setIdGenerator(idGeneratorBean)
+                        .setOverride(override);
 	}
 
     protected List<String> readAlias(XmlReader reader) {
