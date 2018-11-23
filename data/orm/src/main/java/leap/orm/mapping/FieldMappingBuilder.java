@@ -706,7 +706,7 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		return filterable;
 	}
 
-	public FieldMappingBuilder setFilterable(Boolean filterable) {
+	public FieldMappingBuilder setFilterable(boolean filterable) {
 		this.filterable = filterable;
 		return this;
 	}
@@ -719,7 +719,7 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		return sortable;
 	}
 
-	public FieldMappingBuilder setSortable(Boolean sortable) {
+	public FieldMappingBuilder setSortable(boolean sortable) {
 		this.sortable = sortable;
 		return this;
 	}
