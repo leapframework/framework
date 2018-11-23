@@ -72,8 +72,8 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
     protected String                serializeFormat;
     protected FieldSerializer       serializer;
     protected boolean               hasPhysicalColumn;
-    protected boolean				filterable;
-    protected boolean				sortable;
+    protected Boolean				filterable;
+    protected Boolean				sortable;
 
     public FieldMappingBuilder(){
 		this.column = new DbColumnBuilder();
@@ -104,9 +104,11 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
         this.defaultValueExpression = template.defaultValueExpression;
         this.insert = template.insert;
         this.update = template.update;
-        this.filtered = template.filtered;
         this.insertValue = template.insertValue;
         this.updateValue = template.updateValue;
+        this.filterable = template.filterable;
+        this.sortable = template.sortable;
+		this.filtered = template.filtered;
         this.filteredValue = template.filteredValue;
         this.optimisticLock = template.optimisticLock;
         this.newOptimisticLockFieldName = template.newOptimisticLockFieldName;
@@ -162,6 +164,14 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
         if(null != fm.update) {
             this.update = fm.update;
         }
+
+        if(null != fm.filterable) {
+        	this.filterable = fm.filterable;
+		}
+
+		if(null != fm.sortable) {
+			this.sortable = fm.sortable;
+		}
 
         if(null != fm.filtered) {
             this.filtered = fm.filtered;
@@ -405,6 +415,20 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		}
 		return this;
 	}
+
+	public FieldMappingBuilder trySetFilterable(Boolean filterable) {
+    	if(null == this.filterable) {
+            this.filterable = filterable;
+		}
+		return this;
+	}
+
+    public FieldMappingBuilder trySetSortable(Boolean sortable) {
+        if(null == this.sortable) {
+            this.sortable = sortable;
+        }
+        return this;
+    }
 
     public Expression getFilteredValue() {
         return filteredValue;
@@ -674,7 +698,11 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
         this.hasPhysicalColumn = hasPhysicalColumn;
     }
 
-	public boolean isFilterable() {
+    public boolean isFilterable() {
+        return null == filterable ? false : filterable;
+    }
+
+	public Boolean getFilterable() {
 		return filterable;
 	}
 
@@ -684,6 +712,10 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 	}
 
 	public boolean isSortable() {
+        return null == sortable ? false : sortable;
+    }
+
+	public Boolean getSortable() {
 		return sortable;
 	}
 
@@ -742,7 +774,7 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 	    						optimisticLock,newOptimisticLockFieldName,
 	    						domain,validators,
 	    						reservedMetaFieldName,
-                                serializer, filterable, sortable);
+                                serializer, isFilterable(), isSortable());
     }
 
 	@Override

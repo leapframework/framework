@@ -316,6 +316,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause,Sql
 				SqlSelect newSelect = new SqlSelect();
 				newSelect.setDistinct(select.isDistinct());
 				newSelect.setTop(select.getTop());
+				newSelect.setSelectList(select.getSelectList());
                 newSelect.addSelectItemAliases(select.getSelectItemAliases());
 				newSelect.setAlias(select.getAlias());
 				newSelect.setNodes(nodes.toArray(new AstNode[nodes.size()]));
@@ -499,7 +500,9 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause,Sql
                 Sql original = sqls.sql;
                 if(original.isSelect() && original.nodes()[0] instanceof SqlSelect) {
                     SqlSelect select = (SqlSelect)sql.nodes()[0];
-                    select.addSelectItemAliases(((SqlSelect)original.nodes()[0]).getSelectItemAliases());
+                    SqlSelect originalSelect = (SqlSelect)original.nodes()[0];
+                    select.setSelectList(originalSelect.getSelectList());
+                    select.addSelectItemAliases(originalSelect.getSelectItemAliases());
                 }
             }
 
