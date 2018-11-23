@@ -94,6 +94,9 @@ public class EntityMapping extends ExtensibleBase {
 		Args.notNull(table,"table");
 		Args.notEmpty(fieldMappings,"field mappings");
         Args.notNull(listeners);
+        if(remote && null == remoteSettings) {
+            throw new IllegalStateException("Remote settings must not be null for remote entity '" + entityName + "'");
+        }
 
         this.builder           = builder;
 		this.entityName		   = entityName;

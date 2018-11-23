@@ -27,10 +27,7 @@ import leap.lang.logging.LogFactory;
 import leap.lang.reflect.ReflectValued;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 /**
@@ -189,7 +186,12 @@ public class DefaultBeanFactory extends BeanFactoryInternal implements BeanFacto
 	    this.beanContainer.addBean(beanType, primary, name, lazyInit, beanClass, constructorArgs);
     }
 
-	@Override
+    @Override
+    public void addAlias(Class<?> type, String name, String alias) {
+        beanContainer.addAlias(type, name, alias);
+    }
+
+    @Override
     public <T> T getBean(String id) throws NoSuchBeanException {
 		T bean = (T)(null != externalFactory ? externalFactory.tryGetBean(id) : null);
 		
@@ -410,7 +412,12 @@ public class DefaultBeanFactory extends BeanFactoryInternal implements BeanFacto
 		}
     }
 
-    @Override
+	@Override
+	public Set<String> getBeanAliases(Class<?> type, String name) {
+		return beanContainer.getBeanAliases(type, name);
+	}
+
+	@Override
     public <T> Map<T, BeanDefinition> createBeansWithDefinition(Class<? super T> type) {
         return beanContainer.createBeansWithDefinition(type);
     }

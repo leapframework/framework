@@ -23,6 +23,7 @@ import leap.core.annotation.M;
 import leap.core.ds.DataSourceListener;
 import leap.core.ds.DataSourceManager;
 import leap.lang.Lazy;
+import leap.lang.Strings;
 import leap.lang.beans.BeanException;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -34,6 +35,7 @@ import leap.orm.dmo.Dmo;
 import javax.sql.DataSource;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * Class to initialize the default {@OrmContext}, {@link Dao} and {@link Dmo} beans.
@@ -85,6 +87,11 @@ public class OrmInit implements AppContextInitializable {
         //Register all contexts.
         beanFactory.getBeansWithDefinition(OrmContext.class).forEach((oc, bd) -> {
             registry.registerContext(oc, bd.isPrimary());
+
+            if(!Strings.isEmpty(bd.getName())) {
+                Set<String> aliases = beanFactory.getBeanAliases(DataSource.class, bd.getName());
+                aliases.forEach(alias -> registry.registerContext(oc, alias));
+            }
         });
     }
 	
@@ -95,6 +102,11 @@ public class OrmInit implements AppContextInitializable {
 		OrmContext namedContext = factory.tryGetBean(OrmContext.class,name);
 		if(null == namedContext){
 			factory.addBean(OrmContext.class, primary, name, true, DefaultOrmContext.class, name, dataSource);
+
+			Set<String> aliases = factory.getBeanAliases(DataSource.class, name);
+			if(!aliases.isEmpty()) {
+			    aliases.forEach(alias -> factory.addAlias(OrmContext.class, name, alias));
+            }
 		}
 	}
 
