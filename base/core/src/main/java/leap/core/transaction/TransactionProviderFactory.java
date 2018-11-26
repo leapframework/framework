@@ -19,6 +19,10 @@ import javax.sql.DataSource;
 
 public interface TransactionProviderFactory {
 
-	TransactionProvider getTransactionProvider(DataSource dataSource);
+	default TransactionProvider getTransactionProvider(DataSource dataSource){
+		return getTransactionProvider(dataSource, null);
+	}
+
+	TransactionProvider getTransactionProvider(DataSource dataSource, String name);
 	
 }

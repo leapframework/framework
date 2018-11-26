@@ -18,6 +18,7 @@ package leap.core.transaction;
 import leap.core.transaction.TransactionDefinition.Isolation;
 import leap.core.transaction.TransactionDefinition.Propagation;
 import leap.lang.Args;
+import leap.lang.Strings;
 import leap.lang.exception.NestedSQLException;
 import leap.lang.jdbc.JDBC;
 import leap.lang.logging.Log;
@@ -41,8 +42,11 @@ public class LocalTransactionProvider extends AbstractTransactionProvider implem
     private SimpleTransactionDefinition requiredDefinition    = null;
     private SimpleTransactionDefinition requiresNewDefinition = null;
 
-	public LocalTransactionProvider(DataSource dataSource){
+    private final String dataSourceInfo;
+
+	public LocalTransactionProvider(DataSource dataSource, String name){
 		this.dataSource = dataSource;
+		this.dataSourceInfo = Strings.isEmpty(name) ? "DataSource" : "DataSource(" + name + ")";
 	}
 
     @Override
@@ -114,12 +118,12 @@ public class LocalTransactionProvider extends AbstractTransactionProvider implem
 		LocalTransaction transaction = peekActiveTransaction();
 		
         if(transaction == null){
-            log.debug("Fetching JDBC Connection from DataSource Non Transactional");
+            log.debug("Fetching JDBC Connection from {} Non Transactional", dataSourceInfo);
             return fetchConnectionFromDataSource();
         }
         
         if(!transaction.hasConnection()){
-        	log.debug("Fetching JDBC Connection from DataSource Transactional");
+        	log.debug("Fetching JDBC Connection from {} Transactional", dataSourceInfo);
         	transaction.setConnection(fetchConnectionFromDataSource());
         }
         
@@ -136,7 +140,7 @@ public class LocalTransactionProvider extends AbstractTransactionProvider implem
 			return;
 		}
 		
-		log.debug("Returning JDBC Connection to DataSource");
+		log.debug("Returning JDBC Connection to {}", dataSourceInfo);
 		returnConnectionToDataSource(connection);
     }
 	
