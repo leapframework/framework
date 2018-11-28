@@ -31,6 +31,7 @@ import leap.orm.dao.Dao;
 import leap.orm.dao.DefaultDao;
 import leap.orm.dmo.DefaultDmo;
 import leap.orm.dmo.Dmo;
+import leap.orm.domain.Domains;
 
 import javax.sql.DataSource;
 import java.util.Map;
@@ -51,6 +52,7 @@ public class OrmInit implements AppContextInitializable {
     protected @Inject @M BeanFactory       beanFactory;
     protected @Inject @M DataSourceManager dataSourceManager;
     protected @Inject @M OrmRegistry       registry;
+    protected @Inject @M Domains           domains; //force to init domains
 
 	@Override
     public void postInit(AppContext context) throws Exception {
