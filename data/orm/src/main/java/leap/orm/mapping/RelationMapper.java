@@ -714,7 +714,7 @@ public class RelationMapper implements Mapper {
         if(!exists.getTargetEntityName().equalsIgnoreCase(rp.getTargetEntityName())) {
             return false;
         }
-        if(exists.getBeanProperty() != rp.getBeanProperty()) {
+        if(null != exists.getBeanProperty() && null != rp.getBeanProperty() && exists.getBeanProperty() != rp.getBeanProperty()) {
             return false;
         }
         if(!exists.getRelationName().equalsIgnoreCase(rp.getRelationName())){
