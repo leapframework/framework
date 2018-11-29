@@ -137,6 +137,7 @@ public class DefaultEntityReader implements EntityReader {
 	
 	protected Object readModel(OrmContext context,ResultSet rs,ResultSetMapping rsm,Class<? extends Model> modelClass) throws SQLException {
 		Model model = Reflection.newInstance(modelClass);
+		model.init(context, rsm.getPrimaryEntityMapping());
 
         DbDialect dialect = context.getDb().getDialect();
 

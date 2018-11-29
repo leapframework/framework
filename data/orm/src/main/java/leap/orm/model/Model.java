@@ -41,6 +41,7 @@ import leap.lang.meta.annotation.ComplexType;
 import leap.lang.params.NamedParamsBase;
 import leap.lang.params.Params;
 import leap.lang.tostring.ToStringBuilder;
+import leap.orm.OrmContext;
 import leap.orm.annotation.Instrument;
 import leap.orm.callback.CreateCallback;
 import leap.orm.callback.PostCreateCallback;
@@ -529,6 +530,14 @@ public abstract class Model implements Getter,ValidatableBean,JsonStringable {
     public Model() {
 
     }
+
+	/**
+	 * Manual init.
+	 */
+	public final void init(OrmContext context, EntityMapping em) {
+		this.em  = em;
+		this.dao = context.getDao();
+	}
 
 	public final String getEntityName() {
     	_init();
@@ -1096,8 +1105,7 @@ public abstract class Model implements Getter,ValidatableBean,JsonStringable {
     protected final void _init(){
     	if(null == em){
     		ModelContext context = ModelRegistry.getModelContext(this.getClass().getName());
-    		this.em  = context.getEntityMapping();
-    		this.dao = context.getDao();
+    		this.init(context.getOrmContext(), context.getEntityMapping());
     	}
     }
     
