@@ -28,9 +28,13 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
+import java.util.List;
 
 @Configuration
 public class WebConfiguration {
@@ -77,6 +81,17 @@ public class WebConfiguration {
         log.debug("Register app filter, base-package : {}, profile : {}", Global.bp, Global.profile);
 
         return r;
+    }
+
+    @Bean
+    public WebMvcConfigurerAdapter webMvcConfigurer() {
+        return new WebMvcConfigurerAdapter() {
+            @Override
+            public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
+                converters.add(0, new JsonMessageConverter());
+                super.extendMessageConverters(converters);
+            }
+        };
     }
 
     public static class BootFilter extends AppFilter {
