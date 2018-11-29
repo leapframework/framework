@@ -165,22 +165,17 @@ public class JsonMessageConverter extends AbstractHttpMessageConverter implement
 
     @Override
     public void write(Object o, Type type, MediaType contentType, HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
-        try (OutputStream os = outputMessage.getBody()){
-            try (OutputStreamWriter writer = new OutputStreamWriter(os, getCharset(outputMessage))) {
-                JsonWriter jsonWriter = JSON.writer(writer).create();
-                if(null == o) {
-                    jsonWriter.startArray().endArray();
-                    return;
-                }
-
-                if(o.getClass().isArray()) {
-                    Object[] a = (Object[])o;
-                    jsonWriter.startArray();
-                    for(Object item : a) {
-                        ((JsonStringable)item).toJson(jsonWriter);
+        if(type instanceof Class) {
+            writeInternal(o, outputMessage);
+        }else {
+            try (OutputStream os = outputMessage.getBody()){
+                try (OutputStreamWriter writer = new OutputStreamWriter(os, getCharset(outputMessage))) {
+                    JsonWriter jsonWriter = JSON.writer(writer).create();
+                    if(null == o) {
+                        jsonWriter.startArray().endArray();
+                        return;
                     }
-                    jsonWriter.endArray();
-                }else {
+
                     Collection c = (Collection)o;
                     jsonWriter.startArray();
                     for(Object item : c) {
@@ -230,6 +225,16 @@ public class JsonMessageConverter extends AbstractHttpMessageConverter implement
                 JsonWriter jsonWriter = JSON.writer(writer).create();
                 if(o == null) {
                     jsonWriter.null_();
+                    return;
+                }
+
+                if(o.getClass().isArray()) {
+                    Object[] a = (Object[])o;
+                    jsonWriter.startArray();
+                    for(Object item : a) {
+                        ((JsonStringable)item).toJson(jsonWriter);
+                    }
+                    jsonWriter.endArray();
                 }else {
                     ((JsonStringable)o).toJson(jsonWriter);
                 }
