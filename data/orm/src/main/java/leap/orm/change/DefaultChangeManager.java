@@ -185,7 +185,7 @@ public class DefaultChangeManager implements ChangeManager, PostCreateBean, Disp
                 }
 
                 if (null != lastNotified) {
-                    Object newMaxValue = EntityWrapper.wrap(em, lastNotified).get(fm.getFieldName());
+                    Object newMaxValue = EntityWrapper.wrap(dao.getOrmContext(), em, lastNotified).get(fm.getFieldName());
                     if (null != newMaxValue) {
                         log.debug("Set maxValue from {} to {}", maxValue, newMaxValue);
                         this.maxValue = newMaxValue;

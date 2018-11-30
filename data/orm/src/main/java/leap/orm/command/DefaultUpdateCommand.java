@@ -67,7 +67,7 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public UpdateCommand from(Object record) {
 		Args.notNull(record,"record");
-        entity = EntityWrapper.wrap(em, record);
+        entity = EntityWrapper.wrap(context, em, record);
         return this;
     }
 	
@@ -75,7 +75,7 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
     public UpdateCommand set(String name, Object value) {
 		Args.notEmpty(name,"name");
         if(null == entity) {
-            entity = EntityWrapper.wrap(em, new HashMap<>());
+            entity = EntityWrapper.wrap(context, em, new HashMap<>());
         }
 		entity.set(name, value);
 	    return this;

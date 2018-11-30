@@ -29,6 +29,7 @@ import leap.lang.beans.DynaBean;
 import leap.lang.params.MapParams;
 import leap.lang.params.Params;
 import leap.lang.params.ParamsGetter;
+import leap.orm.OrmContext;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.model.Model;
 
@@ -36,6 +37,17 @@ import leap.orm.model.Model;
  * Wraps an entity object (may be a {@link Map}, an {@link Entity} or a bean).
  */
 public abstract class EntityWrapper implements EntityBase, ParamsGetter, Getter {
+
+    /**
+     * Wraps the given entity object to a {@link EntityWrapper} object.
+     *
+     * <p>
+     * The supported type must be a {@link Map}, a {@link DynaBean} , a {@link leap.lang.params.Params} or a pojo bean.
+     */
+    @SuppressWarnings("rawtypes")
+    public static EntityWrapper wrap(EntityMapping em, Object entity) {
+        return wrap(null, em, entity);
+    }
 	
 	/**
 	 * Wraps the given entity object to a {@link EntityWrapper} object.
@@ -44,7 +56,7 @@ public abstract class EntityWrapper implements EntityBase, ParamsGetter, Getter 
 	 * The supported type must be a {@link Map}, a {@link DynaBean} , a {@link leap.lang.params.Params} or a pojo bean.
 	 */
 	@SuppressWarnings("rawtypes")
-    public static EntityWrapper wrap(EntityMapping em, Object entity) {
+    public static EntityWrapper wrap(OrmContext context, EntityMapping em, Object entity) {
 		Args.notNull(em,"entity mapping");
 		Args.notNull(entity,"entity");
 		
@@ -53,7 +65,10 @@ public abstract class EntityWrapper implements EntityBase, ParamsGetter, Getter 
 		}
 
         if(entity instanceof Model){
-            return new ModelWrapper(em, ((Model) entity));
+            if(null == context) {
+                throw new IllegalStateException("Orm context must be specified for Model class");
+            }
+            return new ModelWrapper(context, em, ((Model) entity));
         }
 		
 		if(entity instanceof DynaBean){
@@ -264,9 +279,10 @@ public abstract class EntityWrapper implements EntityBase, ParamsGetter, Getter 
 
         private final Model model;
 
-        public ModelWrapper(EntityMapping em, Model model) {
+        public ModelWrapper(OrmContext context, EntityMapping em, Model model) {
             super(em, model);
             this.model = model;
+            this.model.init(context, em);
         }
 
         @Override

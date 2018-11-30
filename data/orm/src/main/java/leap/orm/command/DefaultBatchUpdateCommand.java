@@ -34,7 +34,7 @@ public class DefaultBatchUpdateCommand extends AbstractEntityDaoCommand implemen
         super(dao, em);
 
         for (Object record : records) {
-            entities.add(EntityWrapper.wrap(em, record));
+            entities.add(EntityWrapper.wrap(dao.getOrmContext(), em, record));
         }
     }
 

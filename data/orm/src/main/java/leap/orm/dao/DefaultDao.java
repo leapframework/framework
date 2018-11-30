@@ -111,7 +111,7 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
     public Errors validate(EntityMapping em, Object entity, int maxErrors, Iterable<String> fields) {
         Validation validation = validationManager.createValidation();
 
-        entityValidator.validate(EntityWrapper.wrap(em, entity), validation, maxErrors, fields);
+        entityValidator.validate(EntityWrapper.wrap(ormContext, em, entity), validation, maxErrors, fields);
 
         return validation.errors();
     }
