@@ -1179,7 +1179,17 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
     }
     
     protected String getColumnTypeDefinition(DbColumn column) {
+	    if(column.isDatetime()) {
+	        String datetimeDef = getColumnDatetimeDef(column);
+	        if(!Strings.isEmpty(datetimeDef)) {
+	            return datetimeDef;
+            }
+        }
         return getColumnTypeDefinition(column,getColumnType(column));
+    }
+
+    protected String getColumnDatetimeDef(DbColumn column) {
+	    return null;
     }
     
     protected String getColumnTypeDefinition(DbColumn column, DbColumnType type) {
