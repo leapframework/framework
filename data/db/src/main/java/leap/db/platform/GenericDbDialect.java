@@ -1104,66 +1104,76 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 	protected String getColumnDefinitionForCreateTable(DbColumn column){
         StringBuilder definition = new StringBuilder();
         
-        definition.append(quoteIdentifier(column.getName()))
-                  .append(' ')
-                  .append(column.isAutoIncrement() ? getAutoIncrementColumnTypeDefinition(column) : getColumnTypeDefinition(column));
+        definition.append(quoteIdentifier(column.getName()));
 
+        defColumnAfterName(column, definition);
+
+        return definition.toString();
+    }
+
+    protected void defColumnAfterName(DbColumn column, StringBuilder definition) {
+        defColumnType(column, definition);
+        defColumnNullAndDefault(column, definition);
+        defColumnUnique(column, definition);
+        defColumnAutoIncrement(column, definition);
+        defColumnComment(column, definition);
+    }
+
+    protected void defColumnType(DbColumn column, StringBuilder definition) {
+	    definition.append(' ')
+                  .append(column.isAutoIncrement() ? getAutoIncrementColumnTypeDefinition(column) : getColumnTypeDefinition(column));
+    }
+
+    protected void defColumnNullAndDefault(DbColumn column, StringBuilder definition) {
         if(isDefaultBeforeNullInColumnDefinition()){
             //default
-			String defaults = getColumnDefaultDefinition(column);
-			if(!Strings.isEmpty(defaults)) {
-				definition.append(' ').append(defaults);
-			}
-            
+            String defaults = getColumnDefaultDefinition(column);
+            if(!Strings.isEmpty(defaults)) {
+                definition.append(' ').append(defaults);
+            }
+
             //null
-        	String nullDefinition = getColumnNullableDefinition(column);
-        	if(!Strings.isEmpty(nullDefinition)){
-        		definition.append(" ").append(nullDefinition);
-        	}
+            String nullDefinition = getColumnNullableDefinition(column);
+            if(!Strings.isEmpty(nullDefinition)){
+                definition.append(" ").append(nullDefinition);
+            }
         }else{
             //null
-        	String nullDefinition = getColumnNullableDefinition(column);
-        	if(!Strings.isEmpty(nullDefinition)){
-        		definition.append(" ").append(nullDefinition);
-        	}
-            
+            String nullDefinition = getColumnNullableDefinition(column);
+            if(!Strings.isEmpty(nullDefinition)){
+                definition.append(" ").append(nullDefinition);
+            }
+
             //default
-			String defaults = getColumnDefaultDefinition(column);
-        	if(!Strings.isEmpty(defaults)) {
-				definition.append(' ').append(defaults);
-			}
+            String defaults = getColumnDefaultDefinition(column);
+            if(!Strings.isEmpty(defaults)) {
+                definition.append(' ').append(defaults);
+            }
         }
-    
-//        //Check Constaint
-//        if(supportsCheckInColumnDef() && null != column.getCheckConstraint()){
-//            definition.append(' ').append(getColumnCheckDefinition(column,column.getCheckConstraint()));
-//        } 
-        
-//        //Comment
-//        if(supportsCommentInColumnDef() && !Strings.isEmpty(column.getComment())){
-//            definition.append(getColumnCommentString(column, column.getComment()));
-//        }
-        
+    }
 
+    protected void defColumnUnique(DbColumn column, StringBuilder definition) {
         if(column.isUnique() && supportsUniqueInColumnDefinition()){
-        	definition.append(' ').append(getColumnUniqueDefinition(column));
+            definition.append(' ').append(getColumnUniqueDefinition(column));
         }
-        
-        if(column.isAutoIncrement()){
-        	if(supportsAutoIncrement()){
-				definition.append(' ').append(getAutoIncrementColumnDefinitionEnd(column));
-			}else{
-        		log.warn("Unsupported auto increment column in " + db.getPlatform().getName());
-			}
-        }
+    }
 
+    protected void defColumnAutoIncrement(DbColumn column, StringBuilder definition) {
+        if(column.isAutoIncrement()){
+            if(supportsAutoIncrement()){
+                definition.append(' ').append(getAutoIncrementColumnDefinitionEnd(column));
+            }else{
+                log.warn("Unsupported auto increment column in " + db.getPlatform().getName());
+            }
+        }
+    }
+
+    protected void defColumnComment(DbColumn column, StringBuilder definition) {
         if(supportsColumnCommentInDefinition() && !Strings.isEmpty(column.getComment())){
             definition.append(' ').append(getColumnCommentDefinition(column));
         }
-        
-        return definition.toString();
     }
-	
+
 	protected String getColumnDefinitionForAlterTable(DbColumn column){
 		return getColumnDefinitionForCreateTable(column);
     }
