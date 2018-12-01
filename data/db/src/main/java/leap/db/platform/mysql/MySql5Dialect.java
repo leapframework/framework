@@ -214,7 +214,7 @@ public class MySql5Dialect extends GenericDbDialect {
     protected void registerColumnTypes() {
 		//see http://dev.mysql.com/doc/refman/5.6/en/storage-requirements.html
 		
-        columnTypes.add(Types.BOOLEAN,       "bit",0,0,Types.BIT);
+        columnTypes.add(Types.BOOLEAN,       "boolean",0,0,Types.BIT);
         columnTypes.add(Types.BIT,           "bit");
         
         columnTypes.add(Types.TINYINT,       "tinyint");
