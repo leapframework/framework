@@ -88,4 +88,8 @@ public class BCryptPasswordEncoder implements PasswordEncoder {
 
         return BCrypt.checkpw(rawPassword, encodedPassword);
     }
+
+    public boolean isEncoded(String s) {
+        return BCRYPT_PATTERN.matcher(s).matches();
+    }
 }
