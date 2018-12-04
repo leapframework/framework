@@ -32,17 +32,20 @@
 
 package leap.core.config.reader;
 
-import leap.core.AppConfigException;
+import leap.core.config.AppProperty;
 import leap.core.config.AppPropertyContext;
 import leap.core.config.AppPropertyReader;
 import leap.core.config.ConfigUtils;
 import leap.lang.Strings;
+import leap.lang.logging.LogFactory;
 import leap.lang.resource.Resource;
 import leap.lang.yaml.YAML;
 
 import java.util.Map;
 
 public class YamlPropertyReader implements AppPropertyReader {
+
+    private static final leap.lang.logging.Log log = LogFactory.get(YamlPropertyReader.class);
 
     @Override
     public boolean readProperties(AppPropertyContext context, Resource resource) {
@@ -68,14 +71,11 @@ public class YamlPropertyReader implements AppPropertyReader {
         return false;
     }
 
-    protected void checkDuplicateProperty(AppPropertyContext context, Resource resource, String name) {
-        if(!context.isDefaultOverride() && context.hasProperty(name)) {
-            throw new AppConfigException("Found duplicated property '" + name + "', check config : " + resource);
-        }
-    }
-
     protected void putProperty(AppPropertyContext context, Resource resource, String key, String value) {
-        checkDuplicateProperty(context, resource, key);
+        AppProperty p = context.getProperty(key);
+        if(null != p) {
+            log.info("Override property '{}' at '{}' by '{}'", key, p.getSource(), resource.getDescription());
+        }
         context.putProperty(resource, key ,value);
     }
 
