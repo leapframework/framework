@@ -15,7 +15,7 @@
  */
 package leap.orm.command;
 
-public interface DeleteCommand {
+public interface DeleteCommand extends Executable {
 
 	int execute();
 	

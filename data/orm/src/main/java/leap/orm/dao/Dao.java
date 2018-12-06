@@ -26,6 +26,7 @@ import leap.core.value.Record;
 import leap.orm.Orm;
 import leap.orm.OrmContext;
 import leap.orm.OrmMetadata;
+import leap.orm.command.DeleteCommand;
 import leap.orm.command.InsertCommand;
 import leap.orm.command.UpdateCommand;
 import leap.orm.mapping.EntityMapping;
@@ -231,6 +232,11 @@ public abstract class Dao implements JdbcExecutor {
 	 * </strong>
 	 */
 	public abstract UpdateCommand cmdUpdate(EntityMapping em);
+
+	/**
+	 * Creates a new {@link DeleteCommand}.
+	 */
+	public abstract DeleteCommand cmdDelete(EntityMapping em, Object id);
 	
 	//----------------------------insert--------------------------------
 	
