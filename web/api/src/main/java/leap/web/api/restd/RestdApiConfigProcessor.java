@@ -163,9 +163,12 @@ public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataP
         Set<RestdModel> restdModels = new LinkedHashSet<>();
 
         for (EntityMapping em : ormModels) {
-            RestdModel.Builder rm = new RestdModel.Builder(em);
-
             RestdConfig.Model cm = c.getModel(em.getEntityName());
+            if(null == cm && !c.isAutoConfigureEntities()) {
+                continue;
+            }
+
+            RestdModel.Builder rm = new RestdModel.Builder(em);
             if(null != cm && !Strings.isEmpty(cm.getPath())) {
                 rm.setPath(cm.getPath());
             }else {
