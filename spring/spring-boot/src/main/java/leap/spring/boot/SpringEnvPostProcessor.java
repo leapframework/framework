@@ -17,8 +17,10 @@
 package leap.spring.boot;
 
 import leap.lang.Arrays2;
+import leap.lang.Strings;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.lang.path.Paths;
 import leap.lang.resource.Resource;
 import leap.lang.resource.Resources;
 import org.springframework.boot.SpringApplication;
@@ -26,17 +28,14 @@ import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.boot.env.PropertiesPropertySourceLoader;
 import org.springframework.boot.env.PropertySourceLoader;
 import org.springframework.boot.env.YamlPropertySourceLoader;
-import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.EnumerablePropertySource;
-import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.PropertySource;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.ArrayList;
 import java.util.List;
 
 @Order(0)
@@ -46,24 +45,41 @@ public class SpringEnvPostProcessor implements EnvironmentPostProcessor {
 
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment env, SpringApplication app) {
-        addMetaPropertySource(env);
+        addMetaPropertySources(env);
 
         log.debug("Add leap property source");
         env.getPropertySources().addLast(new SpringPropertySource("leap"));
     }
 
-    private void addMetaPropertySource(ConfigurableEnvironment env) {
-        List<Resource> resources = Resources.scan("classpath*:META-INF/application.*").toList();
+    private void addMetaPropertySources(ConfigurableEnvironment env) {
+        List<Resource> resources = scanConfigurations(null, "classpath*:META-INF/");
+        if (resources.isEmpty()) {
+            return;
+        }
+        addPropertySources(env, resources);
+    }
 
+    private List<Resource> scanConfigurations(Resource root, String prefix) {
+        List<Resource> resources = new ArrayList<>();
+        resources.addAll(scanResources(root, prefix + "application.*"));
+        resources.addAll(scanResources(root, prefix + "application-*.*"));
+        return resources;
+    }
+
+    private List<Resource> scanResources(Resource root, String location) {
+        return null == root ? Resources.scan(location).toList() : Resources.scan(root, location).toList();
+    }
+
+    private void addPropertySources(ConfigurableEnvironment env, List<Resource> resources) {
         final PropertiesPropertySourceLoader propLoader = new PropertiesPropertySourceLoader();
         final YamlPropertySourceLoader       yamlLoader = new YamlPropertySourceLoader();
         try {
             for (Resource resource : resources) {
                 if (resource.getFilename().endsWith(".properties")) {
-                    addMetaPropertySource(env, resource, propLoader);
-                    log.info("Load META-INF properties '{}'", resource.getDescription());
+                    addPropertySource(env, resource, propLoader, false);
+                    log.info("Load properties '{}'", resource.getDescription());
                 } else if (resource.getFilename().endsWith("yml") || resource.getFilename().endsWith("yaml")) {
-                    addMetaPropertySource(env, resource, yamlLoader);
+                    addPropertySource(env, resource, yamlLoader, false);
                 }
             }
         } catch (IOException e) {
@@ -71,26 +87,45 @@ public class SpringEnvPostProcessor implements EnvironmentPostProcessor {
         }
     }
 
-    private void addMetaPropertySource(ConfigurableEnvironment env, Resource resource, PropertySourceLoader loader) throws IOException{
-        if(null == env.getActiveProfiles() || env.getActiveProfiles().length == 0)  {
-            addMetaPropertySource(env, resource, loader, null);
-        }else {
-            for(String profile : env.getActiveProfiles()) {
-                addMetaPropertySource(env, resource, loader, profile);
+    private void addPropertySource(ConfigurableEnvironment env, Resource resource, PropertySourceLoader loader, boolean frist) throws IOException {
+        if (null == env.getActiveProfiles() || env.getActiveProfiles().length == 0) {
+            addPropertySource(env, resource, loader, null, frist);
+        } else {
+            for (String profile : env.getActiveProfiles()) {
+                addPropertySource(env, resource, loader, profile, frist);
             }
         }
     }
 
-    private void addMetaPropertySource(ConfigurableEnvironment env, Resource resource, PropertySourceLoader loader, String profile) throws IOException{
-        PropertySource propertySource =
-                loader.load(resource.getClasspath(), new SpringResource(resource), profile);
+    private void addPropertySource(ConfigurableEnvironment env, Resource resource, PropertySourceLoader loader, String profile, boolean first) throws IOException {
+        if (null != profile) {
+            String filenameOnly = Paths.getFileNameWithoutExtension(resource.getFilename());
+            int    index        = filenameOnly.lastIndexOf('-');
+            if (index > 0) {
+                String profileOfFile = filenameOnly.substring(index + 1);
+                if (!Strings.equals(profileOfFile, profile)) {
+                    return;
+                }
+            }
+        }
 
-        if(propertySource instanceof EnumerablePropertySource &&
+        PropertySource propertySource =
+                loader.load(resource.getDescription(), new SpringResource(resource), null);
+
+        if (null == propertySource) {
+            return;
+        }
+
+        if (propertySource instanceof EnumerablePropertySource &&
                 Arrays2.isEmpty(((EnumerablePropertySource) propertySource).getPropertyNames())) {
             return;
         }
 
-        log.info("Add META-INF property source '{}' with profile '{}'", resource.getDescription(), null == profile ? "" : profile);
-        env.getPropertySources().addLast(propertySource);
+        log.info("Add property source '{}' with profile '{}'", resource.getDescription(), null == profile ? "" : profile);
+        if (first) {
+            env.getPropertySources().addFirst(propertySource);
+        } else {
+            env.getPropertySources().addLast(propertySource);
+        }
     }
 }
