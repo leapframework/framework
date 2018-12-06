@@ -40,6 +40,7 @@ import leap.orm.query.Query;
 import leap.orm.sql.SqlCommand;
 import leap.orm.value.Entity;
 
+import javax.sql.DataSource;
 import java.util.List;
 import java.util.Map;
 
@@ -630,6 +631,11 @@ public abstract class DaoWrapper extends Dao {
     @Override
     public <T> T doTransaction(TransactionCallbackWithResult<T> callback, boolean requiresNew) {
         return dao().doTransaction(callback, requiresNew);
+    }
+
+    @Override
+    public void withDataSource(DataSource dataSource, Runnable runnable) {
+        dao().withDataSource(dataSource, runnable);
     }
 
     @Override

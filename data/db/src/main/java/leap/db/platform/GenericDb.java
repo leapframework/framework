@@ -35,6 +35,10 @@ import javax.sql.DataSource;
 import java.sql.*;
 
 public class GenericDb extends DbBase {
+
+    private static final ThreadLocal<DataSource> CONTEXT_DATA_SOURCE = new ThreadLocal<>();
+
+    private boolean useContextDataSource;
 	
 	public GenericDb(String name, DataSource dataSource, DatabaseMetaData md,
                      DbPlatform platform,  DbMetadata metadata, GenericDbDialect dialect, DbComparator comparator) {
@@ -153,16 +157,34 @@ public class GenericDb extends DbBase {
     public DbExecution createExecution() {
 	    return new GenericDbExecution(this);
     }
-	
+
+	@Override
+	public void withDataSource(DataSource dataSource, Runnable func) {
+        try {
+            useContextDataSource = true;
+            CONTEXT_DATA_SOURCE.set(dataSource);
+            func.run();
+        }finally {
+            useContextDataSource = false;
+            CONTEXT_DATA_SOURCE.remove();
+        }
+	}
+
+	protected DataSource getContextDataSource() {
+        return useContextDataSource ? CONTEXT_DATA_SOURCE.get() : null;
+    }
+
 	@Override
     public void execute(ConnectionCallback callback) throws NestedSQLException {
 		try {
-			if(null != tp) {
+		    DataSource contextDataSource = getContextDataSource();
+
+			if(null == contextDataSource && null != tp) {
                 tp.execute(callback);
             }else{
                 Connection conn = null;
                 try {
-                    conn = dataSource.getConnection();
+                    conn = null != contextDataSource ? contextDataSource.getConnection() : dataSource.getConnection();
 
                     callback.execute(conn);
                 }catch(SQLException e) {
@@ -179,12 +201,14 @@ public class GenericDb extends DbBase {
 	@Override
     public <T> T executeWithResult(ConnectionCallbackWithResult<T> callback) throws NestedSQLException {
 		try {
-			if(null != tp) {
+            DataSource contextDataSource = getContextDataSource();
+
+			if(null == contextDataSource && null != tp) {
                 return tp.executeWithResult(callback);
             }else{
                 Connection conn = null;
                 try {
-                    conn = dataSource.getConnection();
+                    conn = null != contextDataSource ? contextDataSource.getConnection() : dataSource.getConnection();
 
                     return callback.execute(conn);
                 }catch(SQLException e) {

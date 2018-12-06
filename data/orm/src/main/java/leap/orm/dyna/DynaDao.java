@@ -20,7 +20,7 @@ import leap.lang.Dyna;
 import leap.orm.dao.Dao;
 import leap.orm.dao.DaoWrapper;
 
-public class DynaDao extends DaoWrapper{
+public class DynaDao extends DaoWrapper {
 
     private final Dyna<Dao> getter;
 
