@@ -203,16 +203,19 @@ public class DefaultJdbcAuthzSSOStore extends AbstractJdbcAuthzStore implements 
     }
 
     protected void createEntityMapping(Dmo dmo, boolean debug) {
-        CreateEntityCommand cmd1 = dmo.cmdCreateEntity(AuthzSSOSessionEntity.class);
-        CreateEntityCommand cmd2 = dmo.cmdCreateEntity(AuthzSSOLoginEntity.class);
+        OrmMetadata md = dmo.getOrmContext().getMetadata();
 
-        if(debug) {
-            cmd1.setUpgradeTable(true);
-            cmd2.setUpgradeTable(true);
+        if(null == md.tryGetEntityMapping(AuthzSSOSessionEntity.class)) {
+            CreateEntityCommand cmd = dmo.cmdCreateEntity(AuthzSSOSessionEntity.class);
+            cmd.setUpgradeTable(debug);
+            cmd.execute();
         }
 
-        cmd1.execute();
-        cmd2.execute();
+        if(null == md.tryGetEntityMapping(AuthzSSOLoginEntity.class)) {
+            CreateEntityCommand cmd = dmo.cmdCreateEntity(AuthzSSOLoginEntity.class);
+            cmd.setUpgradeTable(debug);
+            cmd.execute();
+        }
     }
 
     protected void resolveSqlCommands(Dao dao, OrmMetadata md) {

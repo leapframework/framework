@@ -20,6 +20,7 @@ import leap.lang.Args;
 import leap.lang.Strings;
 import leap.lang.exception.ObjectExistsException;
 import leap.lang.exception.ObjectNotFoundException;
+import leap.orm.annotation.Entity;
 import leap.orm.domain.Domains;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.EntityNotFoundException;
@@ -171,6 +172,19 @@ public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetad
 
         if(null == em && Model.class.isAssignableFrom(entityClass)) {
             em = modelToEntityMappings.get(entityClass);
+        }
+
+        if(null == em) {
+            Entity entity = entityClass.getAnnotation(Entity.class);
+            if(null != entity) {
+                String entityName = Strings.firstNotEmpty(entity.name(), entity.value());
+                if(!Strings.isEmpty(entityName)) {
+                    em = tryGetEntityMapping(entityName);
+                    if(null != em) {
+                        classToEntityMappings.put(entityClass, em);
+                    }
+                }
+            }
         }
 
         if(null == em && config.isMappingClassSimpleName()){
