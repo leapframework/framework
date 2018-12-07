@@ -38,6 +38,7 @@ public interface AppConfig extends PropertyGetter {
     String SYS_PROPERTY_PROFILE          = "app.profile";
     String INIT_PROPERTY_PROFILE         = "profile";
     String INIT_PROPERTY_DEBUG           = "debug";
+    String INIT_PROPERTY_RELOAD          = "reload";
 	String INIT_PROPERTY_LAZY_TEMPLATE	 = "lazy-template";
     String INIT_PROPERTY_BASE_PACKAGE    = "base-package";
     String INIT_PROPERTY_DEFAULT_CHARSET = "default-charset";

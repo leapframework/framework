@@ -18,9 +18,11 @@ package tests;
 import app.beans.LeapBean;
 import app.beans.ListType;
 import app.beans.SpringBean;
+import leap.core.AppConfig;
 import leap.core.el.ExpressionLanguage;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 
 import java.util.List;
 
@@ -34,6 +36,12 @@ public class SimpleSpringTest extends AbstractTest {
 
     @Autowired
     protected LeapBean leapBean;
+
+    @Autowired
+    protected AppConfig config;
+
+    @Autowired
+    protected Environment env;
 
     @Test
     public void testStartup() {
@@ -67,5 +75,10 @@ public class SimpleSpringTest extends AbstractTest {
     public void testLeapInjectList() {
         List<ListType> beans = leapBean.getBeans();
         assertEquals(2, beans.size());
+    }
+
+    @Test
+    public void testInitialProfile() {
+        assertEquals(config.getProfile(), env.getActiveProfiles()[0]);
     }
 }

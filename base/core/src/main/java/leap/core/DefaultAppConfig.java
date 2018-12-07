@@ -68,7 +68,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     protected Set<String>                   additionalPackages  = new LinkedHashSet<>();
     protected Locale                        defaultLocale       = null;
     protected Charset                       defaultCharset      = null;
-    protected boolean                       reloadEnabled       = false;
+    protected Boolean                       reloadEnabled       = null;
     protected String                        secret              = null;
     protected PrivateKey                    privateKey          = null;
     protected PublicKey                     publicKey           = null;
@@ -435,12 +435,14 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     }
 
 	protected void postLoad(){
-		Boolean reloadEnabled = getProperty(PROPERTY_RELOAD_ENABLED, Boolean.class);
-		if(null == reloadEnabled){
-			this.reloadEnabled = isDebug() ? true : false;
-		}else{
-			this.reloadEnabled = reloadEnabled;
-		}
+        if(null == this.reloadEnabled) {
+            Boolean reloadEnabled = getProperty(PROPERTY_RELOAD_ENABLED, Boolean.class);
+            if (null == reloadEnabled) {
+                this.reloadEnabled = isDebug() ? true : false;
+            } else {
+                this.reloadEnabled = reloadEnabled;
+            }
+        }
 
 		if(Strings.isEmpty(secret)) {
 			this.secret = getProperty(PROPERTY_SECRET);

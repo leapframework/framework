@@ -22,4 +22,9 @@ public interface AppProfileResolver {
 
     String resolveProfile(Object externalContext, Map<String,String> externalProperties);
 
+    default String[] resolveProfiles(Object externalContext, Map<String, String> externalProperties) {
+        String profile = resolveProfile(externalContext, externalProperties);
+
+        return null == profile ? null : new String[]{profile};
+    }
 }
