@@ -412,7 +412,7 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
 
 	@ConfigProperty
 	public OAuth2AuthzServerConfigurator setLogoutView(String view) {
-	    this.loginView = view;
+	    this.logoutView = view;
 	    return this;
 	}
 
