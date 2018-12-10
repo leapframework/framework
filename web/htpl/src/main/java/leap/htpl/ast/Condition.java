@@ -18,7 +18,10 @@ package leap.htpl.ast;
 import java.util.List;
 import java.util.function.Function;
 
+import leap.htpl.HtplCompiler;
 import leap.htpl.HtplContext;
+import leap.htpl.HtplDocument;
+import leap.htpl.HtplEngine;
 
 public class Condition extends NodeContainer {
 	
@@ -42,6 +45,13 @@ public class Condition extends NodeContainer {
 		}
 	}
 	*/
+
+	@Override
+	public void compile(HtplEngine engine, HtplDocument doc, HtplCompiler compiler) {
+	    compiler.conditional(func, (nestedCompiler) -> {
+	        super.compile(engine, doc, nestedCompiler);
+        });
+	}
 
 	@Override
     protected Node doDeepClone(Node parent) {

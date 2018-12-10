@@ -18,7 +18,20 @@ package leap.htpl;
 import leap.htpl.escaping.EscapeType;
 import leap.lang.expression.Expression;
 
+import java.util.function.Consumer;
+import java.util.function.Function;
+
 public interface HtplCompiler {
+
+    /**
+     * Adds a conditional compilation.
+     */
+	HtplCompiler conditional(Function<HtplContext, Boolean> condition, Consumer<HtplCompiler> compilation);
+
+    /**
+     * Adds a conditional compilation.
+     */
+    HtplCompiler conditional(Expression expression, Consumer<HtplCompiler> compilation);
 
 	/**
 	 * Adds start element html '&lt;prefix:name'.
