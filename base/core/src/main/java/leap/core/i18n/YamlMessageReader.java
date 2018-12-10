@@ -38,7 +38,7 @@ public class YamlMessageReader extends AbstractMessageReader implements MessageR
 
 	@Override
 	public boolean read(MessageContext context, Resource resource) {
-		if(Strings.endsWith(resource.getFilename(), ".yaml")){
+		if(Strings.endsWith(resource.getFilename(), ".yaml") || Strings.endsWith(resource.getFilename(), ".yml")){
 			readMessages(context, resource);
 		}
 		return false;
