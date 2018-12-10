@@ -15,6 +15,8 @@
  */
 package leap.htpl;
 
+import leap.lang.Strings;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,6 +27,9 @@ public class DefaultHtplPage implements HtplPage {
 	
 	public DefaultHtplPage(HtplTemplate template) {
 		this.template = template;
+		if(!Strings.isEmpty(template.getName())) {
+            this.setProperty("name", extractPageName(template.getName()));
+        }
 	}
 
 	@Override
@@ -53,4 +58,9 @@ public class DefaultHtplPage implements HtplPage {
 	public HtplTemplate getTemplate() {
 		return template;
 	}
+
+	private String extractPageName(String path) {
+        int index = path.lastIndexOf('/');
+        return index < 0 ? path : path.substring(index + 1);
+    }
 }
