@@ -29,6 +29,7 @@ import leap.lang.exception.NestedSQLException;
 import leap.lang.jdbc.ConnectionCallback;
 import leap.lang.jdbc.ConnectionCallbackWithResult;
 import leap.orm.OrmContext;
+import leap.orm.command.DeleteCommand;
 import leap.orm.command.InsertCommand;
 import leap.orm.command.UpdateCommand;
 import leap.orm.mapping.EntityMapping;
@@ -39,6 +40,7 @@ import leap.orm.query.Query;
 import leap.orm.sql.SqlCommand;
 import leap.orm.value.Entity;
 
+import javax.sql.DataSource;
 import java.util.List;
 import java.util.Map;
 
@@ -114,6 +116,11 @@ public abstract class DaoWrapper extends Dao {
     @Override
     public UpdateCommand cmdUpdate(EntityMapping em) {
         return dao().cmdUpdate(em);
+    }
+
+    @Override
+    public DeleteCommand cmdDelete(EntityMapping em, Object id) {
+        return dao().cmdDelete(em, id);
     }
 
     @Override
@@ -624,6 +631,11 @@ public abstract class DaoWrapper extends Dao {
     @Override
     public <T> T doTransaction(TransactionCallbackWithResult<T> callback, boolean requiresNew) {
         return dao().doTransaction(callback, requiresNew);
+    }
+
+    @Override
+    public void withDataSource(DataSource dataSource, Runnable runnable) {
+        dao().withDataSource(dataSource, runnable);
     }
 
     @Override

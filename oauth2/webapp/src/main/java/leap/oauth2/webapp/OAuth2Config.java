@@ -71,6 +71,11 @@ public interface OAuth2Config {
      */
     String getTokenUrl();
 
+    /**
+     * Optional.
+     */
+    String getIndirectTokenUrl();
+
 	/**
 	 * Returns the url of token info endpoint in oauth2 authorization server.
 	 */

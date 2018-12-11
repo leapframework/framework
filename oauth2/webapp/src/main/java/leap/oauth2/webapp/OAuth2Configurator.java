@@ -70,6 +70,11 @@ public interface OAuth2Configurator {
      */
     OAuth2Configurator setTokenUrl(String url);
 
+	/**
+	 * todo : doc
+	 */
+	OAuth2Configurator setIndirectTokenUrl(String url);
+
     /**
      * todo: doc
      */

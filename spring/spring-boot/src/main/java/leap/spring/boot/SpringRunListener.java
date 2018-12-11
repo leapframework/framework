@@ -16,6 +16,7 @@
 
 package leap.spring.boot;
 
+import leap.core.config.Context;
 import leap.lang.Classes;
 import leap.lang.Collections2;
 import leap.lang.Props;
@@ -77,13 +78,27 @@ public class SpringRunListener implements SpringApplicationRunListener {
         Global.env = env;
 
         String[] profiles = env.getActiveProfiles();
-        if(profiles.length > 1) {
-            throw new IllegalStateException("Leap does not supports multi active profiles: [" + Strings.join(profiles, ',') + "]");
-        }
-
-        if(profiles.length == 1) {
+        if(null != profiles && profiles.length > 0) {
             Global.profile = profiles[0];
         }
+
+        Context.get().setInitialProfileResolver(new Context.InitialProfileResolver() {
+            @Override
+            public String[] getProfiles() {
+                return env.getActiveProfiles();
+            }
+
+            @Override
+            public void setProfiles(String... profiles) {
+                env.setActiveProfiles(profiles);
+                if(null != profiles && profiles.length > 0) {
+                    Global.profile = profiles[0];
+                }
+            }
+        });
+        Context.get().setInitialPropertySource((name) -> {
+            return env.getProperty(name);
+        });
     }
 
     @Override

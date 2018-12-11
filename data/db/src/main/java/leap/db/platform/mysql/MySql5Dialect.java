@@ -116,9 +116,16 @@ public class MySql5Dialect extends GenericDbDialect {
     }
 
     @Override
+    protected String getColumnDatetimeDef(DbColumn column) {
+        return "datetime";
+    }
+
+    @Override
     protected String getColumnDefaultDefinition(DbColumn column) {
-        if((!column.isNullable()) && column.getTypeCode() == Types.TIMESTAMP && Strings.isEmpty(column.getDefaultValue())) {
-            return "DEFAULT CURRENT_TIMESTAMP";
+        if(Types.TIMESTAMP == column.getTypeCode()) {
+            if((!column.isNullable()) && !column.isDatetime() && Strings.isEmpty(column.getDefaultValue())) {
+                return "DEFAULT CURRENT_TIMESTAMP";
+            }
         }
         return super.getColumnDefaultDefinition(column);
     }
@@ -207,7 +214,7 @@ public class MySql5Dialect extends GenericDbDialect {
     protected void registerColumnTypes() {
 		//see http://dev.mysql.com/doc/refman/5.6/en/storage-requirements.html
 		
-        columnTypes.add(Types.BOOLEAN,       "bit",0,0,Types.BIT);
+        columnTypes.add(Types.BOOLEAN,       "boolean",0,0,Types.BIT);
         columnTypes.add(Types.BIT,           "bit");
         
         columnTypes.add(Types.TINYINT,       "tinyint");

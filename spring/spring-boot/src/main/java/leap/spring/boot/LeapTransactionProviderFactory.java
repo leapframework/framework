@@ -47,9 +47,9 @@ public class LeapTransactionProviderFactory extends LocalTransactionProviderFact
     }
 
     @Override
-    public TransactionProvider getTransactionProvider(DataSource dataSource) {
+    public TransactionProvider getTransactionProvider(DataSource dataSource, String name) {
         if(null == txm) {
-            return super.getTransactionProvider(dataSource);
+            return super.getTransactionProvider(dataSource, name);
         }else {
             return new LeapTransactionProvider(txm,dataSource);
         }

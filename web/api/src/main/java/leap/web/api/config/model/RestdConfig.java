@@ -31,6 +31,7 @@ public class RestdConfig {
 
     protected String     dataSourceName;
     protected OrmContext ormContext;
+    protected boolean    autoConfigureEntities = true;
     protected boolean    readonly;
     protected boolean    noDataSource;
     protected boolean    allowRemoteEntity;
@@ -55,6 +56,14 @@ public class RestdConfig {
 
     public void setOrmContext(OrmContext ormContext) {
         this.ormContext = ormContext;
+    }
+
+    public boolean isAutoConfigureEntities() {
+        return autoConfigureEntities;
+    }
+
+    public void setAutoConfigureEntities(boolean autoConfigureEntities) {
+        this.autoConfigureEntities = autoConfigureEntities;
     }
 
     public boolean isReadonly() {

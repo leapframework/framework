@@ -113,7 +113,7 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
 
     @Override
     public InsertCommand from(Object record) {
-        entity = EntityWrapper.wrap(em, record);
+        entity = EntityWrapper.wrap(context, em, record);
         return this;
     }
 	

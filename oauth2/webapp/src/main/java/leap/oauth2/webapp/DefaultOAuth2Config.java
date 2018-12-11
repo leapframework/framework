@@ -48,6 +48,7 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Ap
     protected boolean forceLookupUserInfo;
     protected String  authorizeUrl;
     protected String  tokenUrl;
+    protected String  indirectTokenUrl;
     protected String  tokenInfoUrl;
     protected String  userInfoUrl;
     protected String  publicKeyUrl;
@@ -138,9 +139,9 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Ap
     @ConfigProperty
     public void setIndirectServerUrl(String indirectServerUrl) {//don't change the parameter name (used by config property)
         indirectServerUrl = Paths.suffixWithoutSlash(indirectServerUrl);
-
-        this.authorizeUrl = indirectServerUrl + "/oauth2/authorize";
-        this.logoutUrl    = indirectServerUrl + "/oauth2/logout";
+        this.authorizeUrl     = indirectServerUrl + "/oauth2/authorize";
+        this.logoutUrl        = indirectServerUrl + "/oauth2/logout";
+        this.indirectTokenUrl = indirectServerUrl + "/oauth2/token";
     }
 
     @ConfigProperty
@@ -200,6 +201,18 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Ap
     @Override
     public String getTokenUrl() {
         return tokenUrl;
+    }
+
+    @Override
+    public String getIndirectTokenUrl() {
+        return indirectTokenUrl;
+    }
+
+    @Override
+    @ConfigProperty
+    public OAuth2Configurator setIndirectTokenUrl(String indirectTokenUrl) {
+        this.indirectTokenUrl = indirectTokenUrl;
+        return this;
     }
 
     @Override

@@ -17,6 +17,8 @@ package leap.lang.el;
 
 public interface ElProperty {
 
+	ElProperty NULL = (context, instance) -> null;
+
 	Object getValue(ElEvalContext context, Object instance) throws Throwable;
 	
 }

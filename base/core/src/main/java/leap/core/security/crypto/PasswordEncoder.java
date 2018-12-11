@@ -16,9 +16,22 @@
 package leap.core.security.crypto;
 
 public interface PasswordEncoder {
-	
+
+	/**
+	 * Encodes the plain password.
+	 */
 	String encode(String plainPassword);
-	
+
+    /**
+     * Returns <code>true</code> if the plain password matches the encoded password.
+     */
 	boolean matches(String plainPassword,String encodedPassword);
+
+    /**
+     * Returns <code>true</code> if the string is an plain password.
+     */
+	default boolean isPlain(String s) {
+	    return false;
+    }
 
 }

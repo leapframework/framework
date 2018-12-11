@@ -62,11 +62,11 @@ public interface ApiErrorHandler {
     }
 
     default void responseError(Response response, int status, String message) {
-        responseError(response, status, new ApiError(message));
+        responseError(response, status, new ApiError(status, null, message));
     }
 
     default void responseError(Response response, int status, String code, String message) {
-        responseError(response, status, new ApiError(code, message));
+        responseError(response, status, new ApiError(status, code, message));
     }
 
     void responseError(Response response, int status, ApiError error);

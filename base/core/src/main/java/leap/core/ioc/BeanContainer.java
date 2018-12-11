@@ -30,6 +30,7 @@ import leap.lang.annotation.Internal;
 import leap.lang.annotation.Nullable;
 import leap.lang.beans.*;
 import leap.lang.convert.Converts;
+import leap.lang.exception.ObjectExistsException;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.reflect.*;
@@ -387,7 +388,13 @@ public class BeanContainer implements BeanFactory {
 		addBeanDefinition(xmlBeanDefinitionLoader.create(typeClass, primary, name, lazyInit, beanClass, constructorArgs));
     }
 
-	public <T> T getBean(String id) throws NoSuchBeanException,BeanException {
+    @Override
+    public void addAlias(Class<?> type, String name, String alias) {
+        ensureAppNotInited();
+        addAliasDefinition(new AliasDefinition("runtime", alias, type, name));
+    }
+
+    public <T> T getBean(String id) throws NoSuchBeanException,BeanException {
     	T bean = tryGetBean(id);
 		if(null == bean){
 			throw new NoSuchBeanException("No such bean '" + id + "'");
@@ -773,6 +780,19 @@ public class BeanContainer implements BeanFactory {
 		}
 		
 	    return beans;
+    }
+
+    @Override
+    public Set<String> getBeanAliases(Class<?> type, String name) {
+	    Set<String> aliases = new LinkedHashSet<>();
+
+	    for(AliasDefinition ad : bds.aliasDefinitions.values()) {
+	        if(type.equals(ad.getType()) && name.equals(ad.name)) {
+	            aliases.add(ad.getAlias());
+            }
+        }
+
+        return aliases;
     }
 
     @Override

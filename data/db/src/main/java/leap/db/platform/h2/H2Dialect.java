@@ -60,7 +60,16 @@ public class H2Dialect extends GenericDbDialect {
 		return true;
 	}
 
-	@Override
+    @Override
+    protected void defColumnAfterName(DbColumn column, StringBuilder definition) {
+        defColumnType(column, definition);
+        defColumnNullAndDefault(column, definition);
+        defColumnAutoIncrement(column, definition);
+        defColumnComment(column, definition);
+        defColumnUnique(column, definition);
+    }
+
+    @Override
     protected String getAutoIncrementColumnDefinitionEnd(DbColumn column) {
 	    return "IDENTITY";
     }

@@ -67,7 +67,7 @@ public class LoadEntityEventImpl extends EntityEventBase implements LoadEntityEv
         List<Row> rows = new ArrayList<>(list.size());
 
         for(Object item : list) {
-            rows.add(new RowImpl(EntityWrapper.wrap(mapping, item)));
+            rows.add(new RowImpl(EntityWrapper.wrap(context, mapping, item)));
         }
 
         return rows;

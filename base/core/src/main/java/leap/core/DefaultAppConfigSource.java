@@ -22,6 +22,7 @@ import leap.core.sys.SysPermissionDef;
 import leap.lang.*;
 import leap.lang.Comparators;
 import leap.lang.accessor.MapAttributeAccessor;
+import leap.lang.accessor.PropertyGetter;
 import leap.lang.accessor.SystemPropertyAccessor;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
@@ -44,6 +45,7 @@ import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 import static leap.core.AppConfig.*;
 
@@ -92,6 +94,8 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
         //post loading.
         postLoad(config);
+
+        Context.remove();
 
         return config;
     }
@@ -341,6 +345,13 @@ public class DefaultAppConfigSource implements AppConfigSource {
                 }
             }
 
+            if(properties.containsKey(INIT_PROPERTY_RELOAD)) {
+                String value = properties.get(INIT_PROPERTY_RELOAD).getValue();
+                if(!Strings.isEmpty(value)) {
+                    config.reloadEnabled = Converts.toBoolean(value);
+                }
+            }
+
             if(properties.containsKey(INIT_PROPERTY_LAZY_TEMPLATE)) {
                 String value = properties.get(INIT_PROPERTY_LAZY_TEMPLATE).getValue();
                 if(!Strings.isEmpty(value)) {
@@ -364,19 +375,26 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
             //base package
             if(Strings.isEmpty(config.basePackage)){
-                config.basePackage = Strings.firstNotEmpty(AppContextInitializer.getBasePackage(), DEFAULT_BASE_PACKAGE);
+                config.basePackage = getInitialProperty(String.class, DEFAULT_BASE_PACKAGE,
+                                        () -> Strings.firstNotEmpty(AppContextInitializer.getBasePackage(), DEFAULT_BASE_PACKAGE));
                 config.properties.put(INIT_PROPERTY_BASE_PACKAGE,config.basePackage);
             }
 
             //debug
             if(null == config.debug){
-                config.debug = AppConfig.PROFILE_DEVELOPMENT.equals(config.getProfile()) ? true : false;
+                config.debug = getInitialProperty(Boolean.class, INIT_PROPERTY_DEBUG,
+                                    () -> AppConfig.PROFILE_DEVELOPMENT.equals(config.getProfile()) ? true : false);
                 config.properties.put(INIT_PROPERTY_DEBUG,String.valueOf(config.debug));
+            }
+
+            //reload
+            if(null == config.reloadEnabled){
+                config.reloadEnabled = getInitialProperty(Boolean.class, INIT_PROPERTY_RELOAD, () -> null);
             }
 
             //lazyTemplate
             if(null == config.lazyTemplate){
-                config.lazyTemplate = false;
+                config.lazyTemplate = getInitialProperty(Boolean.class, INIT_PROPERTY_LAZY_TEMPLATE, () -> false);
                 config.properties.put(INIT_PROPERTY_LAZY_TEMPLATE,String.valueOf(config.lazyTemplate));
             }
 
@@ -394,6 +412,18 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
             resolveProperties();
             processProperties();
+        }
+
+        protected <T> T getInitialProperty(Class<T> c, String name, Supplier<T> defaults) {
+            PropertyGetter initialPropertySource = Context.get().getInitialPropertySource();
+            if(null == initialPropertySource) {
+                return defaults.get();
+            }
+            String v = initialPropertySource.getProperty(name);
+            if(Strings.isEmpty(v)) {
+                return defaults.get();
+            }
+            return Converts.convert(v, c);
         }
 
         protected void loadConfig(ConfigContext context) {

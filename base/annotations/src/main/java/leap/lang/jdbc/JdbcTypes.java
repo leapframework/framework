@@ -28,6 +28,7 @@ public class JdbcTypes {
 	private static final Map<String, JdbcType> typeNameToJdbcTypeMappings = new HashMap<String, JdbcType>();
 	
 	public static final int UNKNOWN_TYPE_CODE = Integer.MIN_VALUE;
+    public static final String DATETIME = "datetime";
 	
 	public static final String ARRAY_TYPE_NAME	       = "array";
 	public static final String BIGINT_TYPE_NAME	       = "bigint";
@@ -64,7 +65,8 @@ public class JdbcTypes {
 	public static final String NVARCHAR_TYPE_NAME	   = "nvarchar";
 	public static final String LONGNVARCHAR_TYPE_NAME  = "longnvarchar";
 	public static final String NCLOB_TYPE_NAME	       = "nclob";
-	public static final String SQLXML_TYPE_NAME	       = "sqlxml";	
+	public static final String SQLXML_TYPE_NAME	       = "sqlxml";
+
 
 	static {
 		//http://docs.oracle.com/javase/1.5.0/docs/guide/jdbc/getstart/mapping.html
@@ -94,7 +96,7 @@ public class JdbcTypes {
         
         register(java.sql.Types.DATE,          DATE_TYPE_NAME,          JdbcTypeKind.Temporal,  Date.class, false, false);
         register(java.sql.Types.TIME,          TIME_TYPE_NAME,          JdbcTypeKind.Temporal,  Time.class, false, false);
-        register(java.sql.Types.TIMESTAMP,     TIMESTAMP_TYPE_NAME,     JdbcTypeKind.Temporal,  Timestamp.class, false, false, "datetime");
+        register(java.sql.Types.TIMESTAMP,     TIMESTAMP_TYPE_NAME,     JdbcTypeKind.Temporal,  Timestamp.class, false, false, DATETIME);
         
         register(java.sql.Types.BINARY,        BINARY_TYPE_NAME,        JdbcTypeKind.Binary,    byte[].class, true, false, "bytes");
         register(java.sql.Types.BLOB,          BLOB_TYPE_NAME,          JdbcTypeKind.Binary,    byte[].class,Blob.class, false, false);
@@ -146,6 +148,7 @@ public class JdbcTypes {
                 if(typeNameToJdbcTypeMappings.containsKey(alias)) {
                     throw new IllegalStateException("Type name '" + alias + "' already registered!");
                 }
+                type = new JdbcType(typeCode, alias, kind , defaultReadType, defaultSaveType,supportsLength,supportsPrecisionAndScale);
                 typeNameToJdbcTypeMappings.put(alias, type);
             }
         }

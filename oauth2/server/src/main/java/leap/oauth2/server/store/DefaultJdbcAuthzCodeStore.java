@@ -15,8 +15,6 @@
  */
 package leap.oauth2.server.store;
 
-import java.util.Date;
-
 import leap.core.AppConfig;
 import leap.lang.New;
 import leap.lang.logging.Log;
@@ -30,6 +28,8 @@ import leap.orm.command.CreateEntityCommand;
 import leap.orm.dao.Dao;
 import leap.orm.dmo.Dmo;
 import leap.orm.sql.SqlCommand;
+
+import java.util.Date;
 
 public class DefaultJdbcAuthzCodeStore extends AbstractJdbcAuthzStore implements AuthzCodeStore {
 
@@ -132,13 +132,13 @@ public class DefaultJdbcAuthzCodeStore extends AbstractJdbcAuthzStore implements
     }
 
     protected void createEntityMapping(Dmo dmo, boolean debug) {
-        CreateEntityCommand cmd = dmo.cmdCreateEntity(AuthzCodeEntity.class);
+        OrmMetadata md = dmo.getOrmContext().getMetadata();
 
-        if(debug) {
-            cmd.setUpgradeTable(true);
+        if(null == md.tryGetEntityMapping(AuthzCodeEntity.class)) {
+            CreateEntityCommand cmd = dmo.cmdCreateEntity(AuthzCodeEntity.class);
+            cmd.setUpgradeTable(debug);
+            cmd.execute();
         }
-
-        cmd.execute();
     }
 
     protected void resolveSqlCommands(Dao dao, OrmMetadata md) {

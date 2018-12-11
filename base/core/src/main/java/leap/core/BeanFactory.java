@@ -26,6 +26,7 @@ import leap.lang.reflect.ReflectValued;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface BeanFactory extends BeanFactoryBase, AppContextInitializable {
 	
@@ -135,6 +136,11 @@ public interface BeanFactory extends BeanFactoryBase, AppContextInitializable {
 	 * After the creation, the bean instance will be register as singleton bean to this container with the given type and name.
 	 */
 	<T> void addBean(Class<? super T> typeClass,boolean primary,String name,boolean lazyInit,Class<T> beanClass, Object... constructorArgs) throws BeanException;
+
+    /**
+     * Adds an alias for a named bean.
+     */
+	void addAlias(Class<?> type, String name, String alias);
 
 	/**
 	 * Returns the bean's instance identified by the given id (case sensitive).
@@ -261,6 +267,11 @@ public interface BeanFactory extends BeanFactoryBase, AppContextInitializable {
 	 * The value of returned {@link Map} is the definition of bean.
 	 */
 	<T> Map<T,BeanDefinition> getBeansWithDefinition(Class<? super T> type) throws BeanException;
+
+	/**
+	 * todo:
+	 */
+	Set<String> getBeanAliases(Class<?> type, String name);
 
     /**
      * todo:

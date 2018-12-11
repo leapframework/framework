@@ -18,7 +18,6 @@ package leap.orm.model;
 import leap.core.AppConfigException;
 import leap.lang.annotation.Internal;
 import leap.lang.beans.BeanType;
-import leap.lang.collection.SimpleCaseInsensitiveMap;
 import leap.lang.exception.ObjectNotFoundException;
 import leap.orm.Orm;
 import leap.orm.OrmContext;
@@ -26,153 +25,142 @@ import leap.orm.OrmContextInitializable;
 import leap.orm.dao.Dao;
 import leap.orm.dmo.Dmo;
 import leap.orm.mapping.EntityMapping;
-import leap.orm.validation.FieldValidator;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Internal
 public class ModelRegistry implements OrmContextInitializable {
-	private static final ThreadLocal<OrmContext>       localOrmContext = new ThreadLocal<>();
-	private static final Map<String, ModelContext>     modelContexts   = new HashMap<>();
+    private static final ThreadLocal<OrmContext>   localOrmContext = new ThreadLocal<>();
+    private static final Map<String, ModelContext> modelContexts   = new HashMap<>();
 
-	public static OrmContext getThreadLocalContext(){
-		return localOrmContext.get();
-	}
+    public static OrmContext getThreadLocalContext() {
+        return localOrmContext.get();
+    }
 
-	public static void setThreadLocalContext(OrmContext context){
-		localOrmContext.set(context);
-	}
+    public static void setThreadLocalContext(OrmContext context) {
+        localOrmContext.set(context);
+    }
 
-	public static void removeThreadLocalContext(){
-		localOrmContext.remove();
-	}
+    public static void removeThreadLocalContext() {
+        localOrmContext.remove();
+    }
 
-	public static ModelContext getModelContext(String className){
-		ModelContext mc = modelContexts.get(className);
+    public static ModelContext getModelContext(String className) {
+        ModelContext mc = modelContexts.get(className);
 
-		if(null == mc){
+        if (null == mc) {
 
-            if(!Orm.hasContexts()) {
+            if (!Orm.hasContexts()) {
                 throw new AppConfigException("DataSource(s) must be configured!");
-            }else{
+            } else {
                 throw new ObjectNotFoundException("Model '" + className + "' not found in registry");
             }
 
-		}
+        }
 
-		return mc;
-	}
+        return mc;
+    }
 
-	public static ModelContext tryGetModelContext(String className){
-		return modelContexts.get(className);
-	}
+    public static ModelContext tryGetModelContext(String className) {
+        return modelContexts.get(className);
+    }
 
-	private static void addModelContext(ModelContext modelContext){
-		modelContexts.put(modelContext.getModelClass().getName(), modelContext);
-        if(null != modelContext.getExtendModelClass()) {
+    private static void addModelContext(ModelContext modelContext) {
+        modelContexts.put(modelContext.getModelClass().getName(), modelContext);
+        if (null != modelContext.getExtendModelClass()) {
             modelContexts.put(modelContext.getExtendModelClass().getName(), modelContext);
         }
-	}
+    }
 
     @Override
     public void postInitialize(OrmContext context) throws Exception {
         Dao dao = context.getDao();
         Dmo dmo = context.getDmo();
 
-        for(EntityMapping em : context.getMetadata().getEntityMappingSnapshotList()){
+        for (EntityMapping em : context.getMetadata().getEntityMappingSnapshotList()) {
             Class<? extends Model> cls = em.getModelClass();
 
-            if(null != cls){
+            if (null != cls) {
                 ModelContext modelContext = ModelRegistry.tryGetModelContext(cls.getName());
-                if(null == modelContext
-                		|| (modelContext!=null && modelContext.getEntityMapping().isRemote())){
-                	registerModel(context, em, dao, dmo);
+                if (null == modelContext
+                        || (modelContext != null && modelContext.getEntityMapping().isRemote())) {
+                    registerModel(context, em, dao, dmo);
                 }
             }
         }
     }
 
-    protected void registerModel(OrmContext context, EntityMapping em, Dao dao, Dmo dmo){
+    protected void registerModel(OrmContext context, EntityMapping em, Dao dao, Dmo dmo) {
         ModelContext modelContext = new ModelContext(context, em, dao, dmo);
 
         ModelRegistry.addModelContext(modelContext);
     }
 
     public static final class ModelContext {
-		private final OrmContext    		   ormContext;
-		private final EntityMapping 		   entityMapping;
-		private final Dao					   dao;
-		private final Dmo					   dmo;
-		private final BeanType      		   beanType;
+        private final OrmContext    ormContext;
+        private final EntityMapping entityMapping;
+        private final Dao           dao;
+        private final Dmo           dmo;
+        private final BeanType      beanType;
 
-		public ModelContext(OrmContext ormContext,EntityMapping em,Dao dao,Dmo dmo){
-			this.ormContext    = ormContext;
-			this.entityMapping = em;
-			this.dao           = dao;
-			this.dmo           = dmo;
-			this.beanType	   = BeanType.of(em.getModelClass());
-		}
+        public ModelContext(OrmContext ormContext, EntityMapping em, Dao dao, Dmo dmo) {
+            this.ormContext = ormContext;
+            this.entityMapping = em;
+            this.dao = dao;
+            this.dmo = dmo;
+            this.beanType = BeanType.of(em.getModelClass());
+        }
 
-		public Class<? extends Model> getModelClass() {
-			return entityMapping.getModelClass();
-		}
+        public Class<? extends Model> getModelClass() {
+            return entityMapping.getModelClass();
+        }
 
         public Class<? extends Model> getExtendModelClass() {
-            if(null != entityMapping.getExtendedEntityClass() && Model.class.isAssignableFrom(entityMapping.getExtendedEntityClass())) {
-                return (Class<Model>)entityMapping.getExtendedEntityClass();
+            if (null != entityMapping.getExtendedEntityClass() && Model.class.isAssignableFrom(entityMapping.getExtendedEntityClass())) {
+                return (Class<Model>) entityMapping.getExtendedEntityClass();
             }
             return null;
         }
 
-		public BeanType getBeanType(){
-			return beanType;
-		}
+        public BeanType getBeanType() {
+            return beanType;
+        }
 
-		public OrmContext getOrmContext() {
-			OrmContext tlOrmContext = getThreadLocalContext();
-			if(null != tlOrmContext){
-				return tlOrmContext;
-			}
-			return ormContext;
-		}
+        public OrmContext getOrmContext() {
+            OrmContext tlOrmContext = getThreadLocalContext();
+            if (null != tlOrmContext) {
+                return tlOrmContext;
+            }
+            return ormContext;
+        }
 
-		public EntityMapping getEntityMapping() {
-			OrmContext tlOrmContext = getThreadLocalContext();
-			if(null != tlOrmContext){
-				if(tlOrmContext == ormContext){
-					return entityMapping;
-				}else{
-					return tlOrmContext.getMetadata().getEntityMapping(entityMapping.getEntityName());
-				}
-			}
-			return entityMapping;
-		}
+        public EntityMapping getEntityMapping() {
+            OrmContext currOrmContext = getThreadLocalContext();
+            if (null == currOrmContext) {
+                currOrmContext = this.ormContext;
+            }
+            return currOrmContext.getMetadata().getEntityMapping(entityMapping.getEntityName());
+        }
 
-		public Dao getDao() {
-			OrmContext tlOrmContext = getThreadLocalContext();
+        public Dao getDao() {
+            OrmContext tlOrmContext = getThreadLocalContext();
+            if (null != tlOrmContext) {
+                return tlOrmContext.getDao();
+            }
+            return dao;
+        }
 
-			if(null != tlOrmContext){
-				return tlOrmContext.getAppContext().getBeanFactory().getBean(Dao.class,tlOrmContext.getName());
-			}
+        public Dmo getDmo() {
+            OrmContext tlOrmContext = getThreadLocalContext();
+            if (null != tlOrmContext) {
+                return tlOrmContext.getDmo();
+            }
+            return dmo;
+        }
+    }
 
-			return dao;
-		}
+    private ModelRegistry() {
 
-		public Dmo getDmo() {
-			OrmContext tlOrmContext = getThreadLocalContext();
-
-			if(null != tlOrmContext){
-				return tlOrmContext.getAppContext().getBeanFactory().getBean(Dmo.class,tlOrmContext.getName());
-			}
-
-			return dmo;
-		}
-	}
-
-	private ModelRegistry(){
-
-	}
+    }
 }

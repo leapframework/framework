@@ -32,6 +32,7 @@ import leap.lang.tostring.ToStringBuilder;
 import leap.orm.Orm;
 import leap.orm.OrmContext;
 import leap.orm.OrmRegistry;
+import leap.orm.command.DeleteCommand;
 import leap.orm.command.InsertCommand;
 import leap.orm.command.UpdateCommand;
 import leap.orm.enums.RemoteType;
@@ -111,7 +112,7 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
     public Errors validate(EntityMapping em, Object entity, int maxErrors, Iterable<String> fields) {
         Validation validation = validationManager.createValidation();
 
-        entityValidator.validate(EntityWrapper.wrap(em, entity), validation, maxErrors, fields);
+        entityValidator.validate(EntityWrapper.wrap(ormContext, em, entity), validation, maxErrors, fields);
 
         return validation.errors();
     }
@@ -251,7 +252,14 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 		});
     }
 
-	//--------------------- delete ------------------------------------
+    @Override
+    public DeleteCommand cmdDelete(EntityMapping em, Object id) {
+        return runInWrapperContext(em, (context)->{
+            return commandFactory().newDeleteCommand(context.getDao(),context.getEntityMapping(), id);
+        });
+    }
+
+    //--------------------- delete ------------------------------------
 
     @Override
     public int delete(Object entity) {

@@ -39,7 +39,7 @@ public class DefaultBatchInsertCommand extends AbstractEntityDaoCommand implemen
 	    super(dao,em);
 
         for(Object record : records) {
-            entities.add(new SimpleEntry<>(EntityWrapper.wrap(em, record), null));
+            entities.add(new SimpleEntry<>(EntityWrapper.wrap(context, em, record), null));
         }
     }
 

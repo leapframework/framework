@@ -37,6 +37,8 @@ import leap.orm.jdbc.JdbcExecutorFactory;
 import leap.orm.query.QueryFactory;
 import leap.orm.sql.SqlFactory;
 
+import javax.sql.DataSource;
+
 public abstract class DaoBase extends Dao implements PostCreateBean,PostInjectBean {
 	protected final Readonly _readonly = new Readonly(this);
 
@@ -61,8 +63,14 @@ public abstract class DaoBase extends Dao implements PostCreateBean,PostInjectBe
 	}
 	
 	//---------------------jdbc executor---------------------------------------
-	
-	@Override
+
+
+    @Override
+    public void withDataSource(DataSource dataSource, Runnable runnable) {
+        jdbcExecutor.withDataSource(dataSource, runnable);
+    }
+
+    @Override
     public void execute(ConnectionCallback callback) throws NestedSQLException {
 		jdbcExecutor.execute(callback);
     }

@@ -86,13 +86,13 @@ public class DefaultJdbcAuthzClientStore extends AbstractJdbcAuthzStore implemen
     }
 
     protected void createEntityMapping(Dmo dmo, boolean debug) {
-        CreateEntityCommand cmd = dmo.cmdCreateEntity(AuthzClientEntity.class);
+        OrmMetadata md = dmo.getOrmContext().getMetadata();
 
-        if(debug) {
-            cmd.setUpgradeTable(true);
+        if(null == md.tryGetEntityMapping(AuthzClientEntity.class)) {
+            CreateEntityCommand cmd = dmo.cmdCreateEntity(AuthzClientEntity.class);
+            cmd.setUpgradeTable(debug);
+            cmd.execute();
         }
-
-        cmd.execute();
     }
 
     protected void resolveSqlCommands(Dao dao, OrmMetadata md) {

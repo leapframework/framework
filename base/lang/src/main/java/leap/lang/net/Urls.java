@@ -216,6 +216,14 @@ public class Urls {
 		int separatorIndex = urlFile.indexOf(JAR_URL_SEPARATOR);
 		if (separatorIndex != -1) {
 			String jarFile = urlFile.substring(0, separatorIndex);
+			//war:file:/Users/../app.jar*/BOOT-INF/lib/a.jar
+            if(jarFile.startsWith("war:")) {
+                jarFile = Strings.removeStart(jarFile, "war:");
+                separatorIndex = jarFile.indexOf("*/BOOT-INF/");
+                if(separatorIndex != -1) {
+                    jarFile = jarFile.substring(0, separatorIndex);
+                }
+            }
 			try {
 				return new URL(jarFile);
 			} catch (MalformedURLException ex) {

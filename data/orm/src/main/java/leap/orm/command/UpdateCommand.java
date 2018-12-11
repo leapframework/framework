@@ -17,7 +17,7 @@ package leap.orm.command;
 
 import java.util.Map;
 
-public interface UpdateCommand {
+public interface UpdateCommand extends Executable {
 
     /**
      * Sets the id of record.

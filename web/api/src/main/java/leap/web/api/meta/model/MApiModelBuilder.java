@@ -121,6 +121,25 @@ public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> implem
 
     public void addJavaType(Class<?> c) {
         javaTypes.add(c);
+
+        if(javaTypes.size() > 1) {
+            Class<?>[] types = javaTypes.toArray(new Class<?>[0]);
+            if (types.length == 2) {
+                Class<?> c1 = types[0];
+                Class<?> c2 = types[1];
+                if (c1.isAssignableFrom(c2) || c2.isAssignableFrom(c1)) {
+                    return;
+                }
+            }
+            StringBuilder s = new StringBuilder();
+            for (int i = 0; i < types.length; i++) {
+                if (i > 0) {
+                    s.append(", ");
+                }
+                s.append(types[i].getName());
+            }
+            throw new IllegalStateException("Duplicated api model '" + name + "' at [" + s.toString() + "]");
+        }
     }
 
     public Map<String, MApiPropertyBuilder> getProperties() {
