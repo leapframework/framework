@@ -26,6 +26,11 @@ public interface RouteManager {
     Routes createRoutes();
 
     /**
+     * Creates a new {@link Routes} object.
+     */
+    Routes createRoutes(String pathPrefix);
+
+    /**
      * Creates a new {@link RouteBuilder} for building a {@link Route}.
      *
      * @param method http method name, can use "*".

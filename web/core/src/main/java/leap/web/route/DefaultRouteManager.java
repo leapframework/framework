@@ -71,6 +71,13 @@ public class DefaultRouteManager implements RouteManager {
     }
 
     @Override
+    public Routes createRoutes(String pathPrefix) {
+        DefaultRoutes routes = factory.createBean(DefaultRoutes.class);
+        routes.setPathPrefix(pathPrefix);
+        return routes;
+    }
+
+    @Override
     public RouteBuilder createRoute(String method, String pathTemplate) {
         return new RouteBuilder(method, pathTemplateFactory.createPathTemplate(pathTemplate));
     }

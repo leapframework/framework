@@ -40,7 +40,17 @@ public class DefaultRoutes implements Routes {
     protected @Inject RoutesPrinter       routesPrinter;
 
     protected final List<Route> list = new CopyOnWriteArrayList<>();
-	
+
+    protected String pathPrefix = "";
+
+	public String getPathPrefix() {
+		return pathPrefix;
+	}
+
+	public void setPathPrefix(String pathPrefix) {
+		this.pathPrefix = null == pathPrefix ? "" : pathPrefix;
+	}
+
 	@Override
     public int size() {
 	    return list.size();
@@ -92,7 +102,7 @@ public class DefaultRoutes implements Routes {
 		
 		RouteBuilder r = new RouteBuilder();
 		
-		r.setPathTemplate(pathTemplateFactory.createPathTemplate(path));
+		r.setPathTemplate(pathTemplateFactory.createPathTemplate(pathPrefix + path));
 		r.setAction(action);
 		
 		if(null != method) {
