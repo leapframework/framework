@@ -48,8 +48,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 import java.io.*;
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -399,6 +401,26 @@ public class DefaultRequest extends Request {
             reverseProxyContextUrl = getReverseProxyServerUrl() + getContextPath();
         }
         return reverseProxyContextUrl;
+    }
+
+    @Override
+    public String getRealRemoteHost() {
+        String ipAddress = getHeader("x-forwarded-for");
+        if(ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = getHeader("Proxy-Client-IP");
+        }
+        if(ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = getHeader("WL-Proxy-Client-IP");
+        }
+        if(ipAddress!=null && ipAddress.length()>15){  
+            if(ipAddress.indexOf(",")>0){
+                ipAddress = ipAddress.substring(0,ipAddress.indexOf(","));
+            }
+        }
+        if(null == ipAddress || Strings.isEmpty(ipAddress)){
+            ipAddress = req.getRemoteHost();
+        }
+        return ipAddress;
     }
 
     @Override
