@@ -82,6 +82,11 @@ public class BeanConverter extends AbstractConverter<Object>{
 		@SuppressWarnings("unchecked")
         Object bean = newInstance(context, bt, map);
 
+		if(bean instanceof ConvertibleFromMap) {
+		    ((ConvertibleFromMap) bean).fromMap(map);
+		    return bean;
+        }
+
         //Check is the concrete type.
         if(bean.getClass() != targetType) {
             bt = BeanType.of(bean.getClass());
