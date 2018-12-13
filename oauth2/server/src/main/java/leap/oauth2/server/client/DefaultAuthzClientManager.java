@@ -18,6 +18,7 @@ package leap.oauth2.server.client;
 import leap.core.annotation.Inject;
 import leap.oauth2.server.OAuth2AuthzServerConfig;
 
+import static leap.oauth2.server.OAuth2Errors.*;
 import static leap.oauth2.server.Oauth2MessageKey.ERROR_INVALID_GRANT_CLIENT_NOT_FOUND;
 import static leap.oauth2.server.Oauth2MessageKey.INVALID_REQUEST_INVALID_CLIENT;
 import static leap.oauth2.server.Oauth2MessageKey.INVALID_REQUEST_INVALID_CLIENT_SECRET;
@@ -32,11 +33,11 @@ public class DefaultAuthzClientManager implements AuthzClientManager {
 
         AuthzClient client = loadClientById(credentials.getClientId());
         if(client == null){
-            context.addError(ERROR_INVALID_GRANT_CLIENT_NOT_FOUND,"client not found");
+            context.addError(ERROR_INVALID_GRANT_CLIENT_NOT_FOUND,ERROR_INVALID_CLIENT,"client not found");
             return null;
         }
         if(!client.isEnabled()){
-            context.addError(INVALID_REQUEST_INVALID_CLIENT,"client diabled");
+            context.addError(INVALID_REQUEST_INVALID_CLIENT,ERROR_INVALID_CLIENT,"client diabled");
             return null;
         }
         for(AuthzClientAuthenticator a : authenticators) {
@@ -44,7 +45,7 @@ public class DefaultAuthzClientManager implements AuthzClientManager {
                 return client;
             }
         }
-        context.addError(INVALID_REQUEST_INVALID_CLIENT_SECRET,"client_secret invalid");
+        context.addError(INVALID_REQUEST_INVALID_CLIENT_SECRET,ERROR_INCORRECT_SECRET,"client_secret invalid");
         return null;
     }
 
