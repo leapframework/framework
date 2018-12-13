@@ -25,10 +25,8 @@ import leap.oauth2.server.OAuth2AuthzServerConfig;
 import leap.oauth2.server.authc.AuthzAuthentication;
 import leap.oauth2.server.authc.SimpleAuthzAuthentication;
 import leap.oauth2.server.client.AuthzClient;
-import leap.oauth2.server.client.AuthzClientAuthenticationContext;
 import leap.oauth2.server.client.AuthzClientCredentials;
 import leap.oauth2.server.client.AuthzClientManager;
-import leap.oauth2.server.client.DefaultAuthzClientAuthenticationContext;
 import leap.oauth2.server.token.AuthzAccessToken;
 import leap.oauth2.server.token.AuthzRefreshToken;
 import leap.oauth2.server.token.AuthzTokenManager;
@@ -42,7 +40,7 @@ import leap.web.security.user.UserStore;
 
 import java.util.function.Consumer;
 
-import static leap.oauth2.server.OAuth2Errors.ERROR_TOKEN_EXPIRES;
+import static leap.oauth2.server.OAuth2Errors.ERROR_TOKEN_EXPIRED;
 import static leap.oauth2.server.Oauth2MessageKey.*;
 
 /**
@@ -95,7 +93,7 @@ public class RefreshTokenGrantTypeHandler extends AbstractGrantTypeHandler imple
 			tokenManager.removeRefreshToken(token);
 			
 			handleError(request,response,params,
-					getOauth2Error(key -> OAuth2Errors.oauth2Error(request, HTTP.SC_UNAUTHORIZED, ERROR_TOKEN_EXPIRES, key,"refresh token expired"),
+					getOauth2Error(key -> OAuth2Errors.oauth2Error(request, HTTP.SC_UNAUTHORIZED, ERROR_TOKEN_EXPIRED, key,"refresh token expired"),
 							ERROR_INVALID_GRANT_REFRESH_TOKEN_EXPIRED,refreshToken));
 			return;
 		}
