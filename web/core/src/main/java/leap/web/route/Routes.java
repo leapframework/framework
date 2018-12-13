@@ -30,6 +30,11 @@ public interface Routes extends Iterable<Route>,Emptiable {
 	int size();
 
 	/**
+	 * Returns the path prefix.
+	 */
+	String getPathPrefix();
+
+	/**
 	 * Returns a new created {@link RouteConfigurator}.
 	 */
 	RouteConfigurator create();

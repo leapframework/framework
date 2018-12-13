@@ -61,7 +61,7 @@ public class SwaggerProcessor implements ApiConfigProcessor,ApiMetadataProcessor
         Route route = routes.create()
                         .enableCors()
                         .allowAnonymous()
-                        .get(getJsonSpecPath(config), new Handler() {
+                        .get(getJsonSpecPath(config, routes), new Handler() {
                             @Override
                             public void handle(Request request, Response response) throws Throwable {
                                 handleJsonSpecRequest(context.getApi(), request, response);
@@ -108,8 +108,12 @@ public class SwaggerProcessor implements ApiConfigProcessor,ApiMetadataProcessor
         return out.toString();
     }
 	
-	protected String getJsonSpecPath(ApiConfig c) {
-		return c.getBasePath() + "/" + SWAGGER_JSON_FILE;
+	protected String getJsonSpecPath(ApiConfig c, Routes routes) {
+	    if(Strings.isEmpty(routes.getPathPrefix())) {
+            return c.getBasePath() + "/" + SWAGGER_JSON_FILE;
+        }else {
+            return "/" + SWAGGER_JSON_FILE;
+        }
 	}
 
     protected static class ApiSpecContextImpl implements ApiSpecContext {
