@@ -262,9 +262,12 @@ public class SwaggerSpecReader implements ApiSpecReader {
         List<MApiResponseBuilder> responses = new ArrayList<>();
 
         if(null != map) {
-
-            map.forEach((name, resp) ->  responses.add(readResponse(name, (Map<String,Object>)resp)));
-
+            //The key may be integer.
+            for (Object key : map.keySet()) {
+                String              name = key.toString();
+                Map<String, Object> resp = (Map) map.get(key);
+                responses.add(readResponse(name, resp));
+            }
         }
 
         return responses;

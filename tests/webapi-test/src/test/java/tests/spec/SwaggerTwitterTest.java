@@ -23,11 +23,12 @@ import leap.core.junit.AppTestBase;
 import leap.lang.resource.Resources;
 import leap.web.api.meta.ApiMetadataBuilder;
 import leap.web.api.spec.swagger.SwaggerSpecReader;
+import leap.webunit.WebTestBase;
 import org.junit.Test;
 
 import java.io.Reader;
 
-public class SwaggerTwitterTest extends AppTestBase {
+public class SwaggerTwitterTest extends WebTestBase {
 
     private @Inject SwaggerSpecReader swaggerReader;
 

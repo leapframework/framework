@@ -105,25 +105,5 @@ public class ConfigUtils {
         }
         return s.toString();
     }
-
-    public static Map<String,String> toProperties(Map<String, Object> map) {
-        return toProperties(map, "");
-    }
-
-    public static Map<String,String> toProperties(Map<String, Object> map, String prefix) {
-        Map<String, String> props = new LinkedHashMap<>();
-        putProperties(prefix, map, props);
-        return props;
-    }
-
-    protected static void putProperties(String prefix, Map map, Map<String, String> props) {
-        map.forEach((k,v) -> {
-            if(v instanceof Map) {
-                putProperties(prefix + k + ".", (Map)v, props);
-            }else {
-                props.put(prefix + k, Converts.toString(v));
-            }
-        });
-    }
 }
 
