@@ -36,6 +36,7 @@ import leap.core.config.AppProperty;
 import leap.core.config.AppPropertyContext;
 import leap.core.config.AppPropertyReader;
 import leap.core.config.ConfigUtils;
+import leap.lang.Maps;
 import leap.lang.Strings;
 import leap.lang.logging.LogFactory;
 import leap.lang.resource.Resource;
@@ -63,7 +64,7 @@ public class YamlPropertyReader implements AppPropertyReader {
                 return true;
             }
 
-            Map<String, String> props = ConfigUtils.toProperties(map);
+            Map<String, String> props = Maps.toProperties(map);
             props.forEach((key, value) -> putProperty(context, resource, key, value));
             return true;
         }

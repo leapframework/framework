@@ -53,12 +53,4 @@ public class YamlTest extends TestBase {
 		Map<String, Object> np = o.get("p3");
 		assertEquals("nv1", np.get("np1"));
 	}
-	
-	@Test
-	public void testProperties() {
-		String yaml = "p1: v1\np2: v2\np3:\n np1: nv1\n np2: nv2";
-		
-		YamlProperties props = YamlProperties.read(yaml);
-		assertEquals("nv1",props.get("p3.np1"));
-	}
 }

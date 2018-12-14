@@ -15,8 +15,9 @@
  */
 package leap.lang.yaml;
 
+import org.yaml.snakeyaml.Yaml;
+
 import java.io.Reader;
-import java.io.StringReader;
 
 public class YAML {
 
@@ -24,14 +25,14 @@ public class YAML {
      * Parse the yaml content to {@link YamlValue}.
      */
 	public static YamlValue parse(String string) throws YamlException {
-        return parse(new StringReader(string));
+        return YamlValue.of(decode(string));
 	}
 
     /**
      * Parse the yaml content to {@link YamlValue}.
      */
 	public static YamlValue parse(Reader reader) throws YamlException {
-		return YamlValue.of(new YamlDecoder(reader).decode());
+		return YamlValue.of(decode(reader));
 	}
 
     /**
@@ -41,7 +42,7 @@ public class YAML {
      * The raw value may be null, map, list or simpl value.
      */
     public static <T> T decode(String string) throws YamlException {
-        return (T)new YamlDecoder(new StringReader(string)).decode();
+        return new Yaml().load(string);
     }
 
     /**
@@ -51,7 +52,7 @@ public class YAML {
      * The raw value may be null, map, list or simpl value.
      */
     public static <T> T decode(Reader reader) throws YamlException {
-        return (T)new YamlDecoder(reader).decode();
+        return new Yaml().load(reader);
     }
 
 	protected YAML() {
