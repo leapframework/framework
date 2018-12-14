@@ -21,24 +21,30 @@ public class SimpleOAuth2Error implements OAuth2Error {
 
     protected int status;
     protected String error;
+    protected String errorCode;
+    protected String referral;
     protected String errorDescription;
     private MessageKey key;
 
-    public SimpleOAuth2Error() {
-        super();
-    }
-
     public SimpleOAuth2Error(int status, String error, String errorDescription) {
-        this.status = status;
-        this.error = error;
-        this.errorDescription = errorDescription;
+        this(status,error,errorDescription,null);
     }
 
     public SimpleOAuth2Error(int status, String error, String errorDescription,MessageKey key) {
+        this(status, error, null,errorDescription,key);
+    }
+    
+    public SimpleOAuth2Error(int status, String error, String referral, String errorDescription,MessageKey key) {
+        this(status, error, error,referral, errorDescription, key);
+    }
+
+    public SimpleOAuth2Error(int status, String error, String errorCode, String referral, String errorDescription, MessageKey key) {
         this.status = status;
         this.error = error;
+        this.errorCode = errorCode;
+        this.referral = referral;
         this.errorDescription = errorDescription;
-        this.key=key;
+        this.key = key;
     }
 
     public String getError() {
@@ -58,6 +64,16 @@ public class SimpleOAuth2Error implements OAuth2Error {
     }
 
     @Override
+    public String getErrorCode() {
+        return errorCode;
+    }
+
+    @Override
+    public String getReferral() {
+        return referral;
+    }
+
+    @Override
     public int getStatus() {
         return status;
     }
@@ -73,4 +89,12 @@ public class SimpleOAuth2Error implements OAuth2Error {
 	public void setKey(MessageKey key) {
 		this.key = key;
 	}
+
+    public void setErrorCode(String errorCode) {
+        this.errorCode = errorCode;
+    }
+
+    public void setReferral(String referral) {
+        this.referral = referral;
+    }
 }
