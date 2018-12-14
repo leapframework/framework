@@ -21,6 +21,8 @@ public class SimpleOAuth2Error implements OAuth2Error {
 
     protected int status;
     protected String error;
+    protected String errorCode;
+    protected String referral;
     protected String errorDescription;
     private MessageKey key;
 
@@ -58,6 +60,16 @@ public class SimpleOAuth2Error implements OAuth2Error {
     }
 
     @Override
+    public String getErrorCode() {
+        return errorCode;
+    }
+
+    @Override
+    public String getReferral() {
+        return referral;
+    }
+
+    @Override
     public int getStatus() {
         return status;
     }
@@ -73,4 +85,12 @@ public class SimpleOAuth2Error implements OAuth2Error {
 	public void setKey(MessageKey key) {
 		this.key = key;
 	}
+
+    public void setErrorCode(String errorCode) {
+        this.errorCode = errorCode;
+    }
+
+    public void setReferral(String referral) {
+        this.referral = referral;
+    }
 }

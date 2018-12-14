@@ -69,6 +69,8 @@ public class OAuth2Errors {
         JsonWriter w = JSON.createWriter(response.getWriter());
         w.startObject()
                 .property("error", error.getError())
+                .property("error_code", error.getErrorCode())
+                .propertyOptional("referral", error.getReferral())
                 .propertyOptional("error_description", error.getErrorDescription())
                 .endObject();
     }

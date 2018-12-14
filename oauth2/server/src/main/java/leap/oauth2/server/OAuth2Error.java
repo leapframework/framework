@@ -18,9 +18,19 @@ package leap.oauth2.server;
 public interface OAuth2Error {
     
     /**
-     * Required. Returns the error code.
+     * Required. Returns the standards error code.
      */
     String getError();
+
+    /**
+     * Required. Returns the detail error code
+     */
+    String getErrorCode();
+
+    /**
+     * Optional. Returns the suggest for this error
+     */
+    String getReferral();
     
     /**
      * Optional. Returns the error description.
