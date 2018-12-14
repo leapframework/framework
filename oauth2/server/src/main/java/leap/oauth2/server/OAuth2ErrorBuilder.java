@@ -5,7 +5,7 @@ import leap.lang.http.HTTP;
 
 import java.util.Locale;
 
-import static leap.oauth2.server.OAuth2Errors.ERROR_INVALID_GRANT;
+import static leap.oauth2.server.OAuth2Errors.*;
 
 /**
  * @author kael.
@@ -28,6 +28,14 @@ public class OAuth2ErrorBuilder {
     
     public static OAuth2ErrorBuilder createInvalidGrant(){
         return createUnauthorized().withError(ERROR_INVALID_GRANT);
+    }
+
+    public static OAuth2ErrorBuilder createInvalidToken(){
+        return createUnauthorized().withError(ERROR_INVALID_TOKEN);
+    }
+    
+    public static OAuth2ErrorBuilder createInvalidUser(){
+        return createUnauthorized().withError(ERROR_INVALID_USER);
     }
     
     public OAuth2ErrorBuilder withStatus(int status) {
