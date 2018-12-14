@@ -44,12 +44,20 @@ public class QueryOptions extends QueryOptionsBase {
         this.pageSize = pageSize;
     }
 
+    public void setPage_Size(Integer pageSize) {
+        this.pageSize = pageSize;
+    }
+
     public Integer getPageIndex() {
         return pageIndex;
     }
 
     public void setPageIndex(Integer pageIndex) {
         this.pageIndex = pageIndex;
+    }
+
+    public void setPage(Integer page) {
+        this.pageIndex = page;
     }
 
     public Integer getLimit() {
@@ -84,6 +92,10 @@ public class QueryOptions extends QueryOptionsBase {
         this.orderBy = orderBy;
     }
 
+    public void setOrderby(String orderBy) {
+        this.orderBy = orderBy;
+    }
+
     public String getViewId() {
         return viewId;
     }
@@ -114,6 +126,10 @@ public class QueryOptions extends QueryOptionsBase {
 
     public void setGroupBy(String groupBy) {
         this.groupBy = groupBy;
+    }
+
+    public void setGropuby(String gropuby) {
+        this.groupBy = gropuby;
     }
 
     public String getJoins() {
