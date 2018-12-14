@@ -58,8 +58,8 @@ public class JsonMessageConverter extends AbstractHttpMessageConverter implement
     }
 
     protected boolean canRead(Class<?> c) {
-        return JsonStringable.class.isAssignableFrom(c) ||
-                (c.isArray() && JsonStringable.class.isAssignableFrom(c.getComponentType()));
+        return JsonParsable.class.isAssignableFrom(c) ||
+                (c.isArray() && JsonParsable.class.isAssignableFrom(c.getComponentType()));
     }
 
     protected boolean canWrite(Class<?> c) {
