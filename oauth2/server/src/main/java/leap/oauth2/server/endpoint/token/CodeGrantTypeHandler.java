@@ -19,6 +19,7 @@ import java.util.function.Consumer;
 
 import leap.core.annotation.Inject;
 import leap.lang.Strings;
+import leap.oauth2.server.OAuth2ErrorBuilder;
 import leap.oauth2.server.OAuth2Errors;
 import leap.oauth2.server.OAuth2Params;
 import leap.oauth2.server.authc.AuthzAuthentication;
@@ -33,6 +34,7 @@ import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.SecurityConfig;
 
+import static leap.oauth2.server.OAuth2Errors.*;
 import static leap.oauth2.server.Oauth2MessageKey.*;
 
 /**
@@ -74,7 +76,11 @@ public class CodeGrantTypeHandler extends AbstractGrantTypeHandler implements Gr
 
         if(!client.isAllowAuthorizationCode()) {
 			handleError(request,response,params,
-					getOauth2Error(key -> OAuth2Errors.invalidGrantError(request,key,"authorization code not allow"),
+					getOauth2Error(key -> OAuth2ErrorBuilder.createInvalidGrant()
+							.withErrorCode(ERROR_CODE_NOT_ALLOW)
+							.withErrorDescription("authorization code is not allow by this client")
+							.withMessageKey(key)
+							.build(),
 							ERROR_INVALID_GRANT_AUTHORIZATION_CODE_NOT_ALLOW,client.getId()));
             return;
         }
@@ -82,22 +88,36 @@ public class CodeGrantTypeHandler extends AbstractGrantTypeHandler implements Gr
         AuthzCode authzCode = codeManager.consumeAuthorizationCode(code);
         if (null == authzCode) {
 			handleError(request,response,params,
-					getOauth2Error(key -> OAuth2Errors.invalidGrantError(request,key,"invalid authorization code"),
-							ERROR_INVALID_GRANT_INVALID_AUTHORIZATION_CODE,authzCode));
+					getOauth2Error(key -> OAuth2ErrorBuilder.createInvalidGrant()
+                            .withErrorCode(ERROR_INVALID_CODE)
+                            .withErrorDescription("invalid authorization code")
+                            .withMessageKey(key)
+                            .build(),
+							ERROR_INVALID_GRANT_INVALID_AUTHORIZATION_CODE,code));
             return;
         }
 
         if(authzCode.isExpired()) {
             codeManager.removeAuthorizationCode(authzCode);
 			handleError(request,response,params,
-					getOauth2Error(key -> OAuth2Errors.invalidGrantError(request,key,"authorization code expired"),ERROR_INVALID_GRANT_AUTHORIZATION_CODE_EXPIRED,authzCode));
+					getOauth2Error(key -> OAuth2ErrorBuilder.createInvalidGrant()
+                            .withErrorCode(ERROR_CODE_EXPIRED)
+							.withErrorDescription("authorization code expired")
+							.withMessageKey(key)
+							.build(),
+							ERROR_INVALID_GRANT_AUTHORIZATION_CODE_EXPIRED,authzCode));
             return;
         }
 
         AuthzAuthentication authc = authzAuthenticationManager.createAuthzAuthentication(params, client,authzCode);
 		if(null == authc) {
 			handleError(request,response,params,
-					getOauth2Error(key -> OAuth2Errors.invalidGrantError(request,key,"user id '" + authzCode.getUserId() + "' not found"),ERROR_INVALID_GRANT_USER_NOT_FOUND,authzCode.getUserId()));
+					getOauth2Error(key -> OAuth2ErrorBuilder.createInvalidGrant()
+							.withErrorCode(ERROR_INVALID_USER)
+							.withErrorDescription("user id '" + authzCode.getUserId() + "' not found")
+							.withMessageKey(key)
+							.build(),
+							ERROR_INVALID_GRANT_USER_NOT_FOUND,authzCode.getUserId()));
             return;
 		}
 		//Create access token.

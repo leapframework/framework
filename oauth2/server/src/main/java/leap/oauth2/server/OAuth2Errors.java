@@ -48,7 +48,11 @@ public class OAuth2Errors {
     //Non Standards.
     public static final String ERROR_INVALID_TOKEN    = "invalid_token";
     public static final String ERROR_TOKEN_EXPIRED    = "token_expired";
+    public static final String ERROR_CODE_NOT_ALLOW   = "authorization_code_not_allow";
+    public static final String ERROR_INVALID_CODE     = "invalid_authorization_code";
+    public static final String ERROR_CODE_EXPIRED     = "authorization_code_expired";
     public static final String ERROR_INCORRECT_SECRET = "incorrect_secret";
+    public static final String ERROR_INVALID_USER     = "invalid_user";
 
     //i18n message key
     public static final String ERROR_INVALID_REQUEST_KEY           = "oauth2.as.invalid_request";

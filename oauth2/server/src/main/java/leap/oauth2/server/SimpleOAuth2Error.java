@@ -37,7 +37,7 @@ public class SimpleOAuth2Error implements OAuth2Error {
     public SimpleOAuth2Error(int status, String error, String referral, String errorDescription,MessageKey key) {
         this(status, error, error,referral, errorDescription, key);
     }
-
+    
     public SimpleOAuth2Error(int status, String error, String errorCode, String referral, String errorDescription, MessageKey key) {
         this.status = status;
         this.error = error;
