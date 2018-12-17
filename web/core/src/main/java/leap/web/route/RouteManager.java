@@ -16,6 +16,7 @@
 
 package leap.web.route;
 
+import leap.lang.Strings;
 import leap.web.action.Action;
 
 public interface RouteManager {
@@ -53,7 +54,7 @@ public interface RouteManager {
      * Loads all the routes defined in the controller class into the given {@link Routes}.
      */
     default Route[] loadRoutesFromController(Routes routes, Class<?> controllerClass) {
-        return loadRoutesFromController(routes, controllerClass, "/");
+        return loadRoutesFromController(routes, controllerClass, Strings.isEmpty(routes.getPathPrefix()) ? "/" : routes.getPathPrefix());
     }
 
     /**
@@ -65,7 +66,7 @@ public interface RouteManager {
      * Loads all the routes defined in the controller object into the given {@link Routes}.
      */
     default Route[] loadRoutesFromController(Routes routes, Object controller) {
-        return loadRoutesFromController(routes, controller, "/");
+        return loadRoutesFromController(routes, controller, Strings.isEmpty(routes.getPathPrefix()) ? "/" : routes.getPathPrefix());
     }
 
     /**

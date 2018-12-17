@@ -38,6 +38,11 @@ public interface Routes extends Iterable<Route>,Emptiable {
 	 * Returns a new created {@link RouteConfigurator}.
 	 */
 	RouteConfigurator create();
+
+    /**
+     * Add a nested routes for the given path prefix.
+     */
+	Routes addNested(Object source, String pathPrefix);
 	
 	/**
 	 * Adds a route handling a http get request. 

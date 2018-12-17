@@ -25,18 +25,33 @@ public class SimpleNestedRoute extends ExtensibleBase implements NestedRoute {
 
     private final Object       source;
     private final String       method;
+    private final String       basePath;
     private final PathTemplate pathTemplate;
     private final Routes       routes;
 
     public SimpleNestedRoute(Object source, PathTemplate pathTemplate, Routes routes) {
-        this(source, "*", pathTemplate, routes);
+        this(source, "*", null, pathTemplate, routes);
     }
 
     public SimpleNestedRoute(Object source, String method, PathTemplate pathTemplate, Routes routes) {
+        this(source, method, null, pathTemplate, routes);
+    }
+
+    public SimpleNestedRoute(Object source, String method, String basePath, PathTemplate pathTemplate, Routes routes) {
         this.source = source;
         this.method = method;
+        this.basePath = basePath;
         this.pathTemplate = pathTemplate;
         this.routes = routes;
+    }
+
+    @Override
+    public boolean match(String path, Map<String, String> variables) {
+        if(null != basePath && path.equalsIgnoreCase(basePath)) {
+            return true;
+        }else {
+            return getPathTemplate().match(path, variables);
+        }
     }
 
     @Override
