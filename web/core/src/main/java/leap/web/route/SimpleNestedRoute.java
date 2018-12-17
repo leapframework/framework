@@ -40,8 +40,8 @@ public class SimpleNestedRoute extends ExtensibleBase implements NestedRoute {
     }
 
     @Override
-    public Route matchNested(String method, String path, Map<String, Object> inParameters, Map<String, String> outVariables) {
-        return routes.match(method, path, inParameters, outVariables);
+    public Route matchNested(String method, String path, Map<String, Object> in, Map<String, String> outVariables) {
+        return routes.match(method, path, in, outVariables);
     }
 
     @Override

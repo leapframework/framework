@@ -35,14 +35,14 @@ public interface NestedRoute extends Route {
     /**
      * @deprecated use {@link #matchNested(String, String, Map, Map)} instead.
      */
-    default Route match(String method, String path, Map<String,Object> inParameters, Map<String,String> outVariables) {
-        return matchNested(method, path, inParameters, outVariables);
+    default Route match(String method, String path, Map<String,Object> in, Map<String,String> out) {
+        return matchNested(method, path, in, out);
     }
 
     /**
      * Returns a matched {@link Route} or <code>null</code> if no route matched.
      */
-    Route matchNested(String method, String path, Map<String,Object> inParameters, Map<String,String> outVariables);
+    Route matchNested(String method, String path, Map<String,Object> in, Map<String,String> out);
 
     /**
      * todo: doc
