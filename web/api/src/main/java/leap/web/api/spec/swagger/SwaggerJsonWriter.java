@@ -111,6 +111,8 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
             }
         }
 
+        writeExtension(w, m.getExtension());
+
 		w.endObject();
 	}
 

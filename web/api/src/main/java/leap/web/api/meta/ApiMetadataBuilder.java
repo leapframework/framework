@@ -25,7 +25,7 @@ import java.util.*;
  * The builder of {@link ApiMetadata}
  */
 public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
-	
+
     protected String             basePath;
     protected String             termsOfService;
     protected MApiContactBuilder contact;
@@ -42,16 +42,17 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
     protected Map<String, MApiTag>             tags         = new LinkedHashMap<>();
     protected List<MApiSecurityDef>            securityDefs = new ArrayList<>();
     protected Set<String>                      operationIds = new HashSet<>();
+    protected MApiExtension                    extension;
 
     public ApiMetadataBuilder() {
         super();
     }
 
-	public ApiMetadataBuilder(String basePath) {
-		this.basePath = basePath;
-	}
+    public ApiMetadataBuilder(String basePath) {
+        this.basePath = basePath;
+    }
 
-	public ApiMetadataBuilder withPathMap(Map<String, MApiPathBuilder> map) {
+    public ApiMetadataBuilder withPathMap(Map<String, MApiPathBuilder> map) {
         this.paths = map;
         return this;
     }
@@ -61,81 +62,81 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
         return this;
     }
 
-	public String getBasePath() {
-		return basePath;
-	}
+    public String getBasePath() {
+        return basePath;
+    }
 
-	public void setBasePath(String basePath) {
-		this.basePath = basePath;
-	}
+    public void setBasePath(String basePath) {
+        this.basePath = basePath;
+    }
 
-	public String getTermsOfService() {
-		return termsOfService;
-	}
+    public String getTermsOfService() {
+        return termsOfService;
+    }
 
-	public void setTermsOfService(String termsOfService) {
-		this.termsOfService = termsOfService;
-	}
+    public void setTermsOfService(String termsOfService) {
+        this.termsOfService = termsOfService;
+    }
 
-	public MApiContactBuilder getContact() {
-		return contact;
-	}
+    public MApiContactBuilder getContact() {
+        return contact;
+    }
 
-	public void setContact(MApiContactBuilder contact) {
-		this.contact = contact;
-	}
+    public void setContact(MApiContactBuilder contact) {
+        this.contact = contact;
+    }
 
-	public String getVersion() {
-		return version;
-	}
+    public String getVersion() {
+        return version;
+    }
 
-	public void setVersion(String version) {
-		this.version = version;
-	}
+    public void setVersion(String version) {
+        this.version = version;
+    }
 
-	public String getHost() {
-		return host;
-	}
+    public String getHost() {
+        return host;
+    }
 
-	public void setHost(String host) {
-		this.host = host;
-	}
+    public void setHost(String host) {
+        this.host = host;
+    }
 
-	public Set<String> getProtocols() {
-		return protocols;
-	}
-	
-	public void addProtocol(String p) {
-		protocols.add(p);
-	}
-	
-	public void addProtocols(String... ps) {
-		Collections2.addAll(protocols, ps);
-	}
+    public Set<String> getProtocols() {
+        return protocols;
+    }
 
-	public Set<String> getConsumes() {
-		return consumes;
-	}
-	
-	public void addConsume(String mimeType) {
-		consumes.add(mimeType);
-	}
-	
-	public void addConsumes(String... cs) {
-		Collections2.addAll(consumes, cs);
-	}
+    public void addProtocol(String p) {
+        protocols.add(p);
+    }
 
-	public Set<String> getProduces() {
-		return produces;
-	}
-	
-	public void addProduce(String mimeType) {
-		produces.add(mimeType);
-	}
-	
-	public void addProduces(String... ps) {
-		Collections2.addAll(produces, ps);
-	}
+    public void addProtocols(String... ps) {
+        Collections2.addAll(protocols, ps);
+    }
+
+    public Set<String> getConsumes() {
+        return consumes;
+    }
+
+    public void addConsume(String mimeType) {
+        consumes.add(mimeType);
+    }
+
+    public void addConsumes(String... cs) {
+        Collections2.addAll(consumes, cs);
+    }
+
+    public Set<String> getProduces() {
+        return produces;
+    }
+
+    public void addProduce(String mimeType) {
+        produces.add(mimeType);
+    }
+
+    public void addProduces(String... ps) {
+        Collections2.addAll(produces, ps);
+    }
 
     public Map<String, MApiResponseBuilder> getResponses() {
         return responses;
@@ -154,29 +155,29 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
     }
 
     public void addPath(MApiPathBuilder path) throws ObjectExistsException {
-		Args.notNull(path, "api path");
-		Args.notEmpty(path.getPathTemplate(), "path template");
-		
-		if(paths.containsKey(path.getPathTemplate())) {
-		    
-			throw new ObjectExistsException("The path template '" + path.getPathTemplate() + "' already exists");
-		}
-		
-		paths.put(path.getPathTemplate(), path);
-	}
-	
-	public Map<String, MApiPathBuilder> getPaths() {
-		return paths;
-	}
-	
-	public MApiPathBuilder getPath(String pathTemplate) {
-		Args.notEmpty(pathTemplate,"path template");
-		return paths.get(pathTemplate);
-	}
+        Args.notNull(path, "api path");
+        Args.notEmpty(path.getPathTemplate(), "path template");
+
+        if (paths.containsKey(path.getPathTemplate())) {
+
+            throw new ObjectExistsException("The path template '" + path.getPathTemplate() + "' already exists");
+        }
+
+        paths.put(path.getPathTemplate(), path);
+    }
+
+    public Map<String, MApiPathBuilder> getPaths() {
+        return paths;
+    }
+
+    public MApiPathBuilder getPath(String pathTemplate) {
+        Args.notEmpty(pathTemplate, "path template");
+        return paths.get(pathTemplate);
+    }
 
     public MApiPathBuilder getOrAddPath(String pathTemplate) {
         MApiPathBuilder path = getPath(pathTemplate);
-        if(null == path) {
+        if (null == path) {
             path = new MApiPathBuilder();
             path.setPathTemplate(pathTemplate);
             addPath(path);
@@ -191,58 +192,58 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
         return path;
     }
 
-	public Map<String, MApiModelBuilder> getModels() {
-		return models;
-	}
-	
-	public void addModel(MApiModelBuilder model) throws ObjectExistsException {
-		Args.notNull(model, "model");
-		
-		if(models.containsKey(model.getName())) {
-			throw new ObjectExistsException("The model '" + model.getName() + "' already exists");
-		}
-		
-		models.put(model.getName(), model);
-	}
+    public Map<String, MApiModelBuilder> getModels() {
+        return models;
+    }
 
-	public boolean containsModel(String name) {
-		return models.containsKey(name);
-	}
+    public void addModel(MApiModelBuilder model) throws ObjectExistsException {
+        Args.notNull(model, "model");
+
+        if (models.containsKey(model.getName())) {
+            throw new ObjectExistsException("The model '" + model.getName() + "' already exists");
+        }
+
+        models.put(model.getName(), model);
+    }
+
+    public boolean containsModel(String name) {
+        return models.containsKey(name);
+    }
 
     public Map<String, MApiPermission> getPermissions() {
         return permissions;
     }
 
     public void addPermission(MApiPermission p) {
-        if(permissions.containsKey(p.getValue())) {
+        if (permissions.containsKey(p.getValue())) {
             throw new IllegalStateException("Permission '" + p.getValue() + "' already exists!");
         }
         permissions.put(p.getValue(), p);
     }
 
 
-	public List<MApiSecurityDef> getSecurityDefs() {
+    public List<MApiSecurityDef> getSecurityDefs() {
         return securityDefs;
     }
-	
-	public void addSecurityDef(MApiSecurityDef def) {
-	    securityDefs.add(def);
-	}
+
+    public void addSecurityDef(MApiSecurityDef def) {
+        securityDefs.add(def);
+    }
 
     public Map<String, MApiTag> getTags() {
         return tags;
     }
 
     public void addTag(MApiTag tag) {
-        if(tags.containsKey(tag.getName())) {
+        if (tags.containsKey(tag.getName())) {
             throw new IllegalStateException("Tag '" + tag.getName() + "' already exists!");
         }
         tags.put(tag.getName(), tag);
     }
 
     public boolean hasModel(String name) {
-        for(MApiModelBuilder m : models.values()){
-            if(name.equals(m.getName())) {
+        for (MApiModelBuilder m : models.values()) {
+            if (name.equals(m.getName())) {
                 return true;
             }
         }
@@ -254,12 +255,12 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
     }
 
     public MApiModelBuilder tryGetModel(String name) {
-        if(Strings.isEmpty(name)) {
+        if (Strings.isEmpty(name)) {
             return null;
         }
 
-        for(MApiModelBuilder m : models.values()){
-            if(name.equalsIgnoreCase(m.getName())) {
+        for (MApiModelBuilder m : models.values()) {
+            if (name.equalsIgnoreCase(m.getName())) {
                 return m;
             }
         }
@@ -268,13 +269,13 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
     }
 
     public MApiModelBuilder tryGetModel(Class<?> type) {
-        if(null == type) {
+        if (null == type) {
             return null;
         }
 
-        for(MApiModelBuilder m : models.values()){
-            for(Class<?> javaType : m.getJavaTypes()) {
-                if(type.equals(javaType)) {
+        for (MApiModelBuilder m : models.values()) {
+            for (Class<?> javaType : m.getJavaTypes()) {
+                if (type.equals(javaType)) {
                     return m;
                 }
             }
@@ -284,13 +285,13 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
     }
 
     public MApiModelBuilder tryGetModelByClassName(String className) {
-        if(Strings.isEmpty(className)) {
+        if (Strings.isEmpty(className)) {
             return null;
         }
 
-        for(MApiModelBuilder m : models.values()){
-            for(Class<?> javaType : m.getJavaTypes()) {
-                if(javaType.getName().equals(className)) {
+        for (MApiModelBuilder m : models.values()) {
+            for (Class<?> javaType : m.getJavaTypes()) {
+                if (javaType.getName().equals(className)) {
                     return m;
                 }
             }
@@ -303,6 +304,14 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
         return operationIds;
     }
 
+    public MApiExtension getExtension() {
+        return extension;
+    }
+
+    public void setExtension(MApiExtension extension) {
+        this.extension = extension;
+    }
+
     @Override
     public ApiMetadata build() {
 
@@ -310,18 +319,19 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
         MApiTag[]        tags        = this.tags.values().toArray(new MApiTag[0]);
 
         return new ApiMetadata(name, title, summary, description,
-        					termsOfService, null == contact ? null : contact.build(),
-        					version, host, basePath,
-        					protocols.toArray(Arrays2.EMPTY_STRING_ARRAY), 
-        					consumes.toArray(Arrays2.EMPTY_STRING_ARRAY), 
-        					produces.toArray(Arrays2.EMPTY_STRING_ARRAY),
-                            Builders.buildMap(responses),
-        					Builders.buildMap(paths),
-        					Builders.buildMap(models),
-                            permissions,
-        					securityDefs.toArray(new MApiSecurityDef[]{}),
-                            tags,
-        					attrs);
+                termsOfService, null == contact ? null : contact.build(),
+                version, host, basePath,
+                protocols.toArray(Arrays2.EMPTY_STRING_ARRAY),
+                consumes.toArray(Arrays2.EMPTY_STRING_ARRAY),
+                produces.toArray(Arrays2.EMPTY_STRING_ARRAY),
+                Builders.buildMap(responses),
+                Builders.buildMap(paths),
+                Builders.buildMap(models),
+                permissions,
+                securityDefs.toArray(new MApiSecurityDef[]{}),
+                tags,
+                extension,
+                attrs);
     }
-	
+
 }
