@@ -164,7 +164,11 @@ public class AppFilter implements Filter {
 					e.printStackTrace(response.getWriter());
 				}else{
 					if(e instanceof RuntimeException) {
-						throw (RuntimeException)e;
+                        throw (RuntimeException) e;
+                    }else if(e instanceof ServletException) {
+                        throw (ServletException) e;
+                    }else if(e instanceof IOException) {
+					    throw (IOException)e;
 					}else{
 						throw new AppException(e.getMessage(),e);	
 					}
@@ -241,7 +245,9 @@ public class AppFilter implements Filter {
 	        		}
 	        	}
 	        }
-		} catch (RuntimeException e){
+		} catch (RuntimeException e) {
+			throw e;
+		}catch (IOException | ServletException e) {
 			throw e;
         } catch (Throwable e) {
         	throw new ServletException("Error servicing current request, " + e.getMessage(), e);
