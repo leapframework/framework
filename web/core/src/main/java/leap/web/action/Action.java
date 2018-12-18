@@ -93,7 +93,7 @@ public interface Action extends Named,AnnotationsGetter,Extensible {
 	}
 
 	/**
-	 * @see {@link java.lang.reflect.Method#getAnnotationsByType(Class)}
+	 * see {@link Method#getAnnotation(Class)}
      */
 	default <T extends Annotation> T[] getAnnotationsByType(Class<T> annotationClass) {
 		return (T[])Array.newInstance(annotationClass,0);
@@ -110,7 +110,7 @@ public interface Action extends Named,AnnotationsGetter,Extensible {
 	 * Returns the a merged annotations of controller and action.
 	 * 
 	 * <p>
-	 * If an annotation ared defined both in controller and action, the action's will override the annotation of controller.  
+	 * If an annotation is defined both in controller and action, the action's will override the annotation of controller.
 	 */
 	default Annotation[] getMergedAnnotations() {
 		return Classes.EMPTY_ANNOTATION_ARRAY;

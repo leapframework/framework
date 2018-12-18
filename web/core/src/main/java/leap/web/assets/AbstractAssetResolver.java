@@ -15,18 +15,79 @@
  */
 package leap.web.assets;
 
-import javax.servlet.ServletContext;
+import leap.core.annotation.Inject;
+import leap.lang.Strings;
+import leap.lang.path.Paths;
+import leap.lang.resource.Resource;
 
-import leap.core.annotation.M;
-import leap.core.web.ServletContextAware;
+import java.util.Locale;
 
-public abstract class AbstractAssetResolver implements AssetResolver, ServletContextAware {
-	
-	protected @M ServletContext servletContext;
+public abstract class AbstractAssetResolver implements AssetResolver {
 
-	@Override
-    public void setServletContext(ServletContext servletContext) {
-		this.servletContext = servletContext;
-	}
-	
+    protected @Inject AssetManager manager;
+    protected @Inject AssetConfig  config;
+
+    @Override
+    public Asset resolveAsset(String path, Locale locale) throws Throwable {
+        path = Paths.prefixWithoutSlash(path);
+        if(isExcluded(path)) {
+            return null;
+        }
+
+        final String resourcePath = getResourcePath(path);
+
+        Resource resource = getLocaleResource(resourcePath,locale);
+        if(null == resource || !resource.exists()){
+            return null;
+        }
+
+        return resolveAsset(path, resource);
+    }
+
+    protected abstract Resource resolveResource(String path);
+
+    protected abstract Asset resolveAsset(String path, Resource resource);
+
+    protected String getResourcePath(String path) {
+        return path;
+    }
+
+    protected boolean isExcluded(String path) {
+        return false;
+    }
+
+    protected Resource getLocaleResource(String resourcePath, Locale locale){
+        String suffix     = "." + Paths.getFileExtension(resourcePath);
+        String pathPrefix = resourcePath.substring(0,resourcePath.length() - suffix.length());
+
+        String lang    = null == locale ? null : locale.getLanguage();
+        String country = null == locale ? null : locale.getCountry();
+
+        //{pathPrefix}_{lang}_{COUNTRY}{suffix}
+        if(!Strings.isEmpty(country)){
+            String path = pathPrefix + "_" + locale.getLanguage() + "_" + country + suffix;
+            Resource resource = resolveResource(path);
+            if(null != resource && resource.exists()){
+                return resource;
+            }
+        }
+
+        //{pathPrefix_{lang}{suffix}
+        if(!Strings.isEmpty(lang)){
+            String path = pathPrefix + "_" + locale.getLanguage() + suffix;
+            Resource resource = resolveResource(path);
+            if(null != resource && resource.exists()){
+                return resource;
+            }
+        }
+
+        //{pathPrefix}{suffix}
+        String path = pathPrefix + suffix;
+        Resource resource = resolveResource(path);
+        if(null != resource && resource.exists()){
+            return resource;
+        }
+
+        return null;
+    }
 }
