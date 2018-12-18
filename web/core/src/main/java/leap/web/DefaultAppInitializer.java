@@ -85,7 +85,8 @@ public class DefaultAppInitializer implements AppInitializer {
             ResourceSet rs = Resources.scanPackage(module.getBasePackage());
 
             if(rs.isEmpty()) {
-                log.info("No resource scanned in base package '{}' of module '{}', is the module exists?");
+                log.info("No resource scanned in base package '{}' of module '{}', is the module exists?",
+						module.getBasePackage(), module.getName());
             }else{
                 String appContextPath    = app.getContextPath().equals("") ? "/" : app.getContextPath();
                 String moduleContextPath = module.getContextPath();

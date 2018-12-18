@@ -173,4 +173,9 @@ public class PooledDataSource extends PoolProperties implements DataSource, Clos
 
 		return false;
 	}
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName() + "@" + getUrl();
+    }
 }

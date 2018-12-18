@@ -82,9 +82,19 @@
 			    <exclusion>
 			        <artifactId>javax.servlet.jsp.jstl</artifactId>
 			        <groupId>org.eclipse.jetty.orbit</groupId>
-			    </exclusion>  
+			    </exclusion>
+				<exclusion>
+					<groupId>org.glassfish</groupId>
+					<artifactId>javax.el</artifactId>
+				</exclusion>
 			</exclusions>
-		</dependency> 
+		</dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.el</artifactId>
+            <version>3.0.1-b11</version>
+            <scope>test</scope>
+        </dependency>
 		<dependency>
 		    <groupId>org.eclipse.jetty.toolchain</groupId>
 		    <artifactId>jetty-jsp-jdt</artifactId>
