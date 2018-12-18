@@ -29,6 +29,7 @@ import leap.lang.json.JSON;
 import leap.lang.json.JsonValue;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.lang.time.StopWatch;
 import leap.oauth2.webapp.OAuth2InternalServerException;
 import leap.oauth2.webapp.OAuth2Config;
 import leap.oauth2.webapp.OAuth2ResponseException;
@@ -59,6 +60,7 @@ public class DefaultTokenInfoLookup implements TokenInfoLookup {
                     Base64.encode(config.getClientId()+":"+config.getClientSecret()));
         }
 
+        StopWatch sw = StopWatch.startNew();
         HttpResponse response = request.send();
         
         if(ContentTypes.APPLICATION_JSON_TYPE.isCompatible(response.getContentType())){
@@ -73,17 +75,16 @@ public class DefaultTokenInfoLookup implements TokenInfoLookup {
             }else{
                 Map<String, Object> map = json.asMap();
                 String error = (String)map.get("error");
-                String desc  = Objects.toString(map.get("error_description"));
-
-                if(Strings.isEmpty(desc)) {
-                    log.error("Err get token info from '{}' : {} - {}", config.getTokenUrl(), response.getStatus(), content);
-                }else {
-                    log.error("Err get token info from '{}' : {} - {}", config.getTokenUrl(), response.getStatus(), desc);
-                }
-
                 if(Strings.isEmpty(error)) {
+                    log.info("Request token info from oauth2 server use {}ms", sw.getElapsedMilliseconds());
                     return createTokenInfo(map);
                 }else{
+                    String desc  = Objects.toString(map.get("error_description"));
+                    if(Strings.isEmpty(desc)) {
+                        log.error("Err get token info from '{}' : {} - {}", config.getTokenUrl(), response.getStatus(), content);
+                    }else {
+                        log.error("Err get token info from '{}' : {} - {}", config.getTokenUrl(), response.getStatus(), desc);
+                    }
                     if(response.getStatus() == HTTP.SC_UNAUTHORIZED){
                         throw new Oauth2InvalidTokenException(response.getStatus(),error, desc);
                     }else if(!response.is2xx()){
