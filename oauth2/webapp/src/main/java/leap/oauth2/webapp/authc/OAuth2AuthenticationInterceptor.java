@@ -93,10 +93,9 @@ public class OAuth2AuthenticationInterceptor implements SecurityInterceptor {
             errorHandler.handleInvalidToken(request, response, e.getMessage());
             return State.INTERCEPTED;
         } catch (OAuth2ResponseException e) {
-            if (e instanceof Oauth2InvalidTokenException){
-                if(null != context.getSecuredPath() && context.getSecuredPath().isAllowAnonymous()){
-                    return State.CONTINUE;
-                }
+            if(null != context.getSecuredPath() && context.getSecuredPath().isAllowAnonymous()){
+                log.warn("Got oauth2 server error, ignore for anonymous allowed at '{}'", context.getSecuredPath());
+                return State.CONTINUE;
             }
             errorHandler.responseError(request, response, e.getStatus(), e.getError(), e.getMessage());
             return State.INTERCEPTED;

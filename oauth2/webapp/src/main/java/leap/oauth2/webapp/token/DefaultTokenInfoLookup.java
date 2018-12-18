@@ -73,15 +73,23 @@ public class DefaultTokenInfoLookup implements TokenInfoLookup {
             }else{
                 Map<String, Object> map = json.asMap();
                 String error = (String)map.get("error");
+                String desc  = Objects.toString(map.get("error_description"));
+
+                if(Strings.isEmpty(desc)) {
+                    log.error("Err get token info from '{}' : {} - {}", config.getTokenUrl(), response.getStatus(), content);
+                }else {
+                    log.error("Err get token info from '{}' : {} - {}", config.getTokenUrl(), response.getStatus(), desc);
+                }
+
                 if(Strings.isEmpty(error)) {
                     return createTokenInfo(map);
                 }else{
                     if(response.getStatus() == HTTP.SC_UNAUTHORIZED){
-                        throw new Oauth2InvalidTokenException(response.getStatus(),error, Objects.toString(map.get("error_description")));
+                        throw new Oauth2InvalidTokenException(response.getStatus(),error, desc);
                     }else if(!response.is2xx()){
-                        throw new OAuth2ResponseException(response.getStatus(),error, Objects.toString(map.get("error_description")));
+                        throw new OAuth2ResponseException(response.getStatus(),error, desc);
                     }else {
-                        throw new OAuth2InternalServerException("Auth server response error '" + error + "' : " + map.get("error_description"));
+                        throw new OAuth2InternalServerException("Auth server response error '" + error + "' : " + desc);
                     }
                 }
             }
