@@ -202,15 +202,34 @@ public class DefaultEntityReader implements EntityReader {
 	
 	protected void readMap(OrmContext context,ResultSet rs,ResultSetMapping rsm,Map<String,Object> map) throws SQLException {
 		DbDialect dialect = context.getDb().getDialect();
+
+		final boolean convertForMap = context.getConfig().isConvertPropertyForReadMap();
 		
 		for(int i=0;i<rsm.getColumnCount();i++){
 			ResultColumnMapping cm = rsm.getColumnMapping(i);
 			FieldMapping  fm = cm.getFieldMapping();
 			
-			Object value = readColumnValue(dialect, rs, cm, fm, i+1);
+			Object value = convertForMap ?
+                            readColumnValue(dialect, rs, cm, fm, i+1) :
+                            readColumnValueForMap(dialect, rs, cm, fm, i+1);
 
             map.put(cm.getResultName(), value);
 		}
+	}
+
+	protected Object readColumnValueForMap(DbDialect dialect,ResultSet rs,ResultColumnMapping cm,FieldMapping fm, int index) throws SQLException{
+		Object value = dialect.getColumnValue(rs, index, cm.getColumnType());
+		if(null != value){
+			if(null == fm) {
+				Class<?> targetType = JdbcTypes.forTypeCode(cm.getColumnType()).getDefaultReadType();
+				value = Converts.convert(value, targetType);
+			}else{
+				if(null != fm.getSerializer()) {
+					value = fm.getSerializer().deserialize(fm, value);
+				}
+			}
+		}
+		return value;
 	}
 
 	protected Object readColumnValue(DbDialect dialect,ResultSet rs,ResultColumnMapping cm,FieldMapping fm, int index) throws SQLException{

@@ -144,6 +144,11 @@ public interface OrmConfig {
 	String getColumnNamingStyle();
 
     /**
+     * Returns true if should convert to bean property's type at read map.
+     */
+	boolean isConvertPropertyForReadMap();
+
+    /**
      * Returns the format name of default serializer.
      */
     String getDefaultSerializer();
