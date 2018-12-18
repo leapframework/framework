@@ -100,7 +100,9 @@ public class DefaultAuthzTokenManager implements AuthzTokenManager {
         rt.setScope(scope);
 
         //Client Authenticated
-        at.setAuthenticated(authc.getClientDetails().isAuthenticated());
+        if(null != client){
+            at.setAuthenticated(client.isAuthenticated());
+        }
 
         if(processors != null && processors.length>0){
             for(CreateAccessTokenProcessor merger : processors){

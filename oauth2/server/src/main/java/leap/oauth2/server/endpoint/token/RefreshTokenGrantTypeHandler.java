@@ -135,6 +135,11 @@ public class RefreshTokenGrantTypeHandler extends AbstractGrantTypeHandler imple
 				return;
 			}
 		}
+		if(null == client){
+			handleError(request,response,params,
+					getOauth2Error(key -> OAuth2Errors.invalidTokenError(request,key,"invalid client of refresh token"),ERROR_INVALID_GRANT_INVALID_REFRESH_TOKEN,token.getClientId()));
+			return;
+		}
 		UserDetails ud = null;
 		if(null != user){
 			ud = um.getUserDetails(user);
@@ -142,7 +147,8 @@ public class RefreshTokenGrantTypeHandler extends AbstractGrantTypeHandler imple
 		AuthzAuthentication oauthAuthc = new SimpleAuthzAuthentication(params, client, ud);
 		
 		//Generates a new token.
-		callback.accept(tokenManager.createAccessToken(oauthAuthc, token));
+		AuthzAccessToken accessToken = tokenManager.createAccessToken(oauthAuthc, token);
+		callback.accept(accessToken);
 	}
 
 	protected AuthzClient authcClient(Request request, Response response, OAuth2Params params){
