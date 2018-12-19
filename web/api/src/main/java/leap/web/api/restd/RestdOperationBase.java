@@ -24,6 +24,7 @@ import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.json.JsonSettings;
 import leap.lang.path.Paths;
+import leap.orm.mapping.EntityMapping;
 import leap.web.action.ArgumentBuilder;
 import leap.web.action.FuncActionBuilder;
 import leap.web.annotation.NonParam;
@@ -133,6 +134,7 @@ public abstract class RestdOperationBase {
 
     protected void postConfigure(RestdContext context, RestdModel model, RouteBuilder route) {
         route.setCsrfEnabled(false);
+        route.setExtension(EntityMapping.class, model.getEntityMapping());
         postConfigure(context, model, route, null);
     }
 
