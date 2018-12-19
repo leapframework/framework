@@ -69,7 +69,7 @@ public class OAuth2Errors {
     public static void response(Response response, OAuth2Error error) {
         response.setStatus(error.getStatus());
         response.setContentType(ContentTypes.APPLICATION_JSON_UTF8);
-
+        
         JsonWriter w = JSON.createWriter(response.getWriter());
         w.startObject()
                 .property("error", error.getError())

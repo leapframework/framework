@@ -16,6 +16,8 @@
 package leap.oauth2.server;
 
 import leap.core.i18n.MessageKey;
+import leap.core.i18n.MessageSource;
+import leap.lang.Strings;
 
 public class SimpleOAuth2Error implements OAuth2Error {
 
@@ -24,7 +26,8 @@ public class SimpleOAuth2Error implements OAuth2Error {
     protected String errorCode;
     protected String referral;
     protected String errorDescription;
-    private MessageKey key;
+    protected MessageKey key;
+    protected MessageSource messageSource;
 
     public SimpleOAuth2Error(int status, String error, String errorDescription) {
         this(status,error,errorDescription,null);
@@ -54,9 +57,13 @@ public class SimpleOAuth2Error implements OAuth2Error {
     public void setError(String error) {
         this.error = error;
     }
-
+    @Override
     public String getErrorDescription() {
-        return errorDescription;
+        if(null == key || null == messageSource){
+            return errorDescription;
+        }
+        String description = messageSource.tryGetMessage(key);
+        return Strings.isEmpty(description)?errorDescription:description;
     }
 
     public void setErrorDescription(String errorDescription) {
@@ -96,5 +103,13 @@ public class SimpleOAuth2Error implements OAuth2Error {
 
     public void setReferral(String referral) {
         this.referral = referral;
+    }
+
+    public MessageSource getMessageSource() {
+        return messageSource;
+    }
+
+    public void setMessageSource(MessageSource messageSource) {
+        this.messageSource = messageSource;
     }
 }

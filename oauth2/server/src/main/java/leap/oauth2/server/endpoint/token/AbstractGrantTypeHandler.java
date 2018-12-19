@@ -21,13 +21,7 @@ import leap.lang.NamedError;
 import leap.lang.Strings;
 import leap.lang.codec.Base64;
 import leap.lang.http.HTTP;
-import leap.oauth2.server.OAuth2AuthzServerConfig;
-import leap.oauth2.server.OAuth2Constants;
-import leap.oauth2.server.OAuth2Error;
-import leap.oauth2.server.OAuth2Errors;
-import leap.oauth2.server.OAuth2Params;
-import leap.oauth2.server.Oauth2MessageKey;
-import leap.oauth2.server.RequestOAuth2Params;
+import leap.oauth2.server.*;
 import leap.oauth2.server.client.*;
 import leap.web.Request;
 import leap.web.Response;
@@ -98,8 +92,12 @@ public abstract class AbstractGrantTypeHandler implements GrantTypeHandler {
         if (!context.errors().isEmpty()) {
             NamedError error = context.errors().first();
 
-            handleError(request, response, new RequestOAuth2Params(request),
-                    getOauth2Error(key -> OAuth2Errors.oauth2Error(request, HTTP.SC_UNAUTHORIZED, error.getCode(), key, error.getMessage()), error.getName()));
+            handleError(request, response, new RequestOAuth2Params(request), getOauth2Error(key -> OAuth2ErrorBuilder.createUnauthorized()
+                    .withError(error.getCode())
+                    .withErrorDescription(error.getMessage())
+                    .withMessageKey(key)
+                    .build(),
+                    error.getName()));
             return null;
         }
         return client;
