@@ -1,6 +1,7 @@
 package leap.oauth2.server;
 
 import leap.core.i18n.MessageKey;
+import leap.lang.Strings;
 import leap.lang.http.HTTP;
 
 import java.util.Locale;
@@ -74,6 +75,6 @@ public class OAuth2ErrorBuilder {
     }
 
     public OAuth2Error build() {
-        return new SimpleOAuth2Error(status, error, errorCode, referral, errorDescription, key);
+        return new SimpleOAuth2Error(status, error, Strings.isEmpty(errorCode)?error:errorCode, referral, errorDescription, key);
     }
 }
