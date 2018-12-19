@@ -188,7 +188,7 @@ public class GenericDb extends DbBase {
 
                     callback.execute(conn);
                 }catch(SQLException e) {
-                    throw Exceptions.wrap(e);
+                    throw new NestedSQLException(e, metadata.getProductName());
                 }finally{
                     JDBC.closeConnection(conn);
                 }
@@ -212,7 +212,7 @@ public class GenericDb extends DbBase {
 
                     return callback.execute(conn);
                 }catch(SQLException e) {
-                    throw Exceptions.wrap(e);
+                    throw new NestedSQLException(e, metadata.getProductName());
                 }finally{
                     JDBC.closeConnection(conn);
                 }
@@ -410,7 +410,7 @@ public class GenericDb extends DbBase {
 			
 			return result;
 		}catch(SQLException e){
-			throw new NestedSQLException(e);
+			throw new NestedSQLException(e, metadata.getProductName());
 		}finally{
 			JDBC.closeStatementOnly(ps);
 		}
@@ -446,7 +446,7 @@ public class GenericDb extends DbBase {
 			
 			return reader.read(rs);
 		}catch(SQLException e){
-			throw new NestedSQLException(e);
+			throw new NestedSQLException(e, metadata.getProductName());
 		}finally{
 			JDBC.closeResultSetOnly(rs);
 			JDBC.closeStatementOnly(ps);
@@ -503,7 +503,7 @@ public class GenericDb extends DbBase {
 			
 			return result;
 		}catch(SQLException e){
-			throw new NestedSQLException(e);
+			throw new NestedSQLException(e, metadata.getProductName());
 		}finally{
 			JDBC.closeStatementOnly(ps);
 		}

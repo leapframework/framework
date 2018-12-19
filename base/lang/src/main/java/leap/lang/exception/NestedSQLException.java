@@ -20,16 +20,32 @@ import java.sql.SQLException;
 public class NestedSQLException extends RuntimeException {
 
 	private static final long serialVersionUID = 3382331577872459024L;
-	
-	public NestedSQLException(SQLException cause) {
+
+	private final String databaseName;
+
+    public NestedSQLException(SQLException cause) {
+        this(cause, null);
+    }
+
+    public NestedSQLException(SQLException cause, String databaseName) {
 		super(cause);
+		this.databaseName = databaseName;
 	}
 
-	public NestedSQLException(String message, SQLException cause) {
+    public NestedSQLException(String message, SQLException cause) {
+        this(message, cause, null);
+    }
+
+	public NestedSQLException(String message, SQLException cause, String databaseName) {
 		super(message, cause);
+		this.databaseName = databaseName;
 	}
-	
+
 	public SQLException getSQLException(){
 		return (SQLException)getCause();
 	}
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
 }
