@@ -24,11 +24,14 @@ import leap.web.Renderable;
 import leap.web.Request;
 import leap.web.Response;
 
+import java.util.Map;
+
 public final class ApiError implements JsonStringable, Renderable {
-    protected Integer status;
-    protected String  code;
-    protected String  error;
-    protected String  message;
+    protected Integer             status;
+    protected String              code;
+    protected String              error;
+    protected String              message;
+    protected Map<String, Object> details;
 
     public ApiError() {
 
@@ -54,8 +57,9 @@ public final class ApiError implements JsonStringable, Renderable {
         w.startObject()
                 .propertyOptional("status", status)
                 .propertyOptional("code", code)
-                .propertyOptional("error", error)
+                .property("error", Strings.isEmpty(error) ? "error" : error)
                 .property("message", message)
+                .propertyOptional("details", details)
                 .endObject();
     }
 
@@ -105,5 +109,13 @@ public final class ApiError implements JsonStringable, Renderable {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public Map<String, Object> getDetails() {
+        return details;
+    }
+
+    public void setDetails(Map<String, Object> details) {
+        this.details = details;
     }
 }
