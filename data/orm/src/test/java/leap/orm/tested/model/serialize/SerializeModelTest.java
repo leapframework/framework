@@ -2,11 +2,13 @@ package leap.orm.tested.model.serialize;
 
 import leap.core.value.Record;
 import leap.lang.New;
+import leap.lang.convert.Converts;
 import leap.orm.OrmTestCase;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.Map;
 
 public class SerializeModelTest extends OrmTestCase {
@@ -67,26 +69,26 @@ public class SerializeModelTest extends OrmTestCase {
         Record record =
                 dao.createCriteriaQuery(SerializeModel.metamodel()).where("id = ?", m.id()).first();
 
-        String[] stringArray = record.getAs("stringArray");
-        assertEquals(2, stringArray.length);
-        assertEquals("item1", stringArray[0]);
-        assertEquals("item2", stringArray[1]);
+        List<String> stringArray = record.getAs("stringArray");
+        assertEquals(2, stringArray.size());
+        assertEquals("item1", stringArray.get(0));
+        assertEquals("item2", stringArray.get(1));
 
-        int[] intArray = record.getAs("intArray");
-        assertEquals(2, intArray.length);
-        assertEquals(0, intArray[0]);
-        assertEquals(1, intArray[1]);
+        List<Integer> intArray = record.getAs("intArray");
+        assertEquals(2, intArray.size());
+        assertEquals(new Integer(0), intArray.get(0));
+        assertEquals(new Integer(1), intArray.get(1));
 
-        Integer[] integerArray = record.getAs("integerArray");
-        assertEquals(2, integerArray.length);
-        assertEquals(new Integer(100), integerArray[0]);
-        assertEquals(new Integer(200), integerArray[1]);
+        List<Integer> integerArray = record.getAs("integerArray");
+        assertEquals(2, integerArray.size());
+        assertEquals(new Integer(100), integerArray.get(0));
+        assertEquals(new Integer(200), integerArray.get(1));
 
         Map<String,Object> nestedMap = record.getAs("nestedMap");
         assertEquals(1, nestedMap.size());
         assertEquals("b", nestedMap.get("a"));
 
-        NestedBean nestedBean = record.getAs("nestedBean");
+        NestedBean nestedBean = Converts.convert(record.getAs("nestedBean"),NestedBean.class);
         assertEquals("k", nestedBean.getName());
         assertEquals("v", nestedBean.getValue());
     }

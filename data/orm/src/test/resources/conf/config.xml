@@ -18,6 +18,9 @@
     	<property name="tableNamingStyle"  value="lower_underscore_"/>
     	<property name="columnNamingStyle" value="lower_underscore_"/>
         <property name="modelCrossContext" value="true"/>
+        <!--
+        <property name="convertPropertyForReadMap" value="true"/>
+        -->
     </properties>
 
     <orm:config auto-generate-columns="true" query-filter-enabled="true"/>

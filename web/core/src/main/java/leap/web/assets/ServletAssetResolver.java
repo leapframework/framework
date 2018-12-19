@@ -27,6 +27,7 @@ import leap.lang.path.Paths;
 import leap.lang.resource.Resource;
 import leap.web.Utils;
 
+import javax.servlet.ServletContext;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -34,121 +35,88 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ServletAssetResolver extends AbstractAssetResolver implements PostCreateBean {
 
-	protected static final Log log = LogFactory.get(ServletAssetResolver.class);
+    protected static final Log log = LogFactory.get(ServletAssetResolver.class);
 
-	protected @Inject @M AssetManager manager;
-	protected @Inject @M AssetConfig  config;
+    protected @Inject ServletContext servletContext;
 
-	protected String prefix;
+    protected String prefix;
 
-	private List<String> excludedPaths;
+    private List<String> excludedPaths;
 
-	private final Map<String, ServletAsset> cache = new ConcurrentHashMap<String, ServletAsset>();
+    private final Map<String, ServletAsset> cache = new ConcurrentHashMap<String, ServletAsset>();
 
-	public String getPrefix() {
-		return prefix;
-	}
+    public String getPrefix() {
+        return prefix;
+    }
 
-	public void setPrefix(String prefix) {
-		this.prefix = prefix;
-	}
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
+    }
 
-	public List<String> getExcludedPaths() {
-		return excludedPaths;
-	}
+    public List<String> getExcludedPaths() {
+        return excludedPaths;
+    }
 
-	public void setExcludedPaths(List<String> excludedPaths) {
-		this.excludedPaths = excludedPaths;
-	}
+    public void setExcludedPaths(List<String> excludedPaths) {
+        this.excludedPaths = excludedPaths;
+    }
 
-	@Override
-	public void postCreate(BeanFactory beanFactory) throws Throwable {
-		if(null == prefix){
-			prefix = config.getPublicDirectory();
-		}
-		if(Collections2.isNotEmpty(excludedPaths)) {
-			for (int i = 0; i < excludedPaths.size(); i++) {
-				String excludedPath = excludedPaths.get(i);
-				excludedPaths.set(i, Paths.prefixWithoutSlash(excludedPath));
-			}
-		}
-	}
+    @Override
+    public void postCreate(BeanFactory beanFactory) throws Throwable {
+        if (null == prefix) {
+            prefix = config.getPublicDirectory();
+        }
+        if (Collections2.isNotEmpty(excludedPaths)) {
+            for (int i = 0; i < excludedPaths.size(); i++) {
+                String excludedPath = excludedPaths.get(i);
+                excludedPaths.set(i, Paths.prefixWithoutSlash(excludedPath));
+            }
+        }
+    }
 
-	@Override
-	public Asset resolveAsset(String path, Locale locale) throws Exception {
-		path = Paths.prefixWithoutSlash(path);
+    @Override
+    protected String getResourcePath(String path) {
+        return getResourcePath(prefix, path);
+    }
 
-		if(isExcluded(path)) return null;
+    protected String getResourcePath(String prefix, String path) {
+        path = Paths.prefixWithoutSlash(path);
+        if (Strings.isEmpty(prefix) || path.startsWith(prefix + "/")) {
+            return path;
+        } else {
+            return Paths.suffixWithSlash(prefix) + path;
+        }
+    }
 
-		Resource resource = getLocaleResource(getResourcePath(prefix,path),locale);
-		if(null == resource || !resource.exists()){
-			return null;
-		}
+    @Override
+    protected Resource resolveResource(String path) {
+        return Utils.getResource(servletContext, path);
+    }
 
-		ServletAsset asset = cache.get(resource.getPath());
-        if(null != asset && asset.isExpired()) {
+    @Override
+    protected Asset resolveAsset(String path, Resource resource) {
+        ServletAsset asset = cache.get(resource.getPath());
+        if (null != asset && asset.isExpired()) {
             cache.remove(resource.getPath());
             asset = null;
         }
 
-		if(null == asset){
-			asset = new ServletAsset(manager,path,resource);
-			cache.put(resource.getPath(), asset);
-		}
-		return asset;
-	}
+        if (null == asset) {
+            asset = new ServletAsset(manager, path, resource);
+            cache.put(resource.getPath(), asset);
+        }
+        return asset;
+    }
 
-	private boolean isExcluded(String path) {
-		if(Collections2.isEmpty(excludedPaths)) return false;
-		for (String excludedPath : excludedPaths) {
-			if(path.startsWith(excludedPath)) return true;
-		}
-		return false;
-	}
-
-	protected Resource getLocaleResource(String resourcePath, Locale locale){
-		String suffix     = "." + Paths.getFileExtension(resourcePath);
-		String pathPrefix = resourcePath.substring(0,resourcePath.length() - suffix.length());
-
-		String lang    = null == locale ? null : locale.getLanguage();
-		String country = null == locale ? null : locale.getCountry();
-
-		//{pathPrefix}_{lang}_{COUNTRY}{suffix}
-		if(!Strings.isEmpty(country)){
-			String path = pathPrefix + "_" + locale.getLanguage() + "_" + country + suffix;
-			Resource resource = Utils.getResource(servletContext, path);
-			if(null != resource && resource.exists()){
-				return resource;
-			}
-		}
-
-		//{pathPrefix_{lang}{suffix}
-		if(!Strings.isEmpty(lang)){
-			String path = pathPrefix + "_" + locale.getLanguage() + suffix;
-			Resource resource = Utils.getResource(servletContext, path);
-			if(null != resource && resource.exists()){
-				return resource;
-			}
-		}
-
-		//{pathPrefix}{suffix}
-		String path = pathPrefix + suffix;
-		Resource resource = Utils.getResource(servletContext, path);
-		if(null != resource && resource.exists()){
-			return resource;
-		}
-
-		return null;
-	}
-
-	protected static String getResourcePath(String prefix, String path){
-		path = Paths.prefixWithoutSlash(path);
-
-		if(Strings.isEmpty(prefix) || path.startsWith(prefix + "/")){
-			return path;
-		}else{
-			return Paths.suffixWithSlash(prefix) + path;
-		}
-	}
-
+    protected boolean isExcluded(String path) {
+        if (Collections2.isEmpty(excludedPaths)) {
+            return false;
+        }
+        for (String excludedPath : excludedPaths) {
+            if (path.startsWith(excludedPath)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

@@ -37,6 +37,8 @@ public class DefaultApiFailureHandler implements ApiFailureHandler {
 
     protected @Inject ApiErrorHandler errorHandler;
 
+    protected @Inject ApiExceptionHandler[] exceptionHandlers;
+
     public DefaultApiFailureHandler() {
 
     }
@@ -57,6 +59,12 @@ public class DefaultApiFailureHandler implements ApiFailureHandler {
 
         if(execution.hasException()) {
             Throwable e = execution.getException();
+
+            for(ApiExceptionHandler handler : exceptionHandlers) {
+                if(handler.handleApiException(errorHandler, context, execution, response, e)) {
+                    return true;
+                }
+            }
 
             if(handleException(errorHandler, response, e)) {
                 return true;

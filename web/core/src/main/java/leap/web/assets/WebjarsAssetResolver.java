@@ -15,53 +15,54 @@
  */
 package leap.web.assets;
 
-import java.util.Locale;
-
 import leap.core.BeanFactory;
 import leap.lang.Strings;
 import leap.lang.path.Paths;
 import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
 import leap.lang.resource.Resources;
-import leap.lang.servlet.ServletResource;
+
+import java.util.Locale;
 
 public class WebjarsAssetResolver extends ServletAssetResolver {
 
-	protected static final String WEBJARS_PREFIX = "/webjars";
-	
-	@Override
-    protected Resource getLocaleResource(String resourcePath, Locale locale) {
-		if(Strings.startsWith(resourcePath, WEBJARS_PREFIX + "/")) {
-			return super.getLocaleResource(resourcePath, locale);
-		}
+    protected static final String WEBJARS_PREFIX = "/webjars";
 
-		Resource sr = super.getLocaleResource(getResourcePath(WEBJARS_PREFIX, resourcePath), locale);
-		if(null != sr && sr.exists()) {
-			return sr;
-		}
-		
-		int slashIndex = resourcePath.indexOf('/', 1);
-		if(slashIndex > 0) {
-			String name = resourcePath.substring(0,slashIndex);
-			String path = resourcePath.substring(slashIndex);
-			
-			ResourceSet rs =
-					Resources.scan("classpath*:/META-INF/resources/webjars/" + Paths.prefixWithoutSlash(name) + "/*" + path);
-			
-			if(!rs.isEmpty()){
-				Resource cr = rs.first();
-				
-				String servletPath = cr.getClasspath().substring("/META-INF/resources".length());
-				return super.getLocaleResource(servletPath, locale);
-			}
-		}
-
-		return null;
-    }
-
-	@Override
+    @Override
     public void postCreate(BeanFactory beanFactory) throws Throwable {
-		this.prefix = "";
-		super.postCreate(beanFactory);
+        this.prefix = "";
+        super.postCreate(beanFactory);
     }
+
+    @Override
+    protected Resource getLocaleResource(String resourcePath, Locale locale) {
+        if (Strings.startsWith(resourcePath, WEBJARS_PREFIX + "/")) {
+            return super.getLocaleResource(resourcePath, locale);
+        }
+
+        Resource sr = super.getLocaleResource(getResourcePath(WEBJARS_PREFIX, resourcePath), locale);
+        if (null != sr && sr.exists()) {
+            return sr;
+        }
+
+        int slashIndex = resourcePath.indexOf('/', 1);
+        if (slashIndex > 0) {
+            String name = resourcePath.substring(0, slashIndex);
+            String path = resourcePath.substring(slashIndex);
+
+            ResourceSet rs =
+                    Resources.scan("classpath*:/META-INF/resources/webjars/" + Paths.prefixWithoutSlash(name) + "/*" + path);
+
+            if (!rs.isEmpty()) {
+                Resource cr = rs.first();
+
+                String servletPath = cr.getClasspath().substring("/META-INF/resources".length());
+                return super.getLocaleResource(servletPath, locale);
+            }
+        }
+
+        return null;
+    }
+
+
 }

@@ -194,4 +194,9 @@ public class SecuredRoute extends SecuredObjectBase implements SecuredPath {
 
         return s.toString();
     }
+
+    @Override
+    public String toString() {
+        return route.toString();
+    }
 }

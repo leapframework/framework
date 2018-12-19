@@ -21,6 +21,7 @@ import leap.core.web.path.PathTemplate;
 import leap.core.web.path.PathTemplateFactory;
 import leap.lang.Args;
 import leap.lang.New;
+import leap.lang.Strings;
 import leap.lang.http.HTTP.Method;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -164,6 +165,10 @@ public class DefaultRoutes implements Routes {
 
     @Override
     public Route match(String method, String path, Map<String, Object> in, Map<String, String> out) {
+        if(!Strings.isEmpty(pathPrefix) && !path.startsWith(pathPrefix)) {
+            path = pathPrefix + Paths.prefixWithSlash(path);
+        }
+
         List<Route> matchedRoutes = new ArrayList<>();
         for (Route route : list) {
             if (!route.isEnabled()) {
