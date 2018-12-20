@@ -229,17 +229,23 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 				log.debug("Request not authenticated!");
 			}
 		}
-		
+
         request.setAuthentication(authc);
-		request.setUser(authc.getUser());
-        
+        request.setUser(authc.getUser());
+
 		for(SecurityInterceptor interceptor : interceptors) {
 			if(interceptor.postResolveAuthentication(request, response, context).isIntercepted()){
 				return State.INTERCEPTED;
 			}
 		}
 
-		return State.CONTINUE;
+		if(authc != context.getAuthentication()){
+		    authc = context.getAuthentication();
+            request.setAuthentication(authc);
+            request.setUser(authc.getUser());
+        }
+
+        return State.CONTINUE;
 	}
 
     protected boolean handleLoginRequest(Request request, Response response, DefaultSecurityContextHolder context) throws Throwable {
