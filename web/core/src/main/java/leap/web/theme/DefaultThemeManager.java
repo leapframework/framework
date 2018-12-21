@@ -133,7 +133,12 @@ public class DefaultThemeManager implements ThemeManager,PostCreateBean {
 	}
 	
 	protected void loadTheme(String path) throws Throwable {
-		String themeName = path.substring(webConfig.getThemesLocation().length() + 1,path.length() - 1);
+        String themeName;
+	    if(path.startsWith(webConfig.getThemesLocation() + "/")) {
+            themeName = Paths.suffixWithoutSlash(Strings.removeStart(path, webConfig.getThemesLocation() + "/"));
+        }else {
+	        themeName = Paths.prefixAndSuffixWithoutSlash(path);
+        }
 		log.debug("Found theme '" + themeName + "' in path '" + path + "'");
 		
 		Resource dir = Utils.getResource(app.getServletContext(), path);
