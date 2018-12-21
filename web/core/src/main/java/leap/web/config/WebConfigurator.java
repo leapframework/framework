@@ -171,6 +171,16 @@ public interface WebConfigurator {
 	WebConfigurator setCookieDomain(String domain);
 
     /**
+     * Sets view enabled.
+     */
+    WebConfigurator setViewEnabled(boolean viewEnabled);
+
+    /**
+     * Sets allow view action.
+     */
+    WebConfigurator setAllowViewAction(boolean allowViewAction);
+
+    /**
      * Optional.
      *
      * Sets the action extension(s).
