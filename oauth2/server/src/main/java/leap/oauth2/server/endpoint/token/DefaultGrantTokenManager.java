@@ -22,6 +22,8 @@ import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.lang.Out;
 import leap.lang.intercepting.State;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.oauth2.server.OAuth2Params;
 import leap.oauth2.server.token.AuthzAccessToken;
 import leap.web.Request;
@@ -31,6 +33,8 @@ import leap.web.Response;
  * @author kael.
  */
 public class DefaultGrantTokenManager implements GrantTokenManager {
+    private static final Log log = LogFactory.get(DefaultGrantTokenManager.class);
+    
     protected @Inject BeanFactory factory;
     protected @Inject GrantTokenInterceptor[] interceptors;
     
@@ -42,17 +46,28 @@ public class DefaultGrantTokenManager implements GrantTokenManager {
     @Override
     public AuthzAccessToken grantAccessToken(Request request, Response response, OAuth2Params params, GrantTypeHandler handler) throws Throwable {
         Out<AuthzAccessToken> out = new Out<>();
-        for(GrantTokenInterceptor interceptor:interceptors){
-            if(State.isIntercepted(interceptor.beforeGrantTypeHandle(request,response,params,handler,out))){
-                return out.get();
+        try {
+            for(GrantTokenInterceptor interceptor:interceptors){
+                if(State.isIntercepted(interceptor.beforeGrantTypeHandle(request,response,params,handler,out))){
+                    return out.get();
+                }
+            }
+            handler.handleRequest(request,response,params,accessToken -> out.set(accessToken));
+            for(GrantTokenInterceptor interceptor:interceptors){
+                if(State.isIntercepted(interceptor.afterGrantTypeHandle(request,response,params,handler,out))){
+                    return out.get();
+                }
+            }
+            return out.get();
+        }finally {
+            for(GrantTokenInterceptor interceptor : interceptors) {
+                try {
+                    interceptor.grantTypeHandleComplete(request,response,params,handler,out);
+                }catch (Exception e){
+                    log.warn("complete grant type handle fail for class {}, error message: ",interceptor.getClass().getName(),e);
+                    log.warn(e);
+                }
             }
         }
-        handler.handleRequest(request,response,params,accessToken -> out.set(accessToken));
-        for(GrantTokenInterceptor interceptor:interceptors){
-            if(State.isIntercepted(interceptor.afterGrantTypeHandle(request,response,params,handler,out))){
-                return out.get();
-            }
-        }
-        return out.get();
     }
 }

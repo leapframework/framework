@@ -44,4 +44,9 @@ public interface GrantTokenInterceptor {
     default State afterGrantTypeHandle(Request request, Response response, OAuth2Params params, GrantTypeHandler handler,Out<AuthzAccessToken> at){
         return State.CONTINUE;
     }
+
+    /**
+     * Complete grant access token
+     */
+    default void grantTypeHandleComplete(Request request, Response response, OAuth2Params params, GrantTypeHandler handler,Out<AuthzAccessToken> at){}
 }
