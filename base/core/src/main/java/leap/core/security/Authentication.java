@@ -15,7 +15,23 @@
  */
 package leap.core.security;
 
+import java.util.Map;
+
 public interface Authentication {
+
+    /**
+     * Returns true if this authentication can be cached.
+     */
+    default boolean isCacheable() {
+        return false;
+    }
+
+    /**
+     * Returns the cache attributes if cacheable.
+     */
+    default Map<String, Object> getCacheAttributes() {
+        return null;
+    }
 
 	/**
 	 * Returns <code>true</code> if the authentication is authenticated.
