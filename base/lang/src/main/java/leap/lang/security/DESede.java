@@ -1,5 +1,6 @@
 package leap.lang.security;
 
+import leap.lang.Charsets;
 import leap.lang.Strings;
 import leap.lang.codec.Base64;
 
@@ -44,7 +45,7 @@ public class DESede {
     
     public byte[] encrypt(String key, String iv, String plaintext) throws InvalidKeySpecException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
         Cipher cipher = initCipher(key, iv, Cipher.ENCRYPT_MODE);
-        return cipher.doFinal(plaintext.getBytes());
+        return cipher.doFinal(plaintext.getBytes(Charsets.UTF_8));
     }
 
     public byte[] decrypt(String key, String iv, byte[] encrypted) throws InvalidKeySpecException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
@@ -54,13 +55,13 @@ public class DESede {
     
     protected Cipher initCipher(String key, String iv, int mode) throws InvalidKeySpecException, InvalidKeyException {
         try {
-            DESedeKeySpec dks = new DESedeKeySpec(key.getBytes(Charset.forName("UTF-8")));
+            DESedeKeySpec dks = new DESedeKeySpec(key.getBytes(Charsets.UTF_8));
             SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("DESede");
             SecretKey securekey = keyFactory.generateSecret(dks);
             Cipher cipher = Cipher.getInstance(cipherType);
             if(Strings.isNotEmpty(iv)){
                 SecureRandom sr = new SecureRandom();
-                IvParameterSpec ivSpec = new IvParameterSpec(iv.getBytes());
+                IvParameterSpec ivSpec = new IvParameterSpec(iv.getBytes(Charsets.UTF_8));
                 cipher.init(mode, securekey, ivSpec, sr);
             }else {
                 cipher.init(mode, securekey);
