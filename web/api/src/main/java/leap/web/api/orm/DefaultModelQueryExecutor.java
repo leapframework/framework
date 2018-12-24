@@ -57,6 +57,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
     protected String   sqlView;
     protected String[] excludedFields;
+    protected boolean  filterByParams = true;
 
     public DefaultModelQueryExecutor(ModelExecutorContext context) {
         this(context, null);
@@ -77,6 +78,12 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
     @Override
     public ModelQueryExecutor selectExclude(String... names) {
         this.excludedFields = names;
+        return this;
+    }
+
+    @Override
+    public ModelQueryExecutor setFilterByParams(boolean filterByParams) {
+        this.filterByParams = filterByParams;
         return this;
     }
 
@@ -127,6 +134,11 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
     }
 
     @Override
+    public QueryListResult queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback) {
+        return queryList(options, filters, callback, filterByParams);
+    }
+
+    @Override
     public QueryListResult queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback, boolean filterByParams) {
         //todo: review query remote entity.
         if(remoteRest) {
@@ -148,7 +160,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                                                 QueryOptions options,
                                                 Map<String, Object> filters,
                                                 Consumer<CriteriaQuery> callback) {
-        return doQueryListResult(query, joinedModels, options, filters, callback, true);
+        return doQueryListResult(query, joinedModels, options, filters, callback, filterByParams);
     }
 
     protected QueryListResult doQueryListResult(CriteriaQuery<Record> query,
@@ -972,7 +984,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
     protected void applyFilters(ModelExecutionContext context, CriteriaQuery query, Params params,
                                 QueryOptions options, Map<String, ModelAndMapping> jms, Map<String, Object> fields) {
-        applyFilters(context, query, params, options, jms, fields, true);
+        applyFilters(context, query, params, options, jms, fields, filterByParams);
     }
 
     protected void applyFilters(ModelExecutionContext context, CriteriaQuery query, Params params,
