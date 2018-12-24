@@ -127,7 +127,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
     }
 
     @Override
-    public QueryListResult queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback) {
+    public QueryListResult queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback, boolean filterByParams) {
         //todo: review query remote entity.
         if(remoteRest) {
             RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), em);
@@ -140,7 +140,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         CriteriaQuery<Record> query = createCriteriaQuery();
         Map<String, ModelAndMapping> joinedModels = new HashMap<>();
 
-        return doQueryListResult(query, joinedModels, options, filters, callback);
+        return doQueryListResult(query, joinedModels, options, filters, callback, filterByParams);
     }
 
     protected QueryListResult doQueryListResult(CriteriaQuery<Record> query,
@@ -148,6 +148,14 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                                                 QueryOptions options,
                                                 Map<String, Object> filters,
                                                 Consumer<CriteriaQuery> callback) {
+        return doQueryListResult(query, joinedModels, options, filters, callback, true);
+    }
+
+    protected QueryListResult doQueryListResult(CriteriaQuery<Record> query,
+                                                Map<String, ModelAndMapping> joinedModels,
+                                                QueryOptions options,
+                                                Map<String, Object> filters,
+                                                Consumer<CriteriaQuery> callback, boolean filterByParams) {
         ModelExecutionContext context = new DefaultModelExecutionContext(this.context);
         if(null == options) {
             options = new QueryOptions();
@@ -207,7 +215,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
 
         applySelectOrAggregates(query, options, joinedModels);
-        applyFilters(context, query, options.getParams(), options, joinedModels, filters);
+        applyFilters(context, query, options.getParams(), options, joinedModels, filters, filterByParams);
 
         if(callback != null){
             callback.accept(query);
@@ -962,7 +970,13 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         query.select(select.toArray(new String[select.size()]));
     }
 
-    protected void applyFilters(ModelExecutionContext context, CriteriaQuery query, Params params, QueryOptions options, Map<String, ModelAndMapping> jms, Map<String, Object> fields) {
+    protected void applyFilters(ModelExecutionContext context, CriteriaQuery query, Params params,
+                                QueryOptions options, Map<String, ModelAndMapping> jms, Map<String, Object> fields) {
+        applyFilters(context, query, params, options, jms, fields, true);
+    }
+
+    protected void applyFilters(ModelExecutionContext context, CriteriaQuery query, Params params,
+                                QueryOptions options, Map<String, ModelAndMapping> jms, Map<String, Object> fields, boolean filterByParams) {
         StringBuilder where = new StringBuilder();
         List<Object>  args  = new ArrayList<>();
 
@@ -996,7 +1010,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             }
         }
 
-        if(null != params) {
+        if(null != params && filterByParams) {
             for (String name : params.names()) {
 
                 String alias;
