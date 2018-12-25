@@ -40,6 +40,11 @@ public interface ModelQueryExecutor {
     ModelQueryExecutor selectExclude(String... names);
 
     /**
+     * Sets filter by params.
+     */
+    ModelQueryExecutor setFilterByParams(boolean filterByParams);
+
+    /**
      * Finds the record by the given id.
      */
     QueryOneResult queryOne(Object id, QueryOptionsBase options);
@@ -65,6 +70,14 @@ public interface ModelQueryExecutor {
      * The callback will be invoked before executing the query.
      */
     QueryListResult queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback);
+
+    /**
+     * Query the records of model with the given filter fields.
+     *
+     * <p/>
+     * The callback will be invoked before executing the query.
+     */
+    QueryListResult queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback, boolean filterByParams);
 
     /**
      * Query the total count of records.

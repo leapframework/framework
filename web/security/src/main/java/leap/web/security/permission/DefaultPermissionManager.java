@@ -37,6 +37,12 @@ public class DefaultPermissionManager implements PermissionManager {
 
     @Override
     public boolean checkPermissionImpliesAll(String[] checkingPermissions, String[] impliedByPermissions) {
+        if(null == checkingPermissions || checkingPermissions.length == 0) {
+            return true;
+        }
+        if(null == impliedByPermissions || impliedByPermissions.length == 0) {
+            return false;
+        }
         for(String by : impliedByPermissions) {
             if(!checkPermissionImplies(checkingPermissions,by)){
                 return false;

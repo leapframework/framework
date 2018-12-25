@@ -138,6 +138,7 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
     }
 
     protected State preHandleRequest(Request request, Response response, DefaultSecurityContextHolder context) throws Throwable {
+        request.setSecurityContext(context);
 
         //Handles request if login
         if(config.isLoginEnabled() && handleLoginRequest(request, response, context)){
@@ -241,6 +242,7 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 
 		if(authc != context.getAuthentication()){
 		    authc = context.getAuthentication();
+            context.setAuthentication(authc);
             request.setAuthentication(authc);
             request.setUser(authc.getUser());
         }

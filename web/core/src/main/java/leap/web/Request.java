@@ -24,6 +24,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
 import leap.core.security.Authentication;
+import leap.core.security.SecurityContext;
 import leap.core.security.UserPrincipal;
 import leap.core.web.RequestBase;
 import leap.web.assets.AssetSource;
@@ -257,6 +258,16 @@ public abstract class Request extends RequestBase {
 	 * Sets current {@link Result}.
 	 */
 	public abstract void setResult(Result result);
+
+	/**
+	 * Sets current {@link SecurityContext}.
+	 */
+	public abstract void setSecurityContext(SecurityContext context);
+
+	/**
+	 * Returns current {@link SecurityContext}.
+	 */
+	public abstract SecurityContext getSecurityContext();
 	
 	/**
 	 * Returns current {@link UserPrincipal} or <code>null</code>.
