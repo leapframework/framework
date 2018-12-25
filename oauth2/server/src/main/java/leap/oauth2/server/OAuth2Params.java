@@ -126,6 +126,10 @@ public interface OAuth2Params {
 	    return !Strings.isEmpty(getError());
 	}
 	
+	default boolean isPasswordGrantType(){
+		return "password".equals(getGrantType());
+	}
+	
 	String getParameter(String name);
 	
 }
