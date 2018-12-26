@@ -97,6 +97,34 @@ public interface Authentication {
     void setRoles(String... roles);
 
     /**
+     * Returns the granted security rules.
+     */
+    default String[] getRules(){
+       return null;
+    }
+
+    /**
+     * Sets the granted security rules.
+     */
+    default void setRules(String... rules) {
+
+    }
+
+    /**
+     * Returns current access mode.
+     */
+    default String getAccessMode() {
+        return null;
+    }
+
+    /**
+     * Sets current access mode.
+     */
+    default void setAccessMode(String accessMode) {
+
+    }
+
+    /**
      * Returns true if the client is not null.
      */
     default boolean hasClient() {

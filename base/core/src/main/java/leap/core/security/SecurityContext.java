@@ -71,8 +71,6 @@ public abstract class SecurityContext {
 
 	protected Authentication authentication;
 	protected Authorization  authorization;
-	protected String         accessMode;
-	protected Object         accessModeContext;
 
     /**
      * Required. Returns the {@link Authentication}.
@@ -100,33 +98,5 @@ public abstract class SecurityContext {
      */
     public ClientPrincipal getClient() {
         return null == authentication ? null : authentication.getClient();
-    }
-
-    /**
-     * Returns access mode.
-     */
-    public String getAccessMode() {
-        return accessMode;
-    }
-
-    /**
-     * Sets access mode.
-     */
-    public void setAccessMode(String accessMode) {
-        this.accessMode = accessMode;
-    }
-
-    /**
-     * Returns context of access mode.
-     */
-    public Object getAccessModeContext() {
-        return accessModeContext;
-    }
-
-    /**
-     * Sets context of access mode.
-     */
-    public void setAccessModeContext(Object accessModeContext) {
-        this.accessModeContext = accessModeContext;
     }
 }
