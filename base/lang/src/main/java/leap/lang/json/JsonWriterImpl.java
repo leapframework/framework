@@ -21,6 +21,8 @@ import leap.lang.Enums;
 import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
+import leap.lang.beans.DynaBean;
+import leap.lang.beans.DynaProps;
 import leap.lang.codec.Base64;
 import leap.lang.naming.NamingStyle;
 import leap.lang.time.DateFormats;
@@ -992,6 +994,22 @@ public class JsonWriterImpl implements JsonWriter {
                     }
                 }
             }
+
+            if(bean instanceof DynaProps) {
+            	Map<String, Object> properties = ((DynaProps) bean).getDynaProperties();
+            	if(null != properties) {
+            		properties.forEach((name, value) -> {
+                        if(null == value && ignoreNull){
+                            return;
+                        }
+                        if(isIgnoreEmptyString() && Strings.isNullOrBlank(value)){
+                            return;
+                        }
+                        keyUseNamingStyle(name);
+                        value(value);
+                    });
+				}
+			}
         } catch (JsonException e){
             throw e;
         } catch (Exception e) {

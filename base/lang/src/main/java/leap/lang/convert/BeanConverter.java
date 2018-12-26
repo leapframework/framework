@@ -16,7 +16,6 @@
 package leap.lang.convert;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -27,6 +26,7 @@ import leap.lang.Out;
 import leap.lang.annotation.Name;
 import leap.lang.beans.BeanType;
 import leap.lang.beans.BeanProperty;
+import leap.lang.beans.DynaProps;
 import leap.lang.reflect.*;
 import leap.lang.serialize.Serialize;
 import leap.lang.serialize.Serializer;
@@ -102,6 +102,9 @@ public class BeanConverter extends AbstractConverter<Object>{
 	}
 
     protected void doConvert(Map map, Object bean, BeanType bt, ConvertContext context) {
+        boolean dyna = bean instanceof DynaProps;
+        Map<String, Object> dynaMap = dyna ? new LinkedHashMap(map) : null;
+
         for(BeanProperty prop : bt.getProperties()){
             String name = prop.getName();
 
@@ -134,6 +137,10 @@ public class BeanConverter extends AbstractConverter<Object>{
                         param = serializer.tryDeserialize((String)param);
                     }
 
+                    if(dyna) {
+                        dynaMap.remove(entry.getKey());
+                    }
+
                     if(prop.isWritable()){
                         prop.setValue(bean, Converts.convert(param, prop.getType(), prop.getGenericType(), context));
                         break;
@@ -152,6 +159,16 @@ public class BeanConverter extends AbstractConverter<Object>{
                 if(null != m && m.getParameters().length == 1) {
                     m.invoke(bean, Converts.convert(v, m.getParameters()[0].getType(), m.getParameters()[0].getGenericType(), context));
                 }
+            }
+        }
+
+        if(dyna) {
+            DynaProps dynaBean = (DynaProps)bean;
+            Map<String, Object> properties = dynaBean.getDynaProperties();
+            if(null != properties) {
+                properties.putAll(dynaMap);
+            }else {
+                dynaMap.forEach(dynaBean::setDynaProperty);
             }
         }
     }
