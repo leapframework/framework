@@ -144,11 +144,13 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
             if (null == request.getViewSource()) {
                 request.setViewSource(viewSource);
             }
+        }else {
+            request.setViewSource((viewName, locale) -> null);
+        }
 
-            //asset source
-            if (null == request.getAssetSource()) {
-                request.setAssetSource(assetSource);
-            }
+        //asset source
+        if (null == request.getAssetSource()) {
+            request.setAssetSource(assetSource);
         }
 
         interceptors.onPrepareRequest(request, response);
@@ -530,7 +532,12 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
             return false;
         }
 
-        View view = request.getViewSource().getView(path, request.getLocale());
+        ViewSource viewSource = request.getViewSource();
+        if(null == viewSource) {
+            return false;
+        }
+
+        View view = viewSource.getView(path, request.getLocale());
         if (null == view) {
             if (path.endsWith("/")) {
                 path = path + "index";
