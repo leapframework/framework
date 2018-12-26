@@ -75,7 +75,7 @@ public class JsonObject implements JsonValue {
      * Returns true if the json object has properties.
      */
 	public boolean hasProperties() {
-		return map.isEmpty();
+		return !map.isEmpty();
 	}
 
     /**

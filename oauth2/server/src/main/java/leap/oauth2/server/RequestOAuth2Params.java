@@ -24,7 +24,7 @@ public class RequestOAuth2Params implements OAuth2Params {
 	
 	public RequestOAuth2Params(Request request) {
 		this.request   = request;
-		this.grantType = null;
+		this.grantType = request.getParameter(GRANT_TYPE);
 	}
 	
 	public RequestOAuth2Params(Request request, String grantType) {
