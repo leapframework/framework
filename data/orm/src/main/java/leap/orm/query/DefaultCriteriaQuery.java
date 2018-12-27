@@ -47,48 +47,48 @@ import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements CriteriaQuery<T>,QueryContext {
+public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements CriteriaQuery<T>, QueryContext {
 
-    protected SqlBuilder              builder;
-    protected String                  sqlView;
-    protected List<JoinBuilder>       joins = new ArrayList<>(1);
-    protected String[]                selects;
-    protected String                  where;
-    protected ArrayParams             whereParameters;
-    protected StringBuilder           joinByIdWhere;
-    protected List                    joinByIdArgs;
-    protected boolean                 distinct;
-    protected String                  groupBy;
-    protected String                  having;
+    protected SqlBuilder        builder;
+    protected String            sqlView;
+    protected List<JoinBuilder> joins = new ArrayList<>(1);
+    protected String[]          selects;
+    protected String            where;
+    protected ArrayParams       whereParameters;
+    protected StringBuilder     joinByIdWhere;
+    protected List              joinByIdArgs;
+    protected boolean           distinct;
+    protected String            groupBy;
+    protected String            having;
 
-	public DefaultCriteriaQuery(Dao dao, EntityMapping em, Class<T> targetType) {
-	    super(dao, targetType, em);
-	    Args.notNull(em,"entity mapping");
-	    this.builder = new SqlBuilder();
+    public DefaultCriteriaQuery(Dao dao, EntityMapping em, Class<T> targetType) {
+        super(dao, targetType, em);
+        Args.notNull(em, "entity mapping");
+        this.builder = new SqlBuilder();
     }
 
     public String[] getSelects() {
-	    return selects;
+        return selects;
     }
 
     public String getWhere() {
-	    return where;
+        return where;
     }
 
     public boolean isDistinct() {
-	    return distinct;
+        return distinct;
     }
 
     public String getGroupBy() {
-	    return groupBy;
+        return groupBy;
     }
 
     public String getHaving() {
-	    return having;
+        return having;
     }
 
     public String getSqlView() {
-	    return sqlView;
+        return sqlView;
     }
 
     @Override
@@ -99,32 +99,32 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
     @Override
     public CriteriaQuery<T> params(Map<String, Object> params) {
-	    return (CriteriaQuery<T>)super.params(params);
-    }
-	
-	@Override
-    public CriteriaQuery<T> params(Params params) {
-	    return (CriteriaQuery<T>)super.params(params);
-    }
-	
-	@Override
-    public CriteriaQuery<T> params(DynaBean bean) {
-	    return (CriteriaQuery<T>)super.params(bean);
-    }
-	
-	@Override
-    public CriteriaQuery<T> param(String name, Object value) {
-	    return (CriteriaQuery<T>)super.param(name, value);
-    }
-	
-	@Override
-    public CriteriaQuery<T> limit(int startRows, int endRows) {
-	    return (CriteriaQuery<T>)super.limit(startRows, endRows);
+        return (CriteriaQuery<T>) super.params(params);
     }
 
-	@Override
+    @Override
+    public CriteriaQuery<T> params(Params params) {
+        return (CriteriaQuery<T>) super.params(params);
+    }
+
+    @Override
+    public CriteriaQuery<T> params(DynaBean bean) {
+        return (CriteriaQuery<T>) super.params(bean);
+    }
+
+    @Override
+    public CriteriaQuery<T> param(String name, Object value) {
+        return (CriteriaQuery<T>) super.param(name, value);
+    }
+
+    @Override
+    public CriteriaQuery<T> limit(int startRows, int endRows) {
+        return (CriteriaQuery<T>) super.limit(startRows, endRows);
+    }
+
+    @Override
     public EntityMapping getEntityMapping() {
-	    return em;
+        return em;
     }
 
     @Override
@@ -134,9 +134,9 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
     @Override
     public CriteriaQuery<T> alias(String alias) {
-		Args.notEmpty(alias,"alias");
-		builder.alias = alias;
-	    return this;
+        Args.notEmpty(alias, "alias");
+        builder.alias = alias;
+        return this;
     }
 
     @Override
@@ -334,10 +334,10 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     }
 
     protected CriteriaQuery<T> joinById(EntityMapping target, String relation, String alias, JoinType type, Object id) {
-        if(null == joinByIdWhere) {
+        if (null == joinByIdWhere) {
             joinByIdWhere = new StringBuilder();
             joinByIdArgs = new ArrayList();
-        }else{
+        } else {
             joinByIdWhere.append(" and ");
         }
 
@@ -354,12 +354,12 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         Args.notEmpty(alias, "alias");
 
         RelationMapping rm;
-        if(!Strings.isEmpty(relation)) {
+        if (!Strings.isEmpty(relation)) {
             rm = em.getRelationMapping(relation);
-        }else{
+        } else {
             rm = em.tryGetRelationMappingOfTargetEntity(target.getEntityName());
 
-            if(null == rm) {
+            if (null == rm) {
                 throw new IllegalStateException("Cannot join : no unique relation of the join entity '" +
                         target.getEntityName() + "' in entity '" + em.getEntityName() + "'");
             }
@@ -367,11 +367,11 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
         joins.add(new RelationJoin(target, alias, type, rm));
 
-        if(null != where) {
+        if (null != where) {
 
-            try{
+            try {
                 //many-to-one
-                if(rm.isManyToOne() || rm.isOneToMany()) {
+                if (rm.isManyToOne() || rm.isOneToMany()) {
                     //todo : only one key columns allowed.
                     FieldMapping key = target.getKeyFieldMappings()[0];
 
@@ -382,11 +382,11 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                 }
 
                 //many-to-many
-                if(rm.isManyToMany()) {
-//                    EntityMapping join = context.getMetadata().getEntityMapping(rm.getJoinEntityName());
-//
-//                    RelationMapping joinRelation =
-//                            join.tryGetKeyRelationMappingOfTargetEntity(target.getEntityName());
+                if (rm.isManyToMany()) {
+                    //                    EntityMapping join = context.getMetadata().getEntityMapping(rm.getJoinEntityName());
+                    //
+                    //                    RelationMapping joinRelation =
+                    //                            join.tryGetKeyRelationMappingOfTargetEntity(target.getEntityName());
 
                     //todo : only one key columns allowed.
                     FieldMapping key =
@@ -399,7 +399,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
                 throw new IllegalStateException("Not handled relation type '" + rm.getType() + "'");
 
-            }catch(IOException e) {
+            } catch (IOException e) {
                 throw Exceptions.wrap(e);
             }
         }
@@ -412,8 +412,8 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
         StringBuilder s = new StringBuilder();
 
-        for(int i=0;i<em.getKeyColumnNames().length;i++){
-            if(i > 0){
+        for (int i = 0; i < em.getKeyColumnNames().length; i++) {
+            if (i > 0) {
                 s.append(" and ");
             }
 
@@ -427,27 +427,27 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
     @Override
     public CriteriaQuery<T> whereByReference(Class<?> refEntityClass, Object refToId) {
-        EntityMapping target = context.getMetadata().getEntityMapping(refEntityClass);
-        RelationMapping rm = em.tryGetRefRelationMappingOfTargetEntity(target.getEntityName());
+        EntityMapping   target = context.getMetadata().getEntityMapping(refEntityClass);
+        RelationMapping rm     = em.tryGetRefRelationMappingOfTargetEntity(target.getEntityName());
 
-        if(null == rm) {
+        if (null == rm) {
             throw new IllegalStateException("No unique many-to-one relation in entity '" +
-                                            em.getEntityName() + "' ref to '" + target.getEntityName() + "'");
+                    em.getEntityName() + "' ref to '" + target.getEntityName() + "'");
         }
 
-        return whereByReference(rm,refToId);
+        return whereByReference(rm, refToId);
     }
 
     @Override
     public CriteriaQuery<T> whereByReference(String refEntityName, Object refToId) {
         RelationMapping rm = em.tryGetRefRelationMappingOfTargetEntity(refEntityName);
 
-        if(null == rm) {
+        if (null == rm) {
             throw new IllegalStateException("No unique many-to-one relation in entity '" +
                     em.getEntityName() + "' ref to '" + refEntityName + "'");
         }
 
-        return whereByReference(rm,refToId);
+        return whereByReference(rm, refToId);
     }
 
     @Override
@@ -457,8 +457,8 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
         StringBuilder s = new StringBuilder();
 
-        for(int i=0;i<rm.getJoinFields().length;i++){
-            if(i > 0){
+        for (int i = 0; i < rm.getJoinFields().length; i++) {
+            if (i > 0) {
                 s.append(" and ");
             }
 
@@ -474,30 +474,30 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
     @Override
     public CriteriaWhere<T> where() {
-	    return new DefaultCriteriaWhere<T>(getOrmContext(), this);
+        return new DefaultCriteriaWhere<T>(getOrmContext(), this);
     }
-	
-	@Override
+
+    @Override
     public CriteriaQuery<T> where(String expression) {
-		Args.notEmpty(expression = Strings.trim(expression),"where expression");
-		where = expression;
-	    return this;
+        Args.notEmpty(expression = Strings.trim(expression), "where expression");
+        where = expression;
+        return this;
     }
-	
-	@Override
+
+    @Override
     public CriteriaQuery<T> where(String expression, Object... args) {
-		Args.notEmpty(expression = Strings.trim(expression),"where expression");
-		where = expression;
-		
-		if(null != args && args.length > 0){
-            if(args.length == 1 && args[0] instanceof ArrayParams){
-                this.whereParameters = (ArrayParams)args[0];
-            }else{
+        Args.notEmpty(expression = Strings.trim(expression), "where expression");
+        where = expression;
+
+        if (null != args && args.length > 0) {
+            if (args.length == 1 && args[0] instanceof ArrayParams) {
+                this.whereParameters = (ArrayParams) args[0];
+            } else {
                 this.whereParameters = new ArrayParams(args);
             }
-		}
-		
-	    return this;
+        }
+
+        return this;
     }
 
     @Override
@@ -508,28 +508,28 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
     @Override
     public CriteriaQuery<T> select(String... selection) {
-	    this.selects = selection;
-		if(null == selection || selection.length == 0){
-			builder.columns = null;
-		}else{
-			builder.columns = columns(this.selects);
-		}
-	    return this;
+        this.selects = selection;
+        if (null == selection || selection.length == 0) {
+            builder.columns = null;
+        } else {
+            builder.columns = columns(this.selects);
+        }
+        return this;
     }
 
     @Override
     public CriteriaQuery<T> selectExclude(String... fields) {
-        if(null != fields && fields.length > 0) {
+        if (null != fields && fields.length > 0) {
             List<String> select = new ArrayList<>();
-            for(FieldMapping fm : em.getFieldMappings()) {
+            for (FieldMapping fm : em.getFieldMappings()) {
                 boolean exclude = false;
-                for(String excludeField : fields) {
-                    if(fm.getFieldName().equalsIgnoreCase(excludeField)) {
+                for (String excludeField : fields) {
+                    if (fm.getFieldName().equalsIgnoreCase(excludeField)) {
                         exclude = true;
                         break;
                     }
                 }
-                if(!exclude) {
+                if (!exclude) {
                     select.add(fm.getFieldName());
                 }
             }
@@ -540,85 +540,91 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
     @Override
     public CriteriaQuery<T> select(Predicate<FieldMapping> filter) {
-		//this.selectFilter = filter;
+        //this.selectFilter = filter;
         List<String> select = new ArrayList<>();
-        for(FieldMapping fm : em.getFieldMappings()) {
-            if(filter.test(fm)) {
+        for (FieldMapping fm : em.getFieldMappings()) {
+            if (filter.test(fm)) {
                 select.add(fm.getFieldName());
             }
         }
-        if(!select.isEmpty()) {
+        if (!select.isEmpty()) {
             this.select(select.toArray(new String[select.size()]));
         }
-	    return this;
+        return this;
     }
 
-	@Override
+    @Override
+    public CriteriaQuery<T> addSelectItem(String fieldOrExpr) {
+        builder.addExtraSelectItem(fieldOrExpr);
+        return this;
+    }
+
+    @Override
     public CriteriaQuery<T> groupBy(String expression) {
-	    this.groupBy = expression;
-	    return this;
+        this.groupBy = expression;
+        return this;
     }
 
-	@Override
+    @Override
     public CriteriaQuery<T> having(String expression) {
-		this.having = expression;
-	    return this;
+        this.having = expression;
+        return this;
     }
-	
-	@Override
+
+    @Override
     public CriteriaQuery<T> limit(Integer size) {
-	    return (CriteriaQuery<T>)super.limit(size);
+        return (CriteriaQuery<T>) super.limit(size);
     }
 
-	@Override
+    @Override
     public CriteriaQuery<T> limit(Limit limit) {
-	    return (CriteriaQuery<T>)super.limit(limit);
+        return (CriteriaQuery<T>) super.limit(limit);
     }
 
-	@Override
+    @Override
     public CriteriaQuery<T> orderBy(String expression) {
-	    return (CriteriaQuery<T>)super.orderBy(expression);
+        return (CriteriaQuery<T>) super.orderBy(expression);
     }
 
-	@Override
+    @Override
     public CriteriaQuery<T> orderByIdAsc() {
-		orderById("asc");
-		return this;
+        orderById("asc");
+        return this;
     }
 
-	@Override
+    @Override
     public CriteriaQuery<T> orderByIdDesc() {
-		orderById("desc");
-	    return this;
+        orderById("desc");
+        return this;
     }
-	
-	protected void orderById(String order) {
-		StringBuilder s = new StringBuilder();
 
-		for(int i=0;i<em.getKeyColumnNames().length;i++){
-			if(i > 0){
-				s.append(",");
-			}
-			
-			s.append(builder.alias).append('.')
-			 .append(em.getKeyColumnNames()[i])
-			 .append(' ')
-			 .append(order);
-		}
-		
-		orderBy(s.toString());
-	}
+    protected void orderById(String order) {
+        StringBuilder s = new StringBuilder();
 
-	@Override
+        for (int i = 0; i < em.getKeyColumnNames().length; i++) {
+            if (i > 0) {
+                s.append(",");
+            }
+
+            s.append(builder.alias).append('.')
+                    .append(em.getKeyColumnNames()[i])
+                    .append(' ')
+                    .append(order);
+        }
+
+        orderBy(s.toString());
+    }
+
+    @Override
     public long count() {
-		String sql = builder.buildCountSql();
-		SqlStatement statement = createQueryStatement(this, sql, true);
-	    return statement.executeQuery(ResultSetReaders.forScalarValue(Long.class, false));
+        String       sql       = builder.buildCountSql();
+        SqlStatement statement = createQueryStatement(this, sql, true);
+        return statement.executeQuery(ResultSetReaders.forScalarValue(Long.class, false));
     }
-	
-	@Override
+
+    @Override
     public int delete() {
-        if(em.hasSecondaryTable()) {
+        if (em.hasSecondaryTable()) {
             String secondarySql = builder.buildSecondaryDeleteSql(true);
             String primarySql   = builder.buildSecondaryDeleteSql(false);
 
@@ -626,151 +632,151 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                 createUpdateStatement(this, secondarySql).executeUpdate();
                 return createUpdateStatement(this, primarySql).executeUpdate();
             });
-        }else{
-            return createUpdateStatement(this,builder.buildDeleteSql()).executeUpdate();
+        } else {
+            return createUpdateStatement(this, builder.buildDeleteSql()).executeUpdate();
         }
     }
 
-	@Override
+    @Override
     public int update(Map<String, Object> fields) {
-		Args.notEmpty(fields,"update fields");
+        Args.notEmpty(fields, "update fields");
 
-        if(em.hasSecondaryTable()) {
+        if (em.hasSecondaryTable()) {
             Map<String, Object> params = paramsMap();
 
             String secondarySql = builder.buildSecondaryUpdateSql(fields, params, true);
             String primarySql   = builder.buildSecondaryUpdateSql(fields, params, false);
 
-            if(null == secondarySql && null == primarySql) {
+            if (null == secondarySql && null == primarySql) {
                 throw new IllegalStateException("No update fields");
             }
 
-            if(null == secondarySql) {
-                return createUpdateStatement(this,primarySql).executeUpdate();
+            if (null == secondarySql) {
+                return createUpdateStatement(this, primarySql).executeUpdate();
             }
 
-            if(null == primarySql) {
-                return createUpdateStatement(this,secondarySql).executeUpdate();
+            if (null == primarySql) {
+                return createUpdateStatement(this, secondarySql).executeUpdate();
             }
 
             //The updates may change the result of where condition, so can't update both primary & secondary table.
             throw new IllegalStateException("The updated fields can not contains both primary & secondary fields in an update query");
-//            return dao.doTransaction((s) -> {
-//                int result = createUpdateStatement(this, primarySql).executeUpdate();
-//
-//                createUpdateStatement(this,secondarySql).executeUpdate();
-//
-//                return result;
-//            });
-        }else{
+            //            return dao.doTransaction((s) -> {
+            //                int result = createUpdateStatement(this, primarySql).executeUpdate();
+            //
+            //                createUpdateStatement(this,secondarySql).executeUpdate();
+            //
+            //                return result;
+            //            });
+        } else {
             String sql = builder.buildUpdateSql(fields, paramsMap());
-            if(null == sql) {
+            if (null == sql) {
                 throw new IllegalStateException("No update fields");
             }
-            return createUpdateStatement(this,sql).executeUpdate();
+            return createUpdateStatement(this, sql).executeUpdate();
         }
     }
 
-	@Override
+    @Override
     protected QueryResult<T> executeQuery(QueryContext qc) {
-		String sql = builder.buildSelectSql();
-		SqlStatement statement = createQueryStatement(qc,sql);
-		
-		ResultSetReader<List<T>> reader = ResultSetReaders.forListEntity(dao.getOrmContext(), qc,em, targetType, targetType);
-		
-		return new DefaultQueryResult<T>(sql,statement.executeQuery(reader));
-    }
-	
-	@Override
-    protected Scalar executeQueryForScalar(QueryContext context) throws TooManyRecordsException {
-	    return buildQueryStatement(context).executeQuery(SimpleScalarReader.DEFAULT_INSTANCE);
+        String       sql       = builder.buildSelectSql();
+        SqlStatement statement = createQueryStatement(qc, sql);
+
+        ResultSetReader<List<T>> reader = ResultSetReaders.forListEntity(dao.getOrmContext(), qc, em, targetType, targetType);
+
+        return new DefaultQueryResult<T>(sql, statement.executeQuery(reader));
     }
 
-	@Override
+    @Override
+    protected Scalar executeQueryForScalar(QueryContext context) throws TooManyRecordsException {
+        return buildQueryStatement(context).executeQuery(SimpleScalarReader.DEFAULT_INSTANCE);
+    }
+
+    @Override
     protected Scalars executeQueryForScalars(QueryContext context) throws TooManyRecordsException {
-	    return buildQueryStatement(context).executeQuery(SimpleScalarsReader.DEFAULT_INSTANCE);
+        return buildQueryStatement(context).executeQuery(SimpleScalarsReader.DEFAULT_INSTANCE);
     }
 
     protected Object[] args() {
-        if(null == whereParameters && null == joinByIdWhere) {
+        if (null == whereParameters && null == joinByIdWhere) {
             return null;
         }
 
-        if(null != whereParameters && null == joinByIdArgs) {
+        if (null != whereParameters && null == joinByIdArgs) {
             return whereParameters.array();
         }
 
-        if(null == whereParameters && null != joinByIdArgs) {
+        if (null == whereParameters && null != joinByIdArgs) {
             return joinByIdArgs.toArray(Arrays2.EMPTY_OBJECT_ARRAY);
         }
 
         throw new IllegalStateException("Cannot combine with joinById and where expr in one query");
     }
-	
-	protected SqlStatement buildQueryStatement(QueryContext qc) {
-		return createQueryStatement(qc,builder.buildSelectSql(), false);
-	}
+
+    protected SqlStatement buildQueryStatement(QueryContext qc) {
+        return createQueryStatement(qc, builder.buildSelectSql(), false);
+    }
 
     protected SqlStatement createCountStatement(QueryContext qc, String sql) {
-       return createQueryStatement(qc, sql, true);
+        return createQueryStatement(qc, sql, true);
     }
 
     protected SqlStatement createQueryStatement(QueryContext qc, String sql) {
         return createQueryStatement(qc, sql, false);
     }
 
-	protected SqlStatement createQueryStatement(QueryContext qc, String sql, boolean count) {
-		SqlClause clause = context.getQueryFactory().createQueryClause(dao, sql);
+    protected SqlStatement createQueryStatement(QueryContext qc, String sql, boolean count) {
+        SqlClause clause = context.getQueryFactory().createQueryClause(dao, sql);
 
-        Object queryParams;
+        Object   queryParams;
         Object[] args = args();
-        if(null == args) {
+        if (null == args) {
             queryParams = params();
-        }else {
+        } else {
             queryParams = new MapArrayParams(paramsMap(), args);
         }
 
-        if(count) {
+        if (count) {
             //Count query don't add the order by.
             String tmpOrderBy = this.orderBy;
             this.orderBy = null;
-            SqlStatement statement =  clause.createQueryStatement(qc, queryParams);
+            SqlStatement statement = clause.createQueryStatement(qc, queryParams);
             this.orderBy = tmpOrderBy;
             return statement;
-        }else{
+        } else {
             return clause.createQueryStatement(qc, queryParams);
         }
 
-	}
-	
-	protected SqlStatement createUpdateStatement(QueryContext qc, String sql) {
-		SqlClause clause = context.getQueryFactory().createQueryClause(dao, sql);
-		
-		Object updateParams;
+    }
+
+    protected SqlStatement createUpdateStatement(QueryContext qc, String sql) {
+        SqlClause clause = context.getQueryFactory().createQueryClause(dao, sql);
+
+        Object   updateParams;
         Object[] args = args();
-		if(null == args) {
-			updateParams = params();
-		}else {
-			updateParams = new MapArrayParams(paramsMap(), args);
-		}
-		
-		return clause.createUpdateStatement(qc, updateParams);
-	}
-	
-	protected String[] columns(String[] fields){
-		String[] columns = new String[fields.length];
-		
-		for(int i=0;i<fields.length;i++){
-			columns[i] = column(fields[i]);
-		}
-		
-		return columns;
-	}
-	
-	protected String column(String field){
-		FieldMapping fm = em.tryGetFieldMapping(field);
-		return null == fm ? field : fm.getColumnName();
-	}
+        if (null == args) {
+            updateParams = params();
+        } else {
+            updateParams = new MapArrayParams(paramsMap(), args);
+        }
+
+        return clause.createUpdateStatement(qc, updateParams);
+    }
+
+    protected String[] columns(String[] fields) {
+        String[] columns = new String[fields.length];
+
+        for (int i = 0; i < fields.length; i++) {
+            columns[i] = column(fields[i]);
+        }
+
+        return columns;
+    }
+
+    protected String column(String field) {
+        FieldMapping fm = em.tryGetFieldMapping(field);
+        return null == fm ? field : fm.getColumnName();
+    }
 
     protected enum JoinType {
         INNER,
@@ -785,19 +791,19 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         final JoinType        type;
 
         protected RelationJoin(EntityMapping target, String alias, JoinType type, RelationMapping relation) {
-            this.target      = target;
-            this.alias       = alias;
-            this.type        = type;
-            this.relation    = relation;
+            this.target = target;
+            this.alias = alias;
+            this.type = type;
+            this.relation = relation;
         }
 
         @Override
         public void build(StringBuilder sqlBuilder, JoinContext context) {
             RelationMapping relation = this.relation;
 
-            if(relation.isManyToOne() || relation.isOneToMany()) {
+            if (relation.isManyToOne() || relation.isOneToMany()) {
 
-                if(this.type == JoinType.LEFT) {
+                if (this.type == JoinType.LEFT) {
                     sqlBuilder.append(" left");
                 }
 
@@ -808,10 +814,10 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                         .append(" on ");
 
                 //many-to-one
-                if(relation.isManyToOne()) {
-                    int i=0;
-                    for(JoinFieldMapping jf : relation.getJoinFields()) {
-                        if(i>0) {
+                if (relation.isManyToOne()) {
+                    int i = 0;
+                    for (JoinFieldMapping jf : relation.getJoinFields()) {
+                        if (i > 0) {
                             sqlBuilder.append(" and ");
                         }
                         sqlBuilder.append(context.getSourceAlias()).append('.').append(jf.getLocalFieldName())
@@ -823,18 +829,18 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                 }
 
                 //one-to-many, find the inverse many-to-one relation.
-                if(relation.isOneToMany()) {
+                if (relation.isOneToMany()) {
                     RelationMapping inverse =
                             this.target.getRelationMapping(relation.getInverseRelationName());
 
-                    if(null == inverse || !inverse.isManyToOne()) {
+                    if (null == inverse || !inverse.isManyToOne()) {
                         throw new IllegalStateException("A inverse many-to-one relation must be exists in entity '" +
                                 this.target.getEntityName() + "'");
                     }
 
-                    int i=0;
-                    for(JoinFieldMapping jf : inverse.getJoinFields()) {
-                        if(i>0) {
+                    int i = 0;
+                    for (JoinFieldMapping jf : inverse.getJoinFields()) {
+                        if (i > 0) {
                             sqlBuilder.append(" and ");
                         }
                         sqlBuilder.append(context.getSourceAlias()).append('.').append(jf.getReferencedFieldName())
@@ -849,14 +855,14 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
             }
 
             //many-to-many, find the join entity.
-            if(relation.isManyToMany()) {
+            if (relation.isManyToMany()) {
                 EntityMapping joinEntity = context.getOrm().getMetadata().getEntityMapping(relation.getJoinEntityName());
 
                 final String sourceEntityName = context.getSource().getEntityName();
                 final String targetEntityName = relation.getTargetEntityName();
                 final String joinAlias        = context.getSourceAlias() + "_" + this.alias;
 
-                if(this.type == JoinType.LEFT) {
+                if (this.type == JoinType.LEFT) {
                     sqlBuilder.append(" left");
                 }
 
@@ -867,9 +873,9 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                         .append(" on ");
 
                 int i = 0;
-                for(JoinFieldMapping jf : relation.getJoinFields()) {
-                    if(Strings.equalsIgnoreCase(sourceEntityName, jf.getReferencedEntityName())) {
-                        if(i > 0) {
+                for (JoinFieldMapping jf : relation.getJoinFields()) {
+                    if (Strings.equalsIgnoreCase(sourceEntityName, jf.getReferencedEntityName())) {
+                        if (i > 0) {
                             sqlBuilder.append(" and ");
                         }
 
@@ -880,7 +886,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                     }
                 }
 
-                if(this.type == JoinType.LEFT) {
+                if (this.type == JoinType.LEFT) {
                     sqlBuilder.append(" left");
                 }
 
@@ -890,16 +896,16 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                         .append(this.alias)
                         .append(" on ");
 
-                i=0;
-                for(JoinFieldMapping jf : relation.getJoinFields()) {
-                    if(Strings.equalsIgnoreCase(targetEntityName, jf.getReferencedEntityName())) {
-                        if(i > 0) {
+                i = 0;
+                for (JoinFieldMapping jf : relation.getJoinFields()) {
+                    if (Strings.equalsIgnoreCase(targetEntityName, jf.getReferencedEntityName())) {
+                        if (i > 0) {
                             sqlBuilder.append(" and ");
                         }
 
                         sqlBuilder.append(joinAlias).append('.').append(jf.getLocalFieldName())
-                                  .append('=')
-                                  .append(this.alias).append('.').append(jf.getReferencedFieldName());
+                                .append('=')
+                                .append(this.alias).append('.').append(jf.getReferencedFieldName());
                         i++;
                     }
                 }
@@ -913,25 +919,34 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         }
     }
 
-	protected class SqlBuilder {
-		protected String   alias = "t";
-		protected String[] columns;
+    protected class SqlBuilder {
+        protected String       alias = "t";
+        protected String[]     columns;
+        protected List<String> extraSelectItems;
 
-		private StringBuilder sql;
-		
-		protected SqlBuilder(){
-		}
-		
-		public String buildDeleteSql() {
-			sql = new StringBuilder();
-			
-			delete().from().join().where();
-			
-			return sql.toString();
-		}
+        private StringBuilder sql;
+
+        protected SqlBuilder() {
+
+        }
+
+        public void addExtraSelectItem(String columnOrExpr) {
+            if(null == extraSelectItems) {
+                extraSelectItems = new ArrayList<>();
+            }
+            extraSelectItems.add(columnOrExpr);
+        }
+
+        public String buildDeleteSql() {
+            sql = new StringBuilder();
+
+            delete().from().join().where();
+
+            return sql.toString();
+        }
 
         public String buildSecondaryDeleteSql(boolean secondary) {
-            if(!joins.isEmpty()) {
+            if (!joins.isEmpty()) {
                 throw new IllegalStateException("Delete by query with secondary table does not not support joins");
             }
 
@@ -939,9 +954,9 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
             checkAndResolveSecondaryWhere(true);
 
-            if(db().isMySql()) {
+            if (db().isMySql()) {
                 buildMySqlSecondaryDeleteSql(secondary);
-            }else {
+            } else {
                 //delete from primary_table | secondary_table where id in ( select id from (
                 //  select t1.*,t2.col1,t2.col2,... from primary_table t1 left join secondary_table t2 on t1.id = t2.id
                 //) t where ...
@@ -952,18 +967,18 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         }
 
         private void checkAndResolveSecondaryWhere(boolean check) {
-            if(!Strings.isEmpty(where)) {
+            if (!Strings.isEmpty(where)) {
                 SqlWhereExpr expr = SqlParser.parseWhereExpr(where);
 
                 expr.traverse((node) -> {
 
-                    if(node instanceof SqlObjectName) {
+                    if (node instanceof SqlObjectName) {
                         String lastName = ((SqlObjectName) node).getLastName();
 
                         FieldMapping fm = em.tryGetFieldMapping(lastName);
 
-                        if(null != fm) {
-                            if(check && fm.isSecondary()) {
+                        if (null != fm) {
+                            if (check && fm.isSecondary()) {
                                 throw new IllegalStateException("Can't use secondary field '" + lastName + "' at where expression");
                             }
 
@@ -981,9 +996,9 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         private void buildMySqlSecondaryDeleteSql(boolean secondary) {
             sql.append("delete t1 from ");
 
-            if(secondary) {
+            if (secondary) {
                 sql.append(em.getSecondaryTableName()).append(" t1 join ").append(em.getTableName()).append(" t2");
-            }else{
+            } else {
                 sql.append(em.getTableName()).append(" t1 left join ").append(em.getSecondaryTableName()).append(" t2");
             }
 
@@ -992,8 +1007,8 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
             where();
         }
 
-        public String buildSecondaryUpdateSql(Map<String, Object> fields, Map<String,Object> params, boolean secondary) {
-            if(!joins.isEmpty()) {
+        public String buildSecondaryUpdateSql(Map<String, Object> fields, Map<String, Object> params, boolean secondary) {
+            if (!joins.isEmpty()) {
                 throw new IllegalStateException("Update by query with secondary table does not not support joins");
             }
 
@@ -1001,17 +1016,17 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
             checkAndResolveSecondaryWhere(false);
 
-            if(db().isMySql()) {
-                if(!buildMySqlSecondaryUpdateSql(fields, params, secondary)){
+            if (db().isMySql()) {
+                if (!buildMySqlSecondaryUpdateSql(fields, params, secondary)) {
                     return null;
                 }
-            }else{
+            } else {
                 //update primary_table | secondary_table set ... where id in ( select id from (
                 //  select t1.*,t2.col1,t2.col2,... from primary_table t1 left join secondary_table t2 on t1.id = t2.id
                 //) t where ...
-                if(!updateSetColumns(fields, params, secondary)){
+                if (!updateSetColumns(fields, params, secondary)) {
                     return null;
-                }else{
+                } else {
                     idInWhere();
                 }
             }
@@ -1019,18 +1034,18 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
             return sql.toString();
         }
 
-        private boolean buildMySqlSecondaryUpdateSql(Map<String, Object> fields, Map<String,Object> params, boolean secondary) {
+        private boolean buildMySqlSecondaryUpdateSql(Map<String, Object> fields, Map<String, Object> params, boolean secondary) {
             sql.append("update ");
 
-            if(secondary) {
+            if (secondary) {
                 sql.append(em.getSecondaryTableName()).append(" t1 join ").append(em.getTableName()).append(" t2");
-            }else{
+            } else {
                 sql.append(em.getTableName()).append(" t1 left join ").append(em.getSecondaryTableName()).append(" t2");
             }
 
             sql.append(" on t1.").append(em.idColumnName()).append("=t2.").append(em.idColumnName());
 
-            if(!setColumns(fields, params, false, secondary)) {
+            if (!setColumns(fields, params, false, secondary)) {
                 return false;
             }
 
@@ -1045,129 +1060,129 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
             sql.append("(select t1.*");
 
-            for(FieldMapping fm : em.getFieldMappings()) {
-                if(fm.isSecondary()) {
+            for (FieldMapping fm : em.getFieldMappings()) {
+                if (fm.isSecondary()) {
                     sql.append(",t2.").append(fm.getColumnName());
                 }
             }
 
             sql.append(" from ").append(em.getTableName()).append(" t1 left join ")
-                .append(em.getSecondaryTableName()).append(" t2 on t1.").append(idColumn).append(" = ").append("t2.").append(idColumn)
-                .append(") ").append(alias);
+                    .append(em.getSecondaryTableName()).append(" t2 on t1.").append(idColumn).append(" = ").append("t2.").append(idColumn)
+                    .append(") ").append(alias);
 
             where();
 
             sql.append(")");
             return this;
         }
-		
-		public String buildSelectSql() {
-			sql = new StringBuilder();
-			
-			select().columns().from().join().where().groupBy().orderBy();
-			
-			return sql.toString();
-		}
-		
-		public String buildCountSql() {
-			sql = new StringBuilder();
 
-            if(distinct || hasGroupBy()) {
+        public String buildSelectSql() {
+            sql = new StringBuilder();
+
+            select().columns().from().join().where().groupBy().orderBy();
+
+            return sql.toString();
+        }
+
+        public String buildCountSql() {
+            sql = new StringBuilder();
+
+            if (distinct || hasGroupBy()) {
                 sql.append("select count(*) from ( ");
                 select().columns().from().join().where().groupBy();
                 sql.append(" ) cnt");
-            }else{
+            } else {
                 select().count().from().join().where().groupBy();
             }
-			
-			return sql.toString();
-		}
-		
-		public String buildUpdateSql(Map<String, Object> fields, Map<String,Object> params) {
-			sql = new StringBuilder();
-			
-			if(updateSetColumns(fields, params, false)){
+
+            return sql.toString();
+        }
+
+        public String buildUpdateSql(Map<String, Object> fields, Map<String, Object> params) {
+            sql = new StringBuilder();
+
+            if (updateSetColumns(fields, params, false)) {
                 where();
-            }else{
+            } else {
                 return null;
             }
 
-			return sql.toString();
-		}
-		
-		protected SqlBuilder delete() {
-			sql.append("delete");
-			
-			//MySQL:
+            return sql.toString();
+        }
+
+        protected SqlBuilder delete() {
+            sql.append("delete");
+
+            //MySQL:
 			/*
 				If you declare an alias for a table, you must use the alias when referring to the table:
 				DELETE t1 FROM test AS t1, test2 WHERE ...
 			 */
-            if(context.getDb().getDialect().useTableAliasAfterDelete()) {
+            if (context.getDb().getDialect().useTableAliasAfterDelete()) {
                 sql.append(" ").append(alias);
             }
 
-			return this;
-		}
-		
-		protected SqlBuilder select() {
-			sql.append("select");
-            if(distinct) {
+            return this;
+        }
+
+        protected SqlBuilder select() {
+            sql.append("select");
+            if (distinct) {
                 sql.append(" distinct");
             }
-			return this;
-		}
-		
-		protected SqlBuilder count() {
-			sql.append(" count(*)");
-			return this;
-		}
-		
-		protected boolean updateSetColumns(Map<String, Object> fields, Map<String,Object> params, boolean secondary) {
+            return this;
+        }
+
+        protected SqlBuilder count() {
+            sql.append(" count(*)");
+            return this;
+        }
+
+        protected boolean updateSetColumns(Map<String, Object> fields, Map<String, Object> params, boolean secondary) {
             DbDialect dialect = context.getDb().getDialect();
 
             sql.append("update ");
 
-            if(dialect.useTableAliasAfterUpdate()) {
+            if (dialect.useTableAliasAfterUpdate()) {
                 //update alias set ... from table alias
                 sql.append(alias);
-            }else{
+            } else {
                 sql.append(secondary ? em.getSecondaryTableName() : em.getEntityName()).append(" ").append(alias);
             }
 
-            if(!setColumns(fields, params, true, secondary)) {
+            if (!setColumns(fields, params, true, secondary)) {
                 return false;
             }
 
-            if(dialect.useTableAliasAfterUpdate()) {
+            if (dialect.useTableAliasAfterUpdate()) {
                 sql.append(" from ").append(secondary ? em.getSecondaryTableName() : em.getEntityName()).append(" ").append(alias);
             }
 
-			return true;
-		}
+            return true;
+        }
 
-        private boolean setColumns(Map<String, Object> fields, Map<String,Object> params, boolean useAlias, boolean secondary) {
+        private boolean setColumns(Map<String, Object> fields, Map<String, Object> params, boolean useAlias, boolean secondary) {
             DbDialect dialect = context.getDb().getDialect();
 
             sql.append(" set ");
 
             int index = 0;
-            for(Entry<String, Object> entry : fields.entrySet()){
+            for (Entry<String, Object> entry : fields.entrySet()) {
                 String field = entry.getKey();
                 Object value = entry.getValue();
 
                 FieldMapping fm = em.getFieldMapping(field);
-                if(!fm.matchSecondary(secondary)) {
+                if (!fm.matchSecondary(secondary)) {
                     continue;
                 }
 
                 String param = "new_" + field;
 
-                if(index > 0){
+                if (index > 0) {
                     sql.append(",");
                 }
 
-                if(useAlias && !dialect.useTableAliasAfterUpdate()) {
+                if (useAlias && !dialect.useTableAliasAfterUpdate()) {
                     sql.append(alias).append('.');
                 }
 
@@ -1180,43 +1195,48 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
             return index > 0;
         }
-		
-		protected SqlBuilder columns() {
-			sql.append(' ');
-			
-            if(null == columns || columns.length == 0){
+
+        protected SqlBuilder columns() {
+            sql.append(' ');
+
+            if (null == columns || columns.length == 0) {
                 SqlFactory sf = dao.getOrmContext().getSqlFactory();
                 sql.append(sf.createSelectColumns(dao.getOrmContext(), em, alias));
-            }else{
+            } else {
                 int index = 0;
-                for(String column : columns){
-                    if(index > 0){
+                for (String column : columns) {
+                    if (index > 0) {
                         sql.append(",");
                     }
-                    
-                    if(column.contains(".") || column.contains(" ") || column.contains("(")){
+
+                    if (column.contains(".") || column.contains(" ") || column.contains("(")) {
                         sql.append(column);
-                    }else {
+                    } else {
                         sql.append(alias).append(".").append(column);
                     }
-                    
+
                     index++;
                 }
-            } 
-            
+            }
+            if(null != extraSelectItems) {
+                for(String item : extraSelectItems) {
+                    sql.append(",");
+                    sql.append(item);
+                }
+            }
             return this;
-		}
-		
-		protected SqlBuilder from() {
-	        sql.append(" from ");
-            if(!Strings.isEmpty(sqlView)) {
+        }
+
+        protected SqlBuilder from() {
+            sql.append(" from ");
+            if (!Strings.isEmpty(sqlView)) {
                 sql.append("(").append(sqlView).append(")");
-            }else {
+            } else {
                 sql.append(em.getEntityName());
             }
             sql.append(" ").append(alias);
-	        return this;
-		}
+            return this;
+        }
 
         protected SqlBuilder from(boolean secondary) {
             sql.append(" from ").append(secondary ? em.getSecondaryTableName() : em.getTableName()).append(" ").append(alias);
@@ -1246,28 +1266,28 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                 }
             };
 
-            for(JoinBuilder join : joins) {
+            for (JoinBuilder join : joins) {
                 join.build(sql, jc);
             }
 
             return this;
         }
-		
-		protected SqlBuilder where() {
-	        if(!Strings.isEmpty(where)){
-	        	where = where.trim();
-	        	if(!Strings.startsWithIgnoreCase(where,"where")){
-	        		sql.append(" where ").append(where);
-	        	}else{
-	        		sql.append(" ").append(where);
-	        	}
-	        }
 
-            if(null != joinByIdWhere) {
+        protected SqlBuilder where() {
+            if (!Strings.isEmpty(where)) {
+                where = where.trim();
+                if (!Strings.startsWithIgnoreCase(where, "where")) {
+                    sql.append(" where ").append(where);
+                } else {
+                    sql.append(" ").append(where);
+                }
+            }
 
-                if(Strings.isEmpty(where)) {
+            if (null != joinByIdWhere) {
+
+                if (Strings.isEmpty(where)) {
                     sql.append(" where ").append(joinByIdWhere);
-                }else{
+                } else {
                     sql.append(" and ( ");
                     sql.append(joinByIdWhere);
                     sql.append(" )");
@@ -1275,30 +1295,30 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
             }
 
-	        return this;
-		}
+            return this;
+        }
 
         protected boolean hasGroupBy() {
             return !Strings.isEmpty(groupBy);
         }
-		
-		protected SqlBuilder groupBy() {
-	        if(!Strings.isEmpty(groupBy)){
-	        	sql.append(" group by ").append(groupBy);
-	        }
-	        
-	        if(!Strings.isEmpty(having)){
-	        	sql.append(" having ").append(having);
-	        }
-	        
-	        return this;
-		}
-		
-		protected SqlBuilder orderBy() {
-	        if(!Strings.isEmpty(orderBy)){
-	        	sql.append(" order by ").append(orderBy);
-	        }
-	        return this;
-		}
-	}
+
+        protected SqlBuilder groupBy() {
+            if (!Strings.isEmpty(groupBy)) {
+                sql.append(" group by ").append(groupBy);
+            }
+
+            if (!Strings.isEmpty(having)) {
+                sql.append(" having ").append(having);
+            }
+
+            return this;
+        }
+
+        protected SqlBuilder orderBy() {
+            if (!Strings.isEmpty(orderBy)) {
+                sql.append(" order by ").append(orderBy);
+            }
+            return this;
+        }
+    }
 }

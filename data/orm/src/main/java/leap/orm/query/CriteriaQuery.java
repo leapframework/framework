@@ -177,6 +177,11 @@ public interface CriteriaQuery<T> extends Query<T> {
     CriteriaQuery<T> select(Predicate<FieldMapping> filter);
 
     /**
+     * Appends a select item.
+     */
+    CriteriaQuery<T> addSelectItem(String fieldOrExpr);
+
+    /**
      * Returns the table alias of primary entity.
      */
     String alias();
