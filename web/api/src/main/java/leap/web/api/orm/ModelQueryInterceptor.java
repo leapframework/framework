@@ -17,6 +17,7 @@
 package leap.web.api.orm;
 
 import leap.core.value.Record;
+import leap.orm.query.CriteriaQuery;
 import leap.orm.query.PageResult;
 import leap.web.api.mvc.params.QueryOptions;
 import leap.web.api.mvc.params.QueryOptionsBase;
@@ -26,6 +27,10 @@ import java.util.List;
 public interface ModelQueryInterceptor {
 
     default boolean processQueryOneOptions(ModelExecutionContext context, QueryOptionsBase options) {
+        return false;
+    }
+
+    default boolean preProcessQueryOne(ModelExecutionContext context, Object id, CriteriaQuery query) {
         return false;
     }
 

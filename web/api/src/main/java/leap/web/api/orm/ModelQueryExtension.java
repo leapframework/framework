@@ -17,6 +17,7 @@
 package leap.web.api.orm;
 
 import leap.core.value.Record;
+import leap.orm.query.CriteriaQuery;
 import leap.orm.query.PageResult;
 import leap.web.api.mvc.params.QueryOptions;
 import leap.web.api.mvc.params.QueryOptionsBase;
@@ -43,6 +44,16 @@ public class ModelQueryExtension implements ModelQueryInterceptor {
     public boolean processQueryOneOptions(ModelExecutionContext context, QueryOptionsBase options) {
         for(ModelQueryInterceptor interceptor : interceptors) {
             if(interceptor.processQueryOneOptions(context, options)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean preProcessQueryOne(ModelExecutionContext context, Object id, CriteriaQuery query) {
+        for(ModelQueryInterceptor interceptor : interceptors) {
+            if(interceptor.preProcessQueryOne(context, id, query)) {
                 return true;
             }
         }

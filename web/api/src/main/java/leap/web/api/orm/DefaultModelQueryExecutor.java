@@ -106,16 +106,15 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         CriteriaQuery<Record> query = createCriteriaQuery().whereById(id);
         applySelect(query, options, new HashMap<>());
 
+        ex.preProcessQueryOne(context, id, query);
         if (null != ex.handler) {
             ex.handler.preQueryOne(context, id, query);
         }
         record = query.firstOrNull();
-
+        expandOne(record, options);
         if(null != ex.handler && null != record) {
             ex.handler.postQueryOne(context, id, record);
         }
-
-        expandOne(record, options);
 
         Object entity = ex.processQueryOneRecord(context, id, record);
 
