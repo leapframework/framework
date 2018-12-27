@@ -20,8 +20,4 @@ import leap.lang.accessor.AttributeAccessor;
 
 public interface ModelExecutionContext extends ModelExecutorContext, AttributeAccessor {
 
-    Object getExecutionContext();
-
-    void setExecutionContext(Object o);
-
 }

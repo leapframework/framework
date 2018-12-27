@@ -28,20 +28,8 @@ public class DefaultModelExecutionContext extends MapAttributeAccessor implement
 
     private final ModelExecutorContext context;
 
-    private Object executionContext;
-
     DefaultModelExecutionContext(ModelExecutorContext context) {
         this.context = context;
-    }
-
-    @Override
-    public Object getExecutionContext() {
-        return executionContext;
-    }
-
-    @Override
-    public void setExecutionContext(Object o) {
-        this.executionContext = o;
     }
 
     @Override
