@@ -106,7 +106,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         CriteriaQuery<Record> query = createCriteriaQuery().whereById(id);
         applySelect(query, options, new HashMap<>());
 
-        ex.preProcessQueryOne(context, id, query);
+        ex.preQueryOne(context, id, query);
         if (null != ex.handler) {
             ex.handler.preQueryOne(context, id, query);
         }
@@ -232,12 +232,12 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             callback.accept(query);
         }
 
+        ex.preQueryList(context, query);
         if(null != ex.handler) {
             ex.handler.preQueryList(context, query);
         }
 
         PageResult page = query.pageResult(options.getPage(ac.getDefaultPageSize()));
-
         list = ex.executeQueryList(context, options, page);
         if(null == list){
             list = page.list();

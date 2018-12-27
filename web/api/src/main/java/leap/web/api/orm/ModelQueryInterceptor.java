@@ -30,7 +30,7 @@ public interface ModelQueryInterceptor {
         return false;
     }
 
-    default boolean preProcessQueryOne(ModelExecutionContext context, Object id, CriteriaQuery query) {
+    default boolean preQueryOne(ModelExecutionContext context, Object id, CriteriaQuery query) {
         return false;
     }
 
@@ -47,6 +47,10 @@ public interface ModelQueryInterceptor {
     }
 
     default boolean postProcessQueryListWhere(ModelExecutionContext context, QueryOptions options, StringBuilder where, List<Object> args){
+        return false;
+    }
+
+    default boolean preQueryList(ModelExecutionContext context, CriteriaQuery query) {
         return false;
     }
 
