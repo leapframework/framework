@@ -509,6 +509,26 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     }
 
     @Override
+    public CriteriaQuery<T> whereAnd(String expr) {
+        if(Strings.isEmpty(where)) {
+            where = expr;
+        }else {
+            where = "(" + where + ") and (" + expr + ")";
+        }
+        return this;
+    }
+
+    @Override
+    public CriteriaQuery<T> whereOr(String expr) {
+        if(Strings.isEmpty(where)) {
+            where = expr;
+        }else {
+            where = "(" + where + ") or (" + expr + ")";
+        }
+        return this;
+    }
+
+    @Override
     public CriteriaQuery<T> distinct() {
         this.distinct = true;
         return this;

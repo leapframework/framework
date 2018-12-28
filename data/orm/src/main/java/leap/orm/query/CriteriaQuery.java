@@ -381,6 +381,16 @@ public interface CriteriaQuery<T> extends Query<T> {
     CriteriaQuery<T> where(String expression, Object... args);
 
     /**
+     * Where -> (where) and (expr)
+     */
+    CriteriaQuery<T> whereAnd(String expr);
+
+    /**
+     * Where -> (where) or (expr)
+     */
+    CriteriaQuery<T> whereOr(String expr);
+
+    /**
      * Sets the 'group by' sql expression in the generated sql.
      */
     CriteriaQuery<T> groupBy(String expression);
