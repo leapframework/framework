@@ -17,6 +17,8 @@ package leap.webunit.client;
 
 import leap.lang.http.*;
 import leap.lang.json.JSON;
+import leap.lang.json.JsonArray;
+import leap.lang.json.JsonObject;
 import leap.lang.json.JsonValue;
 import leap.lang.jsoup.nodes.Document;
 
@@ -129,6 +131,14 @@ public interface THttpResponse {
      */
 	default JsonValue getJson() {
 		return JSON.parse(getContent());
+	}
+
+	default JsonArray asJsonArray() {
+		return getJson().asJsonArray();
+	}
+
+	default JsonObject asJsonObject() {
+		return getJson().asJsonObject();
 	}
 
     /**
