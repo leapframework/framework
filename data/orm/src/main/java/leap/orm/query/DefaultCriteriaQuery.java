@@ -45,21 +45,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements CriteriaQuery<T>, QueryContext {
 
-    protected SqlBuilder        builder;
-    protected String            sqlView;
-    protected List<JoinBuilder> joins = new ArrayList<>(1);
-    protected String[]          selects;
-    protected String            where;
-    protected ArrayParams       whereParameters;
-    protected StringBuilder     joinByIdWhere;
-    protected List              joinByIdArgs;
-    protected boolean           distinct;
-    protected String            groupBy;
-    protected String            having;
+    protected SqlBuilder               builder;
+    protected String                   sqlView;
+    protected List<JoinBuilder>        joins = new ArrayList<>(1);
+    protected String[]                 selects;
+    protected String                   where;
+    protected ArrayParams              whereParameters;
+    protected StringBuilder            joinByIdWhere;
+    protected List                     joinByIdArgs;
+    protected boolean                  distinct;
+    protected String                   groupBy;
+    protected String                   having;
+    protected Function<String, String> sqlWrapper;
 
     public DefaultCriteriaQuery(Dao dao, EntityMapping em, Class<T> targetType) {
         super(dao, targetType, em);
@@ -94,6 +96,12 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     @Override
     public CriteriaQuery<T> fromSqlView(String sql) {
         this.sqlView = sql;
+        return this;
+    }
+
+    @Override
+    public CriteriaQuery<T> wrapSqlQuery(Function<String, String> wrapper) {
+        sqlWrapper = wrapper;
         return this;
     }
 
@@ -931,7 +939,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         }
 
         public void addExtraSelectItem(String columnOrExpr) {
-            if(null == extraSelectItems) {
+            if (null == extraSelectItems) {
                 extraSelectItems = new ArrayList<>();
             }
             extraSelectItems.add(columnOrExpr);
@@ -1081,7 +1089,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
             select().columns().from().join().where().groupBy().orderBy();
 
-            return sql.toString();
+            return wrap(sql.toString());
         }
 
         public String buildCountSql() {
@@ -1095,7 +1103,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                 select().count().from().join().where().groupBy();
             }
 
-            return sql.toString();
+            return wrap(sql.toString());
         }
 
         public String buildUpdateSql(Map<String, Object> fields, Map<String, Object> params) {
@@ -1107,7 +1115,15 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                 return null;
             }
 
-            return sql.toString();
+            return wrap(sql.toString());
+        }
+
+        protected String wrap(String sql) {
+            if(null != sqlWrapper) {
+                return sqlWrapper.apply(sql);
+            }else {
+                return sql;
+            }
         }
 
         protected SqlBuilder delete() {
@@ -1218,8 +1234,8 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                     index++;
                 }
             }
-            if(null != extraSelectItems) {
-                for(String item : extraSelectItems) {
+            if (null != extraSelectItems) {
+                for (String item : extraSelectItems) {
                     sql.append(",");
                     sql.append(item);
                 }

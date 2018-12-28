@@ -321,6 +321,10 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause,Sql
 				newSelect.setAlias(select.getAlias());
 				newSelect.setNodes(nodes.toArray(new AstNode[nodes.size()]));
                 newSelect.setUnion(select.isUnion());
+                newSelect.setFrom(select.getFrom());
+                for(SqlTableSource ts : select.getTableSources()){
+                    newSelect.addTableSource(ts);
+                }
 				selects.add(newSelect);
 			}else {
 				selects.add(node);

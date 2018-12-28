@@ -29,6 +29,7 @@ import leap.orm.mapping.RelationMapping;
 
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 
@@ -73,6 +74,11 @@ public interface CriteriaQuery<T> extends Query<T> {
      * select * from (sql view) t.
      */
     CriteriaQuery<T> fromSqlView(String sql);
+
+    /**
+     * Wraps the sql query with the wrapper.
+     */
+    CriteriaQuery<T> wrapSqlQuery(Function<String, String> wrapper);
 
     /**
      * Sets the given name and value as CriteriaQuery parameter.

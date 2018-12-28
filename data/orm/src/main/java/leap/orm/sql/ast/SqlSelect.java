@@ -52,7 +52,13 @@ public class SqlSelect extends SqlQuery implements SqlTableSource {
 	}
 
 	public boolean isSelectItemAlias(String name) {
-		return null != selectItemAliases && selectItemAliases.containsKey(name.toLowerCase());
+		if(null != selectItemAliases && selectItemAliases.containsKey(name.toLowerCase())) {
+		    return true;
+        }
+        if(null != from && from instanceof SqlSelect) {
+            return ((SqlSelect)from).isSelectItemAlias(name);
+        }
+        return false;
 	}
 
 	public void addSelectItemAlias(String alias) {
@@ -72,10 +78,16 @@ public class SqlSelect extends SqlQuery implements SqlTableSource {
     }
 
 	public String getSelectItemAlias(String name){
-		if(isSelectItemAlias(name)){
-			return selectItemAliases.get(name.toLowerCase());
-		}
-		return name;
+	    if(null != selectItemAliases) {
+	        String alias = selectItemAliases.get(name.toLowerCase());
+	        if(null != alias) {
+	            return alias;
+            }
+        }
+        if(null != from && from instanceof SqlSelect) {
+            return ((SqlSelect)from).getSelectItemAlias(name);
+        }
+        return name;
 	}
 
     public Map<String,String> getSelectItemAliases() {

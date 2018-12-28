@@ -15,18 +15,19 @@
  */
 package leap.orm.sql.ast;
 
-public class SqlQuery extends SqlTableContainer implements SqlTableSource{
-	
-	private String  alias;
-	private boolean join;
+public class SqlQuery extends SqlTableContainer implements SqlTableSource {
 
-	public String getAlias() {
-		return alias;
-	}
+    protected String         alias;
+    protected boolean        join;
+    protected SqlTableSource from;
 
-	public void setAlias(String alias) {
-		this.alias = alias;
-	}
+    public String getAlias() {
+        return alias;
+    }
+
+    public void setAlias(String alias) {
+        this.alias = alias;
+    }
 
     @Override
     public boolean isJoin() {
@@ -35,5 +36,13 @@ public class SqlQuery extends SqlTableContainer implements SqlTableSource{
 
     public void setJoin(boolean join) {
         this.join = join;
+    }
+
+    public SqlTableSource getFrom() {
+        return from;
+    }
+
+    public void setFrom(SqlTableSource from) {
+        this.from = from;
     }
 }

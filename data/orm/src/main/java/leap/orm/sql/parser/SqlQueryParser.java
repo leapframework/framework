@@ -48,7 +48,7 @@ abstract class SqlQueryParser extends SqlParser {
     }
 
     protected void parseFromItem(SqlQuery query) {
-        parseTableSource(query);
+        query.setFrom(parseTableSource(query));
     }
 
     protected SqlTableSource parseTableSource(SqlQuery query) {
