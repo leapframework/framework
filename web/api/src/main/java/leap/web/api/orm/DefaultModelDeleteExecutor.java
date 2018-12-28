@@ -39,6 +39,7 @@ public class DefaultModelDeleteExecutor extends ModelExecutorBase implements Mod
         }
 
         ex.processDeleteOneOptions(context, id, options);
+        ex.processDeleteOneOptions((ModelExecutorContext)context, id, options);
 
         DeleteOneResult result = null;
         if(null != ex.handler) {
