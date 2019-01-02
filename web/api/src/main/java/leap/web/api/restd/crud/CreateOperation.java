@@ -16,7 +16,6 @@
 
 package leap.web.api.restd.crud;
 
-import leap.core.value.Record;
 import leap.lang.Strings;
 import leap.orm.dao.Dao;
 import leap.web.action.ActionParams;
@@ -56,10 +55,6 @@ public class CreateOperation extends CrudOperationBase implements CrudOperation 
 
         FuncActionBuilder action = new FuncActionBuilder();
         RouteBuilder      route  = rm.createRoute(verb, path);
-
-        if(isOperationExists(context, route)) {
-            return;
-        }
 
         action.setName(Strings.lowerCamel(NAME, model.getName()));
         action.setFunction(createFunction(c, context, model));

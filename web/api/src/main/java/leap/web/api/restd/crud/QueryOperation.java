@@ -57,10 +57,6 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
         FuncActionBuilder action = new FuncActionBuilder();
         RouteBuilder      route  = rm.createRoute(verb, path);
 
-        if(isOperationExists(context, route)) {
-            return;
-        }
-
         action.setName(Strings.lowerCamel(NAME, model.getName()));
         action.setFunction(createFunction(c, context, model));
 
@@ -70,8 +66,11 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
         preConfigure(context, model, action);
         route.setAction(action.build());
         setCrudOperation(route, NAME);
-
         postConfigure(context, model, route);
+
+        if(isOperationExists(context, route)) {
+            return;
+        }
 
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
