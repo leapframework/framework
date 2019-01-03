@@ -177,11 +177,9 @@ public class JsonMessageConverter extends AbstractHttpMessageConverter implement
                     }
 
                     Collection c = (Collection)o;
-                    jsonWriter.startArray();
-                    for(Object item : c) {
+                    jsonWriter.array(c, item -> {
                         ((JsonStringable)item).toJson(jsonWriter);
-                    }
-                    jsonWriter.endArray();
+                    });
                 }
             }
         }
