@@ -27,29 +27,33 @@ public class DefaultModelExecutorFactory implements ModelExecutorFactory {
     protected @Inject ModelCreateHandler       createHandler;
     protected @Inject ModelCreateInterceptor[] createInterceptors;
 
-    protected @Inject ModelUpdateHandler       updateHandler;
-    protected @Inject ModelUpdateInterceptor[] updateInterceptors;
+    protected @Inject ModelUpdateHandler        updateHandler;
+    protected @Inject ModelUpdateInterceptor[]  updateInterceptors;
     protected @Inject ModelReplaceInterceptor[] replaceInterceptors;
 
-    protected @Inject ModelQueryHandler        queryHandler;
-    protected @Inject ModelQueryInterceptor[]  queryInterceptors;
+    protected @Inject ModelQueryHandler       queryHandler;
+    protected @Inject ModelQueryInterceptor[] queryInterceptors;
 
     protected @Inject ModelDeleteHandler       deleteHandler;
     protected @Inject ModelDeleteInterceptor[] deleteInterceptors;
 
+    protected @Inject RelationQueryInterceptor[] relationQueryInterceptors;
+
     protected @Inject RestResourceFactory restResourceFactory;
 
-    private ModelCreateExtension createExtension;
-    private ModelUpdateExtension updateExtension;
-    private ModelQueryExtension  queryExtension;
-    private ModelDeleteExtension deleteExtension;
+    private ModelCreateExtension   createExtension;
+    private ModelUpdateExtension   updateExtension;
+    private ModelQueryExtension    queryExtension;
+    private ModelDeleteExtension   deleteExtension;
+    private RelationQueryExtension relationQueryExtension;
 
     @Init
     private void init() {
         this.createExtension = new ModelCreateExtension(createHandler, createInterceptors);
         this.updateExtension = new ModelUpdateExtension(updateHandler, updateInterceptors, replaceInterceptors);
-        this.queryExtension  = new ModelQueryExtension(queryHandler, queryInterceptors);
+        this.queryExtension = new ModelQueryExtension(queryHandler, queryInterceptors);
         this.deleteExtension = new ModelDeleteExtension(deleteHandler, deleteInterceptors);
+        this.relationQueryExtension = new RelationQueryExtension(relationQueryInterceptors);
     }
 
     @Override
@@ -72,13 +76,13 @@ public class DefaultModelExecutorFactory implements ModelExecutorFactory {
         return new DefaultModelQueryExecutor(handleContext(context), queryExtension);
     }
 
-    protected ModelExecutorContext handleContext(ModelExecutorContext context) {
+    protected <T extends ModelExecutorContext> T handleContext(T context) {
         context.setRestResourceFactory(restResourceFactory);
         return context;
     }
 
     @Override
     public RelationQueryExecutor newRelationQueryExecutor(RelationExecutorContext context) {
-        return new DefaultRelationQueryExecutor((RelationExecutorContext) handleContext(context));
+        return new DefaultRelationQueryExecutor(handleContext(context), relationQueryExtension);
     }
 }

@@ -158,7 +158,7 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
 
         QueryOneResult result = executor.queryOne(id, options);
 
-        return ApiResponse.of(result.record);
+        return ApiResponse.of(result.getRecord());
     }
 
     /**
@@ -250,10 +250,10 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
 
         QueryListResult result = executor.queryList(options, filters, queryCallback, filterByParams);
 
-        if (result.count == -1) {
-            return ApiResponse.of(result.list);
+        if (result.getCount() == -1) {
+            return ApiResponse.of(result.getList());
         } else {
-            return ApiResponse.of(result.list).setHeader("X-Total-Count", String.valueOf(result.count));
+            return ApiResponse.of(result.getList()).setHeader("X-Total-Count", String.valueOf(result.getCount()));
         }
     }
 

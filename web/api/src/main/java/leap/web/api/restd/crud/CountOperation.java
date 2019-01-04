@@ -95,7 +95,7 @@ public class CountOperation extends CrudOperationBase implements CrudOperation {
 
             QueryListResult result = executor.count(options, null);
 
-            return ApiResponse.of(result.count);
+            return ApiResponse.of(result.getCount());
         }
 
         protected ModelQueryExecutor newQueryExecutor(ModelExecutorContext context) {

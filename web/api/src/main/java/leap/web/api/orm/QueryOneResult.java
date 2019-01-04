@@ -22,8 +22,12 @@ import leap.core.value.Record;
 
 public class QueryOneResult {
 
-    public final Record record;
-    public final Object entity;
+    public Record record;
+    public Object entity;
+
+    public QueryOneResult() {
+
+    }
 
     public QueryOneResult(Record record) {
         this(record, null);
@@ -31,6 +35,22 @@ public class QueryOneResult {
 
     public QueryOneResult(Record record, Object entity) {
         this.record = record;
+        this.entity = entity;
+    }
+
+    public Record getRecord() {
+        return record;
+    }
+
+    public void setRecord(Record record) {
+        this.record = record;
+    }
+
+    public Object getEntity() {
+        return entity;
+    }
+
+    public void setEntity(Object entity) {
         this.entity = entity;
     }
 }

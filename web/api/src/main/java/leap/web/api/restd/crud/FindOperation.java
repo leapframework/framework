@@ -95,12 +95,12 @@ public class FindOperation extends CrudOperationBase implements CrudOperation {
             QueryOptionsBase options = params.get(idLen);
 
             QueryOneResult result = executor.queryOne(id, options);
-            if(null != result.entity) {
-                return ApiResponse.of(result.entity);
-            }else if(result.record == null) {
+            if(null != result.getEntity()) {
+                return ApiResponse.of(result.getEntity());
+            }else if(result.getRecord() == null) {
                 throw new NotFoundException(am.getName() + " '" + id.toString() + "' not found");
             }else {
-                return ApiResponse.of(result.record);
+                return ApiResponse.of(result.getRecord());
             }
         }
 

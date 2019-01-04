@@ -36,9 +36,9 @@ import leap.web.api.remote.RestResourceFactory;
 import java.util.Date;
 import java.util.Map;
 
-public abstract class ModelExecutorBase {
+public abstract class ModelExecutorBase<C extends ModelExecutorContext> {
 
-    protected final ModelExecutorContext context;
+    protected final C                    context;
     protected final ApiConfig            ac;
     protected final ApiMetadata          amd;
     protected final MApiModel            am;
@@ -48,7 +48,7 @@ public abstract class ModelExecutorBase {
     protected final boolean              remoteRest;
     protected final RestResourceFactory  restResourceFactory;
 
-    public ModelExecutorBase(ModelExecutorContext context) {
+    public ModelExecutorBase(C context) {
         this.context = context;
         this.ac  = context.getApiConfig();
         this.amd = context.getApiMetadata();

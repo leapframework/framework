@@ -27,9 +27,13 @@ public final class QueryListResult {
 
     public static QueryListResult EMPTY = new QueryListResult(new ArrayList<>(), 0);
 
-    public final List<Record> list;
-    public final long         count;
-    public final Object       entity;
+    public List<Record> list;
+    public long         count;
+    public Object       entity;
+
+    public QueryListResult() {
+
+    }
 
     public QueryListResult(List<Record> list, long count) {
         this(list, count, null);
@@ -38,6 +42,30 @@ public final class QueryListResult {
     public QueryListResult(List<Record> list, long count, Object entity) {
         this.list = list;
         this.count = count;
+        this.entity = entity;
+    }
+
+    public List<Record> getList() {
+        return list;
+    }
+
+    public void setList(List<Record> list) {
+        this.list = list;
+    }
+
+    public long getCount() {
+        return count;
+    }
+
+    public void setCount(long count) {
+        this.count = count;
+    }
+
+    public Object getEntity() {
+        return entity;
+    }
+
+    public void setEntity(Object entity) {
         this.entity = entity;
     }
 }

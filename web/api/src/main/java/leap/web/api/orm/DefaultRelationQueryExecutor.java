@@ -32,19 +32,21 @@ import leap.web.exception.BadRequestException;
 
 import java.util.*;
 
-public class DefaultRelationQueryExecutor extends ModelExecutorBase implements RelationQueryExecutor {
+public class DefaultRelationQueryExecutor extends ModelExecutorBase<RelationExecutorContext> implements RelationQueryExecutor {
 
-    protected final EntityMapping        tem;
-    protected final RelationMapping      rm;
-    protected final String               rp;
-    protected final RelationMapping      irm;
-    protected final InverseQueryExecutor iqe;
+    protected final RelationQueryExtension ex;
+    protected final EntityMapping          tem;
+    protected final RelationMapping        rm;
+    protected final String                 rp;
+    protected final RelationMapping        irm;
+    protected final InverseQueryExecutor   iqe;
 
-    public DefaultRelationQueryExecutor(RelationExecutorContext context) {
+    public DefaultRelationQueryExecutor(RelationExecutorContext context, RelationQueryExtension ex) {
         super(context);
+        this.ex = ex;
         this.tem = context.getInverseEntityMapping();
-        this.rm  = context.getRelation();
-        this.rp  = !Strings.isEmpty(context.getRelationPath()) ? context.getRelationPath() : Strings.lowerUnderscore(rm.getName());
+        this.rm = context.getRelation();
+        this.rp = !Strings.isEmpty(context.getRelationPath()) ? context.getRelationPath() : Strings.lowerUnderscore(rm.getName());
         this.irm = context.getInverseRelation();
         this.iqe = new InverseQueryExecutor(context.newInverseExecutorContext(), irm);
     }
@@ -55,26 +57,35 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase implements R
             throw new IllegalStateException("Relation '" + rm.getName() + "' must be " + RelationType.MANY_TO_ONE + "' for query one");
         }
 
+        RelationExecutionContext context = new
+                DefaultRelationExecutionContext(DefaultRelationQueryExecutor.this.context);
+
+        ex.preRelateQueryOne(context, id, options);
+
+        Record record;
+
         if (remoteRest) {
-            return queryOneRemoteSource(id, options);
+            record = queryOneRemoteSource(id, options);
+        }else if (tem.isRemoteRest()) {
+            record = queryOneRemoteTarget(id, options);
+        }else {
+            record = iqe.queryOneByRelation(id, options);
         }
 
-        if (tem.isRemoteRest()) {
-            return queryOneRemoteTarget(id, options);
-        }
+        ex.postRelateQueryOne(context, id, record);
 
-        return iqe.queryOneByRelation(id, options);
+        QueryOneResult result = new QueryOneResult(record);
+        ex.completeRelateQueryOne(context, id, result);
+
+        return result;
     }
 
-    protected QueryOneResult queryOneRemoteSource(Object id, QueryOptionsBase options) {
+    protected Record queryOneRemoteSource(Object id, QueryOptionsBase options) {
         RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), em);
-
-        Record record = restResource.findRelationOne(rp, id, options);
-
-        return new QueryOneResult(record);
+        return restResource.findRelationOne(rp, id, options);
     }
 
-    protected QueryOneResult queryOneRemoteTarget(Object id, QueryOptionsBase options) {
+    protected Record queryOneRemoteTarget(Object id, QueryOptionsBase options) {
         String[] fields = Arrays.stream(rm.getJoinFields())
                 .map(joinField -> joinField.getLocalFieldName())
                 .toArray(String[]::new);
@@ -86,38 +97,45 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase implements R
 
         Object targetId = CrudUtils.getSingleOrMap(record, fields);
         if (null == targetId) {
-            return new QueryOneResult(null);
+            return null;
         }
 
-        return iqe.queryOne(targetId, options);
+        return iqe.queryOne(targetId, options).record;
     }
 
     @Override
     public QueryListResult queryList(Object id, QueryOptions options) {
+        RelationExecutionContext context = new
+                DefaultRelationExecutionContext(DefaultRelationQueryExecutor.this.context);
+
+        ex.preRelateQueryList(context, id, options);
+
+        QueryListResult result;
         if (remoteRest) {
-            return queryListRemoteSource(id, options);
+            result = queryListRemoteSource(id, options);
+        }else if (rm.isEmbedded()) {
+            result = queryListEmbedded(id, options);
+        }else if (tem.isRemoteRest()) {
+            result = queryListRemoteTarget(id, options);
+        }else {
+            result = iqe.queryListByRelation(id, options);
         }
 
-        if(rm.isEmbedded()) {
-            return queryListEmbedded(id, options);
-        }
+        ex.postRelateQueryList(context, id, result.getList());
+        ex.completeRelateQueryList(context, id, result);
 
-        if(tem.isRemoteRest()) {
-            return queryListRemoteTarget(id, options);
-        }
-
-        return iqe.queryListByRelation(id, options);
+        return result;
     }
 
     protected QueryListResult queryListEmbedded(Object id, QueryOptions options) {
         Record record = dao.createCriteriaQuery(em).whereById(id).select(rm.getEmbeddedFileName()).firstOrNull();
-        if(null == record) {
+        if (null == record) {
             throw new BadRequestException("Record " + em.getEntityName() + "(" + id + ") not found");
         }
 
         Set<Object> embeddedIds = new HashSet<>();
         iqe.calcIdsByEmbeddedField(embeddedIds, record, rm.getEmbeddedFileName());
-        if(embeddedIds.isEmpty()) {
+        if (embeddedIds.isEmpty()) {
             return QueryListResult.EMPTY;
         }
 
@@ -137,7 +155,7 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase implements R
         throw new IllegalStateException("queryListRemoteTarget not implemented");
     }
 
-    protected static class InverseQueryExecutor extends DefaultModelQueryExecutor{
+    protected static class InverseQueryExecutor extends DefaultModelQueryExecutor {
         private final RelationMapping rm;
 
         public InverseQueryExecutor(ModelExecutorContext context, RelationMapping rm) {
@@ -145,7 +163,7 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase implements R
             this.rm = rm;
         }
 
-        public QueryOneResult queryOneByRelation(Object relatedId, QueryOptionsBase options) {
+        public Record queryOneByRelation(Object relatedId, QueryOptionsBase options) {
             CriteriaQuery<Record> query =
                     createCriteriaQuery().joinById(rm.getTargetEntityName(), rm.getName(), "j", relatedId);
 
@@ -157,7 +175,7 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase implements R
 
             expandOne(record, options);
 
-            return new QueryOneResult(record);
+            return record;
         }
 
         public QueryListResult queryListByRelation(Object relatedId, QueryOptions options) {
@@ -171,17 +189,17 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase implements R
 
         public QueryListResult queryListByIds(Set<Object> ids, QueryOptions options) {
             String idFieldName = em.getKeyFieldNames()[0];
-            if(remoteRest) {
+            if (remoteRest) {
                 String filter = idFieldName + " in (" + joinInIds(new ArrayList<>(ids)) + ")";
-                if(Strings.isEmpty(options.getFilters())) {
+                if (Strings.isEmpty(options.getFilters())) {
                     options.setFilters(filter);
-                }else {
+                } else {
                     options.setFilters("(" + options.getFilters() + ") and (" + filter + ")");
                 }
-                RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), em);
-                RestQueryListResult<Record> result = restResource.queryList(options);
+                RestResource                restResource = restResourceFactory.createResource(dao.getOrmContext(), em);
+                RestQueryListResult<Record> result       = restResource.queryList(options);
                 return new QueryListResult(result.getList(), result.getCount());
-            }else {
+            } else {
                 CriteriaQuery<Record> query =
                         createCriteriaQuery().where(idFieldName + " in ?", ids);
 

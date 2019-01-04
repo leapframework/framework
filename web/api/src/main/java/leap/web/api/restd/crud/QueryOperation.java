@@ -96,14 +96,14 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
 
             QueryListResult result = executor.queryList(options);
 
-            if(null != result.entity) {
-                return ApiResponse.of(result.entity);
+            if(null != result.getEntity()) {
+                return ApiResponse.of(result.getEntity());
             }
 
-            if (result.count == -1) {
-                return ApiResponse.of(result.list);
+            if (result.getCount() == -1) {
+                return ApiResponse.of(result.getList());
             } else {
-                return ApiResponse.of(result.list).setHeader("X-Total-Count", String.valueOf(result.count));
+                return ApiResponse.of(result.getList()).setHeader("X-Total-Count", String.valueOf(result.getCount()));
             }
         }
 
