@@ -16,13 +16,12 @@
 
 package leap.web.api.orm;
 
-import leap.lang.accessor.MapAttributeAccessor;
-
-public class DefaultRelationExecutionContext extends MapAttributeAccessor implements RelationExecutionContext {
+public class DefaultRelationExecutionContext extends DefaultModelExecutionContext implements RelationExecutionContext {
 
     private final RelationExecutorContext executorContext;
 
     public DefaultRelationExecutionContext(RelationExecutorContext executorContext) {
+        super(executorContext);
         this.executorContext = executorContext;
     }
 

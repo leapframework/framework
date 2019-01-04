@@ -16,9 +16,7 @@
 
 package leap.web.api.orm;
 
-import leap.lang.accessor.AttributeAccessor;
-
-public interface RelationExecutionContext extends AttributeAccessor {
+public interface RelationExecutionContext extends ModelExecutionContext {
 
     RelationExecutorContext getExecutorContext();
 
