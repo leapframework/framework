@@ -608,9 +608,16 @@ public abstract class Dao implements JdbcExecutor {
 	 * Finds all the entities of the given entity class.
 	 */
 	public abstract <T> List<T> findAll(Class<T> entityClass);
+
+	/**
+	 * Finds all the entities of the given entity class.
+	 */
+	public List<Record> findAll(String entityName) {
+		return findAll(entityName, Record.class);
+	}
 	
 	/**
-	 * Finds all the entitties of the given entity name.
+	 * Finds all the entities of the given entity name.
 	 */
 	public abstract <T> List<T> findAll(String entityName,Class<T> resultClass);
 	

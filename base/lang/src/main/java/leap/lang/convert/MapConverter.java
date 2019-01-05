@@ -52,18 +52,18 @@ public class MapConverter extends AbstractConverter<Map> {
     }
 
     protected static Map doConvert(ConvertContext context, Map from, Class<?> targetType, Type genericType) {
-        Class<?>[] actualTypeArguments = Types.getActualTypeArguments(genericType);
+        Type[] typeArguments = Types.getTypeArguments(genericType);
 
-        Class<?> keyType = actualTypeArguments[0];
-        Class<?> valType = actualTypeArguments[1];
+        Class<?> keyType = Types.getActualType(typeArguments[0]);
+        Class<?> valType = Types.getActualType(typeArguments[1]);
 
         Map to = createMap(targetType);
 
         for(Object o : from.entrySet()){
             Entry entry = (Entry)o;
 
-            Object key = Converts.convert(entry.getKey(), keyType, context);
-            Object val = Converts.convert(entry.getValue(), valType, context);
+            Object key = Converts.convert(entry.getKey(),   keyType, typeArguments[0], context);
+            Object val = Converts.convert(entry.getValue(), valType, typeArguments[1], context);
 
             to.put(key,val);
         }
