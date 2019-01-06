@@ -257,21 +257,23 @@ public class BeanType {
 				
 				if(methodName.startsWith(SETTER_PREFIX) && methodName.length() > SETTER_PREFIX.length()){
 					if(m.getReturnType().equals(void.class) && m.getParameterTypes().length == 1){
-						BeanProperty prop = getOrCreatePropertyFor(props,methodName,SETTER_PREFIX,m.getParameterTypes()[0]);
-						
+					    Class<?> paramType = m.getParameterTypes()[0];
+						BeanProperty prop = getOrCreatePropertyForSkipTypeMatching(props,methodName,SETTER_PREFIX, paramType);
 						if(null != prop){
-                            prop.setDeclaringClass(m.getDeclaringClass());
-							prop.setSetter(rm);
-							prop.setWritable(rm.isPublic());
-							
-							if(null == prop.getGenericType()){
-								prop.setGenericType(m.getGenericParameterTypes()[0]);	
-								prop.setTypeInfo(Types.getTypeInfo(prop.getType(), prop.getGenericType()));
-								//TODO : duplicate annotations ?
-								prop.setAnnotations(Arrays2.concat(prop.getAnnotations(), m.getAnnotations()));
-							}
+						    if(prop.getType().equals(paramType)) {
+                                prop.setDeclaringClass(m.getDeclaringClass());
+                                prop.setSetter(rm);
+                                prop.setWritable(rm.isPublic());
+                                if(null == prop.getGenericType()){
+                                    prop.setGenericType(m.getGenericParameterTypes()[0]);
+                                    prop.setTypeInfo(Types.getTypeInfo(prop.getType(), prop.getGenericType()));
+                                    //TODO : duplicate annotations ?
+                                    prop.setAnnotations(Arrays2.concat(prop.getAnnotations(), m.getAnnotations()));
+                                }
+                            }else {
+                                prop.addExtraSetter(rm);
+                            }
 						}
-						
 					}
 				}else if(methodName.startsWith(GETTER_PREFIX) && methodName.length() > GETTER_PREFIX.length()){
 					
@@ -354,7 +356,6 @@ public class BeanType {
 			
 			if(null == prop){
 				prop = new BeanProperty(this, propName);
-				
 				prop.setType(type);
 				props.put(propName, prop);
 			}else if(!type.equals(prop.getType())){
@@ -364,6 +365,27 @@ public class BeanType {
 			return prop; 
 		}
 		
+		return null;
+	}
+
+	private BeanProperty getOrCreatePropertyForSkipTypeMatching(Map<String, BeanProperty> props, String methodName,String prefix,Class<?> type){
+		String propName = methodName.substring(prefix.length());
+
+		char c = propName.charAt(0);
+		if(Character.isUpperCase(c)){
+			propName = Character.toLowerCase(c) + propName.substring(1);
+
+			BeanProperty prop = props .get(propName);
+
+			if(null == prop){
+				prop = new BeanProperty(this, propName);
+				prop.setType(type);
+				props.put(propName, prop);
+			}
+
+			return prop;
+		}
+
 		return null;
 	}
 	

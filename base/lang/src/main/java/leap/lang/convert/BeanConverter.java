@@ -142,7 +142,7 @@ public class BeanConverter extends AbstractConverter<Object>{
                     }
 
                     if(prop.isWritable()){
-                        prop.setValue(bean, Converts.convert(param, prop.getType(), prop.getGenericType(), context));
+                        setProperty(context, prop, bean, param);
                         break;
                     }
                 }
@@ -170,6 +170,51 @@ public class BeanConverter extends AbstractConverter<Object>{
             }else {
                 dynaMap.forEach(dynaBean::setDynaProperty);
             }
+        }
+    }
+
+    protected void setProperty(ConvertContext context, BeanProperty bp, Object bean, Object value) {
+        if(null != value) {
+            Class<?> ptype = bp.getType();
+            Class<?> vtype = value.getClass();
+
+            if(ptype.isAssignableFrom(vtype)) {
+                value = Converts.convert(value, ptype, bp.getGenericType(), context);
+                bp.setValue(bean, value);
+                return;
+            }
+
+            Map<Class<?>, ReflectMethod> extraSetters = bp.getExtraSetters();
+            if(null != extraSetters) {
+                ReflectMethod extraSetter = extraSetters.get(vtype);
+                if(null != extraSetter) {
+                    ReflectParameter p = extraSetter.getParameters()[0];
+                    value = Converts.convert(value, p.getType(), p.getGenericType(), context);
+                    extraSetter.invoke(bean, value);
+                    return;
+                }
+            }
+
+            try {
+                value = Converts.convert(value, ptype, bp.getGenericType(), context);
+                bp.setValue(bean, value);
+            }catch (ConvertUnsupportedException e) {
+                if(null != extraSetters) {
+                    for(ReflectMethod extraSetter : extraSetters.values()) {
+                        try {
+                            ReflectParameter p = extraSetter.getParameters()[0];
+                            value = Converts.convert(value, p.getType(), p.getGenericType(), context);
+                            extraSetter.invoke(bean, value);
+                            return;
+                        }catch (ConvertUnsupportedException e1) {
+
+                        }
+                    }
+                }
+                throw e;
+            }
+        }else {
+            bp.setValue(bean, null);
         }
     }
 	
