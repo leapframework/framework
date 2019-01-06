@@ -299,6 +299,11 @@ public interface BeanFactory extends BeanFactoryBase, AppContextInitializable {
     /**
      * Creates a new instance of the bean, returns null if not exists.
      */
+    <T> T tryCreateBean(Class<T> type);
+
+    /**
+     * Creates a new instance of the bean, returns null if not exists.
+     */
     <T> T tryCreateBean(Class<T> type, String name);
 
 	/**

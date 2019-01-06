@@ -440,7 +440,12 @@ public class DefaultBeanFactory extends BeanFactoryInternal implements BeanFacto
         return beanContainer.tryCreateBean(namespace, name);
     }
 
-    @Override
+	@Override
+	public <T> T tryCreateBean(Class<T> type) {
+		return beanContainer.tryCreateBean(type);
+	}
+
+	@Override
     public <T> T tryCreateBean(Class<T> type, String name) {
         return beanContainer.tryCreateBean(type, name);
     }
