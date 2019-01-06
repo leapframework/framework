@@ -21,7 +21,6 @@ import leap.lang.Enums;
 import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
-import leap.lang.beans.DynaBean;
 import leap.lang.beans.DynaProps;
 import leap.lang.codec.Base64;
 import leap.lang.naming.NamingStyle;

@@ -19,6 +19,7 @@ import leap.lang.Classes;
 import leap.lang.Types;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
+import leap.lang.beans.DynaProps;
 
 import java.io.Reader;
 import java.lang.reflect.Type;
@@ -48,6 +49,10 @@ class JsonDecoder {
 
     static void doCheckMissingProperties(Set<String> set, String prefix, Class<?> type, Type genericType, Map map) {
         if(null == map || map.isEmpty()) {
+            return;
+        }
+
+        if(DynaProps.class.isAssignableFrom(type)) {
             return;
         }
 
