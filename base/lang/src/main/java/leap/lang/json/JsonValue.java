@@ -15,6 +15,8 @@
  */
 package leap.lang.json;
 
+import leap.lang.convert.Converts;
+
 import java.util.List;
 import java.util.Map;
 
@@ -180,4 +182,11 @@ public interface JsonValue {
     default Double asDouble() {
         return (Double) raw();
     }
+
+	/**
+	 * Converts the raw value to the given type.
+	 */
+    default <T> T convertTo(Class<T> type) {
+    	return Converts.convert(raw(), type);
+	}
 }

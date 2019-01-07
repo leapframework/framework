@@ -168,6 +168,27 @@ public interface THttpRequest {
     default THttpResponse post() {
         return setMethod(Method.POST).send();
     }
+
+    /**
+     * Sends a PUT request.
+     */
+    default THttpResponse put() {
+        return setMethod(Method.PUT).send();
+    }
+
+    /**
+     * Sends a PATCH request.
+     */
+    default THttpResponse patch() {
+        return setMethod(Method.PATCH).send();
+    }
+
+    /**
+     * Sends a DELETE request.
+     */
+    default THttpResponse delete() {
+        return setMethod(Method.DELETE).send();
+    }
     
     /**
      * Send this request and returns the response.

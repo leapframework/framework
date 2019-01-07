@@ -24,26 +24,26 @@ import leap.lang.http.HTTP.Method;
 public interface THttpClient {
 
     /**
-     * Returns the base url of this client. 
-     * 
+     * Returns the base url of this client.
+     *
      * <p>
      * Default is <code>http(s)://127.0.0.1:port</code>
      */
 	String getBaseUrl();
-	
+
 	/**
 	 * Returns the default charset.
-	 * 
+	 *
 	 * <p>
 	 * Default is utf-8.
 	 */
 	Charset getDefaultCharset();
-	
+
 	/**
 	 * Sets the default charset.
 	 */
 	void setDefaultCharset(Charset charset);
-	
+
 	/**
 	 * Returns the cookie or <code>null</code> if not exists.
 	 */
@@ -53,12 +53,12 @@ public interface THttpClient {
      * Adds a cookie
      */
     THttpClient addCookie(String name, String value);
-	
+
 	/**
-	 * Removes the cookie and returns the removed cookie if exists. 
+	 * Removes the cookie and returns the removed cookie if exists.
 	 */
 	Cookie removeCookie(String name);
-	
+
 	/**
 	 * Adds a host name mapping to 127.0.0.1 (dns).
 	 */
@@ -78,12 +78,12 @@ public interface THttpClient {
      * Creates a new http request.
      */
     THttpRequest request(String uri);
-	
+
 	/**
 	 * Creates a new request according to the given http method.
 	 */
 	THttpRequest request(Method method,String uri);
-	
+
 	/**
 	 * Sends a GET request to the given uri.
 	 */
