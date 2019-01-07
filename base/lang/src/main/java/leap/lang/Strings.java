@@ -374,6 +374,17 @@ public class Strings {
 	public static String[] split(String string) {
 		return splitWorker(string, -1, false, true, true);
 	}
+
+	public static String[] splitCommaOrWhitespaces(String s) {
+		if(null == s) {
+			return Arrays2.EMPTY_STRING_ARRAY;
+		}
+		if(s.indexOf(',') >= 0) {
+		    return Strings.split(s, ',');
+        }else {
+		    return Strings.splitWhitespaces(s);
+        }
+	}
 	
 	public static String[] splitWhitespaces(String s) {
 		if(null == s || s.length() == 0) {
