@@ -16,6 +16,7 @@
 package leap.spring.boot.spel;
 
 import leap.core.annotation.Inject;
+import leap.core.spring.ExpressionFactory;
 import leap.core.variable.VariableEnvironment;
 import leap.lang.annotation.Init;
 import leap.lang.expression.Expression;
@@ -31,7 +32,7 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 import javax.annotation.PostConstruct;
 import java.util.Map;
 
-public class SpringExpressionFactory {
+public class SpringExpressionFactory implements ExpressionFactory<org.springframework.expression.Expression> {
 
     @Inject
     protected VariableEnvironment env;
@@ -54,24 +55,6 @@ public class SpringExpressionFactory {
         evalContext.getPropertyAccessors().add(0, envProperty);
         evalContext.getPropertyAccessors().add(0, new MapPropertyAccessor());
         evalContext.setBeanResolver(new BeanFactoryResolver(beanFactory));
-    }
-
-    public boolean isExpr(Object v) {
-        if(v instanceof String) {
-            String s = (String)v;
-            if(((String) v).startsWith("#{") && s.endsWith("}")) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public Object tryCreateExpression(Object v) {
-        if(isExpr(v)) {
-            return createExpression((String)v);
-        }else{
-            return v;
-        }
     }
 
     public Expression createExpression(String expr) {

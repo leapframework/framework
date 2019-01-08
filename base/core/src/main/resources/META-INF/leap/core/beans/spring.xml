@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans">
+
+    <bean type="leap.core.spring.PropertyResolver" class="leap.core.spring.MockSpringPropertyResolver" primary="true"/>
+    <bean type="leap.core.spring.ExpressionFactory" class="leap.core.spring.MockSpringExpressionFactory" primary="true"/>
+
+</beans>
