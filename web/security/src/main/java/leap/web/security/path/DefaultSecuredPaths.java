@@ -16,21 +16,46 @@
 package leap.web.security.path;
 
 import leap.lang.Args;
+import leap.lang.Strings;
 import leap.lang.path.AntPathPattern;
 import leap.lang.path.PathPattern;
-import leap.web.Request;
 import leap.web.route.Route;
 import leap.web.security.SecurityContextHolder;
 import leap.web.security.SecurityFailureHandler;
-import leap.web.security.authc.AuthenticationContext;
-import leap.web.security.authz.AuthorizationContext;
 
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.TreeMap;
 
 public class DefaultSecuredPaths implements SecuredPaths {
 
-    protected final TreeMap<PathPattern,PathEntry> paths = new TreeMap<>(PathPattern.DEFAULT_COMPARATOR);
+    protected static final Comparator<PathPattern> COMPARATOR = (o1, o2) -> {
+        if (o1 == null && o2 == null) {
+            return 1;
+        }
+
+        if (o1 == null) {
+            return 1;
+        }
+
+        if (o2 == null) {
+            return -1;
+        }
+
+        if (o1 == o2) {
+            return 0;
+        }
+
+        int result;
+        if (o1 instanceof Comparable && o1.getClass().equals(o2.getClass())) {
+            result = ((Comparable) o1).compareTo(o2);
+        } else {
+            result = compareTo(o1, o2);
+        }
+        return result == 0 ? 1 : result;
+    };
+
+    protected final TreeMap<PathPattern, PathEntry> paths = new TreeMap<>(COMPARATOR);
 
     @Override
     public boolean isEmpty() {
@@ -66,9 +91,9 @@ public class DefaultSecuredPaths implements SecuredPaths {
     public SecuredPathConfigurator get(Route route) {
         PathEntry pe = paths.get(route.getPathTemplate());
 
-        if(null == pe) {
+        if (null == pe) {
             return null;
-        }else{
+        } else {
             return pe.configurator;
         }
     }
@@ -76,12 +101,12 @@ public class DefaultSecuredPaths implements SecuredPaths {
     protected SecuredPathConfigurator configurator(Route route) {
         PathEntry pe = paths.get(route.getPathTemplate());
 
-        if(null == pe) {
+        if (null == pe) {
             return new DefaultSecuredPathConfigurator(this, route);
         }
 
-        if(null == pe.configurator) {
-            pe.configurator = new DefaultSecuredPathConfigurator(this,pe);
+        if (null == pe.configurator) {
+            pe.configurator = new DefaultSecuredPathConfigurator(this, pe);
         }
 
         return pe.configurator;
@@ -90,12 +115,12 @@ public class DefaultSecuredPaths implements SecuredPaths {
     protected SecuredPathConfigurator configurator(PathPattern pp) {
         PathEntry pe = paths.get(pp);
 
-        if(null == pe) {
+        if (null == pe) {
             return new DefaultSecuredPathConfigurator(this, pp);
         }
 
-        if(null == pe.configurator) {
-            pe.configurator = new DefaultSecuredPathConfigurator(this,pe);
+        if (null == pe.configurator) {
+            pe.configurator = new DefaultSecuredPathConfigurator(this, pe);
         }
 
         return pe.configurator;
@@ -196,5 +221,89 @@ public class DefaultSecuredPaths implements SecuredPaths {
         public String toString() {
             return path.toString();
         }
+    }
+
+    protected static int compareTo(PathPattern p1, PathPattern p2) {
+        String pattern1 = p1.pattern();
+        String pattern2 = p2.pattern();
+
+        if (pattern1 == null && pattern2 == null) {
+            return 1;
+        }
+
+        if (pattern1 == null) {
+            return 1;
+        }
+
+        if (pattern2 == null) {
+            return -1;
+        }
+
+        if (pattern1 == pattern2) {
+            return 0;
+        }
+
+        String[] parts1 = Strings.split(pattern1, '/');
+        String[] parts2 = Strings.split(pattern2, '/');
+
+        int min = Math.min(parts1.length, parts2.length);
+        for(int i=0;i<min;i++) {
+            String part1 = parts1.length > i ? parts1[i] : null;
+            String part2 = parts2.length > i ? parts2[i] : null;
+
+            if(part1 != null && part2 == null) {
+                return -1;
+            }
+
+            if(part1 == null && part2 == null) {
+                return 1;
+            }
+
+            if(part1.equals(part2)) {
+                continue;
+            }
+
+            if(part1.contains("**")) {
+                return 1;
+            }
+
+            if(part2.contains("**")) {
+                return -1;
+            }
+
+            if(isDotStartVariable(part1)) {
+                return 1;
+            }
+
+            if(isDotStartVariable(part2)) {
+                return -1;
+            }
+
+            if(part1.contains("*")) {
+                return 1;
+            }
+
+            if(part2.contains("*")) {
+                return -1;
+            }
+
+            if(isVariable(part1)) {
+                return 1;
+            }
+
+            if(isVariable(part2)) {
+                return -1;
+            }
+        }
+
+        return 0;
+    }
+
+    protected static boolean isVariable(String part) {
+        return part.contains("{") && part.contains("}");
+    }
+
+    protected static boolean isDotStartVariable(String part) {
+        return isVariable(part) && part.contains(".*");
     }
 }

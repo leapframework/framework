@@ -16,11 +16,13 @@
 package leap.lang.path;
 
 import leap.lang.Args;
+import leap.lang.Strings;
 
 public class AntPathPattern extends AbstractPathPattern {
 
 	private final String	     pattern;
 	private final AntPathMatcher matcher;
+	private final String[]       parts;
 
 	public AntPathPattern(String pattern){
 		this(pattern,AntPathMatcher.DEFAULT_INSTANCE);
@@ -30,6 +32,7 @@ public class AntPathPattern extends AbstractPathPattern {
 		Args.notEmpty(pattern,"pattern");
 		this.pattern = pattern;
 		this.matcher = matcher;
+        this.parts   = Strings.split(pattern, '/', false);
 	}
 
 	@Override
@@ -40,5 +43,56 @@ public class AntPathPattern extends AbstractPathPattern {
 	@Override
 	public boolean matches(String path) {
 		return matcher.match(pattern, path);
+	}
+
+	@Override
+	public int compareTo(PathPattern o) {
+		if(!(o instanceof AntPathPattern)) {
+			return super.compareTo(o);
+		}
+
+		AntPathPattern p = (AntPathPattern)o;
+        if(pattern.equals(p.pattern)) {
+            return 0;
+        }
+
+        String[] parts1 = parts;
+        String[] parts2 = p.parts;
+
+        int min = Math.min(parts1.length, parts2.length);
+        for(int i=0;i<min;i++) {
+            String part1 = parts1.length > i ? parts1[i] : null;
+            String part2 = parts2.length > i ? parts2[i] : null;
+
+            if(part1 != null && part2 == null) {
+                return -1;
+            }
+
+            if(part1 == null && part2 == null) {
+                return 1;
+            }
+
+            if(part1.equals(part2)) {
+                continue;
+            }
+
+            if(part1.contains("**")) {
+                return 1;
+            }
+
+            if(part2.contains("**")) {
+                return -1;
+            }
+
+            if(part1.contains("*")) {
+                return 1;
+            }
+
+            if(part2.contains("*")) {
+                return -1;
+            }
+        }
+
+        return 0;
 	}
 }
