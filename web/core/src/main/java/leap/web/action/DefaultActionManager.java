@@ -309,6 +309,14 @@ public class DefaultActionManager implements ActionManager {
                 continue;
             }
 
+            if(route.getPathTemplate().getTemplateVariables().contains(a.getName())) {
+                continue;
+            }
+
+            if(a.getType().equals(Object.class)) {
+                continue;
+            }
+
             TypeInfo ti = a.getTypeInfo();
             if(ti.isComplexType() || ti.isComplexElementType()){
                 candidates.add(a);

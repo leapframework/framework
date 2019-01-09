@@ -202,14 +202,11 @@ public class DefaultRoutes implements Routes {
             return null;
         }
 
-        Route route = null;
-
+        Route route;
         if (matchedRoutes.size() == 1) {
             route = matchedRoutes.get(0);
         } else {
-
             route = rematch(matchedRoutes);
-
             // get the right path template variables.
             out.clear();
             route.getPathTemplate().match(path, out);
@@ -221,10 +218,8 @@ public class DefaultRoutes implements Routes {
     private Route rematch(List<Route> matchedRoutes) {
         // find the route of the highest priority
         return matchedRoutes.stream().min((r1, r2) -> {
-            JerseyUriTemplate t1 = new JerseyUriTemplate(r1.getPathTemplate().getTemplate());
-            JerseyUriTemplate t2 = new JerseyUriTemplate(r2.getPathTemplate().getTemplate());
-            int               re = JerseyUriTemplate.COMPARATOR.compare(t1, t2);
-            if (0 == re) {
+            int re = r1.getPathTemplate().compareTo(r2.getPathTemplate());
+            if (0 == re && r1.isExecutable() == r2.isExecutable()) {
                 log.error("Found multi matched routes -> \n{}", routesPrinter.print(matchedRoutes));
                 throw new IllegalStateException("Ambiguous handler methods mapped for path " + "'"
                         + r1.getPathTemplate()

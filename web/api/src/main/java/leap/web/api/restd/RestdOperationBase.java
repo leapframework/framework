@@ -71,7 +71,7 @@ public abstract class RestdOperationBase {
                 if(null == route.getEnabled()) {
                     route.setEnabled(false);
                 }
-                return true;
+                return route.isDisabledExplicitly();
             }
         }
 

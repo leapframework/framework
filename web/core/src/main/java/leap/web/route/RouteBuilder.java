@@ -78,6 +78,10 @@ public class RouteBuilder extends ExtensibleBase implements RouteBase, Buildable
         this.action       = action;
     }
 
+    public boolean isDisabledExplicitly() {
+    	return null != enabled && !enabled;
+	}
+
     public Boolean getEnabled() {
         return enabled;
     }
