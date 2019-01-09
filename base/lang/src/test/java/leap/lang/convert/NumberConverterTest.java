@@ -499,5 +499,17 @@ public class NumberConverterTest extends ConcurrentTestCase {
         for(int i=0;i<expected.length;i++) {
             assertEquals(message[i] + " to BigInteger",expected[i],Converts.convert(input[i],BigInteger.class));
         }
-    }	
+    }
+
+    @Test
+    public void testNumberConvert() {
+	    Number num = Converts.convert("0", Number.class);
+	    assertTrue(num instanceof Long && num.equals(0L));
+
+        num = Converts.convert("1", Number.class);
+        assertTrue(num instanceof Long && num.equals(1L));
+
+        num = Converts.convert("0.0", Number.class);
+        assertTrue(num instanceof Double && num.equals(0.0d));
+    }
 }

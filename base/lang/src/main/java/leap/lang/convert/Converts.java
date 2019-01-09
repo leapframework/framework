@@ -77,6 +77,7 @@ public class Converts {
 		register(Double.class,				new NumberConverters.DoubleConverter());
 		register(BigInteger.class,			new NumberConverters.BigIntegerConverter());
 		register(BigDecimal.class,			new NumberConverters.BigDecimalConverter());
+		register(Number.class,				new NumberConverters.NumberConverter());
 		
 		//Legacy Date & Time: java.util.Date, java.sql.Date, java.sql.Time, java.sql.Timestamp, Calendar
 		//Java8 Date & Time : LocalDate, LocalTime, LocalDateTime, Instant

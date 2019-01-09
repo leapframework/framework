@@ -57,7 +57,7 @@ public class MSimpleTypes {
                                                       LocalTime.class, Time.class, Date.class);
 	
 	public static final MSimpleType DECIMAL  = define(MSimpleTypeKind.DECIMAL,JdbcTypes.DECIMAL_TYPE_NAME,19,4,
-                                                      BigDecimal.class);
+                                                      BigDecimal.class, Number.class);
 	
 	public static final MSimpleType SINGLE	 = define(MSimpleTypeKind.SINGLE,JdbcTypes.REAL_TYPE_NAME,
                                                       Float.class,float.class);

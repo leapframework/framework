@@ -77,7 +77,24 @@ public class NumberConverters {
 	    protected Double toNumber(Class<?> targetType, String stringValue) {
 		    return Double.valueOf(stringValue);
 	    }
-	}	
+	}
+
+	public static class NumberConverter extends AbstractNumberConverter<Number> {
+
+		@Override
+		protected Number toNumber(Class<?> targetType, Number number) {
+			return number;
+		}
+
+		@Override
+		protected Number toNumber(Class<?> targetType, String stringValue) {
+		    if(stringValue.contains(".")) {
+		        return new BigDecimal(stringValue).doubleValue();
+            }else {
+		        return Long.parseLong(stringValue);
+            }
+		}
+	}
 	
 	public static class BigDecimalConverter extends AbstractNumberConverter<BigDecimal> {
 
