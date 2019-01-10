@@ -32,11 +32,12 @@ import leap.orm.validation.EntityValidator;
 import java.util.*;
 
 public class EntityMapping extends ExtensibleBase {
-	private static final Log log = LogFactory.get(EntityMapping.class);
+    private static final Log log = LogFactory.get(EntityMapping.class);
 
-	protected final EntityMappingBuilder       builder;
+    protected final EntityMappingBuilder       builder;
     protected final String                     entityName;
     protected final String                     dynamicTableName;
+    protected final String                     physicalEntityName;
     protected final Class<?>                   entityClass;
     protected final Class<?>                   extendedEntityClass;
     protected final BeanType                   beanType;
@@ -67,18 +68,18 @@ public class EntityMapping extends ExtensibleBase {
     protected final boolean            queryFilterEnabled;
     protected final boolean            autoValidate;
     protected final boolean            remote;
-    private final RemoteSettings      remoteSettings;
+    protected final RemoteSettings     remoteSettings;
 
-    private final Map<String,FieldMapping>    columnNameToFields;
-	private final Map<String,FieldMapping>    fieldNameToFields;
-	private final Map<String,FieldMapping>    metaNameToFields;
-    private final Map<String,RelationMapping> nameToRelations;
-    private final Map<String,RelationMapping> primaryKeyRelations;
-    private final Map<String,RelationMapping> targetEntityRelations;
-    private final Map<String,RelationMapping> referenceToRelations;
+    private final Map<String, FieldMapping>    columnNameToFields;
+    private final Map<String, FieldMapping>    fieldNameToFields;
+    private final Map<String, FieldMapping>    metaNameToFields;
+    private final Map<String, RelationMapping> nameToRelations;
+    private final Map<String, RelationMapping> primaryKeyRelations;
+    private final Map<String, RelationMapping> targetEntityRelations;
+    private final Map<String, RelationMapping> referenceToRelations;
 
-	public EntityMapping(EntityMappingBuilder builder,
-	                     String entityName, String dynamicTableName,
+    public EntityMapping(EntityMappingBuilder builder,
+                         String entityName, String physicalEntityName, String dynamicTableName,
                          Class<?> entityClass, Class<?> extendedEntityClass, DbTable table, DbTable secondaryTable, List<FieldMapping> fieldMappings,
                          EntityExecutionInterceptor insertInterceptor, EntityExecutionInterceptor updateInterceptor,
                          EntityExecutionInterceptor deleteInterceptor, EntityExecutionInterceptor findInterceptor,
@@ -90,63 +91,64 @@ public class EntityMapping extends ExtensibleBase {
                          boolean queryFilterEnabled, boolean autoValidate, boolean remote, RemoteSettings remoteSettings,
                          EntityListeners listeners) {
 
-		Args.notEmpty(entityName,"entity name");
-		Args.notNull(table,"table");
-		Args.notEmpty(fieldMappings,"field mappings");
+        Args.notEmpty(entityName, "entity name");
+        Args.notNull(table, "table");
+        Args.notEmpty(fieldMappings, "field mappings");
         Args.notNull(listeners);
-        if(remote && null == remoteSettings) {
+        if (remote && null == remoteSettings) {
             throw new IllegalStateException("Remote settings must not be null for remote entity '" + entityName + "'");
         }
 
-        this.builder           = builder;
-		this.entityName		   = entityName;
-        this.dynamicTableName  = dynamicTableName;
-	    this.entityClass       = entityClass;
+        this.builder = builder;
+        this.entityName = entityName;
+        this.physicalEntityName = physicalEntityName;
+        this.dynamicTableName = dynamicTableName;
+        this.entityClass = entityClass;
         this.extendedEntityClass = extendedEntityClass;
-	    this.beanType          = null == entityClass ? null : BeanType.of(entityClass);
-	    this.table             = table;
-        this.secondaryTable    = secondaryTable;
-	    this.insertInterceptor = insertInterceptor;
-	    this.updateInterceptor = updateInterceptor;
-	    this.deleteInterceptor = deleteInterceptor;
-	    this.findInterceptor   = findInterceptor;
-	    this.modelClass        = modelClass;
-	    this.validators        = null == validators ? new EntityValidator[]{} : validators.toArray(new EntityValidator[validators.size()]);
-	    this.relationMappings  = null == relationMappings ? new RelationMapping[]{} : relationMappings.toArray(new RelationMapping[relationMappings.size()]);
+        this.beanType = null == entityClass ? null : BeanType.of(entityClass);
+        this.table = table;
+        this.secondaryTable = secondaryTable;
+        this.insertInterceptor = insertInterceptor;
+        this.updateInterceptor = updateInterceptor;
+        this.deleteInterceptor = deleteInterceptor;
+        this.findInterceptor = findInterceptor;
+        this.modelClass = modelClass;
+        this.validators = null == validators ? new EntityValidator[]{} : validators.toArray(new EntityValidator[validators.size()]);
+        this.relationMappings = null == relationMappings ? new RelationMapping[]{} : relationMappings.toArray(new RelationMapping[relationMappings.size()]);
         this.relationProperties = relationProperties;
 
-	    this.fieldMappings          = fieldMappings.toArray(new FieldMapping[fieldMappings.size()]);
-	    this.columnNameToFields     = createColumnNameToFieldsMap();
-	    this.fieldNameToFields      = createFieldNameToFieldsMap();
-	    this.metaNameToFields		= createMetaNameToFieldsMap();
-        this.nameToRelations        = createNameToRelationsMap();
-        this.primaryKeyRelations    = createPrimaryKeyRelations();
-        this.targetEntityRelations  = createTargetEntityRelations();
-        this.referenceToRelations   = createReferenceToRelations();
-        this.filterFieldMappings    = evalFilterFieldMappings();
-	    this.keyFieldMappings       = evalKeyFieldMappings();
-	    this.keyFieldNames          = evalKeyFieldNames();
-	    this.keyColumnNames			= evalKeyColumnNames();
-	    this.autoIncrementKey       = table.getPrimaryKeyColumnNames().length == 1 && table.getPrimaryKeyColumns()[0].isAutoIncrement();
-	    this.autoIncrementKeyColumn = autoIncrementKey ? table.getPrimaryKeyColumns()[0] : null;
-	    this.autoIncrementKeyField  = autoIncrementKey ? keyFieldMappings[0] : null;
-	    this.optimisticLockField    = findOptimisticLockField();
-        this.autoCreateTable        = autoCreateTable;
-        this.queryFilterEnabled     = queryFilterEnabled;
-        this.autoValidate           = autoValidate;
-        this.remote 				= remote;
-        this.remoteSettings			=remoteSettings;
+        this.fieldMappings = fieldMappings.toArray(new FieldMapping[fieldMappings.size()]);
+        this.columnNameToFields = createColumnNameToFieldsMap();
+        this.fieldNameToFields = createFieldNameToFieldsMap();
+        this.metaNameToFields = createMetaNameToFieldsMap();
+        this.nameToRelations = createNameToRelationsMap();
+        this.primaryKeyRelations = createPrimaryKeyRelations();
+        this.targetEntityRelations = createTargetEntityRelations();
+        this.referenceToRelations = createReferenceToRelations();
+        this.filterFieldMappings = evalFilterFieldMappings();
+        this.keyFieldMappings = evalKeyFieldMappings();
+        this.keyFieldNames = evalKeyFieldNames();
+        this.keyColumnNames = evalKeyColumnNames();
+        this.autoIncrementKey = table.getPrimaryKeyColumnNames().length == 1 && table.getPrimaryKeyColumns()[0].isAutoIncrement();
+        this.autoIncrementKeyColumn = autoIncrementKey ? table.getPrimaryKeyColumns()[0] : null;
+        this.autoIncrementKeyField = autoIncrementKey ? keyFieldMappings[0] : null;
+        this.optimisticLockField = findOptimisticLockField();
+        this.autoCreateTable = autoCreateTable;
+        this.queryFilterEnabled = queryFilterEnabled;
+        this.autoValidate = autoValidate;
+        this.remote = remote;
+        this.remoteSettings = remoteSettings;
 
         this.selfReferencingRelations = evalSelfReferencingRelations();
         this.selfReferencing = selfReferencingRelations.length > 0;
 
         this.listeners = listeners;
 
-        if(filterFieldMappings.length > 1) {
+        if (filterFieldMappings.length > 1) {
             throw new IllegalStateException("Two or more filter columns in an entity is not supported yet!");
         }
 
-        if(null != secondaryTable && keyFieldNames.length != 1) {
+        if (null != secondaryTable && keyFieldNames.length != 1) {
             throw new IllegalStateException("Entity with secondary table must has one key field only");
         }
     }
@@ -161,30 +163,44 @@ public class EntityMapping extends ExtensibleBase {
     /**
      * Returns the entity name.
      */
-	public String getEntityName(){
-		return entityName;
-	}
+    public String getEntityName() {
+        return entityName;
+    }
+
+    /**
+     * Returns true if this entity is a view of other physical entity.
+     */
+    public boolean isView() {
+        return !Strings.isEmpty(physicalEntityName);
+    }
+
+    /**
+     * Returns the physical entity name.
+     */
+    public String getPhysicalEntityName() {
+        return physicalEntityName;
+    }
 
     /**
      * Returns the dynamic table name.
      */
-	public String getDynamicTableName(){
-		return dynamicTableName;
-	}
+    public String getDynamicTableName() {
+        return dynamicTableName;
+    }
 
     /**
      * Returns the table name of entity.
      */
-	public String getTableName(){
-		return table.getName();
-	}
+    public String getTableName() {
+        return table.getName();
+    }
 
     /**
      * Optional. Returns the mapping java class of entity.
      */
-	public Class<?> getEntityClass() {
-		return entityClass;
-	}
+    public Class<?> getEntityClass() {
+        return entityClass;
+    }
 
     /**
      * Optional.
@@ -203,9 +219,9 @@ public class EntityMapping extends ExtensibleBase {
     /**
      * Returns the db table.
      */
-	public DbTable getTable() {
-		return table;
-	}
+    public DbTable getTable() {
+        return table;
+    }
 
     /**
      * Returns the secondary table or null/
@@ -231,9 +247,9 @@ public class EntityMapping extends ExtensibleBase {
     /**
      * Optional. Returns {@link BeanType} of the mapping java class of entity.
      */
-	public BeanType getBeanType() {
-		return beanType;
-	}
+    public BeanType getBeanType() {
+        return beanType;
+    }
 
     /**
      * Returns all the {@link RelationMapping}.
@@ -247,7 +263,7 @@ public class EntityMapping extends ExtensibleBase {
      */
     public RelationMapping getRelationMapping(String name) throws ObjectNotFoundException {
         RelationMapping r = nameToRelations.get(name);
-        if(null == r) {
+        if (null == r) {
             throw new ObjectNotFoundException("Relation '" + name + "' not exists in entity '" + entityName + "'");
         }
         return r;
@@ -262,7 +278,7 @@ public class EntityMapping extends ExtensibleBase {
 
     /**
      * Returns the primary key {@link RelationMapping} of the target entity name.
-     *
+     * <p>
      * <p/>
      * Returns null if no relation or multi relations has been found fo the target entity name.
      */
@@ -272,7 +288,7 @@ public class EntityMapping extends ExtensibleBase {
 
     /**
      * Returns the unique {@link RelationMapping} of the target entity name.
-     *
+     * <p>
      * <p/>
      * Returns null if no relation or multi relations has been found fo the target entity name.
      */
@@ -282,7 +298,7 @@ public class EntityMapping extends ExtensibleBase {
 
     /**
      * Returns the unique many-to-one {@link RelationMapping} reference to the target entity name.
-     *
+     * <p>
      * <p/>
      * Returns null if no relation or multi relations has been found fo the target entity name.
      */
@@ -299,7 +315,7 @@ public class EntityMapping extends ExtensibleBase {
 
     public RelationProperty getRelationProperty(String name) {
         RelationProperty p = tryGetRelationProperty(name);
-        if(null == p) {
+        if (null == p) {
             throw new ObjectNotFoundException("Relation Property '" + name + "' not exists!");
         }
         return p;
@@ -307,13 +323,13 @@ public class EntityMapping extends ExtensibleBase {
 
     /**
      * Returns the {@link RelationProperty} matches the given name.
-     *
+     * <p>
      * <p/>
      * Returns null if not exists.
      */
     public RelationProperty tryGetRelationProperty(String name) {
-        for(RelationProperty p : relationProperties) {
-            if(Strings.equals(p.getName(),name)) {
+        for (RelationProperty p : relationProperties) {
+            if (Strings.equals(p.getName(), name)) {
                 return p;
             }
         }
@@ -323,22 +339,22 @@ public class EntityMapping extends ExtensibleBase {
     /**
      * Returns all the fields of entity.
      */
-	public FieldMapping[] getFieldMappings() {
-		return fieldMappings;
-	}
+    public FieldMapping[] getFieldMappings() {
+        return fieldMappings;
+    }
 
     /**
      * Returns all the primary key fields of entity.
      */
-	public FieldMapping[] getKeyFieldMappings() {
-		return keyFieldMappings;
-	}
+    public FieldMapping[] getKeyFieldMappings() {
+        return keyFieldMappings;
+    }
 
     /**
      * Returns the field name if only one key field
      */
     public String idFieldName() throws IllegalStateException {
-        if(keyFieldNames.length == 1) {
+        if (keyFieldNames.length == 1) {
             return keyFieldNames[0];
         }
         throw new IllegalStateException("not the one key field only");
@@ -348,7 +364,7 @@ public class EntityMapping extends ExtensibleBase {
      * Returns the column name if only one key column
      */
     public String idColumnName() throws IllegalStateException {
-        if(keyColumnNames.length == 1) {
+        if (keyColumnNames.length == 1) {
             return keyColumnNames[0];
         }
         throw new IllegalStateException("not the one key column only");
@@ -357,16 +373,16 @@ public class EntityMapping extends ExtensibleBase {
     /**
      * Returns all the names of primary key fields of entity.
      */
-	public String[] getKeyFieldNames() {
-		return keyFieldNames;
-	}
+    public String[] getKeyFieldNames() {
+        return keyFieldNames;
+    }
 
     /**
      * Returns all the names of primary key columns of entity.
      */
-	public String[] getKeyColumnNames() {
-		return keyColumnNames;
-	}
+    public String[] getKeyColumnNames() {
+        return keyColumnNames;
+    }
 
     /**
      * Returns true if auto create the table.
@@ -403,91 +419,91 @@ public class EntityMapping extends ExtensibleBase {
     /**
      * Returns the validators for validating the entity.
      */
-	public EntityValidator[] getValidators() {
-		return validators;
-	}
+    public EntityValidator[] getValidators() {
+        return validators;
+    }
 
-	public FieldMapping getFieldMapping(String fieldName) throws ObjectNotFoundException {
-		FieldMapping fm = tryGetFieldMapping(fieldName);
+    public FieldMapping getFieldMapping(String fieldName) throws ObjectNotFoundException {
+        FieldMapping fm = tryGetFieldMapping(fieldName);
 
-		if(null == fm){
-			throw new ObjectNotFoundException("Field mapping '" + fieldName + "' not exists in entity '" + getEntityName() + "'");
-		}
+        if (null == fm) {
+            throw new ObjectNotFoundException("Field mapping '" + fieldName + "' not exists in entity '" + getEntityName() + "'");
+        }
 
-		return fm;
-	}
+        return fm;
+    }
 
-	public FieldMapping tryGetFieldMapping(String fieldName) {
-		Args.notNull(fieldName,"field name");
-		return fieldNameToFields.get(fieldName.toLowerCase());
-	}
+    public FieldMapping tryGetFieldMapping(String fieldName) {
+        Args.notNull(fieldName, "field name");
+        return fieldNameToFields.get(fieldName.toLowerCase());
+    }
 
-	/**
-	 * Returns the {@link FieldMapping} object mapping to the given column (ignore case).
-	 *
-	 * @throws ObjectNotFoundException if no {@link FieldMapping} mapping to the given column.
-	 */
-	public FieldMapping getFieldMappingByColumn(String columnName) throws ObjectNotFoundException {
-		FieldMapping fm = tryGetFieldMappingByColumn(columnName);
+    /**
+     * Returns the {@link FieldMapping} object mapping to the given column (ignore case).
+     *
+     * @throws ObjectNotFoundException if no {@link FieldMapping} mapping to the given column.
+     */
+    public FieldMapping getFieldMappingByColumn(String columnName) throws ObjectNotFoundException {
+        FieldMapping fm = tryGetFieldMappingByColumn(columnName);
 
-		if(null == fm){
-			throw new ObjectNotFoundException("No field mapped to the column '" + columnName + "' in entity '" + getEntityName() + "'");
-		}
+        if (null == fm) {
+            throw new ObjectNotFoundException("No field mapped to the column '" + columnName + "' in entity '" + getEntityName() + "'");
+        }
 
-		return fm;
-	}
+        return fm;
+    }
 
-	public FieldMapping tryGetFieldMappingByColumn(String columnName) {
-		Args.notNull(columnName,"column name");
-		return columnNameToFields.get(columnName.toLowerCase());
-	}
+    public FieldMapping tryGetFieldMappingByColumn(String columnName) {
+        Args.notNull(columnName, "column name");
+        return columnNameToFields.get(columnName.toLowerCase());
+    }
 
-	public FieldMapping getFieldMappingByMetaName(ReservedMetaFieldName metaFieldName) throws ObjectNotFoundException {
-		Args.notNull(metaFieldName,"metaFieldName");
-		return getFieldMappingByMetaName(metaFieldName.getFieldName());
-	}
+    public FieldMapping getFieldMappingByMetaName(ReservedMetaFieldName metaFieldName) throws ObjectNotFoundException {
+        Args.notNull(metaFieldName, "metaFieldName");
+        return getFieldMappingByMetaName(metaFieldName.getFieldName());
+    }
 
-	public FieldMapping getFieldMappingByMetaName(String metaFieldName) throws ObjectNotFoundException {
-		FieldMapping fm = tryGetFieldMappingByMetaName(metaFieldName);
-		if(null == fm){
-			throw new ObjectNotFoundException("No meta field '" + metaFieldName + "' in entity '" + getEntityName() + "'");
-		}
-		return fm;
-	}
+    public FieldMapping getFieldMappingByMetaName(String metaFieldName) throws ObjectNotFoundException {
+        FieldMapping fm = tryGetFieldMappingByMetaName(metaFieldName);
+        if (null == fm) {
+            throw new ObjectNotFoundException("No meta field '" + metaFieldName + "' in entity '" + getEntityName() + "'");
+        }
+        return fm;
+    }
 
-	public FieldMapping tryGetFieldMappingByMetaName(ReservedMetaFieldName metaFieldName) {
-		if(null == metaFieldName){
-			return null;
-		}
-		return metaNameToFields.get(metaFieldName.getFieldName().toLowerCase());
-	}
+    public FieldMapping tryGetFieldMappingByMetaName(ReservedMetaFieldName metaFieldName) {
+        if (null == metaFieldName) {
+            return null;
+        }
+        return metaNameToFields.get(metaFieldName.getFieldName().toLowerCase());
+    }
 
-	public FieldMapping tryGetFieldMappingByMetaName(String metaFieldName) {
-		if(null == metaFieldName){
-			return null;
-		}
-		return metaNameToFields.get(metaFieldName.toLowerCase());
-	}
+    public FieldMapping tryGetFieldMappingByMetaName(String metaFieldName) {
+        if (null == metaFieldName) {
+            return null;
+        }
+        return metaNameToFields.get(metaFieldName.toLowerCase());
+    }
 
-	public boolean isAutoIncrementKey() {
-		return autoIncrementKey;
-	}
+    public boolean isAutoIncrementKey() {
+        return autoIncrementKey;
+    }
 
-	public boolean isCompositeKey() {
-		return keyColumnNames.length > 1;
-	}
+    public boolean isCompositeKey() {
+        return keyColumnNames.length > 1;
+    }
 
-	public DbColumn getAutoIncrementKeyColumn() {
-		return autoIncrementKeyColumn;
-	}
+    public DbColumn getAutoIncrementKeyColumn() {
+        return autoIncrementKeyColumn;
+    }
 
-	public FieldMapping getAutoIncrementKeyField() {
-		return autoIncrementKeyField;
-	}
+    public FieldMapping getAutoIncrementKeyField() {
+        return autoIncrementKeyField;
+    }
 
-	public boolean hasOptimisticLock(){
-		return null != optimisticLockField;
-	}
+    public boolean hasOptimisticLock() {
+        return null != optimisticLockField;
+    }
 
     public boolean hasFilterFields() {
         return filterFieldMappings.length > 0;
@@ -498,24 +514,24 @@ public class EntityMapping extends ExtensibleBase {
     }
 
     public FieldMapping getOptimisticLockField() {
-		return optimisticLockField;
-	}
+        return optimisticLockField;
+    }
 
-	public EntityExecutionInterceptor getInsertInterceptor() {
-		return insertInterceptor;
-	}
+    public EntityExecutionInterceptor getInsertInterceptor() {
+        return insertInterceptor;
+    }
 
-	public EntityExecutionInterceptor getUpdateInterceptor() {
-		return updateInterceptor;
-	}
+    public EntityExecutionInterceptor getUpdateInterceptor() {
+        return updateInterceptor;
+    }
 
-	public EntityExecutionInterceptor getDeleteInterceptor() {
-		return deleteInterceptor;
-	}
+    public EntityExecutionInterceptor getDeleteInterceptor() {
+        return deleteInterceptor;
+    }
 
-	public EntityExecutionInterceptor getFindInterceptor() {
-		return findInterceptor;
-	}
+    public EntityExecutionInterceptor getFindInterceptor() {
+        return findInterceptor;
+    }
 
     public RelationMapping[] getSelfReferencingRelations() {
         return selfReferencingRelations;
@@ -526,8 +542,8 @@ public class EntityMapping extends ExtensibleBase {
     }
 
     public boolean isReferenceTo(String entityName) {
-        for(RelationMapping rm : relationMappings) {
-            if(rm.isManyToOne() && rm.getTargetEntityName().equalsIgnoreCase(entityName)) {
+        for (RelationMapping rm : relationMappings) {
+            if (rm.isManyToOne() && rm.getTargetEntityName().equalsIgnoreCase(entityName)) {
                 return true;
             }
         }
@@ -538,25 +554,11 @@ public class EntityMapping extends ExtensibleBase {
         return listeners;
     }
 
-    private FieldMapping[] evalKeyFieldMappings(){
-		List<FieldMapping> list = New.arrayList();
-
-		for(FieldMapping fm : this.fieldMappings){
-			if(fm.isPrimaryKey()){
-				list.add(fm);
-			}
-		}
-
-		return list.toArray(new FieldMapping[list.size()]);
-	}
-
-    private FieldMapping[] evalFilterFieldMappings(){
+    private FieldMapping[] evalKeyFieldMappings() {
         List<FieldMapping> list = New.arrayList();
 
-        for(FieldMapping fm : this.fieldMappings){
-            if(fm.isFiltered()){
-                Assert.isTrue(null != fm.getFilteredValue(),
-                             "There filter value expression must not be null of filter field '" + fm.getFieldName() + "'");
+        for (FieldMapping fm : this.fieldMappings) {
+            if (fm.isPrimaryKey()) {
                 list.add(fm);
             }
         }
@@ -564,45 +566,59 @@ public class EntityMapping extends ExtensibleBase {
         return list.toArray(new FieldMapping[list.size()]);
     }
 
-	private String[] evalKeyFieldNames(){
-		String[] names = new String[keyFieldMappings.length];
-		for(int i=0;i<names.length;i++){
-			names[i] = keyFieldMappings[i].getFieldName();
-		}
-		return names;
-	}
+    private FieldMapping[] evalFilterFieldMappings() {
+        List<FieldMapping> list = New.arrayList();
 
-	private String[] evalKeyColumnNames(){
-		String[] names = new String[keyFieldMappings.length];
-		for(int i=0;i<names.length;i++){
-			names[i] = keyFieldMappings[i].getColumnName();
-		}
-		return names;
-	}
+        for (FieldMapping fm : this.fieldMappings) {
+            if (fm.isFiltered()) {
+                Assert.isTrue(null != fm.getFilteredValue(),
+                        "There filter value expression must not be null of filter field '" + fm.getFieldName() + "'");
+                list.add(fm);
+            }
+        }
 
-	private Map<String,FieldMapping> createColumnNameToFieldsMap(){
-		Map<String,FieldMapping> map = New.linkedHashMap();
-		for(FieldMapping fm : fieldMappings){
-			map.put(fm.getColumn().getName().toLowerCase(),fm);
-		}
-		return Collections.unmodifiableMap(map);
-	}
+        return list.toArray(new FieldMapping[list.size()]);
+    }
 
-	private Map<String,FieldMapping> createFieldNameToFieldsMap(){
-		Map<String,FieldMapping> map = New.linkedHashMap();
-		for(FieldMapping fm : fieldMappings){
-			map.put(fm.getFieldName().toLowerCase(),fm);
-		}
-		return Collections.unmodifiableMap(map);
-	}
+    private String[] evalKeyFieldNames() {
+        String[] names = new String[keyFieldMappings.length];
+        for (int i = 0; i < names.length; i++) {
+            names[i] = keyFieldMappings[i].getFieldName();
+        }
+        return names;
+    }
+
+    private String[] evalKeyColumnNames() {
+        String[] names = new String[keyFieldMappings.length];
+        for (int i = 0; i < names.length; i++) {
+            names[i] = keyFieldMappings[i].getColumnName();
+        }
+        return names;
+    }
+
+    private Map<String, FieldMapping> createColumnNameToFieldsMap() {
+        Map<String, FieldMapping> map = New.linkedHashMap();
+        for (FieldMapping fm : fieldMappings) {
+            map.put(fm.getColumn().getName().toLowerCase(), fm);
+        }
+        return Collections.unmodifiableMap(map);
+    }
+
+    private Map<String, FieldMapping> createFieldNameToFieldsMap() {
+        Map<String, FieldMapping> map = New.linkedHashMap();
+        for (FieldMapping fm : fieldMappings) {
+            map.put(fm.getFieldName().toLowerCase(), fm);
+        }
+        return Collections.unmodifiableMap(map);
+    }
 
     private Map<String, RelationMapping> createNameToRelationsMap() {
-        Map<String,RelationMapping> map = New.linkedHashMap();
-        for(RelationMapping r : relationMappings) {
+        Map<String, RelationMapping> map = New.linkedHashMap();
+        for (RelationMapping r : relationMappings) {
 
-            if(map.containsKey(r.getName())) {
+            if (map.containsKey(r.getName())) {
                 throw new IllegalStateException("Found duplicated relation name '" +
-                                                    r.getName() + "' in entity '" + entityName + "'");
+                        r.getName() + "' in entity '" + entityName + "'");
             }
 
             map.put(r.getName(), r);
@@ -611,46 +627,46 @@ public class EntityMapping extends ExtensibleBase {
         return Collections.unmodifiableMap(map);
     }
 
-	private Map<String,FieldMapping> createMetaNameToFieldsMap() {
-		Map<String,FieldMapping> map = New.hashMap();
+    private Map<String, FieldMapping> createMetaNameToFieldsMap() {
+        Map<String, FieldMapping> map = New.hashMap();
 
-		for(FieldMapping fm : fieldMappings) {
-			String metaName = fm.getMetaFieldName();
-			if(!Strings.isEmpty(metaName)) {
-				String key = metaName.toLowerCase();
+        for (FieldMapping fm : fieldMappings) {
+            String metaName = fm.getMetaFieldName();
+            if (!Strings.isEmpty(metaName)) {
+                String key = metaName.toLowerCase();
 
-				FieldMapping exists = map.get(key);
-				if(null != exists) {
-					log.warn("Found duplicated meta field name '" + metaName +
-							 "' in entity '" + getEntityName() +
-							 "', fields [" + fm.getFieldName() + "," + exists.getFieldName() + "]");
-				}
+                FieldMapping exists = map.get(key);
+                if (null != exists) {
+                    log.warn("Found duplicated meta field name '" + metaName +
+                            "' in entity '" + getEntityName() +
+                            "', fields [" + fm.getFieldName() + "," + exists.getFieldName() + "]");
+                }
 
-				map.put(key, fm);
-			}
-		}
+                map.put(key, fm);
+            }
+        }
 
-		return Collections.unmodifiableMap(map);
-	}
+        return Collections.unmodifiableMap(map);
+    }
 
     private Map<String, RelationMapping> createPrimaryKeyRelations() {
         Map<String, RelationMapping> map = new LinkedHashMap<>();
 
-        for(RelationMapping r : relationMappings) {
+        for (RelationMapping r : relationMappings) {
 
-            if(r.isManyToOne()) {
+            if (r.isManyToOne()) {
 
                 boolean primaryKey = true;
 
-                for(JoinFieldMapping f : r.getJoinFields()) {
+                for (JoinFieldMapping f : r.getJoinFields()) {
 
-                    if(!f.isLocalPrimaryKey()) {
+                    if (!f.isLocalPrimaryKey()) {
                         primaryKey = false;
                     }
 
                 }
 
-                if(primaryKey) {
+                if (primaryKey) {
                     map.put(r.getTargetEntityName(), r);
                 }
 
@@ -664,10 +680,10 @@ public class EntityMapping extends ExtensibleBase {
     private Map<String, RelationMapping> createTargetEntityRelations() {
         Map<String, List<RelationMapping>> map = new HashMap<>();
 
-        for(RelationMapping r : relationMappings) {
+        for (RelationMapping r : relationMappings) {
 
             List<RelationMapping> list = map.get(r.getTargetEntityName());
-            if(null == list) {
+            if (null == list) {
                 list = New.arrayList();
                 map.put(r.getTargetEntityName(), list);
             }
@@ -677,7 +693,7 @@ public class EntityMapping extends ExtensibleBase {
 
         Map<String, RelationMapping> singleRelations = new HashMap<>();
         map.forEach((name, list) -> {
-            if(list.size() == 1) {
+            if (list.size() == 1) {
                 singleRelations.put(name, list.get(0));
             }
         });
@@ -688,8 +704,8 @@ public class EntityMapping extends ExtensibleBase {
     private Map<String, RelationMapping> createReferenceToRelations() {
         Map<String, List<RelationMapping>> map = new HashMap<>();
 
-        for(RelationMapping r : relationMappings) {
-            if(r.isManyToOne()) {
+        for (RelationMapping r : relationMappings) {
+            if (r.isManyToOne()) {
                 List<RelationMapping> list = map.get(r.getTargetEntityName());
                 if (null == list) {
                     list = New.arrayList();
@@ -702,7 +718,7 @@ public class EntityMapping extends ExtensibleBase {
 
         Map<String, RelationMapping> singleRelations = new HashMap<>();
         map.forEach((name, list) -> {
-            if(list.size() == 1) {
+            if (list.size() == 1) {
                 singleRelations.put(name, list.get(0));
             }
         });
@@ -712,29 +728,29 @@ public class EntityMapping extends ExtensibleBase {
 
     private RelationMapping[] evalSelfReferencingRelations() {
         List<RelationMapping> list = new ArrayList<>();
-        for(RelationMapping rm : relationMappings) {
-            if(rm.isManyToOne() && rm.getTargetEntityName().equalsIgnoreCase(entityName)) {
+        for (RelationMapping rm : relationMappings) {
+            if (rm.isManyToOne() && rm.getTargetEntityName().equalsIgnoreCase(entityName)) {
                 list.add(rm);
             }
         }
         return list.toArray(new RelationMapping[0]);
     }
 
-	private FieldMapping findOptimisticLockField(){
-		for(FieldMapping fm : fieldMappings){
-			if(fm.isOptimisticLock()){
-				return fm;
-			}
-		}
-		return null;
-	}
-
-	@Override
-    public String toString() {
-	    return "Entity[name=" + getEntityName() + ",table=" + getTableName() + ",class=" + (entityClass == null ? "null" : entityClass.getName()) + "]";
+    private FieldMapping findOptimisticLockField() {
+        for (FieldMapping fm : fieldMappings) {
+            if (fm.isOptimisticLock()) {
+                return fm;
+            }
+        }
+        return null;
     }
 
-	public RemoteSettings getRemoteSettings() {
-		return remoteSettings;
-	}
+    @Override
+    public String toString() {
+        return "Entity[name=" + getEntityName() + ",table=" + getTableName() + ",class=" + (entityClass == null ? "null" : entityClass.getName()) + "]";
+    }
+
+    public RemoteSettings getRemoteSettings() {
+        return remoteSettings;
+    }
 }

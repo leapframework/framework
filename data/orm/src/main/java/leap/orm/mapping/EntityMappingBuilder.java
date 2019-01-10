@@ -32,6 +32,7 @@ import java.util.function.Predicate;
 public class EntityMappingBuilder extends ExtensibleBase implements Buildable<EntityMapping> {
 
     protected String         entityName;
+    protected String         phyiscalEntityName;
     protected Class<?>       entityClass;
     protected Class<?>       extendedEntityClass;
     protected boolean        _abstract;
@@ -138,6 +139,14 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
     public EntityMappingBuilder setEntityName(String entityName) {
         this.entityName = entityName;
         return this;
+    }
+
+    public String getPhyiscalEntityName() {
+        return phyiscalEntityName;
+    }
+
+    public void setPhyiscalEntityName(String phyiscalEntityName) {
+        this.phyiscalEntityName = phyiscalEntityName;
     }
 
     public boolean isAbstract() {
@@ -585,7 +594,7 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
 
         EntityMapping em =
                 new EntityMapping(this,
-                        entityName, dynamicTableName, entityClass, extendedEntityClass,
+                        entityName, phyiscalEntityName, dynamicTableName, entityClass, extendedEntityClass,
                         table, secondaryTable, fields,
                         insertInterceptor, updateInterceptor, deleteInterceptor, findInterceptor,
                         modelClass, validators,
