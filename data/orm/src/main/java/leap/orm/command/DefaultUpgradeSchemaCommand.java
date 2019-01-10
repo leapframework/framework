@@ -300,7 +300,7 @@ public class DefaultUpgradeSchemaCommand extends AbstractDmoCommand implements U
         }else{
             List<DbTable> tables = new ArrayList<>();
             for(EntityMapping em : entityMappings) {
-            	if(em.isRemote() || em.isView()) {
+            	if(em.isRemote() || em.isNarrowEntity()) {
             	    continue;
                 }
                 tables.add(em.getTable());

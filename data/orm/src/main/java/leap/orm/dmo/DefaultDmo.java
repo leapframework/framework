@@ -128,8 +128,8 @@ public class DefaultDmo extends DmoBase {
 
 		//build tables
 		for(int i=0;i<entityMappings.size();i++){
-			EntityMapping em    = entityMappings.get(i);
-			if(em.isRemote()){
+			EntityMapping em = entityMappings.get(i);
+			if(em.isRemote() || em.isNarrowEntity()){
 				continue;
 			}
 			DbTable       table = em.getTable();

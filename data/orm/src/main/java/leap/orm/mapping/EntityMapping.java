@@ -23,7 +23,6 @@ import leap.lang.beans.BeanType;
 import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
-import leap.orm.enums.RemoteType;
 import leap.orm.event.EntityListeners;
 import leap.orm.interceptor.EntityExecutionInterceptor;
 import leap.orm.model.Model;
@@ -34,18 +33,18 @@ import java.util.*;
 public class EntityMapping extends ExtensibleBase {
     private static final Log log = LogFactory.get(EntityMapping.class);
 
-    protected final EntityMappingBuilder       builder;
-    protected final String                     entityName;
-    protected final String                     dynamicTableName;
-    protected final String                     physicalEntityName;
-    protected final Class<?>                   entityClass;
-    protected final Class<?>                   extendedEntityClass;
-    protected final BeanType                   beanType;
-    protected final DbTable                    table;
-    protected final DbTable                    secondaryTable;
-    protected final FieldMapping[]             fieldMappings;
-    protected final FieldMapping[]             filterFieldMappings;
-    protected final FieldMapping[]             keyFieldMappings;
+    protected final EntityMappingBuilder builder;
+    protected final String               entityName;
+    protected final String               dynamicTableName;
+    protected final String               wideEntityName;
+    protected final Class<?>             entityClass;
+    protected final Class<?>             extendedEntityClass;
+    protected final BeanType             beanType;
+    protected final DbTable              table;
+    protected final DbTable              secondaryTable;
+    protected final FieldMapping[]       fieldMappings;
+    protected final FieldMapping[]       filterFieldMappings;
+    protected final FieldMapping[]       keyFieldMappings;
     protected final String[]                   keyFieldNames;
     protected final String[]                   keyColumnNames;
     protected final boolean                    autoIncrementKey;
@@ -79,7 +78,7 @@ public class EntityMapping extends ExtensibleBase {
     private final Map<String, RelationMapping> referenceToRelations;
 
     public EntityMapping(EntityMappingBuilder builder,
-                         String entityName, String physicalEntityName, String dynamicTableName,
+                         String entityName, String wideEntityName, String dynamicTableName,
                          Class<?> entityClass, Class<?> extendedEntityClass, DbTable table, DbTable secondaryTable, List<FieldMapping> fieldMappings,
                          EntityExecutionInterceptor insertInterceptor, EntityExecutionInterceptor updateInterceptor,
                          EntityExecutionInterceptor deleteInterceptor, EntityExecutionInterceptor findInterceptor,
@@ -101,7 +100,7 @@ public class EntityMapping extends ExtensibleBase {
 
         this.builder = builder;
         this.entityName = entityName;
-        this.physicalEntityName = physicalEntityName;
+        this.wideEntityName = wideEntityName;
         this.dynamicTableName = dynamicTableName;
         this.entityClass = entityClass;
         this.extendedEntityClass = extendedEntityClass;
@@ -170,15 +169,15 @@ public class EntityMapping extends ExtensibleBase {
     /**
      * Returns true if this entity is a view of other physical entity.
      */
-    public boolean isView() {
-        return !Strings.isEmpty(physicalEntityName);
+    public boolean isNarrowEntity() {
+        return !Strings.isEmpty(wideEntityName);
     }
 
     /**
-     * Returns the physical entity name.
+     * Returns the wide entity name.
      */
-    public String getPhysicalEntityName() {
-        return physicalEntityName;
+    public String getWideEntityName() {
+        return wideEntityName;
     }
 
     /**
