@@ -31,6 +31,17 @@ public class ModelDeleteExtension implements ModelDeleteInterceptor {
     }
 
     @Override
+    @Deprecated
+    public boolean processDeleteOneOptions(ModelExecutorContext context, Object id, DeleteOptions options) {
+        for(ModelDeleteInterceptor interceptor : interceptors) {
+            if(interceptor.processDeleteOneOptions(context, id, options)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public boolean processDeleteOneOptions(ModelExecutionContext context, Object id, DeleteOptions options) {
         for(ModelDeleteInterceptor interceptor : interceptors) {
             if(interceptor.processDeleteOneOptions(context, id, options)) {
@@ -41,14 +52,14 @@ public class ModelDeleteExtension implements ModelDeleteInterceptor {
     }
 
     @Override
-    @Deprecated
-    public boolean processDeleteOneOptions(ModelExecutorContext context, Object id, DeleteOptions options) {
+    public DeleteOneResult handleDeleteOne(ModelExecutionContext context, Object id, DeleteOptions options) {
         for(ModelDeleteInterceptor interceptor : interceptors) {
-            if(interceptor.processDeleteOneOptions(context, id, options)) {
-                return true;
+            DeleteOneResult result = interceptor.handleDeleteOne(context, id, options);
+            if(null != result) {
+                return result;
             }
         }
-        return false;
+        return null;
     }
 
     @Override

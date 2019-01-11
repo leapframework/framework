@@ -41,10 +41,12 @@ public class DefaultModelDeleteExecutor extends ModelExecutorBase implements Mod
         ex.processDeleteOneOptions(context, id, options);
         ex.processDeleteOneOptions((ModelExecutorContext)context, id, options);
 
-        DeleteOneResult result = null;
+        DeleteOneResult result;
         if(null != ex.handler) {
             ex.handler.processDeleteOptions(context, id, options);
             result = ex.handler.handleDeleteExecution(context, id, options);
+        }else {
+            result = ex.handleDeleteOne(context, id, options);
         }
 
         if(null == result) {

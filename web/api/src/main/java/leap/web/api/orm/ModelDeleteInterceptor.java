@@ -20,13 +20,17 @@ import leap.web.api.mvc.params.DeleteOptions;
 
 public interface ModelDeleteInterceptor {
 
+    @Deprecated
+    default boolean processDeleteOneOptions(ModelExecutorContext context, Object id, DeleteOptions options) {
+        return false;
+    }
+
     default boolean processDeleteOneOptions(ModelExecutionContext context, Object id, DeleteOptions options) {
         return false;
     }
 
-    @Deprecated
-    default boolean processDeleteOneOptions(ModelExecutorContext context, Object id, DeleteOptions options) {
-        return false;
+    default DeleteOneResult handleDeleteOne(ModelExecutionContext context, Object id, DeleteOptions options) {
+        return null;
     }
 
     default Object processDeleteOneResult(ModelExecutionContext context, Object id, boolean success) {
