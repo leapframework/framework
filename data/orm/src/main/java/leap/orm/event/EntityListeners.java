@@ -17,43 +17,94 @@
 package leap.orm.event;
 
 public interface EntityListeners {
-    boolean hasCreateListeners();
+    PreCreateListener[]  EMPTY_PRE_CREATE_LISTENERS  = new PreCreateListener[0];
+    PostCreateListener[] EMPTY_POST_CREATE_LISTENERS = new PostCreateListener[0];
+    PreUpdateListener[]  EMPTY_PRE_UPDATE_LISTENERS  = new PreUpdateListener[0];
+    PostUpdateListener[] EMPTY_POST_UPDATE_LISTENERS = new PostUpdateListener[0];
+    PreDeleteListener[]  EMPTY_PRE_DELETE_LISTENERS  = new PreDeleteListener[0];
+    PostDeleteListener[] EMPTY_POST_DELETE_LISTENERS = new PostDeleteListener[0];
+    PostLoadListener[]   EMPTY_POST_LOAD_LISTENERS   = new PostLoadListener[0];
 
-    boolean hasTransCreateListeners();
+    default boolean hasCreateListeners() {
+        return getNoTransPreCreateListeners().length > 0 || getNoTransPostCreateListeners().length > 0 ||
+                hasTransCreateListeners();
+    }
 
-    boolean hasUpdateListeners();
+    default boolean hasTransCreateListeners() {
+        return getInTransPreCreateListeners().length > 0 || getInTransPostCreateListeners().length > 0;
+    }
 
-    boolean hasTransUpdateListeners();
+    default boolean hasUpdateListeners() {
+        return getNoTransPreUpdateListeners().length > 0 || getNoTransPostUpdateListeners().length > 0 ||
+                hasTransUpdateListeners();
+    }
 
-    boolean hasDeleteListeners();
+    default boolean hasTransUpdateListeners() {
+        return getInTransPreUpdateListeners().length > 0 || getInTransPostUpdateListeners().length > 0;
+    }
 
-    boolean hasTransDeleteListeners();
+    default boolean hasDeleteListeners() {
+        return getNoTransPreDeleteListeners().length > 0 || getNoTransPostDeleteListeners().length > 0 ||
+                hasTransDeleteListeners();
+    }
 
-    boolean hasLoadListeners();
+    default boolean hasTransDeleteListeners() {
+        return getInTransPreDeleteListeners().length > 0 || getInTransPostDeleteListeners().length > 0;
+    }
 
-    PreCreateListener[] getNoTransPreCreateListeners();
+    default boolean hasLoadListeners() {
+        return getPostLoadListeners().length > 0;
+    }
 
-    PreCreateListener[] getInTransPreCreateListeners();
+    default PreCreateListener[] getNoTransPreCreateListeners() {
+        return EMPTY_PRE_CREATE_LISTENERS;
+    }
 
-    PostCreateListener[] getNoTransPostCreateListeners();
+    default PreCreateListener[] getInTransPreCreateListeners() {
+        return EMPTY_PRE_CREATE_LISTENERS;
+    }
 
-    PostCreateListener[] getInTransPostCreateListeners();
+    default PostCreateListener[] getNoTransPostCreateListeners() {
+        return EMPTY_POST_CREATE_LISTENERS;
+    }
 
-    PreUpdateListener[] getNoTransPreUpdateListeners();
+    default PostCreateListener[] getInTransPostCreateListeners() {
+        return EMPTY_POST_CREATE_LISTENERS;
+    }
 
-    PreUpdateListener[] getInTransPreUpdateListeners();
+    default PreUpdateListener[] getNoTransPreUpdateListeners() {
+        return EMPTY_PRE_UPDATE_LISTENERS;
+    }
 
-    PostUpdateListener[] getNoTransPostUpdateListeners();
+    default PreUpdateListener[] getInTransPreUpdateListeners() {
+        return EMPTY_PRE_UPDATE_LISTENERS;
+    }
 
-    PostUpdateListener[] getInTransPostUpdateListeners();
+    default PostUpdateListener[] getNoTransPostUpdateListeners() {
+        return EMPTY_POST_UPDATE_LISTENERS;
+    }
 
-    PreDeleteListener[] getNoTransPreDeleteListeners();
+    default PostUpdateListener[] getInTransPostUpdateListeners() {
+        return EMPTY_POST_UPDATE_LISTENERS;
+    }
 
-    PreDeleteListener[] getInTransPreDeleteListeners();
+    default PreDeleteListener[] getNoTransPreDeleteListeners() {
+        return EMPTY_PRE_DELETE_LISTENERS;
+    }
 
-    PostDeleteListener[] getNoTransPostDeleteListeners();
+    default PreDeleteListener[] getInTransPreDeleteListeners() {
+        return EMPTY_PRE_DELETE_LISTENERS;
+    }
 
-    PostDeleteListener[] getInTransPostDeleteListeners();
+    default PostDeleteListener[] getNoTransPostDeleteListeners() {
+        return EMPTY_POST_DELETE_LISTENERS;
+    }
 
-    PostLoadListener[] getPostLoadListeners();
+    default PostDeleteListener[] getInTransPostDeleteListeners() {
+        return EMPTY_POST_DELETE_LISTENERS;
+    }
+
+    default PostLoadListener[] getPostLoadListeners() {
+        return EMPTY_POST_LOAD_LISTENERS;
+    }
 }
