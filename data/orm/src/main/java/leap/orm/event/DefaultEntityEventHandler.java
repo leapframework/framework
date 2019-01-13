@@ -164,7 +164,7 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
     protected EntityListeners getListeners(EntityMapping em) {
         EntityListeners contextListeners = EntityMapping.getContextListeners();
         if(null != contextListeners) {
-            return new CompositeListeners(contextListeners, getListeners(em));
+            return new CompositeListeners(contextListeners, em.getListeners());
         }else {
             return em.getListeners();
         }
