@@ -132,4 +132,13 @@ public interface EntityEventHandler {
      */
     void postDeleteEntityNoTrans(OrmContext context, EntityMapping em, DeleteEntityEvent e);
 
+    /**
+     * Returns true if handles 'PostLoad' event of the given entity.
+     */
+    boolean isHandleLoadEvent(OrmContext context, EntityMapping em);
+
+    /**
+     * Executed after load entity record.
+     */
+    void postLoadEntityNoTrans(OrmContext context, EntityMapping em, LoadEntityEvent e);
 }

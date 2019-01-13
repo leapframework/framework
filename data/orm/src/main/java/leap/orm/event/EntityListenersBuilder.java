@@ -21,7 +21,7 @@ import leap.lang.Buildable;
 
 import java.util.*;
 
-public class EntityListenersBuilder implements Buildable<EntityListeners> {
+public class EntityListenersBuilder implements Buildable<EntityListenersImpl> {
 
     protected final Map<PreCreateListener,  Boolean> preCreateListeners  = new LinkedHashMap<>();
     protected final Map<PostCreateListener, Boolean> postCreateListeners = new LinkedHashMap<>();
@@ -116,7 +116,7 @@ public class EntityListenersBuilder implements Buildable<EntityListeners> {
     }
 
     @Override
-    public EntityListeners build() {
+    public EntityListenersImpl build() {
 
         List<PreCreateListener> noTransPreCreateListeners   = new ArrayList<>();
         List<PreCreateListener> inTransPreCreateListeners   = new ArrayList<>();
@@ -176,7 +176,7 @@ public class EntityListenersBuilder implements Buildable<EntityListeners> {
             }
         });
 
-        return new EntityListeners(noTransPreCreateListeners.toArray(new PreCreateListener[0]),
+        return new EntityListenersImpl(noTransPreCreateListeners.toArray(new PreCreateListener[0]),
                                    inTransPreCreateListeners.toArray(new PreCreateListener[0]),
                                    noTransPostCreateListeners.toArray(new PostCreateListener[0]),
                                    inTransPostCreateListeners.toArray(new PostCreateListener[0]),

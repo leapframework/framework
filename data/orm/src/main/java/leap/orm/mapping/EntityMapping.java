@@ -24,6 +24,7 @@ import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.orm.event.EntityListeners;
+import leap.orm.event.EntityListenersImpl;
 import leap.orm.interceptor.EntityExecutionInterceptor;
 import leap.orm.model.Model;
 import leap.orm.validation.EntityValidator;
@@ -33,18 +34,28 @@ import java.util.*;
 public class EntityMapping extends ExtensibleBase {
     private static final Log log = LogFactory.get(EntityMapping.class);
 
-    protected final EntityMappingBuilder builder;
-    protected final String               entityName;
-    protected final String               dynamicTableName;
-    protected final String               wideEntityName;
-    protected final Class<?>             entityClass;
-    protected final Class<?>             extendedEntityClass;
-    protected final BeanType             beanType;
-    protected final DbTable              table;
-    protected final DbTable              secondaryTable;
-    protected final FieldMapping[]       fieldMappings;
-    protected final FieldMapping[]       filterFieldMappings;
-    protected final FieldMapping[]       keyFieldMappings;
+    private static final ThreadLocal<EntityListeners> CONTEXT_LISTENERS = new ThreadLocal<>();
+
+    public static EntityListeners getContextListeners() {
+        return CONTEXT_LISTENERS.get();
+    }
+
+    public static void setContextListeners(EntityListeners listeners) {
+        CONTEXT_LISTENERS.set(listeners);
+    }
+
+    protected final EntityMappingBuilder       builder;
+    protected final String                     entityName;
+    protected final String                     dynamicTableName;
+    protected final String                     wideEntityName;
+    protected final Class<?>                   entityClass;
+    protected final Class<?>                   extendedEntityClass;
+    protected final BeanType                   beanType;
+    protected final DbTable                    table;
+    protected final DbTable                    secondaryTable;
+    protected final FieldMapping[]             fieldMappings;
+    protected final FieldMapping[]             filterFieldMappings;
+    protected final FieldMapping[]             keyFieldMappings;
     protected final String[]                   keyFieldNames;
     protected final String[]                   keyColumnNames;
     protected final boolean                    autoIncrementKey;

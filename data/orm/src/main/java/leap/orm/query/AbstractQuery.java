@@ -29,51 +29,48 @@ import leap.lang.value.Page;
 import leap.orm.OrmContext;
 import leap.orm.OrmMetadata;
 import leap.orm.dao.Dao;
-import leap.orm.event.EntityEventWithWrapperImpl;
-import leap.orm.event.EntityListeners;
+import leap.orm.event.EntityEventHandler;
 import leap.orm.event.LoadEntityEventImpl;
-import leap.orm.event.PostLoadListener;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.sql.Sql;
-import leap.orm.sql.SqlLanguage;
-import leap.orm.value.EntityWrapper;
 
-import java.sql.SQLClientInfoException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class AbstractQuery<T> implements Query<T>,QueryContext {
-	
-	protected final OrmContext			context;
-	protected final OrmMetadata         metadata;
-	protected final Dao		            dao;
-	protected final EntityMapping       em;
-	protected final Class<T>            targetType;
+public abstract class AbstractQuery<T> implements Query<T>, QueryContext {
 
-	private final Map<String, Object> paramsMap = new HashMap<>();
-    private Params params;
+    protected final OrmContext         context;
+    protected final OrmMetadata        metadata;
+    protected final Dao                dao;
+    protected final EntityMapping      em;
+    protected final Class<T>           targetType;
+    protected final EntityEventHandler eventHandler;
+
+    private final Map<String, Object> paramsMap = new HashMap<>();
+    private       Params              params;
 
     protected Boolean queryFilterEnabled;
     protected Boolean filterColumnEnabled;
 
-	protected Limit  limit;
-	protected String orderBy;
-	protected String having;
+    protected Limit  limit;
+    protected String orderBy;
+    protected String having;
 
     private Sql querySql;
-	
-	protected AbstractQuery(Dao dao, Class<T> targetType){
-		this(dao,targetType,null);
-	}
-	
-	protected AbstractQuery(Dao dao, Class<T> targetType, EntityMapping entityMapping){
-		this.dao        = dao;
-		this.context	= dao.getOrmContext();
-		this.metadata   = context.getMetadata();
-		this.targetType = targetType;
-		this.em 		= entityMapping;
-	}
+
+    protected AbstractQuery(Dao dao, Class<T> targetType) {
+        this(dao, targetType, null);
+    }
+
+    protected AbstractQuery(Dao dao, Class<T> targetType, EntityMapping entityMapping) {
+        this.dao = dao;
+        this.context = dao.getOrmContext();
+        this.metadata = context.getMetadata();
+        this.targetType = targetType;
+        this.em = entityMapping;
+        this.eventHandler = dao.getOrmContext().getEntityEventHandler();
+    }
 
     @Override
     public Sql getQuerySql() {
@@ -112,180 +109,177 @@ public abstract class AbstractQuery<T> implements Query<T>,QueryContext {
         return null != params ? params : paramsMap;
     }
 
-    protected Map<String,Object> paramsMap() {
+    protected Map<String, Object> paramsMap() {
         return paramsMap;
     }
-	
-	@Override
+
+    @Override
     public EntityMapping getPrimaryEntityMapping() {
-	    return em;
+        return em;
     }
 
-	@Override
+    @Override
     public Query<T> param(String name, Object value) {
-		paramsMap.put(name, value);
-	    return this;
+        paramsMap.put(name, value);
+        return this;
     }
 
-	@Override
+    @Override
     public Query<T> params(Map<String, Object> params) {
-		if(null != params){
-			this.paramsMap.putAll(params);
-		}
-	    return this;
+        if (null != params) {
+            this.paramsMap.putAll(params);
+        }
+        return this;
     }
-	
+
     @Override
     public Query<T> params(Params params) {
         this.params = params;
-	    return this;
+        return this;
     }
 
-	@Override
+    @Override
     public Query<T> params(DynaBean bean) {
-		if(null != bean){
-			this.paramsMap.putAll(bean.getProperties());
-		}
-	    return this;
+        if (null != bean) {
+            this.paramsMap.putAll(bean.getProperties());
+        }
+        return this;
     }
-	
-	@Override
+
+    @Override
     public Query<T> orderBy(String expression) {
-		this.orderBy = expression;
-	    return this;
+        this.orderBy = expression;
+        return this;
     }
 
-	@Override
+    @Override
     public Query<T> limit(Integer size) {
-		this.limit = Page.limit(size);
-	    return this;
+        this.limit = Page.limit(size);
+        return this;
     }
 
-	@Override
+    @Override
     public Query<T> limit(int startRows, int endRows) {
-		this.limit = new Limit(startRows, endRows);
-	    return this;
+        this.limit = new Limit(startRows, endRows);
+        return this;
     }
 
-	@Override
+    @Override
     public Query<T> limit(Limit limit) {
-		this.limit = limit;
-	    return this;
+        this.limit = limit;
+        return this;
     }
 
-	@Override
+    @Override
     public T first() throws EmptyRecordsException {
-	    return limit(1).result().first();
+        return limit(1).result().first();
     }
 
-	@Override
+    @Override
     public T firstOrNull() {
-	    return limit(1).result().firstOrNull();
+        return limit(1).result().firstOrNull();
     }
 
-	@Override
+    @Override
     public T single() throws EmptyRecordsException, TooManyRecordsException {
-	    return limit(2).result().single();
+        return limit(2).result().single();
     }
 
-	@Override
+    @Override
     public T singleOrNull() throws TooManyRecordsException {
-	    return limit(2).result().singleOrNull();
+        return limit(2).result().singleOrNull();
     }
 
-	@Override
+    @Override
     public List<T> list() {
-	    return result().list();
+        return result().list();
     }
-	
-	@Override
+
+    @Override
     public OrmContext getOrmContext() {
-	    return dao.getOrmContext();
+        return dao.getOrmContext();
     }
 
-	@Override
+    @Override
     public JdbcExecutor getJdbcExecutor() {
-	    return dao;
+        return dao;
     }
 
-	@Override
+    @Override
     public Limit getLimit() {
-	    return limit;
+        return limit;
     }
 
-	@Override
+    @Override
     public String getOrderBy() {
-	    return orderBy;
+        return orderBy;
     }
 
-	@Override
+    @Override
     public QueryResult<T> result() {
-	    return executeResult(null);
+        return executeResult(null);
     }
-	
-	@Override
+
+    @Override
     public QueryResult<T> result(Limit limit) {
-	    return executeResult(limit);
+        return executeResult(limit);
     }
 
     protected QueryResult<T> executeResult(Limit limit) {
         QueryResult result = null == limit ? executeQuery(this) : executeQuery(new LimitQueryContext(limit));
 
-        if(null != em) {
-            if(null != em.getListeners() && em.getListeners().hasLoadListeners()) {
-                PostLoadListener[] listeners = em.getListeners().getPostLoadListeners();
+        if (null != em) {
+            if (eventHandler.isHandleLoadEvent(context, em)) {
                 LoadEntityEventImpl event = new LoadEntityEventImpl(this, em, result.list(), false);
-                for(PostLoadListener listener : listeners) {
-                    listener.postLoadEntity(event);
-                }
+                eventHandler.postLoadEntityNoTrans(context, em, event);
             }
         }
 
         return result;
     }
 
-	@Override
+    @Override
     public PageResult<T> pageResult(Page page) {
-		Args.notNull(page,"page");
-	    return new DefaultPageResult<T>(this, page);
+        Args.notNull(page, "page");
+        return new DefaultPageResult<T>(this, page);
     }
-	
-	@Override
+
+    @Override
     public Scalar scalar() throws EmptyRecordsException, TooManyRecordsException, TooManyColumnsException {
-		Scalar scalar = scalarOrNull();
-		
-		if(null == scalar) {
-			throw new EmptyRecordsException("No records, cannot return scalar value");
-		}
-		
-		return scalar;
+        Scalar scalar = scalarOrNull();
+
+        if (null == scalar) {
+            throw new EmptyRecordsException("No records, cannot return scalar value");
+        }
+
+        return scalar;
     }
 
-	@Override
+    @Override
     public Scalar scalarOrNull() throws TooManyRecordsException {
-	    return executeQueryForScalar(this);
+        return executeQueryForScalar(this);
     }
 
-	@Override
+    @Override
     public Scalars scalars() {
-	    return executeQueryForScalars(this);
+        return executeQueryForScalars(this);
     }
 
-	protected abstract QueryResult<T> executeQuery(QueryContext context);
-	
-	protected abstract Scalar executeQueryForScalar(QueryContext context) throws TooManyRecordsException;
-	
-	protected abstract Scalars executeQueryForScalars(QueryContext context) throws TooManyRecordsException;
-	
-	protected class LimitQueryContext implements QueryContext {
-		
-		private final Limit limit;
+    protected abstract QueryResult<T> executeQuery(QueryContext context);
+
+    protected abstract Scalar executeQueryForScalar(QueryContext context) throws TooManyRecordsException;
+
+    protected abstract Scalars executeQueryForScalars(QueryContext context) throws TooManyRecordsException;
+
+    protected class LimitQueryContext implements QueryContext {
+
+        private final Limit limit;
 
         private Sql sql;
 
-		public LimitQueryContext(Limit limit) {
-			this.limit = limit;
-		}
+        public LimitQueryContext(Limit limit) {
+            this.limit = limit;
+        }
 
         @Override
         public Sql getQuerySql() {
@@ -299,27 +293,27 @@ public abstract class AbstractQuery<T> implements Query<T>,QueryContext {
 
         @Override
         public EntityMapping getPrimaryEntityMapping() {
-	        return em;
+            return em;
         }
 
-		@Override
+        @Override
         public OrmContext getOrmContext() {
-	        return context;
+            return context;
         }
 
-		@Override
+        @Override
         public JdbcExecutor getJdbcExecutor() {
-	        return dao;
+            return dao;
         }
 
-		@Override
+        @Override
         public Limit getLimit() {
-	        return limit;
+            return limit;
         }
 
-		@Override
+        @Override
         public String getOrderBy() {
-	        return orderBy;
+            return orderBy;
         }
-	}
+    }
 }
