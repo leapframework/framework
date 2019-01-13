@@ -371,6 +371,11 @@ public interface CriteriaQuery<T> extends Query<T> {
     CriteriaWhere<T> where();
 
     /**
+     * Sets the where expression by the given field names and values.
+     */
+    CriteriaQuery<T> where(Map<String, Object> fields);
+
+    /**
      * Sets the where expression in this CriteriaQuery.
      */
     CriteriaQuery<T> where(String expression);

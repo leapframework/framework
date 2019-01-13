@@ -486,6 +486,22 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     }
 
     @Override
+    public CriteriaQuery<T> where(Map<String, Object> fields) {
+        StringBuilder where = new StringBuilder();
+
+        int i=0;
+        for(String name : fields.keySet()) {
+            if(i > 0) {
+                where.append(" and ");
+            }
+            where.append(name).append(" = :").append(name);
+            i++;
+        }
+
+        return where(where.toString()).params(fields);
+    }
+
+    @Override
     public CriteriaQuery<T> where(String expression) {
         Args.notEmpty(expression = Strings.trim(expression), "where expression");
         where = expression;
