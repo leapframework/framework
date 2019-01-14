@@ -146,6 +146,10 @@ public class AppFilter implements Filter {
 			boolean handled = false;
 			
 			try {
+				if(e instanceof ServletException && e.getCause() instanceof ResponseException) {
+				    e = e.getCause();
+                }
+
 				if(e instanceof ResponseException) {
 					appHandler.renderResponseException(request, response, (ResponseException)e);
 					handled = true;
