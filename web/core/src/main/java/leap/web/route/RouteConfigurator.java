@@ -119,5 +119,12 @@ public interface RouteConfigurator {
 	/**
 	 * Apply the route.
 	 */
-	Route apply();
+	Route apply(boolean removeExistence);
+
+	/**
+	 * Apply the route.
+	 */
+	default Route apply() {
+		return apply(false);
+	}
 }

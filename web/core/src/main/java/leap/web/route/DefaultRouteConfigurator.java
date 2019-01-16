@@ -146,17 +146,24 @@ class DefaultRouteConfigurator implements RouteConfigurator {
         return rb;
     }
 
-    @Override
-	public Route apply() {
+	@Override
+	public Route apply(boolean removeExistence) {
 		Assert.isFalse(applied, "The route already added");
 		Assert.notEmpty(path,   "'path' cannot be empty");
 		Assert.notNull(handler, "'handler' cannot be null");
-		
+
 		applied = true;
 
-        Route route = builder().build();
-        routes.add(route);
+		Route route = builder().build();
+
+		if(removeExistence) {
+            Route existence = routes.match(route.getMethod(), route.getPathTemplate().getTemplate());
+            if (null != existence) {
+                routes.remove(existence);
+            }
+        }
+
+		routes.add(route);
 		return route;
 	}
-
 }
