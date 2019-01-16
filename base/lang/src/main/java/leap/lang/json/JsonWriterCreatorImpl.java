@@ -98,6 +98,7 @@ class JsonWriterCreatorImpl implements JsonWriterCreator {
 
 	@Override
 	public JsonWriterCreator setPropertyFilter(Predicate<BeanProperty> filter) {
+		settings.setPropertyFilter(filter);
 		return this;
 	}
 
