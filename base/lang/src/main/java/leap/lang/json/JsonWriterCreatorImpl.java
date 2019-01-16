@@ -15,8 +15,11 @@
  */
 package leap.lang.json;
 
+import leap.lang.beans.BeanProperty;
 import leap.lang.naming.NamingStyle;
 import leap.lang.naming.NamingStyles;
+
+import java.util.function.Predicate;
 
 class JsonWriterCreatorImpl implements JsonWriterCreator {
 
@@ -93,7 +96,12 @@ class JsonWriterCreatorImpl implements JsonWriterCreator {
         return this;
     }
 
-    @Override
+	@Override
+	public JsonWriterCreator setPropertyFilter(Predicate<BeanProperty> filter) {
+		return this;
+	}
+
+	@Override
 	public JsonWriter create() {
 		if(null == settings.getNamingStyle()){
 			settings.setNamingStyle(NamingStyles.RAW);
