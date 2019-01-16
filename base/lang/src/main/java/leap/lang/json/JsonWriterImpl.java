@@ -53,6 +53,7 @@ public class JsonWriterImpl implements JsonWriter {
     private final boolean                 detectCyclicReferences;
     private final boolean                 ignoreCyclicReferences;
     private final int                     maxDepth;
+    private final Predicate<Object>       beanFilter;
     private final Predicate<BeanProperty> propertyFilter;
 
     private boolean                          startProperty;
@@ -71,6 +72,7 @@ public class JsonWriterImpl implements JsonWriter {
         this.detectCyclicReferences = detectCyclicReferences;
         this.ignoreCyclicReferences = ignoreCyclicReferences;
         this.maxDepth = depth <= 0 ? MAX_DEPTH : maxDepth;
+        this.beanFilter = settings.getBeanFilter();
         this.propertyFilter = settings.getPropertyFilter();
 
         if (detectCyclicReferences) {
@@ -431,12 +433,15 @@ public class JsonWriterImpl implements JsonWriter {
         if (null != array) {
             int i = 0;
             while (array.hasNext()) {
+                Object item = array.next();
+                if(null != item && null != beanFilter && beanFilter.test(item)) {
+                    continue;
+                }
                 if (i > 0) {
                     separator();
-                } else {
-                    i++;
                 }
-                value(array.next());
+                value(item);
+                i++;
             }
         }
         endArray();
@@ -447,11 +452,17 @@ public class JsonWriterImpl implements JsonWriter {
         startArray();
         if (null != array) {
             int len = array.length;
+            int j=0;
             for (int i = 0; i < len; i++) {
-                if (i > 0) {
+                Object item = array[i];
+                if(null != item && null != beanFilter && beanFilter.test(item)) {
+                    continue;
+                }
+                if (j > 0) {
                     separator();
                 }
-                value(array[i]);
+                value(item);
+                j++;
             }
         }
         endArray();
@@ -466,11 +477,17 @@ public class JsonWriterImpl implements JsonWriter {
                 throw new IllegalStateException("The given object is not an array");
             }
             int len = Array.getLength(array);
+            int j=0;
             for (int i = 0; i < len; i++) {
-                if (i > 0) {
+                Object item = Array.get(array, i);
+                if(null != item && null != beanFilter && beanFilter.test(item)) {
+                    continue;
+                }
+                if (j > 0) {
                     separator();
                 }
-                value(Array.get(array, i));
+                value(item);
+                j++;
             }
         }
         endArray();
@@ -869,6 +886,10 @@ public class JsonWriterImpl implements JsonWriter {
                     continue;
                 }
                 if (val != null) {
+                    if(null != beanFilter && beanFilter.test(val)) {
+                        continue;
+                    }
+
                     if (val instanceof String) {
                         if (isIgnoreEmptyString() && Strings.isEmpty((String) val)) {
                             continue;
@@ -986,6 +1007,11 @@ public class JsonWriterImpl implements JsonWriter {
                     if (isIgnoreEmptyString() && Strings.isNullOrBlank(propValue)) {
                         continue;
                     }
+
+                    if(null != propValue && null != beanFilter && beanFilter.test(propValue)) {
+                        continue;
+                    }
+
                     if (prop.getField().getType().equals(String.class) && settings.isNullToEmptyString() && null == propValue) {
                         propValue = "";
                     }

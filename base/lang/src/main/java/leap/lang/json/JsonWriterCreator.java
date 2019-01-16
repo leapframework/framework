@@ -50,5 +50,7 @@ public interface JsonWriterCreator extends Creatable<JsonWriter>{
 
     JsonWriterCreator setSettings(JsonSettings settings);
 
+    JsonWriterCreator setBeanFilter(Predicate<Object> filter);
+
     JsonWriterCreator setPropertyFilter(Predicate<BeanProperty> filter);
 }

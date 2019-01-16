@@ -42,6 +42,7 @@ public class JsonSettings {
     private final DateFormat              dateFormat;
     private final DateTimeFormatter       dateTimeFormatter;
     private final Predicate<BeanProperty> propertyFilter;
+    private final Predicate<Object>       beanFilter;
 
     public JsonSettings(boolean keyQuoted, boolean ignoreNull, boolean ignoreFalse,
                         boolean ignoreEmptyString, boolean ignoreEmptyArray,
@@ -62,11 +63,13 @@ public class JsonSettings {
         this.dateTimeFormatter = null;
         this.nullToEmptyString = nullToEmptyString;
         this.propertyFilter = null;
+        this.beanFilter = null;
     }
 
     public JsonSettings(boolean keyQuoted, boolean ignoreNull, boolean ignoreFalse,
                         boolean ignoreEmptyString, boolean ignoreEmptyArray, boolean nullToEmptyString,
-                        NamingStyle namingStyle, DateFormat dateFormat, DateTimeFormatter dateTimeFormatter, Predicate<BeanProperty> propertyFilter) {
+                        NamingStyle namingStyle, DateFormat dateFormat, DateTimeFormatter dateTimeFormatter,
+                        Predicate<BeanProperty> propertyFilter, Predicate<Object> beanFilter) {
         this.keyQuoted = keyQuoted;
         this.ignoreNull = ignoreNull;
         this.ignoreFalse = ignoreFalse;
@@ -77,6 +80,7 @@ public class JsonSettings {
         this.dateTimeFormatter = dateTimeFormatter;
         this.nullToEmptyString = nullToEmptyString;
         this.propertyFilter = propertyFilter;
+        this.beanFilter = beanFilter;
     }
 
     public boolean isKeyQuoted() {
@@ -116,6 +120,10 @@ public class JsonSettings {
         return nullToEmptyString;
     }
 
+    public Predicate<Object> getBeanFilter() {
+        return beanFilter;
+    }
+
     public Predicate<BeanProperty> getPropertyFilter() {
         return propertyFilter;
     }
@@ -132,6 +140,7 @@ public class JsonSettings {
         private DateFormat              dateFormat        = null;
         private DateTimeFormatter       dateTimeFormatter;
         private Predicate<BeanProperty> propertyFilter;
+        private Predicate<Object>       beanFilter;
 
         public Builder() {
             super();
@@ -249,6 +258,15 @@ public class JsonSettings {
             return this;
         }
 
+        public Predicate<Object> getBeanFilter() {
+            return beanFilter;
+        }
+
+        public Builder setBeanFilter(Predicate<Object> beanFilter) {
+            this.beanFilter = beanFilter;
+            return this;
+        }
+
         public Builder setSettings(JsonSettings settings) {
             this.keyQuoted = settings.keyQuoted;
             this.ignoreNull = settings.ignoreNull;
@@ -260,13 +278,14 @@ public class JsonSettings {
             this.dateFormat = settings.dateFormat;
             this.dateTimeFormatter = settings.dateTimeFormatter;
             this.propertyFilter = settings.propertyFilter;
+            this.beanFilter = settings.beanFilter;
             return this;
         }
 
         public JsonSettings build() {
             return new JsonSettings(keyQuoted, ignoreNull, ignoreFalse,
                     ignoreEmptyString, ignoreEmptyArray, nullToEmptyString,
-                    namingStyle, dateFormat, dateTimeFormatter, propertyFilter);
+                    namingStyle, dateFormat, dateTimeFormatter, propertyFilter, beanFilter);
         }
 
     }
