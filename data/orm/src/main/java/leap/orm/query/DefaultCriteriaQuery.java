@@ -754,7 +754,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
             return joinByIdArgs.toArray(Arrays2.EMPTY_OBJECT_ARRAY);
         }
 
-        throw new IllegalStateException("Cannot combine with joinById and where expr in one query");
+        return Arrays2.concat(whereParameters.array(), joinByIdArgs.toArray(Arrays2.EMPTY_OBJECT_ARRAY));
     }
 
     protected SqlStatement buildQueryStatement(QueryContext qc) {
