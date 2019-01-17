@@ -89,7 +89,7 @@ public class JwtTokenVerifier implements TokenVerifier {
         String userId   = (String)jwtDetail.get(JWT.CLAIM_SUBJECT);
         tokenInfo.setUserId(userId);
         tokenInfo.setScope((String)jwtDetail.get("scope"));
-        tokenInfo.setClientId((String)jwtDetail.get(JWT.CLAIM_AUDIENCE));
+        tokenInfo.setClientId((String)jwtDetail.get("client_id"));
 
         tokenInfo.setCreated(System.currentTimeMillis());
         Object exp = jwtDetail.get(JWT.CLAIM_EXPIRATION_TIME);
