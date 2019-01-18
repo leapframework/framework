@@ -604,6 +604,12 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     }
 
     @Override
+    public CriteriaQuery<T> addSelectField(String field) {
+        builder.addExtraSelectItem(field);
+        return this;
+    }
+
+    @Override
     public CriteriaQuery<T> groupBy(String expression) {
         this.groupBy = expression;
         return this;
@@ -967,6 +973,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         protected String       alias = "t";
         protected String[]     columns;
         protected List<String> extraSelectItems;
+        protected List<String> extraSelectColumns;
 
         private StringBuilder sql;
 
@@ -979,6 +986,13 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                 extraSelectItems = new ArrayList<>();
             }
             extraSelectItems.add(columnOrExpr);
+        }
+
+        public void addExtraSelectField(String field) {
+            if (null == extraSelectColumns) {
+                extraSelectColumns = new ArrayList<>();
+            }
+            extraSelectColumns.add(column(field));
         }
 
         public String buildDeleteSql() {
@@ -1268,6 +1282,15 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                     }
 
                     index++;
+                }
+            }
+            if (null != extraSelectColumns) {
+                for(String column : extraSelectColumns) {
+                    if(Arrays2.containsIgnoreCase(columns, column)) {
+                        continue;
+                    }
+                    sql.append(',');
+                    sql.append(alias).append('.').append(column);
                 }
             }
             if (null != extraSelectItems) {

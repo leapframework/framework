@@ -211,6 +211,21 @@ public class Arrays2 {
 	public static boolean contains(Object[] array, Object objectToFind) {
 		return indexOf(array, objectToFind) != INDEX_NOT_FOUND;
 	}
+
+	public static boolean containsIgnoreCase(String[] array, String toFind) {
+		if(null == array || array.length == 0) {
+			return false;
+		}
+		if(null == toFind || toFind.length() == 0) {
+			return  false;
+		}
+		for(String item : array) {
+			if(toFind.equalsIgnoreCase(item)) {
+				return true;
+			}
+		}
+		return false;
+	}
 	
 	public static boolean containsInObjectArray(Object array, Object objectToFind) {
 		return indexOfObjectArray(array, objectToFind) != INDEX_NOT_FOUND;

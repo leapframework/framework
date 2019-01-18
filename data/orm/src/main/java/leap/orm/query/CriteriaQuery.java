@@ -188,6 +188,11 @@ public interface CriteriaQuery<T> extends Query<T> {
     CriteriaQuery<T> addSelectItem(String fieldOrExpr);
 
     /**
+     * Appends a select field, skip if exists.
+     */
+    CriteriaQuery<T> addSelectField(String field);
+
+    /**
      * Returns the table alias of primary entity.
      */
     String alias();
