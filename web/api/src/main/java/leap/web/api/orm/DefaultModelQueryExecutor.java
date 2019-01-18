@@ -1080,7 +1080,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             ScelNode[] nodes = filters.nodes();
             if(nodes.length > 0) {
 
-                boolean and = !args.isEmpty();
+                boolean and = where.length() > 0 && !Strings.isBlank(where);
                 if(and) {
                     where.append(" and (");
                 }
