@@ -58,7 +58,7 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
         RouteBuilder      route  = rm.createRoute(verb, path);
 
         action.setName(Strings.lowerCamel(NAME, model.getName()));
-        action.setFunction(createFunction(c, context, model));
+        action.setFunction(createFunction(context, model, action.getArguments().size()));
 
         addArgument(context, action, QueryOptions.class, "options");
         addModelQueryResponse(action, model);
@@ -75,14 +75,14 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 
-    protected Function<ActionParams, Object> createFunction(ApiConfigurator c, RestdContext context, RestdModel model) {
-        return new QueryFunction(context.getApi(), context.getDao(), model);
+    protected Function<ActionParams, Object> createFunction(RestdContext context, RestdModel model, int start) {
+        return new QueryFunction(context.getApi(), context.getDao(), model, start);
     }
 
     protected class QueryFunction extends CrudFunction implements Function<ActionParams, Object> {
 
-        public QueryFunction(Api api, Dao dao, RestdModel model) {
-            super(api, dao, model);
+        public QueryFunction(Api api, Dao dao, RestdModel model, int start) {
+            super(api, dao, model, start);
         }
 
         @Override
@@ -92,7 +92,7 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
             ModelExecutorContext context  = new SimpleModelExecutorContext(api, dao, am, em);
             ModelQueryExecutor   executor = newQueryExecutor(context);
 
-            QueryOptions options = params.get(0);
+            QueryOptions options = getWithoutId(params, 0);
 
             QueryListResult result = executor.queryList(options);
 

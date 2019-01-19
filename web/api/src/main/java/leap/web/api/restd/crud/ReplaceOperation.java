@@ -44,7 +44,7 @@ public class ReplaceOperation extends CrudOperationBase implements CrudOperation
 
     @Override
     public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model) {
-        if(!context.getConfig().allowModelOperation(model.getName(), NAME)) {
+        if (!context.getConfig().allowModelOperation(model.getName(), NAME)) {
             return;
         }
 
@@ -52,10 +52,10 @@ public class ReplaceOperation extends CrudOperationBase implements CrudOperation
         String path = fullModelPath(c, model) + getIdPath(model);
 
         FuncActionBuilder action = new FuncActionBuilder();
-        RouteBuilder route  = rm.createRoute(verb, path);
+        RouteBuilder      route  = rm.createRoute(verb, path);
 
         action.setName(Strings.lowerCamel(NAME, model.getName()));
-        action.setFunction(createFunction(c, context, model));
+        action.setFunction(createFunction(context, model, action.getArguments().size()));
         addIdArguments(context, action, model);
         addModelArgumentForReplace(context, action, model);
         addNoContentResponse(action, model);
@@ -65,35 +65,35 @@ public class ReplaceOperation extends CrudOperationBase implements CrudOperation
         setCrudOperation(route, NAME);
         postConfigure(context, model, route);
 
-        if(isOperationExists(context, route)) {
+        if (isOperationExists(context, route)) {
             return;
         }
 
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 
-    protected Function<ActionParams, Object> createFunction(ApiConfigurator c, RestdContext context, RestdModel model) {
-        return new ReplaceFunction(context.getApi(), context.getDao(), model);
+    protected Function<ActionParams, Object> createFunction(RestdContext context, RestdModel model, int start) {
+        return new ReplaceFunction(context.getApi(), context.getDao(), model, start);
     }
 
     protected class ReplaceFunction extends CrudFunction {
 
-        public ReplaceFunction(Api api, Dao dao, RestdModel model) {
-            super(api, dao, model);
+        public ReplaceFunction(Api api, Dao dao, RestdModel model, int start) {
+            super(api, dao, model, start);
         }
 
         @Override
         public Object apply(ActionParams params) {
             MApiModel am = am();
 
-            Object             id     = id(params);
-            Map<String,Object> record = record(params);
+            Object              id     = id(params);
+            Map<String, Object> record = record(params);
 
             ModelExecutorContext context  = new SimpleModelExecutorContext(api, dao, am, em);
-            ModelUpdateExecutor executor = newUpdateExecutor(context);
+            ModelUpdateExecutor  executor = newUpdateExecutor(context);
 
             UpdateOneResult result = executor.replaceUpdateOne(id, record);
-            if(null != result.entity) {
+            if (null != result.entity) {
                 return ApiResponse.of(result.entity);
             }
 

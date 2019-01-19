@@ -44,7 +44,7 @@ public abstract class CrudOperationBase extends RestdOperationBase {
 
     protected void setApiExtension(RouteBuilder route, String name, Object value) {
         MApiExtension extension = route.getExtension(MApiExtension.class);
-        if(null == extension) {
+        if (null == extension) {
             extension = new MApiExtension();
             route.setExtension(extension);
         }
@@ -58,7 +58,7 @@ public abstract class CrudOperationBase extends RestdOperationBase {
     protected ArgumentBuilder addModelArgumentForCreate(RestdContext context, FuncActionBuilder action, RestdModel model) {
         ArgumentBuilder a = newModelArgument(model);
 
-        for(RestdArgumentSupport vs : argumentSupports) {
+        for (RestdArgumentSupport vs : argumentSupports) {
             vs.processModelArgumentForCreate(context, model, a);
         }
 
@@ -70,7 +70,7 @@ public abstract class CrudOperationBase extends RestdOperationBase {
     protected ArgumentBuilder addModelArgumentForUpdate(RestdContext context, FuncActionBuilder action, RestdModel model) {
         ArgumentBuilder a = newModelArgument(model);
 
-        for(RestdArgumentSupport vs : argumentSupports) {
+        for (RestdArgumentSupport vs : argumentSupports) {
             vs.processModelArgumentForUpdate(context, model, a);
         }
 
@@ -82,7 +82,7 @@ public abstract class CrudOperationBase extends RestdOperationBase {
     protected ArgumentBuilder addModelArgumentForReplace(RestdContext context, FuncActionBuilder action, RestdModel model) {
         ArgumentBuilder a = newModelArgument(model);
 
-        for(RestdArgumentSupport vs : argumentSupports) {
+        for (RestdArgumentSupport vs : argumentSupports) {
             vs.processModelArgumentForReplace(context, model, a);
         }
 
@@ -92,7 +92,7 @@ public abstract class CrudOperationBase extends RestdOperationBase {
     }
 
     protected void addIdArguments(RestdContext context, FuncActionBuilder action, RestdModel model) {
-        for(FieldMapping id : model.getEntityMapping().getKeyFieldMappings()) {
+        for (FieldMapping id : model.getEntityMapping().getKeyFieldMappings()) {
             ArgumentBuilder a = newIdArgument(model, id);
 
             for (RestdArgumentSupport vs : argumentSupports) {
@@ -222,41 +222,60 @@ public abstract class CrudOperationBase extends RestdOperationBase {
         return p;
     }
 
+    public interface Callback {
+        default void preAddArguments(FuncActionBuilder action) {
+
+        }
+
+        default void postAddArguments(FuncActionBuilder action) {
+
+        }
+    }
+
     protected abstract static class CrudFunction implements Function<ActionParams, Object> {
         protected final Api           api;
         protected final Dao           dao;
         protected final RestdModel    model;
         protected final EntityMapping em;
-
-        protected final int idLen;
+        protected final int           start;
+        protected final int           idLen;
 
         private MApiModel am;
 
-        protected CrudFunction(Api api, Dao dao, RestdModel model) {
+        protected CrudFunction(Api api, Dao dao, RestdModel model, int start) {
             this.api = api;
             this.dao = dao;
             this.model = model;
-            this.em    = model.getEntityMapping();
+            this.em = model.getEntityMapping();
+            this.start = start;
             this.idLen = em.getKeyFieldMappings().length;
         }
 
         protected MApiModel am() {
-            if(null == am) {
+            if (null == am) {
                 am = api.getMetadata().getModel(model.getName());
             }
             return am;
         }
 
         protected final Object id(ActionParams params) {
-            if(idLen > 1) {
+            if (idLen > 1) {
                 Map id = new HashMap(idLen);
-                for(int i=0;i<idLen;i++) {
+                for (int i = start; i < idLen; i++) {
                     id.put(em.getKeyFieldNames()[i], params.get(i));
                 }
                 return id;
-            }else {
-                return params.get(0);
+            } else {
+                return params.get(start);
             }
+        }
+
+        protected final <T> T getWithId(ActionParams params, int index) {
+            return params.get(start + idLen + index);
+        }
+
+        protected final <T> T getWithoutId(ActionParams params, int index) {
+            return params.get(start + index);
         }
 
         protected final Map record(ActionParams params) {

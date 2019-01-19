@@ -59,7 +59,7 @@ public class UpdateOperation extends CrudOperationBase implements CrudOperation 
         RouteBuilder      route  = rm.createRoute(verb, path);
 
         action.setName(Strings.lowerCamel(NAME, model.getName()));
-        action.setFunction(createFunction(c, context, model));
+        action.setFunction(createFunction(context, model, action.getArguments().size()));
         addIdArguments(context, action, model);
         addModelArgumentForUpdate(context, action, model);
         addNoContentResponse(action, model);
@@ -76,14 +76,14 @@ public class UpdateOperation extends CrudOperationBase implements CrudOperation 
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 
-    protected Function<ActionParams, Object> createFunction(ApiConfigurator c, RestdContext context, RestdModel model) {
-        return new UpdateFunction(context.getApi(), context.getDao(), model);
+    protected Function<ActionParams, Object> createFunction(RestdContext context, RestdModel model, int start) {
+        return new UpdateFunction(context.getApi(), context.getDao(), model, start);
     }
 
     protected class UpdateFunction extends CrudFunction {
 
-        public UpdateFunction(Api api, Dao dao, RestdModel model) {
-            super(api, dao, model);
+        public UpdateFunction(Api api, Dao dao, RestdModel model, int start) {
+            super(api, dao, model, start);
         }
 
         @Override

@@ -22,11 +22,13 @@ import leap.web.action.ActionParams;
 import leap.web.action.FuncActionBuilder;
 import leap.web.api.Api;
 import leap.web.api.config.ApiConfigurator;
-import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.ApiResponse;
 import leap.web.api.mvc.params.QueryOptionsBase;
-import leap.web.api.orm.*;
+import leap.web.api.orm.ModelExecutorContext;
+import leap.web.api.orm.ModelQueryExecutor;
+import leap.web.api.orm.QueryOneResult;
+import leap.web.api.orm.SimpleModelExecutorContext;
 import leap.web.api.restd.CrudOperation;
 import leap.web.api.restd.CrudOperationBase;
 import leap.web.api.restd.RestdContext;
@@ -45,21 +47,32 @@ public class FindOperation extends CrudOperationBase implements CrudOperation {
 
     @Override
     public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model) {
-        if(!context.getConfig().allowFindModel(model.getName())) {
+        if (!context.getConfig().allowFindModel(model.getName())) {
             return;
         }
 
-        String verb = "GET";
         String path = fullModelPath(c, model) + getIdPath(model);
+        String name = Strings.lowerCamel(NAME, model.getName());
 
-        FuncActionBuilder action = new FuncActionBuilder();
-        RouteBuilder      route  = rm.createRoute(verb, path);
+        createCrudOperation(c, context, model, path, name, null);
+    }
 
-        action.setName(Strings.lowerCamel(NAME, model.getName()));
-        action.setFunction(createFunction(c, context, model));
+    public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model,
+                                    String path, String name, Callback callback) {
+        FuncActionBuilder action = new FuncActionBuilder(name);
+        RouteBuilder      route  = rm.createRoute("GET", path);
+
+        if (null != callback) {
+            callback.preAddArguments(action);
+        }
+
+        action.setFunction(createFunction(context, model, action.getArguments().size()));
 
         addIdArguments(context, action, model);
         addArgument(context, action, QueryOptionsBase.class, "options");
+        if (null != callback) {
+            callback.postAddArguments(action);
+        }
         addModelResponse(action, model);
 
         preConfigure(context, model, action);
@@ -67,21 +80,21 @@ public class FindOperation extends CrudOperationBase implements CrudOperation {
         setCrudOperation(route, NAME);
         postConfigure(context, model, route);
 
-        if(isOperationExists(context, route)) {
+        if (isOperationExists(context, route)) {
             return;
         }
 
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 
-    protected Function<ActionParams, Object> createFunction(ApiConfigurator c, RestdContext context, RestdModel model) {
-        return new FindFunction(context.getApi(), context.getDao(), model);
+    protected Function<ActionParams, Object> createFunction(RestdContext context, RestdModel model, int start) {
+        return new FindFunction(context.getApi(), context.getDao(), model, start);
     }
 
     protected class FindFunction extends CrudFunction {
 
-        public FindFunction(Api api, Dao dao, RestdModel model) {
-            super(api, dao, model);
+        public FindFunction(Api api, Dao dao, RestdModel model, int start) {
+            super(api, dao, model, start);
         }
 
         @Override
@@ -92,14 +105,14 @@ public class FindOperation extends CrudOperationBase implements CrudOperation {
             ModelQueryExecutor   executor = newQueryExecutor(context);
 
             Object           id      = id(params);
-            QueryOptionsBase options = params.get(idLen);
+            QueryOptionsBase options = getWithId(params, 0);
 
             QueryOneResult result = executor.queryOne(id, options);
-            if(null != result.getEntity()) {
+            if (null != result.getEntity()) {
                 return ApiResponse.of(result.getEntity());
-            }else if(result.getRecord() == null) {
+            } else if (result.getRecord() == null) {
                 throw new NotFoundException(am.getName() + " '" + id.toString() + "' not found");
-            }else {
+            } else {
                 return ApiResponse.of(result.getRecord());
             }
         }

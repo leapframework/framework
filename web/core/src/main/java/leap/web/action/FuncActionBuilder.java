@@ -38,6 +38,14 @@ public class FuncActionBuilder extends ExtensibleBase implements Buildable<FuncA
     protected List<ResponseFormat>           produces = new ArrayList<>();
     protected Function<ActionParams, Object> function;
 
+    public FuncActionBuilder() {
+
+    }
+
+    public FuncActionBuilder(String name) {
+        this.name = name;
+    }
+
     public String getName() {
         return name;
     }

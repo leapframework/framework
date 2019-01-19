@@ -62,7 +62,7 @@ public class DeleteOperation extends CrudOperationBase implements CrudOperation 
         RouteBuilder      route  = rm.createRoute(verb, path);
 
         action.setName(Strings.lowerCamel(NAME, model.getName()));
-        action.setFunction(createFunction(c, context, model));
+        action.setFunction(createFunction(context, model, action.getArguments().size()));
 
         addIdArguments(context, action, model);
         addOtherArguments(c, context, action, model);
@@ -84,16 +84,16 @@ public class DeleteOperation extends CrudOperationBase implements CrudOperation 
         addArgument(context, action, DeleteOptions.class, "options");
     }
 
-    protected Function<ActionParams, Object> createFunction(ApiConfigurator c, RestdContext context, RestdModel model) {
-        return new DeleteFunction(context.getApi(), context.getDao(), model, true);
+    protected Function<ActionParams, Object> createFunction(RestdContext context, RestdModel model, int start) {
+        return new DeleteFunction(context.getApi(), context.getDao(), model, start, true);
     }
 
     protected class DeleteFunction extends CrudFunction {
 
         private final boolean cascadeDelete;
 
-        public DeleteFunction(Api api, Dao dao, RestdModel model, boolean cascadeDelete) {
-            super(api, dao, model);
+        public DeleteFunction(Api api, Dao dao, RestdModel model, int start, boolean cascadeDelete) {
+            super(api, dao, model, start);
             this.cascadeDelete = cascadeDelete;
         }
 
@@ -105,7 +105,7 @@ public class DeleteOperation extends CrudOperationBase implements CrudOperation 
             ModelDeleteExecutor executor = newDeleteExecutor(context);
 
             Object        id      = id(params);
-            DeleteOptions options = cascadeDelete ? params.get(idLen) : null;
+            DeleteOptions options = cascadeDelete ? getWithId(params, 0) : null;
 
             if(!cascadeDelete) {
                 Request request = Request.tryGetCurrent();

@@ -57,7 +57,7 @@ public class CreateOperation extends CrudOperationBase implements CrudOperation 
         RouteBuilder      route  = rm.createRoute(verb, path);
 
         action.setName(Strings.lowerCamel(NAME, model.getName()));
-        action.setFunction(createFunction(c, context, model));
+        action.setFunction(createFunction(context, model, action.getArguments().size()));
         addModelArgumentForCreate(context, action, model);
         addModelResponse(action, model).setStatus(201);
 
@@ -74,20 +74,20 @@ public class CreateOperation extends CrudOperationBase implements CrudOperation 
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 
-    protected Function<ActionParams,Object> createFunction(ApiConfigurator c, RestdContext context, RestdModel model) {
-        return new CreateFunction(context.getApi(), context.getDao(), model);
+    protected Function<ActionParams,Object> createFunction(RestdContext context, RestdModel model, int start) {
+        return new CreateFunction(context.getApi(), context.getDao(), model, start);
     }
 
     protected class CreateFunction extends CrudFunction {
-        public CreateFunction(Api api, Dao dao, RestdModel model) {
-            super(api, dao, model);
+        public CreateFunction(Api api, Dao dao, RestdModel model, int start) {
+            super(api, dao, model, start);
         }
 
         @Override
         public Object apply(ActionParams params) {
             MApiModel am = api.getMetadata().getModel(model.getName());
 
-            Map<String,Object> record = params.get(0);
+            Map<String,Object> record = getWithoutId(params, 0);
 
             ModelExecutorContext context = new SimpleModelExecutorContext(api, dao, am, em);
             ModelCreateExecutor executor = newCreateExecutor(context);
