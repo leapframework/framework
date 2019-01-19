@@ -22,7 +22,6 @@ import leap.web.action.ActionParams;
 import leap.web.action.FuncActionBuilder;
 import leap.web.api.Api;
 import leap.web.api.config.ApiConfigurator;
-import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.ApiResponse;
 import leap.web.api.mvc.params.QueryOptions;
@@ -47,20 +46,33 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
 
     @Override
     public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model) {
-        if(!context.getConfig().allowQueryModel(model.getName())) {
+        if (!context.getConfig().allowQueryModel(model.getName())) {
             return;
         }
 
-        String verb = "GET";
         String path = fullModelPath(c, model);
+        String name = Strings.lowerCamel(NAME, model.getName());
 
-        FuncActionBuilder action = new FuncActionBuilder();
-        RouteBuilder      route  = rm.createRoute(verb, path);
+        createCrudOperation(c, context, model, path, name, null);
+    }
 
-        action.setName(Strings.lowerCamel(NAME, model.getName()));
+    public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model,
+                                    String path, String name, Callback callback) {
+        FuncActionBuilder action = new FuncActionBuilder(name);
+        RouteBuilder      route  = rm.createRoute("GET", path);
+
+        if (null != callback) {
+            callback.preAddArguments(action);
+        }
+
         action.setFunction(createFunction(context, model, action.getArguments().size()));
 
         addArgument(context, action, QueryOptions.class, "options");
+
+        if (null != callback) {
+            callback.postAddArguments(action);
+        }
+
         addModelQueryResponse(action, model);
 
         preConfigure(context, model, action);
@@ -68,7 +80,7 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
         setCrudOperation(route, NAME);
         postConfigure(context, model, route);
 
-        if(isOperationExists(context, route)) {
+        if (isOperationExists(context, route)) {
             return;
         }
 
@@ -96,7 +108,7 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
 
             QueryListResult result = executor.queryList(options);
 
-            if(null != result.getEntity()) {
+            if (null != result.getEntity()) {
                 return ApiResponse.of(result.getEntity());
             }
 

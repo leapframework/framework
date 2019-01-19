@@ -34,7 +34,6 @@ import leap.web.api.restd.RestdContext;
 import leap.web.api.restd.RestdModel;
 import leap.web.exception.NotFoundException;
 import leap.web.route.RouteBuilder;
-import org.omg.CosNaming.NamingContextPackage.NotFound;
 
 import java.util.Map;
 import java.util.function.Function;
@@ -48,20 +47,32 @@ public class UpdateOperation extends CrudOperationBase implements CrudOperation 
 
     @Override
     public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model) {
-        if(!context.getConfig().allowUpdateModel(model.getName())) {
+        if (!context.getConfig().allowUpdateModel(model.getName())) {
             return;
         }
 
-        String verb = "PATCH";
         String path = fullModelPath(c, model) + getIdPath(model);
+        String name = Strings.lowerCamel(NAME, model.getName());
 
-        FuncActionBuilder action = new FuncActionBuilder();
-        RouteBuilder      route  = rm.createRoute(verb, path);
+        createCrudOperation(c, context, model, path, name, null);
+    }
 
-        action.setName(Strings.lowerCamel(NAME, model.getName()));
+    public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model,
+                                    String path, String name, Callback callback) {
+
+        FuncActionBuilder action = new FuncActionBuilder(name);
+        RouteBuilder      route  = rm.createRoute("PATCH", path);
+
+        if (null != callback) {
+            callback.preAddArguments(action);
+        }
+
         action.setFunction(createFunction(context, model, action.getArguments().size()));
         addIdArguments(context, action, model);
         addModelArgumentForUpdate(context, action, model);
+        if (null != callback) {
+            callback.postAddArguments(action);
+        }
         addNoContentResponse(action, model);
 
         preConfigure(context, model, action);
@@ -69,7 +80,7 @@ public class UpdateOperation extends CrudOperationBase implements CrudOperation 
         setCrudOperation(route, NAME);
         postConfigure(context, model, route);
 
-        if(isOperationExists(context, route)) {
+        if (isOperationExists(context, route)) {
             return;
         }
 
@@ -90,14 +101,14 @@ public class UpdateOperation extends CrudOperationBase implements CrudOperation 
         public Object apply(ActionParams params) {
             MApiModel am = am();
 
-            Object             id     = id(params);
-            Map<String,Object> record = record(params);
+            Object              id     = id(params);
+            Map<String, Object> record = record(params);
 
             ModelExecutorContext context  = new SimpleModelExecutorContext(api, dao, am, em);
             ModelUpdateExecutor  executor = newUpdateExecutor(context);
 
             UpdateOneResult result = executor.partialUpdateOne(id, record);
-            if(null != result.entity) {
+            if (null != result.entity) {
                 return ApiResponse.of(result.entity);
             }
 

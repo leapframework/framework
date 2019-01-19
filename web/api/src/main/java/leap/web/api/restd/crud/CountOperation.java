@@ -51,16 +51,30 @@ public class CountOperation extends CrudOperationBase implements CrudOperation {
             return;
         }
 
-        String verb = "GET";
         String path = fullModelPath(c, model) + "/count";
+        String name = Strings.lowerCamel(NAME, model.getName());
 
-        FuncActionBuilder action = new FuncActionBuilder();
-        RouteBuilder      route  = rm.createRoute(verb, path);
+        createCrudOperation(c, context, model, path, name, null);
+    }
 
-        action.setName(Strings.lowerCamel(NAME, model.getName()));
+    public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model,
+                                    String path, String name, Callback callback) {
+
+        FuncActionBuilder action = new FuncActionBuilder(name);
+        RouteBuilder      route  = rm.createRoute("GET", path);
+
+        if (null != callback) {
+            callback.preAddArguments(action);
+        }
+
         action.setFunction(createFunction(context, model, action.getArguments().size()));
 
         addArgument(context, action, CountOptions.class, "options");
+
+        if (null != callback) {
+            callback.postAddArguments(action);
+        }
+
         addModelCountResponse(action, model);
 
         preConfigure(context, model, action);

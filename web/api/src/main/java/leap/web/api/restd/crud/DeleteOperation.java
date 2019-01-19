@@ -24,7 +24,6 @@ import leap.web.action.ActionParams;
 import leap.web.action.FuncActionBuilder;
 import leap.web.api.Api;
 import leap.web.api.config.ApiConfigurator;
-import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.ApiResponse;
 import leap.web.api.mvc.params.DeleteOptions;
@@ -51,21 +50,32 @@ public class DeleteOperation extends CrudOperationBase implements CrudOperation 
 
     @Override
     public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model) {
-        if(!context.getConfig().allowDeleteModel(model.getName())) {
+        if (!context.getConfig().allowDeleteModel(model.getName())) {
             return;
         }
 
-        String verb = "DELETE";
         String path = fullModelPath(c, model) + getIdPath(model);
+        String name = Strings.lowerCamel(NAME, model.getName());
 
-        FuncActionBuilder action = new FuncActionBuilder();
-        RouteBuilder      route  = rm.createRoute(verb, path);
+        createCrudOperation(c, context, model, path, name, null);
+    }
 
-        action.setName(Strings.lowerCamel(NAME, model.getName()));
+    public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model,
+                                    String path, String name, Callback callback) {
+        FuncActionBuilder action = new FuncActionBuilder(name);
+        RouteBuilder      route  = rm.createRoute("DELETE", path);
+
+        if (null != callback) {
+            callback.preAddArguments(action);
+        }
+
         action.setFunction(createFunction(context, model, action.getArguments().size()));
 
         addIdArguments(context, action, model);
         addOtherArguments(c, context, action, model);
+        if (null != callback) {
+            callback.postAddArguments(action);
+        }
         addNoContentResponse(action, model);
 
         preConfigure(context, model, action);
@@ -73,7 +83,7 @@ public class DeleteOperation extends CrudOperationBase implements CrudOperation 
         setCrudOperation(route, NAME);
         postConfigure(context, model, route);
 
-        if(isOperationExists(context, route)) {
+        if (isOperationExists(context, route)) {
             return;
         }
 
@@ -101,27 +111,27 @@ public class DeleteOperation extends CrudOperationBase implements CrudOperation 
         public Object apply(ActionParams params) {
             MApiModel am = api.getMetadata().getModel(model.getName());
 
-            ModelExecutorContext context = new SimpleModelExecutorContext(api, dao, am, em);
-            ModelDeleteExecutor executor = newDeleteExecutor(context);
+            ModelExecutorContext context  = new SimpleModelExecutorContext(api, dao, am, em);
+            ModelDeleteExecutor  executor = newDeleteExecutor(context);
 
             Object        id      = id(params);
             DeleteOptions options = cascadeDelete ? getWithId(params, 0) : null;
 
-            if(!cascadeDelete) {
+            if (!cascadeDelete) {
                 Request request = Request.tryGetCurrent();
                 String  param   = request.getParameter("cascade_delete");
-                if(!Strings.isEmpty(param) && Converts.toBoolean(param)) {
+                if (!Strings.isEmpty(param) && Converts.toBoolean(param)) {
                     throw new BadRequestException("Cascade delete not supported by this operation, check parameter 'cascade_delete'!");
                 }
             }
 
             DeleteOneResult result = executor.deleteOne(id, options);
-            if(null != result.entity) {
+            if (null != result.entity) {
                 return ApiResponse.of(result.entity);
-            }else {
-                if(result.success) {
+            } else {
+                if (result.success) {
                     return ApiResponse.NO_CONTENT;
-                }else {
+                } else {
                     throw new NotFoundException(am.getName() + " '" + id.toString() + "' not found");
                 }
             }

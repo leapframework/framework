@@ -46,19 +46,31 @@ public class CreateOperation extends CrudOperationBase implements CrudOperation 
 
     @Override
     public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model) {
-        if(!context.getConfig().allowCreateModel(model.getName())) {
+        if (!context.getConfig().allowCreateModel(model.getName())) {
             return;
         }
 
-        String verb = "POST";
         String path = fullModelPath(c, model);
+        String name = Strings.lowerCamel(NAME, model.getName());
 
-        FuncActionBuilder action = new FuncActionBuilder();
-        RouteBuilder      route  = rm.createRoute(verb, path);
+        createCrudOperation(c, context, model, path, name, null);
+    }
 
-        action.setName(Strings.lowerCamel(NAME, model.getName()));
+    public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model,
+                                    String path, String name, Callback callback) {
+
+        FuncActionBuilder action = new FuncActionBuilder(name);
+        RouteBuilder      route  = rm.createRoute("POST", path);
+
+        if (null != callback) {
+            callback.preAddArguments(action);
+        }
+
         action.setFunction(createFunction(context, model, action.getArguments().size()));
         addModelArgumentForCreate(context, action, model);
+        if (null != callback) {
+            callback.postAddArguments(action);
+        }
         addModelResponse(action, model).setStatus(201);
 
         preConfigure(context, model, action);
@@ -67,14 +79,15 @@ public class CreateOperation extends CrudOperationBase implements CrudOperation 
 
         postConfigure(context, model, route);
 
-        if(isOperationExists(context, route)) {
+        if (isOperationExists(context, route)) {
             return;
         }
 
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
+
     }
 
-    protected Function<ActionParams,Object> createFunction(RestdContext context, RestdModel model, int start) {
+    protected Function<ActionParams, Object> createFunction(RestdContext context, RestdModel model, int start) {
         return new CreateFunction(context.getApi(), context.getDao(), model, start);
     }
 
@@ -87,10 +100,10 @@ public class CreateOperation extends CrudOperationBase implements CrudOperation 
         public Object apply(ActionParams params) {
             MApiModel am = api.getMetadata().getModel(model.getName());
 
-            Map<String,Object> record = getWithoutId(params, 0);
+            Map<String, Object> record = getWithoutId(params, 0);
 
-            ModelExecutorContext context = new SimpleModelExecutorContext(api, dao, am, em);
-            ModelCreateExecutor executor = newCreateExecutor(context);
+            ModelExecutorContext context  = new SimpleModelExecutorContext(api, dao, am, em);
+            ModelCreateExecutor  executor = newCreateExecutor(context);
 
             CreateOneResult result = executor.createOne(record);
             return ApiResponse.created(result.entity);
