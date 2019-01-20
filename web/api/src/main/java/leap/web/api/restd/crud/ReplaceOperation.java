@@ -87,7 +87,7 @@ public class ReplaceOperation extends CrudOperationBase implements CrudOperation
             MApiModel am = am();
 
             Object              id     = id(params);
-            Map<String, Object> record = record(params);
+            Map<String, Object> record = recordWithId(params);
 
             ModelExecutorContext context  = new SimpleModelExecutorContext(api, dao, am, em, params);
             ModelUpdateExecutor  executor = newUpdateExecutor(context);

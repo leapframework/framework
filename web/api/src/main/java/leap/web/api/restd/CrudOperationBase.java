@@ -278,8 +278,8 @@ public abstract class CrudOperationBase extends RestdOperationBase {
             return params.get(start + index);
         }
 
-        protected final Map record(ActionParams params) {
-            return params.get(idLen);
+        protected final Map recordWithId(ActionParams params) {
+            return params.get(start + idLen);
         }
     }
 
