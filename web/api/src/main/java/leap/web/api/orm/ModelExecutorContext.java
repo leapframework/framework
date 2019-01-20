@@ -18,6 +18,8 @@ package leap.web.api.orm;
 
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
+import leap.web.action.ActionContext;
+import leap.web.action.ActionParams;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
@@ -49,6 +51,18 @@ public interface ModelExecutorContext {
      * Required.
      */
     EntityMapping getEntityMapping();
+
+    /**
+     * Optional.
+     */
+    ActionParams getActionParams();
+
+    /**
+     * Optional
+     */
+    default ActionContext getActionContext() {
+        return null == getActionParams() ? null : getActionParams().getContext();
+    }
 
     /**
      * Returns the {@link RestResourceFactory}

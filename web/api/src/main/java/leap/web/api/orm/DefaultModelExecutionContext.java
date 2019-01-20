@@ -19,6 +19,7 @@ package leap.web.api.orm;
 import leap.lang.accessor.MapAttributeAccessor;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
+import leap.web.action.ActionParams;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
@@ -55,6 +56,11 @@ public class DefaultModelExecutionContext extends MapAttributeAccessor implement
     @Override
     public EntityMapping getEntityMapping() {
         return context.getEntityMapping();
+    }
+
+    @Override
+    public ActionParams getActionParams() {
+        return context.getActionParams();
     }
 
     @Override

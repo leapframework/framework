@@ -18,6 +18,7 @@ package leap.web.api.orm;
 
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
+import leap.web.action.ActionParams;
 import leap.web.api.Api;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.ApiMetadata;
@@ -31,6 +32,7 @@ public class SimpleModelExecutorContext implements ModelExecutorContext {
     protected MApiModel           apiModel;
     protected Dao                 dao;
     protected EntityMapping       entityMapping;
+    protected ActionParams        actionParams;
     protected RestResourceFactory restResourceFactory;
 
     public SimpleModelExecutorContext(Api api, Dao dao, MApiModel am, EntityMapping em) {
@@ -38,11 +40,20 @@ public class SimpleModelExecutorContext implements ModelExecutorContext {
     }
 
     public SimpleModelExecutorContext(ApiConfig ac, ApiMetadata md, Dao dao, MApiModel am, EntityMapping em) {
+        this(ac, md, dao, am, em, null);
+    }
+
+    public SimpleModelExecutorContext(Api api, Dao dao, MApiModel am, EntityMapping em, ActionParams params) {
+        this(api.getConfig(), api.getMetadata(), dao, am, em, params);
+    }
+
+    public SimpleModelExecutorContext(ApiConfig ac, ApiMetadata md, Dao dao, MApiModel am, EntityMapping em, ActionParams params) {
         this.ac = ac;
         this.amd = md;
         this.apiModel = am;
         this.dao = dao;
         this.entityMapping = em;
+        this.actionParams = params;
     }
 
     @Override
@@ -72,6 +83,11 @@ public class SimpleModelExecutorContext implements ModelExecutorContext {
     @Override
     public EntityMapping getEntityMapping() {
         return entityMapping;
+    }
+
+    @Override
+    public ActionParams getActionParams() {
+        return actionParams;
     }
 
     @Override

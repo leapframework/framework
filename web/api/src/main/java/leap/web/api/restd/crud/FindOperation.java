@@ -101,7 +101,7 @@ public class FindOperation extends CrudOperationBase implements CrudOperation {
         public Object apply(ActionParams params) {
             MApiModel am = am();
 
-            ModelExecutorContext context  = new SimpleModelExecutorContext(api, dao, am, em);
+            ModelExecutorContext context  = new SimpleModelExecutorContext(api, dao, am, em, params);
             ModelQueryExecutor   executor = newQueryExecutor(context);
 
             Object           id      = id(params);

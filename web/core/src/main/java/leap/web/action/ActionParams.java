@@ -24,6 +24,11 @@ import java.util.Map;
 public interface ActionParams extends NamedGetter,IndexedGetter {
 
     /**
+     * Returns the action context.
+     */
+    ActionContext getContext();
+
+    /**
      * Returns the action arguments.
      */
     Argument[] getArguments();
