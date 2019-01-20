@@ -112,9 +112,9 @@ public class ModelQueryExtension implements ModelQueryInterceptor {
     }
 
     @Override
-    public List<Record> executeQueryList(ModelExecutionContext context, QueryOptions options, PageResult page) {
+    public List<Record> executeQueryList(ModelExecutionContext context, QueryOptions options, CriteriaQuery<Record> query) {
         for(ModelQueryInterceptor interceptor : interceptors) {
-            List<Record> list = interceptor.executeQueryList(context, options, page);
+            List<Record> list = interceptor.executeQueryList(context, options, query);
             if(null != list) {
                 return list;
             }

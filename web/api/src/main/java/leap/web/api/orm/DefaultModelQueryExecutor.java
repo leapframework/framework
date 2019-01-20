@@ -238,7 +238,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
 
         PageResult page = query.pageResult(options.getPage(ac.getDefaultPageSize()));
-        list = ex.executeQueryList(context, options, page);
+        list = ex.executeQueryList(context, options, query);
         if(null == list){
             list = page.list();
         }

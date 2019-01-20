@@ -56,6 +56,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     protected String[]                 selects;
     protected String                   where;
     protected ArrayParams              whereParameters;
+    protected Object[]                 whereExtraArgs;
     protected StringBuilder            joinByIdWhere;
     protected List                     joinByIdArgs;
     protected boolean                  distinct;
@@ -526,21 +527,33 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
     @Override
     public CriteriaQuery<T> whereAnd(String expr) {
+        return whereAnd(expr, null);
+    }
+
+    @Override
+    public CriteriaQuery<T> whereAnd(String expr, Object... args) {
         if(Strings.isEmpty(where)) {
             where = expr;
         }else {
             where = "(" + where + ") and (" + expr + ")";
         }
+        this.whereExtraArgs = args;
         return this;
     }
 
     @Override
     public CriteriaQuery<T> whereOr(String expr) {
+        return whereOr(expr, null);
+    }
+
+    @Override
+    public CriteriaQuery<T> whereOr(String expr, Object... args) {
         if(Strings.isEmpty(where)) {
             where = expr;
         }else {
             where = "(" + where + ") or (" + expr + ")";
         }
+        this.whereExtraArgs = args;
         return this;
     }
 
@@ -748,19 +761,33 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     }
 
     protected Object[] args() {
-        if (null == whereParameters && null == joinByIdWhere) {
+        Object[] whereArgs = whereArgs();
+        if (null == whereArgs && null == joinByIdWhere) {
             return null;
         }
 
-        if (null != whereParameters && null == joinByIdArgs) {
-            return whereParameters.array();
+        if (null != whereArgs && null == joinByIdArgs) {
+            return whereArgs;
         }
 
-        if (null == whereParameters && null != joinByIdArgs) {
+        if (null == whereArgs && null != joinByIdArgs) {
             return joinByIdArgs.toArray(Arrays2.EMPTY_OBJECT_ARRAY);
         }
 
-        return Arrays2.concat(whereParameters.array(), joinByIdArgs.toArray(Arrays2.EMPTY_OBJECT_ARRAY));
+        return Arrays2.concat(whereArgs, joinByIdArgs.toArray(Arrays2.EMPTY_OBJECT_ARRAY));
+    }
+
+    protected Object[] whereArgs() {
+        if(null == whereParameters && whereExtraArgs == null) {
+            return null;
+        }
+        if(null == whereParameters) {
+            return whereExtraArgs;
+        }
+        if(null == whereExtraArgs) {
+            return whereParameters.array();
+        }
+        return Arrays2.concat(whereParameters.array(), whereExtraArgs);
     }
 
     protected SqlStatement buildQueryStatement(QueryContext qc) {

@@ -54,7 +54,7 @@ public interface ModelQueryInterceptor {
         return false;
     }
 
-    default List<Record> executeQueryList(ModelExecutionContext context, QueryOptions options, PageResult page) {
+    default List<Record> executeQueryList(ModelExecutionContext context, QueryOptions options, CriteriaQuery<Record> query) {
         return null;
     }
 
