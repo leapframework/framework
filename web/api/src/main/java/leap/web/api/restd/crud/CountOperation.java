@@ -102,7 +102,7 @@ public class CountOperation extends CrudOperationBase implements CrudOperation {
         public Object apply(ActionParams params) {
             MApiModel am = am();
 
-            ModelExecutorContext context  = new SimpleModelExecutorContext(api, dao, am, em);
+            ModelExecutorContext context  = new SimpleModelExecutorContext(api, dao, am, em, params);
             ModelQueryExecutor   executor = newQueryExecutor(context);
 
             CountOptions options = getWithoutId(params, 0);

@@ -102,7 +102,7 @@ public class CreateOperation extends CrudOperationBase implements CrudOperation 
 
             Map<String, Object> record = getWithoutId(params, 0);
 
-            ModelExecutorContext context  = new SimpleModelExecutorContext(api, dao, am, em);
+            ModelExecutorContext context  = new SimpleModelExecutorContext(api, dao, am, em, params);
             ModelCreateExecutor  executor = newCreateExecutor(context);
 
             CreateOneResult result = executor.createOne(record);
