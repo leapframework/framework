@@ -83,26 +83,26 @@ public class ScelParser extends AbstractStringParser {
 
         nextChar();
 
-        for(;;) {
-            if(eof()) {
+        for (; ; ) {
+            if (eof()) {
                 break;
             }
 
-            if(isWhitespace()) {
+            if (isWhitespace()) {
                 nextChar();
                 continue;
             }
 
             switch (ch) {
 
-                case '(' :
+                case '(':
                     parens++;
                     nodes.add(LPAREN);
                     nextChar();
                     break;
 
-                case ')' :
-                    if(parens == 0) {
+                case ')':
+                    if (parens == 0) {
                         error("Illegal char ')'");
                     }
 
@@ -112,13 +112,13 @@ public class ScelParser extends AbstractStringParser {
                     break;
 
                 default:
-                    if(andOr) {
+                    if (andOr) {
                         scanAndOr();
                         andOr = false;
                         break;
                     }
 
-                    if(scanName()) {
+                    if (scanName()) {
                         if (scanOperator()) {
                             scanValue();
                         }
@@ -127,7 +127,7 @@ public class ScelParser extends AbstractStringParser {
             }
         }
 
-        if(parens > 0) {
+        if (parens > 0) {
             error("Unclosed expression, ')' required");
         }
 
@@ -138,15 +138,15 @@ public class ScelParser extends AbstractStringParser {
         String alias = null;
         String name  = scanIdentifier(true);
 
-        if(name.equalsIgnoreCase("not")) {
+        if (name.equalsIgnoreCase("not")) {
             nodes.add(new ScelNode(ScelToken.NOT, name));
             return false;
         }
 
-        if(ch == '.') {
+        if (ch == '.') {
             nextChar();
             alias = name;
-            name  = scanIdentifier(false);
+            name = scanIdentifier(false);
         }
 
         nodes.add(new ScelName(alias, name));
@@ -156,11 +156,11 @@ public class ScelParser extends AbstractStringParser {
     private boolean scanOperator() {
         skipWhitespaces();
 
-        if(eof()) {
+        if (eof()) {
             error("Expected operator, but eof");
         }
 
-        if(ch == ':') {
+        if (ch == ':') {
             nodes.add(EQ);
             nextChar();
             return true;
@@ -169,19 +169,19 @@ public class ScelParser extends AbstractStringParser {
         String op = nextLiteral();
 
         ScelToken token = OPS.get(op.toUpperCase());
-        if(null == token) {
+        if (null == token) {
             error("Invalid operator '" + op + "'");
         }
 
-        if(token == ScelToken.NOT) {
+        if (token == ScelToken.NOT) {
             nodes.add(new ScelNode(ScelToken.IS_NOT, op));
             String s = nextLiteral();
-            if(!s.equalsIgnoreCase("null")) {
+            if (!s.equalsIgnoreCase("null")) {
                 error("Expected 'null' but '" + s + "'");
             }
             nodes.add(new ScelNode(ScelToken.NULL, s));
             return false;
-        } else if(token == ScelToken.IS) {
+        } else if (token == ScelToken.IS) {
             String s = nextLiteral();
             if (s.equalsIgnoreCase("not")) {
                 nodes.add(new ScelNode(ScelToken.IS_NOT, op + " " + s));
@@ -199,7 +199,7 @@ public class ScelParser extends AbstractStringParser {
                 }
                 error("Unexpected literal '" + s + "' after IS");
             }
-        } else if(token == ScelToken.IN) {
+        } else if (token == ScelToken.IN) {
             nodes.add(new ScelNode(token, op));
             scanInValue();
             return false;
@@ -207,62 +207,113 @@ public class ScelParser extends AbstractStringParser {
             nodes.add(new ScelNode(token, op));
         }
 
-        if(token == ScelToken.PR) {
+        if (token == ScelToken.PR) {
             return false;
         }
 
         return true;
     }
 
-    private void scanInValue() {
+    private String scanInValues(List<ScelNode> values) {
+        int start = pos;
+
         skipWhitespaces();
 
-        int start = pos;
-        String s  = null;
-
-        if(ch == '(') {
-            for(;;) {
-                nextChar();
-
-                if(eof()) {
-                    error("Unclosed in value, expected ')'");
-                }
-
-                if(ch == ')') {
-                    s = substring(start + 1, pos).trim();
-                    nextChar();
-                    break;
-                }
-            }
-        }else {
-            for(;;) {
-                nextChar();
-
-                if(ch == ',') {
-                    nextChar();
-                    skipWhitespaces();
-                    continue;
-                }
-
-                if(eof() || isWhitespace()) {
-                    s = substring(start, pos).trim();
-                    break;
-                }
-            }
+        if (ch == '(') {
+            nextChar();
+            scanInValues(values, true);
+            return substring(start, pos);
+        } else {
+            scanInValues(values, false);
+            return substring(start, pos);
         }
-
-        String[] parts = Strings.split(s, ',');
-        for(int i=0;i<parts.length;i++) {
-            String part = parts[i];
-            if(part.startsWith("'") && part.endsWith("'")) {
-                parts[i] = part.substring(1, part.length()-1);
-            }
-        }
-
-        nodes.add(new ScelNode(ScelToken.VALUE, Strings.join(parts, ',')));
     }
 
-    private void scanValue() {
+    private void scanInValue() {
+        List<ScelNode> values  = new ArrayList<>();
+        String         literal = scanInValues(values).trim();
+        nodes.add(new ScelNode(ScelToken.VALUE, literal, values));
+    }
+
+    private void scanInValues(List<ScelNode> values, boolean close) {
+        for (; ; ) {
+            skipWhitespaces();
+
+            if (ch == ',') {
+                nextChar();
+                continue;
+            }
+
+            if (close && ch == ')') {
+                nextChar();
+                break;
+            }
+
+            if (values.size() > 0 && (eof() || isWhitespace())) {
+                break;
+            }
+
+            values.add(scanInValueNode(close));
+        }
+    }
+
+    private ScelNode scanInValueNode(boolean close) {
+        StringBuilder s = new StringBuilder();
+
+        boolean quoted     = false;
+        char    quotedChar = 0x0000;
+
+        if (ch == '\'' || ch == '\"') {
+            quoted = true;
+            quotedChar = ch;
+        }else {
+            s.append(ch);
+        }
+
+        for (;;) {
+            nextChar();
+
+            if(ch == '\\') {
+                nextChar();
+                s.append(ch);
+                continue;
+            }
+
+            if(!quoted) {
+                if (ch == ',') {
+                    break;
+                }
+
+                if (close && ch == ')') {
+                    break;
+                }
+
+                if(eof()) {
+                    break;
+                }
+            }else {
+                if(eof()) {
+                    error("Unclosed in value");
+                }
+            }
+
+            if(ch == quotedChar) {
+                nextChar();
+                break;
+            }
+
+            s.append(ch);
+        }
+
+        String value = s.toString().trim();
+        if (!Strings.equalsIgnoreCase(ScelToken.NULL.name(), value)) {
+            return new ScelNode(ScelToken.VALUE, value, quoted);
+        } else {
+            return new ScelNode(ScelToken.NULL, "null");
+        }
+    }
+
+    private ScelNode scanValueOnly() {
         skipWhitespaces();
 
         int start = pos;
@@ -271,25 +322,25 @@ public class ScelParser extends AbstractStringParser {
         boolean quoted     = false;
         char    quotedChar = 0x0000;
 
-        if(ch == '\'' || ch == '\"') {
-            start  = pos + 1;
+        if (ch == '\'' || ch == '\"') {
+            start = pos + 1;
             quoted = true;
             quotedChar = ch;
         }
 
-        for(;;) {
+        for (; ; ) {
             nextChar();
 
             //handles ' character
-            if(ch == quotedChar) {
+            if (ch == quotedChar) {
                 //escaped ''
-                if(charAt(pos+1) == quotedChar) {
+                if (charAt(pos + 1) == quotedChar) {
                     nextChar();
                     continue;
                 }
 
                 //end string value
-                if(quoted){
+                if (quoted) {
                     end = pos;
                     nextChar();
                     break;
@@ -299,37 +350,44 @@ public class ScelParser extends AbstractStringParser {
                 error("Invalid character [" + quoted + "], should use [" + quotedChar + quotedChar + "] instead");
             }
 
-            if(ch == '(' && charAt(pos+1) == ')') {
+            if (ch == '(' && charAt(pos + 1) == ')') {
                 nextChar();
                 nextChar();
                 end = pos;
                 break;
             }
 
-            if(quoted) {
-                if(eof()) {
+            if (quoted) {
+                if (eof()) {
                     error("Unclosed string value");
                 }
-            }else if(isWhitespace() || eof() || ch == '(' || ch == ')') {
+            } else if (isWhitespace() || eof() || ch == '(' || ch == ')') {
                 end = pos;
                 break;
             }
         }
 
         String value = Strings.replace(substring(start, end), "''", "'");
-        if(!Strings.equals(ScelToken.NULL.name(),value.toUpperCase())){
-            ScelToken last = nodes.get(nodes.size()-1).token;
-            if(last == ScelToken.IS_NOT || last == ScelToken.IS){
-                error("Invalid value of operation '" + last + "', it must be null");
-            }
-            nodes.add(new ScelNode(ScelToken.VALUE, value, quoted));
-        }else {
-            nodes.add(new ScelNode(ScelToken.NULL, "null"));
+        if (!Strings.equals(ScelToken.NULL.name(), value.toUpperCase())) {
+            return new ScelNode(ScelToken.VALUE, value, quoted);
+        } else {
+            return new ScelNode(ScelToken.NULL, "null");
         }
     }
 
+    private void scanValue() {
+        ScelNode node = scanValueOnly();
+        if (!node.isNull()) {
+            ScelToken last = nodes.get(nodes.size() - 1).token;
+            if (last == ScelToken.IS_NOT || last == ScelToken.IS) {
+                error("Invalid value of operation '" + last + "', it must be null");
+            }
+        }
+        nodes.add(node);
+    }
+
     private void scanAndOr() {
-        if(ch == ',') {
+        if (ch == ',') {
             nodes.add(AND);
             nextChar();
             return;
@@ -337,11 +395,11 @@ public class ScelParser extends AbstractStringParser {
 
         String s = nextLiteral();
 
-        if(s.equalsIgnoreCase("and")) {
+        if (s.equalsIgnoreCase("and")) {
             nodes.add(new ScelNode(ScelToken.AND, s));
-        }else if(s.equalsIgnoreCase("or")) {
+        } else if (s.equalsIgnoreCase("or")) {
             nodes.add(new ScelNode(ScelToken.OR, s));
-        }else{
+        } else {
             error("Expect 'AND' or 'OR' operator but was '" + s + "'");
         }
     }
@@ -351,25 +409,25 @@ public class ScelParser extends AbstractStringParser {
 
         int start = pos;
 
-        for(;;) {
+        for (; ; ) {
             nextChar();
 
-            if(dot && ch == '.') {
+            if (dot && ch == '.') {
                 break;
             }
 
-            if(ch == ':' || isWhitespace() || eof()) {
+            if (ch == ':' || isWhitespace() || eof()) {
                 break;
             }
 
-            if(!isIdentifierChar(ch)) {
+            if (!isIdentifierChar(ch)) {
                 error("Illegal identifier char '" + ch + "'");
             }
         }
 
         String s = substring(start, pos);
 
-        if(s.isEmpty()) {
+        if (s.isEmpty()) {
             error("Unexpected eof");
         }
 
@@ -381,21 +439,21 @@ public class ScelParser extends AbstractStringParser {
 
         int start = pos;
 
-        for(;;) {
+        for (; ; ) {
             nextChar();
 
-            if(isWhitespace() || ch == ')' || eof()) {
+            if (isWhitespace() || ch == ')' || eof()) {
                 break;
             }
 
-//            if(!isIdentifierChar(ch)) {
-//                error("Illegal identifier char '" + ch + "'");
-//            }
+            //            if(!isIdentifierChar(ch)) {
+            //                error("Illegal identifier char '" + ch + "'");
+            //            }
         }
 
         String s = substring(start, pos);
 
-        if(s.isEmpty()) {
+        if (s.isEmpty()) {
             error("Unexpected eof");
         }
 

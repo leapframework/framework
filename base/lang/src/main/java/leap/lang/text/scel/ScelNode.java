@@ -16,19 +16,31 @@
 
 package leap.lang.text.scel;
 
+import java.util.List;
+
 public class ScelNode {
-    protected final ScelToken token;
-    protected final String    literal;
-    protected final boolean   quoted;
+    protected final ScelToken      token;
+    protected final String         literal;
+    protected final boolean        quoted;
+    protected final List<ScelNode> values;
 
     public ScelNode(ScelToken token, String literal) {
         this(token, literal, false);
     }
 
+    public ScelNode(ScelToken token, String literal, List<ScelNode> values) {
+        this(token, literal, false, values);
+    }
+
     public ScelNode(ScelToken token, String literal, boolean quoted) {
+        this(token, literal, quoted, null);
+    }
+
+    public ScelNode(ScelToken token, String literal, boolean quoted, List<ScelNode> values) {
         this.token = token;
         this.literal = literal;
         this.quoted = quoted;
+        this.values  = values;
     }
 
     public ScelToken token() {
@@ -37,6 +49,10 @@ public class ScelNode {
 
     public String literal() {
         return literal;
+    }
+
+    public List<ScelNode> values() {
+        return values;
     }
 
     public boolean isQuoted() {
@@ -53,5 +69,9 @@ public class ScelNode {
 
     public boolean isOr() {
         return token == ScelToken.OR;
+    }
+
+    public boolean isNull() {
+        return token == ScelToken.NULL;
     }
 }

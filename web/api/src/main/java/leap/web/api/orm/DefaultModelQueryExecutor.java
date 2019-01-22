@@ -1140,7 +1140,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                             String valueExpr = "#{env." + value.substring(0, value.length() - 2) + "}";
                             applyFieldFilterExpr(expr, alias, modelAndProp.field, valueExpr, sqlOperator);
                         } else if (op == ScelToken.IN) {
-                            applyFieldFilterIn(expr, alias, modelAndProp.field, Strings.split(value, ','));
+                            applyFieldFilterIn(expr, alias, modelAndProp.field, nodes[i].values());
                         } else {
                             applyFieldFilter(expr, alias, modelAndProp.field, value, sqlOperator);
                         }
@@ -1225,6 +1225,24 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
     protected void applyFieldFilterIn(WhereBuilder.Expr expr, String alias, FieldMapping fm, String[] values) {
         expr.append(alias).append('.').append(fm.getFieldName()).append(' ').append("in").append(" ?");
         expr.arg(Converts.convert(values, Array.newInstance(((FieldMapping) fm).getJavaType(), 0).getClass()));
+    }
+
+    protected void applyFieldFilterIn(WhereBuilder.Expr expr, String alias, FieldMapping fm, List<ScelNode> values) {
+        expr.append(alias).append('.').append(fm.getFieldName()).append(' ').append("in").append(" ?");
+
+        final Class<?> type = ((FieldMapping) fm).getJavaType();
+
+        Object[] args = new Object[values.size()];
+        for(int i=0;i<args.length;i++) {
+            ScelNode value = values.get(i);
+            if(ScelToken.NULL == value.token()) {
+                args[i] = null;
+            }else {
+                args[i] = Converts.convert(value.literal(), type);
+            }
+        }
+
+        expr.arg(args);
     }
 
     protected String toSqlOperator(ScelToken op) {
