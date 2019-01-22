@@ -72,6 +72,17 @@ abstract class SqlQueryParser extends SqlParser {
 
                 expect(Token.RPAREN).acceptText();
 
+                if (null == query.getFrom() && query.getTableSources().size() == 1) {
+                    SqlTableSource ts = query.getTableSources().get(0);
+                    if(ts instanceof SqlSelect) {
+                        SqlSelect ss = (SqlSelect)ts;
+                        ss.setAlias(parseTableAlias());
+                    }
+                }else if(query.getFrom() instanceof SqlSelect) {
+                    SqlSelect ss = (SqlSelect)query.getFrom();
+                    ss.setAlias(parseTableAlias());
+                }
+
                 return null;
             }
         }else {
@@ -276,6 +287,10 @@ abstract class SqlQueryParser extends SqlParser {
 	}
 	
 	protected String parseTableAlias(){
+        if(lexer.token() == Token.RPAREN) {
+            return null;
+        }
+
 		if(lexer.token() == Token.AS){
             return acceptAlias();
 		}
@@ -305,6 +320,10 @@ abstract class SqlQueryParser extends SqlParser {
             expect(Token.LPAREN).acceptText();
             parseRestForClosingParen();
             expect(Token.RPAREN).acceptText();
+
+            if(lexer.token() == Token.FROM) {
+                return;
+            }
 
             if(lexer.token().isKeywordOrIdentifier() && lexer.peekCharSkipWhitespaces() == '(') {
                 acceptText();
