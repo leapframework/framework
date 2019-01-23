@@ -24,9 +24,19 @@ public class SpringPropertyResolver implements PropertyResolver {
     @Inject
     protected org.springframework.core.env.PropertyResolver propertyResolver;
 
+    protected PropertyResolver mockResolver;
+
+    public void setMockResolver(PropertyResolver mockResolver) {
+        this.mockResolver = mockResolver;
+    }
+
     @Override
     public String resolvePlaceholders(String s) {
-        return propertyResolver.resolvePlaceholders(s);
+        if(null == propertyResolver) {
+            return null == mockResolver ? s : mockResolver.resolvePlaceholders(s);
+        }else {
+            return propertyResolver.resolvePlaceholders(s);
+        }
     }
 
 }

@@ -20,8 +20,9 @@ import leap.core.spring.ExpressionFactory;
 import leap.core.variable.VariableEnvironment;
 import leap.lang.annotation.Init;
 import leap.lang.expression.Expression;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.expression.*;
 import org.springframework.expression.spel.SpelCompilerMode;
@@ -29,10 +30,11 @@ import org.springframework.expression.spel.SpelParserConfiguration;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
-import javax.annotation.PostConstruct;
 import java.util.Map;
 
 public class SpringExpressionFactory implements ExpressionFactory<org.springframework.expression.Expression> {
+
+    private static final Log log = LogFactory.get(SpringExpressionFactory.class);
 
     @Inject
     protected VariableEnvironment env;
@@ -46,6 +48,11 @@ public class SpringExpressionFactory implements ExpressionFactory<org.springfram
 
     @Init
     public void init() {
+        if (null == beanFactory) {
+            log.error("Spring context not found, can't use spring expression factory");
+            return;
+        }
+
         SpelParserConfiguration c = new SpelParserConfiguration(SpelCompilerMode.IMMEDIATE, this.getClass().getClassLoader());
         spelParser = new SpelExpressionParser(c);
 
@@ -65,14 +72,14 @@ public class SpringExpressionFactory implements ExpressionFactory<org.springfram
         boolean template;
 
         int index = expr.indexOf("#{");
-        if(index < 0) {
+        if (index < 0) {
             template = false;
-        }else if(index > 0) {
+        } else if (index > 0) {
             template = true;
-        }else if(index == 0 && expr.endsWith("}") && expr.indexOf("#{", 2) < 0) {
+        } else if (index == 0 && expr.endsWith("}") && expr.indexOf("#{", 2) < 0) {
             template = false;
-            expr     = expr.substring(2, expr.length() - 1);
-        }else {
+            expr = expr.substring(2, expr.length() - 1);
+        } else {
             template = true;
         }
 
@@ -103,7 +110,7 @@ public class SpringExpressionFactory implements ExpressionFactory<org.springfram
         @Override
         public TypedValue read(EvaluationContext context, Object target, String name) throws AccessException {
             Object value = env.resolveVariable(name);
-            if(null == value && !env.checkVariableExists(name)) {
+            if (null == value && !env.checkVariableExists(name)) {
                 throw new AccessException("Environment variable 'env." + name + "' not exists!");
             }
             return null == value ? TypedValue.NULL : new TypedValue(value);
@@ -136,12 +143,12 @@ public class SpringExpressionFactory implements ExpressionFactory<org.springfram
 
         @Override
         public TypedValue read(EvaluationContext context, Object target, String name) throws AccessException {
-            Map map = (Map)target;
+            Map map = (Map) target;
 
             Object value;
-            if(map.containsKey(name)) {
+            if (map.containsKey(name)) {
                 value = map.get(name);
-            }else {
+            } else {
                 value = getIgnoreCase(map, name);
             }
             return null == value ? TypedValue.NULL : new TypedValue(value);
@@ -154,13 +161,13 @@ public class SpringExpressionFactory implements ExpressionFactory<org.springfram
 
         @Override
         public void write(EvaluationContext context, Object target, String name, Object newValue) throws AccessException {
-            ((Map)target).put(name, newValue);
+            ((Map) target).put(name, newValue);
         }
 
-        protected Object getIgnoreCase(Map<?,?> map, String name) throws AccessException {
-            for(Map.Entry entry : map.entrySet()) {
+        protected Object getIgnoreCase(Map<?, ?> map, String name) throws AccessException {
+            for (Map.Entry entry : map.entrySet()) {
                 Object key = entry.getKey();
-                if(key instanceof String && name.equalsIgnoreCase((String)key)) {
+                if (key instanceof String && name.equalsIgnoreCase((String) key)) {
                     return entry.getValue();
                 }
             }
