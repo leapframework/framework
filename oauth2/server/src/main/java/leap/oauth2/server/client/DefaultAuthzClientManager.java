@@ -16,6 +16,7 @@
 package leap.oauth2.server.client;
 
 import leap.core.annotation.Inject;
+import leap.core.security.ClientPrincipal;
 import leap.oauth2.server.OAuth2AuthzServerConfig;
 
 import static leap.oauth2.server.OAuth2Errors.*;
@@ -54,4 +55,15 @@ public class DefaultAuthzClientManager implements AuthzClientManager {
 	    return config.getClientStore().loadClient(clientId);
     }
 
+    @Override
+    public AuthzClient loadClientByPrincipal(ClientPrincipal principal) {
+        if(null == principal){
+            return null;
+        }
+        if (principal instanceof AuthzClient){
+            return (AuthzClient) principal;
+        }else {
+            return loadClientById(principal.getIdAsString());
+        }
+    }
 }
