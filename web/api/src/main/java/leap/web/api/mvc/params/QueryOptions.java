@@ -44,7 +44,7 @@ public class QueryOptions extends QueryOptionsBase {
         this.pageSize = pageSize;
     }
 
-    public void setPage_Size(Integer pageSize) {
+    public void setPage_size(Integer pageSize) {
         this.pageSize = pageSize;
     }
 

@@ -65,13 +65,13 @@ public class ScelCondTest extends TestBase {
         assertEquals("a in 1,2", expr.toString());
 
         expr = ScelParser.parse("a in 1, 2");
-        assertEquals("a in 1,2", expr.toString());
+        assertEquals("a in 1, 2", expr.toString());
 
         expr = ScelParser.parse("a in (1,2)");
-        assertEquals("a in 1,2", expr.toString());
+        assertEquals("a in (1,2)", expr.toString());
 
         expr = ScelParser.parse("a in ('1','2')");
-        assertEquals("a in 1,2", expr.toString());
+        assertEquals("a in ('1','2')", expr.toString());
     }
 
     @Test
