@@ -48,14 +48,14 @@ public class VarbinaryModelTest extends OrmTestCase {
         assertEquals(3, records.size());
 
         Record record0 = records.get(0);
-        assertEquals("0", record0.get("b"));
+        assertEquals("0", String.valueOf(record0.get("b")));
 
         Record record1 = records.get(1);
-        assertEquals("0", record1.get("b"));
+        assertEquals("0", String.valueOf(record1.get("b")));
         assertEquals("abcd", record1.get("s"));
 
         Record record2 = records.get(2);
-        assertEquals("1", record2.get("b"));
+        assertEquals("1", String.valueOf(record2.get("b")));
         // TODO how to process?
         //assertEquals("bcd中文", record2.get("s"));
     }

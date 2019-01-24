@@ -131,6 +131,11 @@ public class MySql5Dialect extends GenericDbDialect {
     }
 
     @Override
+    public String qualifySchemaObjectName(String catalog, String schema, String name) {
+        return super.qualifySchemaObjectName(null, schema, name);
+    }
+
+    @Override
     public String readDefaultValue(int typeCode, String nativeDefaultValue) {
         // MySQL converts illegal date/time/timestamp values to "0000-00-00 00:00:00", but this
         // is an illegal ISO value, so we replace it with NULL

@@ -17,13 +17,13 @@
     </bean>
     -->
 
-    <!-- 
     <bean name="mysql" type="javax.sql.DataSource" class="leap.core.ds.UnPooledDataSource">
         <property name="driverClassName" value="com.mysql.jdbc.Driver" />
-        <property name="jdbcUrl"         value="jdbc:mysql://localhost:3306/test" />
+        <property name="jdbcUrl"         value="jdbc:mysql://localhost:3306/test?rewriteBatchedStatements=true" />
         <property name="username"        value="root" />
         <property name="password"        value="root" />
     </bean>
+    <!--
     
     <bean name="mariadb" type="javax.sql.DataSource" class="leap.core.ds.UnPooledDataSource">
         <property name="driverClassName" value="org.mariadb.jdbc.Driver" />
