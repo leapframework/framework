@@ -87,6 +87,20 @@ public interface Authentication {
     void setPermissions(String... permissions);
 
     /**
+     * Same as {@link #getPermissions()}
+     */
+    default String[] getScopes(){
+        return getPermissions();
+    }
+
+    /**
+     * Same as {@link #setPermissions(String...)}
+     */
+    default void setScopes(String... scopes) {
+        setPermissions(scopes);
+    }
+
+    /**
      * Returns the granted roles.
      */
     String[] getRoles();
