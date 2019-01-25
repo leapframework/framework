@@ -395,7 +395,7 @@ public interface DbDialect {
 	 * <p>
 	 * index starts from 1
 	 */
-	void setParameter(PreparedStatement ps,int index,Object value) throws SQLException;
+	int setParameter(PreparedStatement ps,int index,Object value) throws SQLException;
 	
 	/**
 	 * Sets the given parameter value for the given {@link PreparedStatement}.
@@ -404,7 +404,7 @@ public interface DbDialect {
 	 * @param index starts from 1
 	 * @param type JDBC type of the given parameter, may be {@link JdbcTypes#UNKNOWN_TYPE_CODE}.
 	 */
-	void setParameter(PreparedStatement ps,int index,Object value,int type) throws SQLException;
+	int setParameter(PreparedStatement ps,int index,Object value,int type) throws SQLException;
 	
 	/**
 	 * Returns the value of the column in the given {@link ResultSet} of the given index.

@@ -470,7 +470,7 @@ public class GenericDb extends DbBase {
 			if(null == ps){
 				ps = dialect.createPreparedStatement(connection, sql);
 			}
-			
+
 			for(int j=0;j<batchArgs.length;j++){
 				Object[] args  = batchArgs[j];
 				
@@ -480,8 +480,9 @@ public class GenericDb extends DbBase {
 							dialect.setParameter(ps, i+1, args[i],types[i]);
 						}
 					}else{
+						types = new int[args.length];
 						for(int i=0;i<args.length;i++){
-							dialect.setParameter(ps, i+1, args[i]);
+							types[i] = dialect.setParameter(ps, i+1, args[i]);
 						}
 					}
 				}

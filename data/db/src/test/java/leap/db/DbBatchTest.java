@@ -20,13 +20,11 @@ import leap.core.security.annotation.Ignore;
 import leap.db.model.DbColumnBuilder;
 import leap.db.model.DbTableBuilder;
 import leap.junit.contexual.Contextual;
-import leap.lang.Randoms;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.time.StopWatch;
 import org.junit.Test;
 
-import java.sql.PreparedStatement;
 import java.util.UUID;
 
 public class DbBatchTest extends DbTestCase {
@@ -37,10 +35,10 @@ public class DbBatchTest extends DbTestCase {
     @Test
     @Contextual("mysql")
     public void testMySQLBatchInsert() {
-        if(!db.checkTableExists("t_batch")) {
+        if (!db.checkTableExists("t_batch")) {
             DbTableBuilder table = new DbTableBuilder("t_batch");
             table.addColumn(DbColumnBuilder.guid("id").primaryKey());
-            for(int i=1;i<=10;i++) {
+            for (int i = 1; i <= 10; i++) {
                 table.addColumn(DbColumnBuilder.varchar("c" + i, 100));
             }
             db.cmdCreateTable(table.build()).execute();
@@ -50,21 +48,22 @@ public class DbBatchTest extends DbTestCase {
         //add ?rewriteBatchedStatements=true at jdbc url to improves performance
 
         Object[][] rows = new Object[count][];
-        for(int i=0;i<count;i++) {
+        for (int i = 0; i < count; i++) {
             Object[] row = new Object[11];
             row[0] = UUID.randomUUID().toString();
-            for(int j=1;j<=10;j++) {
-                row[j] = Randoms.nextString(5, 50);
+            for (int j = 1; j <= 10; j++) {
+                row[j] = null;
             }
             rows[i] = row;
         }
 
         final String sql = "insert into t_batch(id, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10) values(?,?,?,?,?,?,?,?,?,?,?)";
-        StopWatch sw = StopWatch.startNew();
+        StopWatch    sw  = StopWatch.startNew();
         db.executeBatchUpdate(sql, rows);
         log.info("Batch insert {} rows use {}ms", count, sw.getElapsedMilliseconds());
-        db.executeUpdate("delete from t_batch");
 
+        /*
+        db.executeUpdate("delete from t_batch");
         sw = StopWatch.startNew();
         db.execute(conn -> {
             PreparedStatement ps = conn.prepareStatement(sql);
@@ -77,6 +76,7 @@ public class DbBatchTest extends DbTestCase {
             ps.executeBatch();
         });
         log.info("Batch insert {} rows use {}ms", count, sw.getElapsedMilliseconds());
+        */
     }
 
 }
