@@ -121,7 +121,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
     protected void expandOne(Record record, QueryOptionsBase options) {
         if (null != record && null != options) {
-            Expand[] expands = ExpandParser.parse(options.getExpand());
+            Expand[] expands = options.getResolvedExpands();
             if (expands.length > 0) {
                 for (Expand expand : expands) {
                     expand(expand, record);
@@ -178,13 +178,13 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         long         count = -1;
         List<Record> list;
 
-        if (!Strings.isEmpty(options.getOrderBy())) {
-            applyOrderBy(query, options.getOrderBy());
+        OrderBy orderBy = options.getResolvedOrderBy();
+        if (null != orderBy) {
+            applyOrderBy(query, orderBy);
         }
 
-        if (!Strings.isEmpty(options.getJoins())) {
-            Join[] joins = JoinParser.parse(options.getJoins());
-
+        Join[] joins = options.getResolvedJoins();
+        if (null != joins && joins.length > 0) {
             Set<String> relations = new HashSet<>();
 
             for (Join join : joins) {
@@ -710,9 +710,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         expand(expand, Arrays.asList(records));
     }
 
-    protected void applyOrderBy(CriteriaQuery query, String expr) {
-        OrderBy orderBy = OrderByParser.parse(expr);
-
+    protected void applyOrderBy(CriteriaQuery query, OrderBy orderBy) {
         OrderBy.Item[] items = orderBy.items();
 
         StringBuilder s = new StringBuilder();
@@ -1053,10 +1051,10 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                         continue;
                     }
 
-//                    if (!whereArgs.isEmpty()) {
-//                        whereExpr.append(" and ");
-//                    }
-//
+                    //                    if (!whereArgs.isEmpty()) {
+                    //                        whereExpr.append(" and ");
+                    //                    }
+                    //
                     String[] a = params.getArray(name);
                     if (a.length == 1) {
                         a = Strings.split(a[0], ',');
@@ -1072,15 +1070,8 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
 
         //filters
-        if (!Strings.isEmpty(options.getFilters())) {
-            ScelExpr filters;
-
-            try {
-                filters = FiltersParser.parse(options.getFilters());
-            } catch (Exception e) {
-                throw new BadRequestException("Invalid filter expr '" + options.getFilters() + "', " + e.getMessage(), e);
-            }
-
+        ScelExpr filters = options.getResolvedFilters();
+        if (null != filters) {
             ScelNode[] nodes = filters.nodes();
             if (nodes.length > 0) {
                 where.and((expr) -> {
@@ -1233,11 +1224,11 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         final Class<?> type = ((FieldMapping) fm).getJavaType();
 
         Object[] args = new Object[values.size()];
-        for(int i=0;i<args.length;i++) {
+        for (int i = 0; i < args.length; i++) {
             ScelNode value = values.get(i);
-            if(ScelToken.NULL == value.token()) {
+            if (ScelToken.NULL == value.token()) {
                 args[i] = null;
-            }else {
+            } else {
                 args[i] = Converts.convert(value.literal(), type);
             }
         }
@@ -1346,7 +1337,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         public WhereBuilder and(Consumer<Expr> func) {
             Expr expr = new Expr();
             func.accept(expr);
-            if(!Strings.isBlank(expr.buf)) {
+            if (!Strings.isBlank(expr.buf)) {
                 return and(expr.buf.toString());
             }
             return this;
@@ -1372,7 +1363,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         public WhereBuilder or(Consumer<Expr> func) {
             Expr expr = new Expr();
             func.accept(expr);
-            if(!Strings.isBlank(expr.buf)) {
+            if (!Strings.isBlank(expr.buf)) {
                 return or(expr.buf.toString());
             }
             return this;

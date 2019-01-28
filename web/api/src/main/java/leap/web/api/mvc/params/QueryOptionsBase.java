@@ -18,9 +18,13 @@
 
 package leap.web.api.mvc.params;
 
+import leap.lang.json.JsonIgnore;
 import leap.web.Params;
+import leap.web.annotation.NonParam;
 import leap.web.annotation.ParamsWrapper;
 import leap.web.annotation.QueryParam;
+import leap.web.api.query.Expand;
+import leap.web.api.query.ExpandParser;
 
 @ParamsWrapper
 public class QueryOptionsBase {
@@ -29,6 +33,10 @@ public class QueryOptionsBase {
     protected @QueryParam("expand") String expand;
 
     protected Params params;
+
+    @NonParam
+    @JsonIgnore
+    protected Expand[] resolvedExpands;
 
     public String getSelect() {
         return select;
@@ -54,4 +62,14 @@ public class QueryOptionsBase {
         this.params = params;
     }
 
+    public Expand[] getResolvedExpands() {
+        if (null == resolvedExpands) {
+            resolvedExpands = ExpandParser.parse(expand);
+        }
+        return resolvedExpands;
+    }
+
+    public void setResolvedExpands(Expand[] resolvedExpands) {
+        this.resolvedExpands = resolvedExpands;
+    }
 }

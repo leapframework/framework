@@ -16,25 +16,42 @@
 
 package leap.web.api.mvc.params;
 
+import leap.lang.Strings;
+import leap.lang.json.JsonIgnore;
+import leap.lang.text.scel.ScelExpr;
 import leap.lang.value.Page;
-import leap.web.Params;
+import leap.web.annotation.NonParam;
 import leap.web.annotation.ParamsWrapper;
 import leap.web.annotation.QueryParam;
+import leap.web.api.query.*;
+import leap.web.exception.BadRequestException;
 
 @ParamsWrapper
 public class QueryOptions extends QueryOptionsBase {
 
-    protected @QueryParam("page_size")   Integer pageSize;
-    protected @QueryParam("page")        Integer pageIndex;
-    protected @QueryParam("limit")       Integer limit;
-    protected @QueryParam("offset")      Integer offset;  //0-based
-    protected @QueryParam("total")       boolean total;
-    protected @QueryParam("orderby")     String  orderBy;
-    protected @QueryParam("viewId")      String  viewId;
-    protected @QueryParam("filters")     String  filters;
-    protected @QueryParam("aggregates")  String  aggregates;
-    protected @QueryParam("groupby")     String  groupBy;
-    protected @QueryParam("joins")       String  joins;
+    protected @QueryParam("page_size")  Integer pageSize;
+    protected @QueryParam("page")       Integer pageIndex;
+    protected @QueryParam("limit")      Integer limit;
+    protected @QueryParam("offset")     Integer offset;  //0-based
+    protected @QueryParam("total")      boolean total;
+    protected @QueryParam("orderby")    String  orderBy;
+    protected @QueryParam("viewId")     String  viewId;
+    protected @QueryParam("filters")    String  filters;
+    protected @QueryParam("aggregates") String  aggregates;
+    protected @QueryParam("groupby")    String  groupBy;
+    protected @QueryParam("joins")      String  joins;
+
+    @NonParam
+    @JsonIgnore
+    protected ScelExpr resolvedFilters;
+
+    @NonParam
+    @JsonIgnore
+    protected OrderBy resolvedOrderBy;
+
+    @NonParam
+    @JsonIgnore
+    protected Join[] resolvedJoins;
 
     public Integer getPageSize() {
         return pageSize;
@@ -141,18 +158,18 @@ public class QueryOptions extends QueryOptionsBase {
     }
 
     public Page getPage(int defaultPageSize) {
-        if(null != limit || null != offset) {
-            if(null == limit) {
+        if (null != limit || null != offset) {
+            if (null == limit) {
                 return Page.limit(defaultPageSize, offset);
-            }else{
+            } else {
                 return Page.limit(limit, null == offset ? 0 : offset);
             }
         }
 
-        if(null != pageIndex || null != pageSize) {
-            if(null == pageIndex) {
+        if (null != pageIndex || null != pageSize) {
+            if (null == pageIndex) {
                 return Page.indexOf(1, pageSize);
-            }else{
+            } else {
                 return Page.indexOf(pageIndex, null == pageSize ? defaultPageSize : pageSize);
             }
         }
@@ -160,4 +177,47 @@ public class QueryOptions extends QueryOptionsBase {
         return Page.indexOf(1, defaultPageSize);
     }
 
+    public ScelExpr getResolvedFilters() {
+        if (null == resolvedFilters && !Strings.isEmpty(filters)) {
+            try {
+                resolvedFilters = FiltersParser.parse(filters);
+            } catch (Exception e) {
+                throw new BadRequestException("Invalid filter expr '" + filters + "', " + e.getMessage(), e);
+            }
+        }
+        return resolvedFilters;
+    }
+
+    public void setResolvedFilters(ScelExpr resolvedFilters) {
+        this.resolvedFilters = resolvedFilters;
+    }
+
+    public OrderBy getResolvedOrderBy() {
+        if (null == resolvedOrderBy && !Strings.isEmpty(orderBy)) {
+            resolvedOrderBy = OrderByParser.parse(orderBy);
+        }
+        return resolvedOrderBy;
+    }
+
+    public void setResolvedOrderBy(OrderBy resolvedOrderBy) {
+        this.resolvedOrderBy = resolvedOrderBy;
+    }
+
+    public Join[] getResolvedJoins() {
+        if (null == resolvedJoins && !Strings.isEmpty(joins)) {
+            resolvedJoins = JoinParser.parse(joins);
+        }
+        return resolvedJoins;
+    }
+
+    public void setResolvedJoins(Join[] resolvedJoins) {
+        this.resolvedJoins = resolvedJoins;
+    }
+
+    public void clearResolved() {
+        this.resolvedJoins = null;
+        this.resolvedOrderBy = null;
+        this.resolvedFilters = null;
+        this.resolvedExpands = null;
+    }
 }

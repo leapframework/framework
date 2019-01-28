@@ -82,4 +82,21 @@ public class ScelCondTest extends TestBase {
         expr = ScelParser.parse("a is null");
         assertEquals("a is null", expr.toString());
     }
+
+    @Test
+    public void testFindNameValue() {
+        ScelExpr expr = ScelParser.parse("a eq 'b' and c eq 'x'");
+
+        ScelNameValue nv = expr.findNameValue("x");
+        assertNull(nv);
+
+        nv = expr.findNameValue("c");
+        assertNotNull(nv);
+        assertEquals("c", nv.name.literal);
+        assertEquals(ScelToken.EQ, nv.op);
+        assertEquals("x", nv.value.literal);
+
+        assertNull(expr.findNameValue("C"));
+        assertNotNull(expr.findNameValue("C", true));
+    }
 }

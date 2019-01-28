@@ -45,15 +45,15 @@ public class DefaultModelQueryExecutorTest extends ModelExecutorTestBase {
 
     protected void initData() {
         BookTag.deleteAll();
-    	Tag.deleteAll();
+        Tag.deleteAll();
         Book.deleteAll();
         Author.deleteAll();
 
-        Tag tag1=new Tag();
+        Tag tag1 = new Tag();
         tag1.setTitle("tag1");
         tag1.create();
 
-        Tag tag2=new Tag();
+        Tag tag2 = new Tag();
         tag2.setTitle("tag2");
         tag2.create();
 
@@ -76,17 +76,17 @@ public class DefaultModelQueryExecutorTest extends ModelExecutorTestBase {
         book2.setAuthorId(author2.getId());
         book2.create();
 
-        BookTag bt1=new BookTag();
+        BookTag bt1 = new BookTag();
         bt1.setBookId(book1.getId());
         bt1.setTagId(tag1.getId());
         bt1.create();
 
-        BookTag bt2=new BookTag();
+        BookTag bt2 = new BookTag();
         bt2.setBookId(book1.getId());
         bt2.setTagId(tag2.getId());
         bt2.create();
 
-        BookTag bt3=new BookTag();
+        BookTag bt3 = new BookTag();
         bt3.setBookId(book2.getId());
         bt3.setTagId(tag2.getId());
         bt3.create();
@@ -104,36 +104,38 @@ public class DefaultModelQueryExecutorTest extends ModelExecutorTestBase {
         QueryOptions options = new QueryOptions();
         assertEquals(2, executor.queryList(options).list.size());
 
+        options.clearResolved();
         options.setJoins("author a");
         options.setFilters("a.name eq 'not exists'");
         assertEquals(0, executor.queryList(options).list.size());
 
+        options.clearResolved();
         options.setFilters("a.name eq 'Author1'");
         List<Record> records = executor.queryList(options).list;
         assertEquals(1, records.size());
         assertEquals("book1", records.get(0).getString("title"));
 
+        options.clearResolved();
         options.setFilters("a.name eq 'Author2'");
         records = executor.queryList(options).list;
         assertEquals(1, records.size());
         assertEquals("book2", records.get(0).getString("title"));
-
     }
 
     @Test
-    public void testExpand(){
-    	DefaultModelQueryExecutor executor = newExecutor(Book.class);
+    public void testExpand() {
+        DefaultModelQueryExecutor executor = newExecutor(Book.class);
 
-    	// many-to-one
+        // many-to-one
         QueryOptions options = new QueryOptions();
         options.setExpand("author");
-        List<Record> records=executor.queryList(options).list;
+        List<Record> records = executor.queryList(options).list;
         assertNotNull(records.get(0).get("author"));
 
         // many-to-manay
         QueryOptions options2 = new QueryOptions();
         options2.setExpand("tags");
-        List<Record> records2=executor.queryList(options2).list;
+        List<Record> records2 = executor.queryList(options2).list;
         assertNotNull(records2.get(0).get("tags"));
 
     }
