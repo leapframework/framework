@@ -55,6 +55,9 @@ public class FiltersParserTest extends TestBase {
 
     @Test
     public void testIn() {
+        assertParse("( v in 1 )");
+        assertParse("( v in (1) )");
+        assertParse("( ( v in (1) ) )");
         assertParse("name in ',a'");
         assertParse("name in ,'a'");
         assertParse("name in 1,2");

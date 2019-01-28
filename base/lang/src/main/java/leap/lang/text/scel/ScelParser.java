@@ -244,8 +244,10 @@ public class ScelParser extends AbstractStringParser {
                 continue;
             }
 
-            if (close && ch == ')') {
-                nextChar();
+            if(ch == ')') {
+                if(close) {
+                    nextChar();
+                }
                 break;
             }
 
@@ -284,7 +286,7 @@ public class ScelParser extends AbstractStringParser {
                     break;
                 }
 
-                if (close && ch == ')') {
+                if (ch == ')') {
                     break;
                 }
 
