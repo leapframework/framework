@@ -1240,7 +1240,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                 //update alias set ... from table alias
                 sql.append(alias);
             } else {
-                sql.append(secondary ? em.getSecondaryTableName() : em.getEntityName()).append(" ").append(alias);
+                sql.append(secondary ? em.getSecondaryTableName() : em.getTableName()).append(" ").append(alias);
             }
 
             if (!setColumns(fields, params, true, secondary)) {
@@ -1248,7 +1248,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
             }
 
             if (dialect.useTableAliasAfterUpdate()) {
-                sql.append(" from ").append(secondary ? em.getSecondaryTableName() : em.getEntityName()).append(" ").append(alias);
+                sql.append(" from ").append(secondary ? em.getSecondaryTableName() : em.getTableName()).append(" ").append(alias);
             }
 
             return true;
