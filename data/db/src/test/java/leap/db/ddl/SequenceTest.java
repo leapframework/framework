@@ -15,19 +15,12 @@
  */
 package leap.db.ddl;
 
-import java.util.function.Consumer;
-
 import leap.db.DbTestCase;
-import leap.db.model.DbColumnBuilder;
-import leap.db.model.DbSequence;
-import leap.db.model.DbSequenceBuilder;
-import leap.db.model.DbTable;
-import leap.db.model.DbTableBuilder;
+import leap.db.model.*;
 import leap.junit.contexual.Contextual;
 import leap.lang.Arrays2;
 import leap.lang.Out;
 import leap.lang.convert.Converts;
-
 import org.junit.Test;
 
 public class SequenceTest extends DbTestCase {
