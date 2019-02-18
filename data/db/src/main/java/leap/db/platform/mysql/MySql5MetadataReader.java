@@ -122,8 +122,8 @@ public class MySql5MetadataReader extends GenericDbMetadataReader {
 				      generateDeleteRuleClause() + " AS DELETE_RULE," + 
 				     "A.CONSTRAINT_NAME AS FK_NAME," + 
 				     "IFNULL(R.UNIQUE_CONSTRAINT_NAME,'PRIMARY') AS PK_NAME " + 
-				     "FROM (select * from INFORMATION_SCHEMA.KEY_COLUMN_USAGE where constraint_schema = ?) A " +
-				     "JOIN INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS R " +
+				     "FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE A " +
+				     "JOIN (select * from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS where constraint_schema = ?) R " +
 				     " ON A.CONSTRAINT_NAME = R.CONSTRAINT_NAME " +
 				     " AND A.TABLE_NAME = R.TABLE_NAME " + 
 				     "WHERE A.TABLE_SCHEMA = ? ";
