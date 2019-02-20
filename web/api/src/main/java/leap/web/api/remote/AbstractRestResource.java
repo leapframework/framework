@@ -99,7 +99,7 @@ public abstract class AbstractRestResource implements RestResource {
 
     protected void send(HttpRequest request, AccessToken at, Consumer<HttpResponse> consumer) {
         if (at != null) {
-            request.addHeader(Headers.AUTHORIZATION, OAuth2Constants.BEARER + " " + at.getToken());
+            request.setHeader(Headers.AUTHORIZATION, OAuth2Constants.BEARER + " " + at.getToken());
         }
         if(this.preSendHandler!=null){
             preSendHandler.accept(request);
@@ -108,7 +108,7 @@ public abstract class AbstractRestResource implements RestResource {
         HttpResponse response = request.send();
         if (response.getStatus() == HTTP.SC_UNAUTHORIZED && at != null) {
             at = tokenFetcher.refreshAccessToken(at);
-            request.addHeader(Headers.AUTHORIZATION, OAuth2Constants.BEARER + " " + at.getToken());
+            request.setHeader(Headers.AUTHORIZATION, OAuth2Constants.BEARER + " " + at.getToken());
             response = request.send();
         }
         consumer.accept(response);
