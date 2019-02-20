@@ -366,12 +366,15 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
 
         StringBuilder filters = new StringBuilder();
-        filters.append("'");
+        int i=0;
         for (Object fk : fks) {
+            if(i > 0) {
+                filters.append(',');
+            }
             filters.append(fk.toString());
-            filters.append(",");
+            i++;
         }
-        opts.setFilters(Strings.format("{0} in {1}", referredFieldName, Strings.trimEnd(filters.toString(), ',') + "'"));
+        opts.setFilters(Strings.format("{0} in ({1})", referredFieldName, filters.toString()));
 
         //构造expand时，要返回引用记录的字段
         if (Strings.isNotEmpty(expand.getSelect())) {
