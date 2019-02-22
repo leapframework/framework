@@ -16,6 +16,7 @@
 package leap.web;
 
 import leap.core.*;
+import leap.core.validation.ValidationException;
 import leap.core.web.RequestBase;
 import leap.core.web.RequestIgnore;
 import leap.core.web.ResponseBase;
@@ -146,8 +147,13 @@ public class AppFilter implements Filter {
 			boolean handled = false;
 			
 			try {
-				if(e instanceof ServletException && e.getCause() instanceof ResponseException) {
-				    e = e.getCause();
+			    //todo: hard code ResponseException & ValidationException handling for spring boot integration
+			    if(e instanceof ServletException) {
+			        if(e.getCause() instanceof ResponseException) {
+			            e = e.getCause();
+                    }else if(e.getCause() instanceof ValidationException) {
+			            e = e.getCause();
+                    }
                 }
 
 				if(e instanceof ResponseException) {

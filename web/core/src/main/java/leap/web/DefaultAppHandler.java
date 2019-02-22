@@ -20,6 +20,7 @@ import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.core.validation.SimpleErrors;
 import leap.core.validation.Validation;
+import leap.core.validation.ValidationException;
 import leap.core.validation.ValidationManager;
 import leap.lang.New;
 import leap.lang.Strings;
@@ -590,6 +591,12 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
             view.render(request, response, m);
             return true;
         }
+
+        //todo: hard code validation exception handling
+        if(exception instanceof ValidationException) {
+            response.sendError(status, exception.getMessage());
+        }
+
         return false;
     }
 
@@ -599,7 +606,9 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
             return false;
         }
 
-        int status = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+        //todo: hard code validation exception handling
+        int status = exception instanceof ValidationException ?
+                HttpServletResponse.SC_BAD_REQUEST : HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 
         if (request.isAjax()) {
             webConfig.getAjaxHandler().handleError(request, response, status,
@@ -618,8 +627,8 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
             LinkedViewData m = LinkedViewData.of("error", new ErrorInfo(status, exception));
             view.render(request, response, m);
             return true;
-
         }
+
         return handleError(request, response, status, exception.getMessage(), exception);
     }
 
