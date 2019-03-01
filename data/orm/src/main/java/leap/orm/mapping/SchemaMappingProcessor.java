@@ -26,7 +26,12 @@ public class SchemaMappingProcessor extends MappingProcessorAdapter {
 
 	@Override
     public void postMappingEntity(MetadataContext context, EntityMappingBuilder emb) throws MetadataException {
-		if(!context.getConfig().isReadDbSchema()) return;
+		if(!context.getConfig().isReadDbSchema()) {
+			return;
+		}
+		if(null == context.getDb()) {
+			return;
+		}
 
 		String entityName = emb.getEntityName();
 		

@@ -15,15 +15,13 @@
  */
 package leap.orm.mapping;
 
-import leap.core.AppConfig;
-import leap.core.AppConfigAware;
-import leap.core.AppConfigException;
-import leap.core.BeanFactory;
+import leap.core.*;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.core.ds.DataSourceManager;
 import leap.core.ioc.AbstractReadonlyBean;
 import leap.core.metamodel.ReservedMetaFieldName;
+import leap.db.Db;
 import leap.db.DbMetadata;
 import leap.db.model.DbColumn;
 import leap.db.model.DbColumnBuilder;
@@ -40,10 +38,7 @@ import leap.lang.logging.LogFactory;
 import leap.lang.meta.MSimpleType;
 import leap.lang.meta.MType;
 import leap.lang.meta.MTypes;
-import leap.orm.Orm;
-import leap.orm.OrmConfig;
-import leap.orm.OrmConstants;
-import leap.orm.OrmContext;
+import leap.orm.*;
 import leap.orm.annotation.*;
 import leap.orm.config.OrmModelPkgConfig;
 import leap.orm.config.OrmModelsConfig;
@@ -55,7 +50,9 @@ import leap.orm.generator.AutoIdGenerator;
 import leap.orm.generator.IdGenerator;
 import leap.orm.metadata.MetadataContext;
 import leap.orm.metadata.MetadataException;
+import leap.orm.metadata.OrmMetadataManager;
 import leap.orm.model.Model;
+import leap.orm.naming.NamingStrategy;
 import leap.orm.serialize.FieldSerializer;
 
 import java.lang.annotation.Annotation;
@@ -79,6 +76,10 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
     protected @Inject PreDeleteListener[]  preDeleteListeners;
     protected @Inject PostDeleteListener[] postDeleteListeners;
     protected @Inject PostLoadListener[]   postLoadListeners;
+    protected @Inject OrmConfig			   ormConfig;
+    protected @Inject NamingStrategy       namingStrategy;
+    protected @Inject OrmMetadataManager   metadataManager;
+    protected @Inject AppContext		   appContext;
 
     protected OrmModelsConfigs modelsConfigs;
 	protected String           defaultDataSourceName;
@@ -439,7 +440,54 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 	    return emb;
     }
 
-    @Override
+	@Override
+	public EntityMappingBuilder createEntityMappingByClass(Class<?> entityType) {
+		final OrmMetadata metadata = metadataManager.createMetadata();
+		final MetadataContext context = new MetadataContext() {
+			@Override
+			public String getName() {
+				return "default";
+			}
+
+			@Override
+			public Db getDb() {
+				return null;
+			}
+
+			@Override
+			public OrmConfig getConfig() {
+				return ormConfig;
+			}
+
+			@Override
+			public AppContext getAppContext() {
+				return appContext;
+			}
+
+			@Override
+			public OrmMetadata getMetadata() {
+				return metadata;
+			}
+
+			@Override
+			public MappingStrategy getMappingStrategy() {
+				return DefaultMappingStrategy.this;
+			}
+
+			@Override
+			public NamingStrategy getNamingStrategy() {
+				return namingStrategy;
+			}
+
+			@Override
+			public OrmMetadataManager getMetadataManager() {
+				return metadataManager;
+			}
+		};
+		return createEntityMappingByClass(context, entityType, true);
+	}
+
+	@Override
     public EntityMappingBuilder createEntityMappingByTable(MetadataContext context, DbTable t) throws MetadataException {
         //todo : to be implemented.
         DbTableBuilder       table = new DbTableBuilder(t);
