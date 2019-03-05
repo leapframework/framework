@@ -39,13 +39,22 @@ public class DaoCommandInjector implements BeanInjector {
             return false;
         }
 
+        if(null == a && Strings.isEmpty(bd.getId()) && Strings.isEmpty(bd.getName())) {
+            return false;
+        }
+
         KeyAndDataSource kds;
-        if (a.annotationType().equals(Inject.class)) {
+        if (null != a && a.annotationType().equals(Inject.class)) {
             kds = resolveSqlIdentity(bd, v, (Inject) a);
-        } else if (a.annotationType().equals(SqlKey.class)) {
+        } else if (null != a && a.annotationType().equals(SqlKey.class)) {
             kds = resolveSqlIdentity(bd, v, (SqlKey) a);
         } else {
-            return false;
+            String key = Strings.firstNotEmpty(bd.getId(), bd.getName());
+            if(!Strings.isEmpty(key)) {
+                kds = new KeyAndDataSource(key, null);
+            }else {
+                return false;
+            }
         }
 
         SqlCommand sql = sqls.tryGetSqlCommand(kds.key);

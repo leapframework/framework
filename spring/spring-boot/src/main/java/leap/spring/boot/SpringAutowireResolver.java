@@ -85,13 +85,13 @@ final class SpringAutowireResolver implements AutowireCandidateResolver {
 
                         Qualifier qualifier = Classes.getAnnotation(descriptor.getAnnotations(), Qualifier.class);
                         if(null == qualifier) {
-                            bean = Global.factory().resolveInjectValue(type, genericType);
+                            bean = Global.factory().resolveInjectValue(type, genericType, descriptor.getAnnotations());
                         }else {
                             if(Collection.class.isAssignableFrom(type) || type.isArray()) {
                                 //collection injection with qualifier does not supported.
                                 return null;
                             }
-                            bean = Global.factory().resolveInjectValue(type, genericType, qualifier.value());
+                            bean = Global.factory().resolveInjectValue(type, genericType, qualifier.value(), descriptor.getAnnotations());
                         }
 
                         if (null != bean && Objects2.isEmpty(bean)) {

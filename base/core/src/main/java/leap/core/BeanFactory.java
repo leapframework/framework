@@ -18,11 +18,13 @@ package leap.core;
 import leap.core.ioc.BeanDefinition;
 import leap.core.validation.annotations.NotEmpty;
 import leap.core.validation.annotations.NotNull;
+import leap.lang.Classes;
 import leap.lang.beans.BeanException;
 import leap.lang.beans.BeanFactoryBase;
 import leap.lang.beans.NoSuchBeanException;
 import leap.lang.reflect.ReflectValued;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
@@ -354,11 +356,25 @@ public interface BeanFactory extends BeanFactoryBase, AppContextInitializable {
     /**
      * todo: doc
      */
-    Object resolveInjectValue(Class<?> type, Type genericType);
+    default Object resolveInjectValue(Class<?> type, Type genericType) {
+    	return resolveInjectValue(type, genericType, Classes.EMPTY_ANNOTATION_ARRAY);
+	}
+
+	/**
+	 * todo: doc
+	 */
+	Object resolveInjectValue(Class<?> type, Type genericType, Annotation[] annotations);
 
     /**
      * todo: doc
      */
-    Object resolveInjectValue(Class<?> type, Type genericType, String name);
+    default Object resolveInjectValue(Class<?> type, Type genericType, String name) {
+    	return resolveInjectValue(type, genericType, name, Classes.EMPTY_ANNOTATION_ARRAY);
+	}
+
+	/**
+	 * todo: doc
+	 */
+	Object resolveInjectValue(Class<?> type, Type genericType, String name, Annotation[] annotations);
 
 }
