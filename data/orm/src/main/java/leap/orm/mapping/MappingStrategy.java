@@ -15,10 +15,13 @@
  */
 package leap.orm.mapping;
 
+import leap.core.ds.DataSourceManager;
 import leap.db.model.DbColumn;
 import leap.db.model.DbTable;
 import leap.lang.beans.BeanProperty;
+import leap.orm.OrmConfig;
 import leap.orm.OrmContext;
+import leap.orm.OrmRegistry;
 import leap.orm.domain.Domain;
 import leap.orm.metadata.MetadataContext;
 import leap.orm.metadata.MetadataException;
@@ -103,7 +106,14 @@ public interface MappingStrategy {
 	/**
 	 * Creates entity mapping by class
 	 */
-	EntityMappingBuilder createEntityMappingByClass(Class<?> entityType) ;
+	default EntityMappingBuilder createEntityMappingByClass(Class<?> entityType) {
+		return createEntityMappingByClass(entityType, DataSourceManager.DEFAULT_DATASOURCE_NAME);
+	}
+
+	/**
+	 * Creates entity mapping by class
+	 */
+	EntityMappingBuilder createEntityMappingByClass(Class<?> entityType, String dataSourceName) ;
 	
     /**
      * Returns a new {@link EntityMappingBuilder} holds all the mapping info mapped from a <code>table</code> to an entity.

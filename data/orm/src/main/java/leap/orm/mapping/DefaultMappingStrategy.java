@@ -441,12 +441,14 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
     }
 
 	@Override
-	public EntityMappingBuilder createEntityMappingByClass(Class<?> entityType) {
+	public EntityMappingBuilder createEntityMappingByClass(Class<?> entityType, String dataSourceName) {
 		final OrmMetadata metadata = metadataManager.createMetadata();
+		final String name = Strings.isEmpty(dataSourceName) ? DataSourceManager.DEFAULT_DATASOURCE_NAME : dataSourceName;
+
 		final MetadataContext context = new MetadataContext() {
 			@Override
 			public String getName() {
-				return "default";
+				return name;
 			}
 
 			@Override
