@@ -46,7 +46,7 @@ public class Jsonp {
                 if (!JS.isValidJavascriptFunction(callback)) {
                     throw new BadRequestException("Invalid jsonp callback : " + callback);
                 }
-                response.setContentType(ContentTypes.APPLICATION_JAVASCRIPT);
+                response.setContentType(ContentTypes.APPLICATION_JAVASCRIPT_UTF8);
                 JsonWriter jw = JSON.createWriter(writer);
                 writer.write(callback);
                 writer.write('(');
