@@ -26,7 +26,7 @@ public enum ColumnType {
 	AUTO(""),
 	BOOLEAN,
 	TINYINT,
-	SMALLING,
+	SMALLINT,
 	INTEGER,
     BIGINT,
 	DECIMAL,
