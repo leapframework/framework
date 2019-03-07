@@ -26,6 +26,7 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.reflect.ReflectValued;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.Map.Entry;
@@ -517,13 +518,13 @@ public class DefaultBeanFactory extends BeanFactoryInternal implements BeanFacto
     }
 
     @Override
-    public Object resolveInjectValue(Class<?> type, Type genericType) {
-        return beanContainer.resolveInjectValue(type, genericType);
+    public Object resolveInjectValue(Class<?> type, Type genericType, Annotation[] annotations) {
+        return beanContainer.resolveInjectValue(type, genericType, annotations);
     }
 
     @Override
-    public Object resolveInjectValue(Class<?> type, Type genericType, String name) {
-        return beanContainer.resolveInjectValue(type, genericType, name);
+    public Object resolveInjectValue(Class<?> type, Type genericType, String name, Annotation[] annotations) {
+        return beanContainer.resolveInjectValue(type, genericType, name, annotations);
     }
 
     public void close(){

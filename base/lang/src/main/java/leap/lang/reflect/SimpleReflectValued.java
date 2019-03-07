@@ -42,8 +42,13 @@ public class SimpleReflectValued implements ReflectValued {
     }
 
     public SimpleReflectValued(Class<?> type, Type genericType) {
+        this(type, genericType, null);
+    }
+
+    public SimpleReflectValued(Class<?> type, Type genericType, Annotation[] annotations) {
         this.type = type;
         this.genericType = genericType;
+        this.annotations = null == annotations ? Classes.EMPTY_ANNOTATION_ARRAY : annotations;
     }
 
     @Override

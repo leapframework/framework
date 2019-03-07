@@ -253,7 +253,7 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
             */
             if(null != ormModelsConfigs){
                 String className = emb.getEntityClass().getName();
-                OrmModelsConfig model = ormModelsConfigs.getModelsConfig(context.getDb().getName());
+                OrmModelsConfig model = ormModelsConfigs.getModelsConfig(context.getName());
                 if(null != model){
                     OrmModelClassConfig classConfig = model.getClasses().get(className);
                     if(null != classConfig){

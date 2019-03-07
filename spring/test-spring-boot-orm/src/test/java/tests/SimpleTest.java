@@ -16,16 +16,17 @@
 
 package tests;
 
-import static junit.framework.TestCase.*;
-import org.springframework.beans.factory.annotation.Qualifier;
-import pkg0.Application;
-import pkg0.Entity0;
+import leap.orm.annotation.SqlKey;
 import leap.orm.dao.Dao;
+import leap.orm.dao.DaoCommand;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import pkg0.Application;
+import pkg0.Entity0;
 import pkg1.Entity1;
 import pkg2.Entity2;
 import pkg3.Entity3;
@@ -33,6 +34,9 @@ import pkg4.Entity4;
 import pkg5_.Entity5;
 
 import javax.sql.DataSource;
+
+import static junit.framework.TestCase.assertNotNull;
+import static junit.framework.TestCase.assertNotSame;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class)
@@ -52,6 +56,14 @@ public class SimpleTest {
     @Qualifier("secondary")
     private Dao dao2;
 
+    @Autowired
+    @SqlKey("test")
+    private DaoCommand testCommand1;
+
+    @Autowired
+    @Qualifier("test")
+    private DaoCommand testCommand2;
+
     @Test
     public void testEntities() {
         dao1.findOrNull(Entity0.class, "1");
@@ -68,5 +80,11 @@ public class SimpleTest {
 
         assertNotSame(dao1, dao2);
         assertNotSame(dao1.getOrmContext().getDataSource(), dao2.getOrmContext().getDataSource());
+    }
+
+    @Test
+    public void testDaoCommandAutowired() {
+        assertNotNull(testCommand1);
+        assertNotNull(testCommand2);
     }
 }
