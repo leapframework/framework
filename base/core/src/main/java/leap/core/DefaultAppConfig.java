@@ -282,7 +282,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
             v = null == propertyProvider ? null : propertyProvider.getRawProperty(name);
             return null == v ? properties.get(name) : v;
         } catch (UnsupportedRawPropertyException e) {
-            log.info("property {0} unsupported by {1}, use local config",name,propertyProvider.getClass());
+            log.info("property {} unsupported by {}, use local config",name,propertyProvider.getClass());
         }
 
         v = properties.get(name);
@@ -330,7 +330,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
                 StringProperty p = propertyProvider.getDynaProperty(name);
                 return p;
             } catch (UnsupportedDynaPropertyException e) {
-                log.info("property {0} unsupported by {1}, use local config",name,propertyProvider.getClass());
+                log.info("property {} unsupported by {}, use local config",name,propertyProvider.getClass());
             }
         }
         return new SimpleStringProperty(properties.get(name));
@@ -343,7 +343,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
                 Property<T> p = propertyProvider.getDynaProperty(name, type);
                 return p;
             } catch (UnsupportedDynaPropertyException e) {
-                log.info("property {0} unsupported by {1}, use local config",name,propertyProvider.getClass());
+                log.info("property {} unsupported by {}, use local config",name,propertyProvider.getClass());
             }
         }
         String v = properties.get(name);
@@ -365,7 +365,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
             try {
                 return propertyProvider.getDynaIntegerProperty(name);
             } catch (UnsupportedDynaPropertyException e) {
-                log.info("property {0} unsupported by {1}, use local config",name,propertyProvider.getClass());
+                log.info("property {} unsupported by {}, use local config",name,propertyProvider.getClass());
             }
         }
         return new SimpleIntegerProperty(Converts.convert(properties.get(name), Integer.class));
@@ -377,7 +377,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
             try {
                 return propertyProvider.getDynaLongProperty(name);
             } catch (UnsupportedDynaPropertyException e) {
-                log.info("property {0} unsupported by {1}, use local config",name,propertyProvider.getClass());
+                log.info("property {} unsupported by {}, use local config",name,propertyProvider.getClass());
             }
         }
         return new SimpleLongProperty(Converts.convert(properties.get(name), Long.class));
@@ -389,7 +389,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
             try {
                 return propertyProvider.getDynaBooleanProperty(name);
             } catch (UnsupportedDynaPropertyException e) {
-                log.info("property {0} unsupported by {1}, use local config",name,propertyProvider.getClass());
+                log.info("property {} unsupported by {}, use local config",name,propertyProvider.getClass());
             }
         }
         return new SimpleBooleanProperty(Converts.convert(properties.get(name), Boolean.class));
@@ -401,7 +401,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
             try {
                 return propertyProvider.getDynaDoubleProperty(name);
             } catch (UnsupportedDynaPropertyException e) {
-                log.info("property {0} unsupported by {1}, use local config",name,propertyProvider.getClass());
+                log.info("property {} unsupported by {}, use local config",name,propertyProvider.getClass());
             }
         }
         return new SimpleDoubleProperty(Converts.convert(properties.get(name), Double.class));
@@ -416,7 +416,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
             try {
                 propertyProvider.bindDynaProperty(name, type, p);
             } catch (UnsupportedBindDynaPropertyException e) {
-                log.info("property {0} unsupported by {1}, use local config",name,propertyProvider.getClass());
+                log.info("property {} unsupported by {}, use local config",name,propertyProvider.getClass());
                 p.convert(getProperty(name));
             }
         }else if(properties.containsKey(name)){
