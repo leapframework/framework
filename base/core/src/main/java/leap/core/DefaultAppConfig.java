@@ -284,10 +284,10 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
                 log.info("property {} provide by {}",name,propertyProvider.getClass());
                 return v;
             }
-            log.info("property {} provide by local config",name);
+            log.debug("property {} provide by local config",name);
             return properties.get(name);
         } catch (UnsupportedRawPropertyException e) {
-            log.info("property {} provide by local config",name);
+            log.debug("property {} provide by local config",name);
         }
 
         v = properties.get(name);
@@ -336,7 +336,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
                 log.info("property {} provide by {}",name,propertyProvider.getClass());
                 return p;
             } catch (UnsupportedDynaPropertyException e) {
-                log.info("property {} provide by local config",name);
+                log.debug("property {} provide by local config",name);
             }
         }
         return new SimpleStringProperty(properties.get(name));
@@ -350,7 +350,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
                 log.info("property {} provide by {}",name,propertyProvider.getClass());
                 return p;
             } catch (UnsupportedDynaPropertyException e) {
-                log.info("property {} provide by local config",name);
+                log.debug("property {} provide by local config",name);
             }
         }
         String v = properties.get(name);
@@ -374,7 +374,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
                 log.info("property {} provide by {}",name,propertyProvider.getClass());
                 return property;
             } catch (UnsupportedDynaPropertyException e) {
-                log.info("property {} provide by local config",name);
+                log.debug("property {} provide by local config",name);
             }
         }
         return new SimpleIntegerProperty(Converts.convert(properties.get(name), Integer.class));
@@ -388,7 +388,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
                 log.info("property {} provide by {}",name,propertyProvider.getClass());
                 return property;
             } catch (UnsupportedDynaPropertyException e) {
-                log.info("property {} provide by local config",name);
+                log.debug("property {} provide by local config",name);
             }
         }
         return new SimpleLongProperty(Converts.convert(properties.get(name), Long.class));
@@ -402,7 +402,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
                 log.info("property {} provide by {}",name,propertyProvider.getClass());
                 return property;
             } catch (UnsupportedDynaPropertyException e) {
-                log.info("property {} provide by local config",name);
+                log.debug("property {} provide by local config",name);
             }
         }
         return new SimpleBooleanProperty(Converts.convert(properties.get(name), Boolean.class));
@@ -416,7 +416,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
                 log.info("property {} provide by {}",name,propertyProvider.getClass());
                 return property;
             } catch (UnsupportedDynaPropertyException e) {
-                log.info("property {} provide by local config",name);
+                log.debug("property {} provide by local config",name);
             }
         }
         return new SimpleDoubleProperty(Converts.convert(properties.get(name), Double.class));
