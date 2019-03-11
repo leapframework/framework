@@ -280,9 +280,14 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 
         try {
             v = null == propertyProvider ? null : propertyProvider.getRawProperty(name);
-            return null == v ? properties.get(name) : v;
+            if(null != v){
+                log.info("property {} provide by {}",name,propertyProvider.getClass());
+                return v;
+            }
+            log.debug("property {} provide by local config",name);
+            return properties.get(name);
         } catch (UnsupportedRawPropertyException e) {
-            log.info("property {0} unsupported by {1}, use local config",name,propertyProvider.getClass());
+            log.debug("property {} provide by local config",name);
         }
 
         v = properties.get(name);
@@ -328,9 +333,10 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
         if(null != propertyProvider) {
             try {
                 StringProperty p = propertyProvider.getDynaProperty(name);
+                log.info("property {} provide by {}",name,propertyProvider.getClass());
                 return p;
             } catch (UnsupportedDynaPropertyException e) {
-                log.info("property {0} unsupported by {1}, use local config",name,propertyProvider.getClass());
+                log.debug("property {} provide by local config",name);
             }
         }
         return new SimpleStringProperty(properties.get(name));
@@ -341,9 +347,10 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
         if(null != propertyProvider) {
             try {
                 Property<T> p = propertyProvider.getDynaProperty(name, type);
+                log.info("property {} provide by {}",name,propertyProvider.getClass());
                 return p;
             } catch (UnsupportedDynaPropertyException e) {
-                log.info("property {0} unsupported by {1}, use local config",name,propertyProvider.getClass());
+                log.debug("property {} provide by local config",name);
             }
         }
         String v = properties.get(name);
@@ -363,9 +370,11 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     public IntegerProperty getDynaIntegerProperty(String name) {
         if(null != propertyProvider) {
             try {
-                return propertyProvider.getDynaIntegerProperty(name);
+                IntegerProperty property = propertyProvider.getDynaIntegerProperty(name);
+                log.info("property {} provide by {}",name,propertyProvider.getClass());
+                return property;
             } catch (UnsupportedDynaPropertyException e) {
-                log.info("property {0} unsupported by {1}, use local config",name,propertyProvider.getClass());
+                log.debug("property {} provide by local config",name);
             }
         }
         return new SimpleIntegerProperty(Converts.convert(properties.get(name), Integer.class));
@@ -375,9 +384,11 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     public LongProperty getDynaLongProperty(String name) {
         if(null != propertyProvider) {
             try {
-                return propertyProvider.getDynaLongProperty(name);
+                LongProperty property = propertyProvider.getDynaLongProperty(name);
+                log.info("property {} provide by {}",name,propertyProvider.getClass());
+                return property;
             } catch (UnsupportedDynaPropertyException e) {
-                log.info("property {0} unsupported by {1}, use local config",name,propertyProvider.getClass());
+                log.debug("property {} provide by local config",name);
             }
         }
         return new SimpleLongProperty(Converts.convert(properties.get(name), Long.class));
@@ -387,9 +398,11 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     public BooleanProperty getDynaBooleanProperty(String name) {
         if(null != propertyProvider) {
             try {
-                return propertyProvider.getDynaBooleanProperty(name);
+                BooleanProperty property = propertyProvider.getDynaBooleanProperty(name);
+                log.info("property {} provide by {}",name,propertyProvider.getClass());
+                return property;
             } catch (UnsupportedDynaPropertyException e) {
-                log.info("property {0} unsupported by {1}, use local config",name,propertyProvider.getClass());
+                log.debug("property {} provide by local config",name);
             }
         }
         return new SimpleBooleanProperty(Converts.convert(properties.get(name), Boolean.class));
@@ -399,9 +412,11 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     public DoubleProperty getDynaDoubleProperty(String name) {
         if(null != propertyProvider) {
             try {
-                return propertyProvider.getDynaDoubleProperty(name);
+                DoubleProperty property = propertyProvider.getDynaDoubleProperty(name);
+                log.info("property {} provide by {}",name,propertyProvider.getClass());
+                return property;
             } catch (UnsupportedDynaPropertyException e) {
-                log.info("property {0} unsupported by {1}, use local config",name,propertyProvider.getClass());
+                log.debug("property {} provide by local config",name);
             }
         }
         return new SimpleDoubleProperty(Converts.convert(properties.get(name), Double.class));
@@ -415,8 +430,9 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
         if(null != propertyProvider) {
             try {
                 propertyProvider.bindDynaProperty(name, type, p);
+                log.info("property {} bind by {}",name,propertyProvider.getClass());
             } catch (UnsupportedBindDynaPropertyException e) {
-                log.info("property {0} unsupported by {1}, use local config",name,propertyProvider.getClass());
+                log.info("property {} bind by local config",name,propertyProvider.getClass());
                 p.convert(getProperty(name));
             }
         }else if(properties.containsKey(name)){

@@ -508,7 +508,9 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 
         DefaultActionContext ac = newActionContext(request, response);
         ac.setPath(actionPath);
-
+        // resolve route
+        Route route = resolveRoute(request,response,router,ac);
+        ac.setRoute(route);
         if (ROUTE_STATE_HANDLED == routeAndExecuteAction(request, response, router, ac)) {
             return true;
         }

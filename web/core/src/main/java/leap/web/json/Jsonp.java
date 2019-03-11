@@ -34,54 +34,53 @@ import java.util.function.Consumer;
 
 public class Jsonp {
 
-	protected Jsonp() {}
+    protected Jsonp() {
+    }
 
-	public static void write(Request request, Response response, JsonConfig jc, Consumer<Writer> func) throws IOException {
-		Writer writer = response.getWriter();
+    public static void write(Request request, Response response, JsonConfig jc, Consumer<Writer> func) throws IOException {
+        Writer writer = response.getWriter();
 
-		if(jc.isJsonpEnabled()){
-			String callback = request.getParameter(jc.getJsonpParameter());
-			if(!Strings.isEmpty(callback)){
-				if(!JS.isValidJavascriptFunction(callback)){
-					throw new BadRequestException("Invalid jsonp callback : " + callback);
-				}
-				response.setContentType(ContentTypes.APPLICATION_JAVASCRIPT);
-				JsonWriter jw = JSON.createWriter(writer);
-				writer.write(callback);
-				writer.write('(');
-				jw.startObject();
-				jw.property("headers",() -> {
-					jw.startObject();
-					response.getHeaderNames().forEach(s -> {
-						Iterator<String> iterator = jc.getJsonpAllowResponseHeaders().iterator();
-						boolean allow = Iterators.any(iterator,allowHeader -> {
-							if("*".equals(allowHeader)){
-								return true;
-							}else {
-								return Strings.equals(s,allowHeader);
-							}
-						});
-						if(allow){
-							Collection<String> h = response.getHeaders(s);
-							if(!h.isEmpty()){
-								if(h.size() == 1){
-									jw.property(s,h.iterator().next());
-								}else {
-									jw.array(h.iterator());
-								}
-							}
-						}
-					});
-					jw.endObject();
-				});
-				jw.property("data",() -> func.accept(writer));
-				jw.endObject();
-				writer.write(')');
-				return;
-			}
-		}
+        if (jc.isJsonpEnabled()) {
+            String callback = request.getParameter(jc.getJsonpParameter());
+            if (!Strings.isEmpty(callback)) {
+                if (!JS.isValidJavascriptFunction(callback)) {
+                    throw new BadRequestException("Invalid jsonp callback : " + callback);
+                }
+                response.setContentType(ContentTypes.APPLICATION_JAVASCRIPT_UTF8);
+                // for compatible jquery jsonp, header and data must be in one json
+                JsonWriter jw = JSON.createWriter(writer);
+                writer.write(callback);
+                writer.write('(');
+                jw.startObject().property("data", w -> func.accept(writer)).property("headers", w -> {
+                    jw.startObject();
+                    response.getHeaderNames().forEach(s -> {
+                        Iterator<String> iterator = jc.getJsonpAllowResponseHeaders().iterator();
+                        boolean allow = Iterators.any(iterator, allowHeader -> {
+                            if ("*".equals(allowHeader)) {
+                                return true;
+                            } else {
+                                return Strings.equals(s, allowHeader);
+                            }
+                        });
+                        if (allow) {
+                            Collection<String> h = response.getHeaders(s);
+                            if (!h.isEmpty()) {
+                                if (h.size() == 1) {
+                                    jw.property(s, h.iterator().next());
+                                } else {
+                                    jw.array(h.iterator());
+                                }
+                            }
+                        }
+                    });
+                    jw.endObject();
+                }).endObject();
+                writer.write(')');
+                return;
+            }
+        }
 
-		func.accept(writer);
-	}
-	
+        func.accept(writer);
+    }
+
 }
