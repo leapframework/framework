@@ -41,7 +41,9 @@ import leap.web.api.mvc.params.QueryOptionsBase;
 import leap.web.api.query.*;
 import leap.web.api.remote.RestQueryListResult;
 import leap.web.api.remote.RestResource;
+import leap.web.api.remote.RestResourceInvokeException;
 import leap.web.exception.BadRequestException;
+import leap.web.exception.InternalServerErrorException;
 
 import java.lang.reflect.Array;
 import java.util.*;
@@ -109,7 +111,13 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             ex.handler.preQueryOne(context, id, query);
         }
         record = query.firstOrNull();
-        expandOne(record, options);
+
+        try {
+            expandOne(record, options);
+        }catch (RestResourceInvokeException e) {
+            throw new InternalServerErrorException("Remote expanding error: " + e.getMessage(), e);
+        }
+
         if (null != ex.handler && null != record) {
             ex.handler.postQueryOne(context, id, record);
         }
@@ -253,8 +261,12 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                     throw new BadRequestException("The result size " + list.size() + " exceed max expand " + ac.getMaxExpand() + ", please decrease your page_size");
                 }
 
-                for (Expand expand : expands) {
-                    expand(expand, list);
+                try {
+                    for (Expand expand : expands) {
+                        expand(expand, list);
+                    }
+                }catch (RestResourceInvokeException e) {
+                    throw new InternalServerErrorException("Remote expanding error: " + e.getMessage(), e);
                 }
             }
         }
