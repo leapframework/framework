@@ -16,6 +16,7 @@
 
 package leap.orm.event;
 
+import leap.lang.accessor.Getter;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.Mappings;
 import leap.orm.query.QueryContext;
@@ -91,7 +92,7 @@ public class LoadEntityEventImpl extends EntityEventBase implements LoadEntityEv
                 return null;
             }
             if(id == null) {
-                id = Mappings.getId(ew.getEntityMapping(), ew);
+                id = Mappings.getId(ew.getEntityMapping(), (Getter) ew);
                 if(null == id) {
                     id = NULL_ID;
                 }

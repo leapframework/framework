@@ -57,7 +57,7 @@ public class NamedSqlParameter implements SqlParameter {
         }
 
 		if(null == v && null != defaultValue) {
-			v = defaultValue.getValue(context, parameters.map());
+			v = defaultValue.getValue(parameters, parameters.map());
             return SqlValue.generated(trySerialize(v));
 		}else{
             return SqlValue.of(trySerialize(v));

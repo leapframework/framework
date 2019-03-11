@@ -22,6 +22,8 @@ import leap.lang.Objects2;
 import leap.lang.Strings;
 import leap.lang.accessor.Getter;
 import leap.lang.beans.BeanType;
+import leap.lang.params.Params;
+import leap.orm.value.EntityWrapper;
 
 /**
  * Util class
@@ -52,6 +54,13 @@ public class Mappings {
         return getId(em, attributes::get);
 	}
 
+    public static Object getId(EntityMapping em, Params params) {
+        return getId(em, (Getter)params);
+    }
+
+    public static Object getId(EntityMapping em, EntityWrapper entity) {
+        return getId(em, (Getter)entity);
+    }
 
     public static Object getId(EntityMapping em, Getter getter) {
         String[] keyNames = em.getKeyFieldNames();

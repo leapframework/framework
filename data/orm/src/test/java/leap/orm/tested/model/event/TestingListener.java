@@ -89,7 +89,7 @@ public class TestingListener implements PreCreateListener,PreUpdateListener,PreD
         lastLoadEntityEvent = e;
 
         for(LoadEntityEvent.Row row : e) {
-            String col2 = row.getEntity().get("col3");
+            String col2 = (String)row.getEntity().get("col3");
             if(null == col2) {
                 row.getEntity().set("col3", "_ok");
             }else {

@@ -36,12 +36,12 @@ public interface EntityBase extends NamedGetter {
     /**
      * Sets the value of field.
      */
-	<T extends EntityBase> T set(String field,Object value);
+	<T> T set(String field,Object value);
 
     /**
      * Sets the value of field.
      */
-	default <T extends EntityBase> T set(Named field,Object value) {
+	default <T> T set(Named field,Object value) {
         return set(field.getName(), value);
     }
 

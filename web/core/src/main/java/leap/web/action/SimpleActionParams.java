@@ -70,7 +70,7 @@ public class SimpleActionParams implements ActionParams {
     }
 
     @Override
-    public <T> T get(String name) {
+    public Object get(String name) {
         Integer index = nameIndexMap.get(name);
         return get(index);
     }
