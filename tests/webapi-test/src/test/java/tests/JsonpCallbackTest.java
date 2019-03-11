@@ -16,6 +16,8 @@ package tests;
 import app.models.api.RestApi;
 import leap.lang.http.ContentTypes;
 import leap.lang.http.Headers;
+import leap.lang.http.MimeType;
+import leap.lang.http.MimeTypes;
 import leap.lang.json.JSON;
 import leap.webunit.WebTestBase;
 import leap.webunit.client.THttpResponse;
@@ -28,13 +30,15 @@ import java.util.Map;
 import java.util.UUID;
 
 public class JsonpCallbackTest extends WebTestBase {
+
     @Test
     public void testGetJsonpCallbackWithHeader() throws ScriptException {
         RestApi api1 = new RestApi();
         api1.setPublished(true);
         api1.setName(UUID.randomUUID().toString());
         api1.create();
-        THttpResponse response = useGet("/api/restapi")
+
+        final THttpResponse response = useGet("/api/restapi")
                 .addQueryParam("callback","func")
                 .addQueryParam("total","true").send();
         String content = response.getContent();
@@ -52,12 +56,11 @@ public class JsonpCallbackTest extends WebTestBase {
         assertEquals(headers.size(),1);
         assertTrue(headers.containsKey("X-Total-Count"));
         headers.forEach((s, o) -> assertEquals(response.getHeader(s),o));
-        String contentType = response.getHeader(Headers.CONTENT_TYPE);
-        assertEquals(ContentTypes.APPLICATION_JAVASCRIPT+"; charset="+response.getCharset(),contentType);
+        MimeType contentType = response.getContentType();
+        assertEquals(MimeTypes.APPLICATION_JAVASCRIPT_TYPE.withCharset(response.getCharset()), contentType);
 
-        THttpResponse response1 = useGet("/api/restapi")
-                .addQueryParam("total","true").send();
-        String contentType1 = response1.getHeader(Headers.CONTENT_TYPE);
-        assertEquals(ContentTypes.APPLICATION_JSON+"; charset="+response.getCharset(),contentType1);
+        THttpResponse response1 = useGet("/api/restapi").addQueryParam("total","true").send();
+        contentType = response1.getContentType();
+        assertEquals(MimeTypes.APPLICATION_JSON_TYPE.withCharset(response1.getCharset()), contentType);
     }
 }

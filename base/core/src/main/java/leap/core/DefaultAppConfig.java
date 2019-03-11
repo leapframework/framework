@@ -278,18 +278,6 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
             }
         }
 
-        try {
-            v = null == propertyProvider ? null : propertyProvider.getRawProperty(name);
-            if(null != v){
-                log.info("property {} provide by {}",name,propertyProvider.getClass());
-                return v;
-            }
-            log.debug("property {} provide by local config",name);
-            return properties.get(name);
-        } catch (UnsupportedRawPropertyException e) {
-            log.debug("property {} provide by local config",name);
-        }
-
         v = properties.get(name);
 
         if(null == v) {
