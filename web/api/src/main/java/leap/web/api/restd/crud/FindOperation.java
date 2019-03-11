@@ -18,6 +18,7 @@ package leap.web.api.restd.crud;
 
 import leap.lang.Strings;
 import leap.orm.dao.Dao;
+import leap.web.Request;
 import leap.web.action.ActionParams;
 import leap.web.action.FuncActionBuilder;
 import leap.web.api.Api;
@@ -25,10 +26,7 @@ import leap.web.api.config.ApiConfigurator;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.ApiResponse;
 import leap.web.api.mvc.params.QueryOptionsBase;
-import leap.web.api.orm.ModelExecutorContext;
-import leap.web.api.orm.ModelQueryExecutor;
-import leap.web.api.orm.QueryOneResult;
-import leap.web.api.orm.SimpleModelExecutorContext;
+import leap.web.api.orm.*;
 import leap.web.api.restd.CrudOperation;
 import leap.web.api.restd.CrudOperationBase;
 import leap.web.api.restd.RestdContext;
@@ -36,6 +34,8 @@ import leap.web.api.restd.RestdModel;
 import leap.web.exception.NotFoundException;
 import leap.web.route.RouteBuilder;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 
 /**
@@ -101,6 +101,8 @@ public class FindOperation extends CrudOperationBase implements CrudOperation {
         public Object apply(ActionParams params) {
             MApiModel am = am();
 
+            final Request request = params.getContext().getRequest();
+
             ModelExecutorContext context  = new SimpleModelExecutorContext(api, dao, am, em, params);
             ModelQueryExecutor   executor = newQueryExecutor(context);
 
@@ -108,17 +110,38 @@ public class FindOperation extends CrudOperationBase implements CrudOperation {
             QueryOptionsBase options = getWithId(params, 0);
 
             QueryOneResult result = executor.queryOne(id, options);
+
+            boolean hasExpandErrors = null != result.getExpandErrors() && !result.getExpandErrors().isEmpty();
+            if (hasExpandErrors && !allowExpandErrors(request)) {
+                return ApiResponse.err(request.getMessageSource().getMessage(QueryOperation.QUERY_EXPAND_ERROR));
+            }
+
+            ApiResponse response;
             if (null != result.getEntity()) {
-                return ApiResponse.of(result.getEntity());
+                response = ApiResponse.of(result.getEntity());
             } else if (result.getRecord() == null) {
                 throw new NotFoundException(am.getName() + " '" + id.toString() + "' not found");
             } else {
-                return ApiResponse.of(result.getRecord());
+                response = ApiResponse.of(result.getRecord());
             }
+
+            if (hasExpandErrors) {
+                List<String> expands = new ArrayList<>();
+                for (ExpandError ee : result.getExpandErrors()) {
+                    expands.add(ee.getExpand());
+                }
+                response.withHeader(QueryOperation.ERROR_EXPANDS, Strings.join(expands, ','));
+            }
+
+            return response;
         }
 
         protected ModelQueryExecutor newQueryExecutor(ModelExecutorContext context) {
             return mef.newQueryExecutor(context);
+        }
+
+        protected boolean allowExpandErrors(Request request) {
+            return "1".equals(request.getHeader(QueryOperation.ALLOW_EXPAND_ERROR));
         }
 
         @Override

@@ -18,6 +18,7 @@ package leap.web.api.restd.crud;
 
 import leap.lang.Strings;
 import leap.orm.dao.Dao;
+import leap.web.Request;
 import leap.web.action.ActionParams;
 import leap.web.action.FuncActionBuilder;
 import leap.web.api.Api;
@@ -25,16 +26,15 @@ import leap.web.api.config.ApiConfigurator;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.ApiResponse;
 import leap.web.api.mvc.params.QueryOptions;
-import leap.web.api.orm.ModelExecutorContext;
-import leap.web.api.orm.ModelQueryExecutor;
-import leap.web.api.orm.QueryListResult;
-import leap.web.api.orm.SimpleModelExecutorContext;
+import leap.web.api.orm.*;
 import leap.web.api.restd.CrudOperation;
 import leap.web.api.restd.CrudOperationBase;
 import leap.web.api.restd.RestdContext;
 import leap.web.api.restd.RestdModel;
 import leap.web.route.RouteBuilder;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 
 /**
@@ -43,6 +43,10 @@ import java.util.function.Function;
 public class QueryOperation extends CrudOperationBase implements CrudOperation {
 
     protected static final String NAME = "query";
+
+    public static final String QUERY_EXPAND_ERROR = "webapi.errors.query_expand_error";
+    public static final String ALLOW_EXPAND_ERROR = "x-allow-expand-err";
+    public static final String ERROR_EXPANDS      = "x-err-expands";
 
     @Override
     public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model) {
@@ -101,6 +105,8 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
         public Object apply(ActionParams params) {
             MApiModel am = am();
 
+            final Request request = params.getContext().getRequest();
+
             ModelExecutorContext context  = new SimpleModelExecutorContext(api, dao, am, em, params);
             ModelQueryExecutor   executor = newQueryExecutor(context);
 
@@ -108,19 +114,37 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
 
             QueryListResult result = executor.queryList(options);
 
-            if (null != result.getEntity()) {
-                return ApiResponse.of(result.getEntity());
+            boolean hasExpandErrors = null != result.getExpandErrors() && !result.getExpandErrors().isEmpty();
+            if (hasExpandErrors && !allowExpandErrors(request)) {
+                return ApiResponse.err(request.getMessageSource().getMessage(QUERY_EXPAND_ERROR));
             }
 
-            if (result.getCount() == -1) {
-                return ApiResponse.of(result.getList());
+            ApiResponse response;
+            if (null != result.getEntity()) {
+                response = ApiResponse.of(result.getEntity());
+            } else if (result.getCount() == -1) {
+                response = ApiResponse.of(result.getList());
             } else {
-                return ApiResponse.of(result.getList()).setHeader("X-Total-Count", String.valueOf(result.getCount()));
+                response = ApiResponse.of(result.getList()).setHeader("X-Total-Count", String.valueOf(result.getCount()));
             }
+
+            if (hasExpandErrors) {
+                List<String> expands = new ArrayList<>();
+                for (ExpandError ee : result.getExpandErrors()) {
+                    expands.add(ee.getExpand());
+                }
+                response.withHeader(ERROR_EXPANDS, Strings.join(expands, ','));
+            }
+
+            return response;
         }
 
         protected ModelQueryExecutor newQueryExecutor(ModelExecutorContext context) {
             return mef.newQueryExecutor(context);
+        }
+
+        protected boolean allowExpandErrors(Request request) {
+            return "1".equals(request.getHeader(ALLOW_EXPAND_ERROR));
         }
 
         @Override

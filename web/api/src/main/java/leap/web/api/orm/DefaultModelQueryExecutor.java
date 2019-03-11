@@ -22,6 +22,8 @@ import leap.core.value.Record;
 import leap.core.value.SimpleRecord;
 import leap.lang.*;
 import leap.lang.convert.Converts;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.lang.text.scel.ScelExpr;
 import leap.lang.text.scel.ScelName;
 import leap.lang.text.scel.ScelNode;
@@ -41,9 +43,7 @@ import leap.web.api.mvc.params.QueryOptionsBase;
 import leap.web.api.query.*;
 import leap.web.api.remote.RestQueryListResult;
 import leap.web.api.remote.RestResource;
-import leap.web.api.remote.RestResourceInvokeException;
 import leap.web.exception.BadRequestException;
-import leap.web.exception.InternalServerErrorException;
 
 import java.lang.reflect.Array;
 import java.util.*;
@@ -51,6 +51,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class DefaultModelQueryExecutor extends ModelExecutorBase implements ModelQueryExecutor {
+
+    private static final Log log = LogFactory.get(DefaultModelQueryExecutor.class);
 
     protected final ModelAndMapping     modelAndMapping;
     protected final ModelQueryExtension ex;
@@ -112,11 +114,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
         record = query.firstOrNull();
 
-        try {
-            expandOne(record, options);
-        }catch (RestResourceInvokeException e) {
-            throw new InternalServerErrorException("Remote expanding error: " + e.getMessage(), e);
-        }
+        List<ExpandError> expandErrors = expandOne(record, options);
 
         if (null != ex.handler && null != record) {
             ex.handler.postQueryOne(context, id, record);
@@ -124,18 +122,26 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
         Object entity = ex.processQueryOneRecord(context, id, record);
 
-        return new QueryOneResult(record, entity);
+        return new QueryOneResult(record, entity, expandErrors);
     }
 
-    protected void expandOne(Record record, QueryOptionsBase options) {
+    protected List<ExpandError> expandOne(Record record, QueryOptionsBase options) {
         if (null != record && null != options) {
             Expand[] expands = options.getResolvedExpands();
             if (expands.length > 0) {
+                final List<ExpandError> expandErrors = new ArrayList<>();
+                final List<Record>      list         = Arrays.asList(record);
                 for (Expand expand : expands) {
-                    expand(expand, record);
+                    try {
+                        expand(expand, list);
+                    } catch (ExpandException e) {
+                        expandErrors.add(new ExpandError(expand.getName(), e.getMessage(), e));
+                    }
                 }
+                return expandErrors;
             }
         }
+        return null;
     }
 
     @Override
@@ -253,6 +259,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             ex.handler.postQueryList(context, list);
         }
 
+        List<ExpandError> expandErrors = new ArrayList<>();
         if (!list.isEmpty()) {
             Expand[] expands = ExpandParser.parse(options.getExpand());
             if (expands.length > 0) {
@@ -261,12 +268,12 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                     throw new BadRequestException("The result size " + list.size() + " exceed max expand " + ac.getMaxExpand() + ", please decrease your page_size");
                 }
 
-                try {
-                    for (Expand expand : expands) {
+                for (Expand expand : expands) {
+                    try {
                         expand(expand, list);
+                    } catch (ExpandException e) {
+                        expandErrors.add(new ExpandError(expand.getName(), e.getMessage(), e.getCause()));
                     }
-                }catch (RestResourceInvokeException e) {
-                    throw new InternalServerErrorException("Remote expanding error: " + e.getMessage(), e);
                 }
             }
         }
@@ -277,7 +284,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
         Object entity = ex.processQueryListResult(context, page, count, list);
 
-        return new QueryListResult(list, count, entity);
+        return new QueryListResult(list, count, entity, expandErrors);
     }
 
     @Override
@@ -378,9 +385,9 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
 
         StringBuilder filters = new StringBuilder();
-        int i=0;
+        int           i       = 0;
         for (Object fk : fks) {
-            if(i > 0) {
+            if (i > 0) {
                 filters.append(',');
             }
             filters.append(fk.toString());
@@ -396,7 +403,14 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                 opts.setSelect(expand.getSelect() + "," + referredFieldName);
             }
         }
-        RestQueryListResult<Map> resultList = resource.queryList(Map.class, opts);
+
+        RestQueryListResult<Map> resultList;
+        try {
+            resultList = resource.queryList(Map.class, opts);
+        } catch (Exception e) {
+            log.error("Expand by rest error, {}", e.getMessage(), e);
+            throw new ExpandException(e);
+        }
         if (resultList.getCount() > ac.getExpandLimit()) {
             throw new BadRequestException("Expanded records of '" + rp.getName() + "' exceed max limit " + ac.getExpandLimit());
         }
@@ -571,7 +585,15 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             String       filter  = idFieldName + " in (" + joinInIds(partOfIds) + ")";
             QueryOptions options = new QueryOptions();
             options.setFilters(filter);
-            totalExpanded.addAll(restResource.queryList(Map.class, options).getList());
+
+            RestQueryListResult<Map> listResult;
+            try {
+                listResult = restResource.queryList(Map.class, options);
+            } catch (Exception e) {
+                log.error("Expand by reset error, {}", e.getMessage(), e);
+                throw new ExpandException(e);
+            }
+            totalExpanded.addAll(listResult.getList());
         }
 
         Map<Object, Map> totalExpandedMap =
@@ -719,10 +741,6 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         } else {
             record.put(rp.getName(), expandQuery.firstOrNull());
         }
-    }
-
-    protected void expand(Expand expand, Record... records) {
-        expand(expand, Arrays.asList(records));
     }
 
     protected void applyOrderBy(CriteriaQuery query, OrderBy orderBy) {

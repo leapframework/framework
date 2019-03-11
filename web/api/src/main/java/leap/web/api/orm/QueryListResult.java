@@ -27,9 +27,10 @@ public final class QueryListResult {
 
     public static QueryListResult EMPTY = new QueryListResult(new ArrayList<>(), 0);
 
-    public List<Record> list;
-    public long         count;
-    public Object       entity;
+    public List<Record>      list;
+    public long              count;
+    public Object            entity;
+    public List<ExpandError> expandErrors;
 
     public QueryListResult() {
 
@@ -43,6 +44,13 @@ public final class QueryListResult {
         this.list = list;
         this.count = count;
         this.entity = entity;
+    }
+
+    public QueryListResult(List<Record> list, long count, Object entity, List<ExpandError> expandErrors) {
+        this.list = list;
+        this.count = count;
+        this.entity = entity;
+        this.expandErrors = expandErrors;
     }
 
     public List<Record> getList() {
@@ -67,5 +75,20 @@ public final class QueryListResult {
 
     public void setEntity(Object entity) {
         this.entity = entity;
+    }
+
+    public List<ExpandError> getExpandErrors() {
+        return expandErrors;
+    }
+
+    public void setExpandErrors(List<ExpandError> expandErrors) {
+        this.expandErrors = expandErrors;
+    }
+
+    public void addExpandError(ExpandError e) {
+        if (null == expandErrors) {
+            expandErrors = new ArrayList<>();
+        }
+        expandErrors.add(e);
     }
 }

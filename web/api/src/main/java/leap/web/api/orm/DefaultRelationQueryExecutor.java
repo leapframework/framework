@@ -64,17 +64,19 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase<RelationExec
 
         Record record;
 
+        List<ExpandError> expandErrors = null;
         if (remoteRest) {
             record = queryOneRemoteSource(id, options);
-        }else if (tem.isRemoteRest()) {
+        } else if (tem.isRemoteRest()) {
             record = queryOneRemoteTarget(id, options);
-        }else {
-            record = iqe.queryOneByRelation(id, options);
+        } else {
+            expandErrors = new ArrayList<>();
+            record = iqe.queryOneByRelation(id, options, expandErrors);
         }
 
         ex.postRelateQueryOne(context, id, record);
 
-        QueryOneResult result = new QueryOneResult(record);
+        QueryOneResult result = new QueryOneResult(record, expandErrors);
         ex.completeRelateQueryOne(context, id, result);
 
         return result;
@@ -113,11 +115,11 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase<RelationExec
         QueryListResult result;
         if (remoteRest) {
             result = queryListRemoteSource(id, options);
-        }else if (rm.isEmbedded()) {
+        } else if (rm.isEmbedded()) {
             result = queryListEmbedded(id, options);
-        }else if (tem.isRemoteRest()) {
+        } else if (tem.isRemoteRest()) {
             result = queryListRemoteTarget(id, options);
-        }else {
+        } else {
             result = iqe.queryListByRelation(id, options);
         }
 
@@ -163,7 +165,7 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase<RelationExec
             this.rm = rm;
         }
 
-        public Record queryOneByRelation(Object relatedId, QueryOptionsBase options) {
+        public Record queryOneByRelation(Object relatedId, QueryOptionsBase options, List<ExpandError> expandErrors) {
             CriteriaQuery<Record> query =
                     createCriteriaQuery().joinById(rm.getTargetEntityName(), rm.getName(), "j", relatedId);
 
@@ -173,7 +175,10 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase<RelationExec
 
             Record record = query.firstOrNull();
 
-            expandOne(record, options);
+            List<ExpandError> ees = expandOne(record, options);
+            if (null != ees) {
+                expandErrors.addAll(ees);
+            }
 
             return record;
         }
