@@ -25,6 +25,7 @@ import leap.lang.accessor.PropertyGetter;
 import leap.lang.resource.ResourceSet;
 import leap.lang.text.PlaceholderResolver;
 
+import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -264,30 +265,30 @@ public interface AppConfig extends PropertyGetter {
      * <p/>
      * Never returns null.
      */
-    <T> Property<T> getDynaProperty(String name, Class<T> type);
+    <T> Property<T> getDynaProperty(String name, Type type,  Class<T> cls);
 
     /**
-     * @see {@link #getDynaProperty(String, Class)}
+     * @see {@link #getDynaProperty(String, Type, Class)}
      */
     StringProperty getDynaProperty(String name);
 
     /**
-     * @see {@link #getDynaProperty(String, Class)}.
+     * @see {@link #getDynaProperty(String, Type, Class)}.
      */
     IntegerProperty getDynaIntegerProperty(String name);
 
     /**
-     * @see {@link #getDynaProperty(String, Class)}.
+     * @see {@link #getDynaProperty(String, Type, Class)}.
      */
     LongProperty getDynaLongProperty(String name);
 
     /**
-     * @see {@link #getDynaProperty(String, Class)}.
+     * @see {@link #getDynaProperty(String, Type, Class)}.
      */
     BooleanProperty getDynaBooleanProperty(String name);
 
     /**
-     * @see {@link #getDynaProperty(String, Class)}.
+     * @see {@link #getDynaProperty(String, Type, Class)}.
      */
     DoubleProperty getDynaDoubleProperty(String name);
 

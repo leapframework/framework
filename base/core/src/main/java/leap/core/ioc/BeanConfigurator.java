@@ -334,8 +334,9 @@ public class BeanConfigurator {
         }else if(type.equals(Property.class)){
 
             Class<?> valueType = Types.getActualTypeArgument(v.getGenericType());
-
-            value = config.getDynaProperty(key, valueType);
+            Type genericType = Types.getTypeArgument(v.getGenericType());
+            
+            value = config.getDynaProperty(key, genericType, valueType);
 
         }else{
             throw new IllegalStateException("Not supported property type '" + type + "'");

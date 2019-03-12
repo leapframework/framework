@@ -35,6 +35,7 @@ import leap.lang.text.DefaultPlaceholderResolver;
 import leap.lang.text.PlaceholderResolver;
 
 import java.io.File;
+import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -331,10 +332,10 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     }
 
     @Override
-    public <T> Property<T> getDynaProperty(String name, Class<T> type) {
+    public <T> Property<T> getDynaProperty(String name, Type type, Class<T> cls) {
         if(null != propertyProvider) {
             try {
-                Property<T> p = propertyProvider.getDynaProperty(name, type);
+                Property<T> p = propertyProvider.getDynaProperty(name, type, cls);
                 log.info("property {} provide by {}",name,propertyProvider.getClass());
                 return p;
             } catch (UnsupportedDynaPropertyException e) {
@@ -346,11 +347,11 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
             return new NullProperty<>();
         }
 
-        TypeInfo ti = Types.getTypeInfo(type,null);
+        TypeInfo ti = Types.getTypeInfo(cls,null);
         if(ti.isComplexType()) {
-            return new SimpleProperty<>(type, JSON.decode(v, type));
+            return new SimpleProperty<>(cls, JSON.decode(v, cls));
         }else{
-            return new SimpleProperty<>(type, Converts.convert(v, type));
+            return new SimpleProperty<>(cls, Converts.convert(v, cls));
         }
     }
 
