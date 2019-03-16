@@ -45,6 +45,7 @@ public class DefaultOrmConfig implements OrmConfig,PostConfigureBean,BeanFactory
 	protected boolean     modelCrossContext          = false;
     protected boolean     mappingClassSimpleName     = false;
     protected boolean     mappingFieldExplicitly     = false;
+    protected boolean     eventsDefaultEnabled       = true;
     protected boolean     convertPropertyForReadMap  = false;
     protected long        defaultMaxResults          = -1;
     protected String      optimisticLockFieldName    = OrmConstants.LOCK_VERSION;
@@ -148,6 +149,16 @@ public class DefaultOrmConfig implements OrmConfig,PostConfigureBean,BeanFactory
     @ConfigProperty
     public void setConvertPropertyForReadMap(boolean b) {
         this.convertPropertyForReadMap = b;
+    }
+
+    @Override
+    public boolean isEventsDefaultEnabled() {
+        return eventsDefaultEnabled;
+    }
+
+    @ConfigProperty
+    public void setEventsDefaultEnabled(boolean eventsDefaultEnabled) {
+        this.eventsDefaultEnabled = eventsDefaultEnabled;
     }
 
     @Override

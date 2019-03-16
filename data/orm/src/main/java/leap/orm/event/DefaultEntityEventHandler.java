@@ -25,44 +25,46 @@ import java.util.List;
 
 public class DefaultEntityEventHandler implements EntityEventHandler {
 
+    private static final EntityListeners EMPTY_LISTENERS = new EntityListenersBuilder().build();
+
     @Override
     public boolean isHandleCreateEvent(OrmContext context, EntityMapping em) {
-        return getListeners(em).hasCreateListeners();
+        return getListeners(context, em).hasCreateListeners();
     }
 
     @Override
     public boolean isCreateEventTransactional(OrmContext context, EntityMapping em) {
-        return getListeners(em).hasTransCreateListeners();
+        return getListeners(context, em).hasTransCreateListeners();
     }
 
     @Override
     public boolean isHandleUpdateEvent(OrmContext context, EntityMapping em) {
-        return getListeners(em).hasUpdateListeners();
+        return getListeners(context, em).hasUpdateListeners();
     }
 
     @Override
     public boolean isUpdateEventTransactional(OrmContext context, EntityMapping em) {
-        return getListeners(em).hasTransUpdateListeners();
+        return getListeners(context, em).hasTransUpdateListeners();
     }
 
     @Override
     public boolean isHandleDeleteEvent(OrmContext context, EntityMapping em) {
-        return getListeners(em).hasDeleteListeners();
+        return getListeners(context, em).hasDeleteListeners();
     }
 
     @Override
     public boolean isDeleteEventTransactional(OrmContext context, EntityMapping em) {
-        return getListeners(em).hasTransDeleteListeners();
+        return getListeners(context, em).hasTransDeleteListeners();
     }
 
     @Override
     public boolean isHandleLoadEvent(OrmContext context, EntityMapping em) {
-        return getListeners(em).hasLoadListeners();
+        return getListeners(context, em).hasLoadListeners();
     }
 
     @Override
     public void preCreateEntityNoTrans(OrmContext context, EntityMapping em, CreateEntityEvent e) {
-        for (PreCreateListener listener : getListeners(em).getNoTransPreCreateListeners()) {
+        for (PreCreateListener listener : getListeners(context, em).getNoTransPreCreateListeners()) {
             listener.preCreateEntity(e);
         }
         clearContext(em);
@@ -70,7 +72,7 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
 
     @Override
     public void preCreateEntityInTrans(OrmContext context, EntityMapping em, CreateEntityEvent e) {
-        for (PreCreateListener listener : getListeners(em).getInTransPreCreateListeners()) {
+        for (PreCreateListener listener : getListeners(context, em).getInTransPreCreateListeners()) {
             listener.preCreateEntity(e);
         }
         clearContext(em);
@@ -78,7 +80,7 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
 
     @Override
     public void postCreateEntityInTrans(OrmContext context, EntityMapping em, CreateEntityEvent e) {
-        for (PostCreateListener listener : getListeners(em).getInTransPostCreateListeners()) {
+        for (PostCreateListener listener : getListeners(context, em).getInTransPostCreateListeners()) {
             listener.postCreateEntity(e);
         }
         clearContext(em);
@@ -86,7 +88,7 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
 
     @Override
     public void postCreateEntityNoTrans(OrmContext context, EntityMapping em, CreateEntityEvent e) {
-        for (PostCreateListener listener : getListeners(em).getNoTransPostCreateListeners()) {
+        for (PostCreateListener listener : getListeners(context, em).getNoTransPostCreateListeners()) {
             listener.postCreateEntity(e);
         }
         clearContext(em);
@@ -94,7 +96,7 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
 
     @Override
     public void preUpdateEntityNoTrans(OrmContext context, EntityMapping em, UpdateEntityEvent e) {
-        for (PreUpdateListener listener : getListeners(em).getNoTransPreUpdateListeners()) {
+        for (PreUpdateListener listener : getListeners(context, em).getNoTransPreUpdateListeners()) {
             listener.preUpdateEntity(e);
         }
         clearContext(em);
@@ -102,7 +104,7 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
 
     @Override
     public void preUpdateEntityInTrans(OrmContext context, EntityMapping em, UpdateEntityEvent e) {
-        for (PreUpdateListener listener : getListeners(em).getInTransPreUpdateListeners()) {
+        for (PreUpdateListener listener : getListeners(context, em).getInTransPreUpdateListeners()) {
             listener.preUpdateEntity(e);
         }
         clearContext(em);
@@ -110,7 +112,7 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
 
     @Override
     public void postUpdateEntityInTrans(OrmContext context, EntityMapping em, UpdateEntityEvent e) {
-        for (PostUpdateListener listener : getListeners(em).getInTransPostUpdateListeners()) {
+        for (PostUpdateListener listener : getListeners(context, em).getInTransPostUpdateListeners()) {
             listener.postUpdateEntity(e);
         }
         clearContext(em);
@@ -118,7 +120,7 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
 
     @Override
     public void postUpdateEntityNoTrans(OrmContext context, EntityMapping em, UpdateEntityEvent e) {
-        for (PostUpdateListener listener : getListeners(em).getNoTransPostUpdateListeners()) {
+        for (PostUpdateListener listener : getListeners(context, em).getNoTransPostUpdateListeners()) {
             listener.postUpdateEntity(e);
         }
         clearContext(em);
@@ -126,7 +128,7 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
 
     @Override
     public void preDeleteEntityNoTrans(OrmContext context, EntityMapping em, DeleteEntityEvent e) {
-        for (PreDeleteListener listener : getListeners(em).getNoTransPreDeleteListeners()) {
+        for (PreDeleteListener listener : getListeners(context, em).getNoTransPreDeleteListeners()) {
             listener.preDeleteEntity(e);
         }
         clearContext(em);
@@ -134,7 +136,7 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
 
     @Override
     public void preDeleteEntityInTrans(OrmContext context, EntityMapping em, DeleteEntityEvent e) {
-        for (PreDeleteListener listener : getListeners(em).getInTransPreDeleteListeners()) {
+        for (PreDeleteListener listener : getListeners(context, em).getInTransPreDeleteListeners()) {
             listener.preDeleteEntity(e);
         }
         clearContext(em);
@@ -142,7 +144,7 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
 
     @Override
     public void postDeleteEntityInTrans(OrmContext context, EntityMapping em, DeleteEntityEvent e) {
-        for (PostDeleteListener listener : getListeners(em).getInTransPostDeleteListeners()) {
+        for (PostDeleteListener listener : getListeners(context, em).getInTransPostDeleteListeners()) {
             listener.postDeleteEntity(e);
         }
         clearContext(em);
@@ -150,7 +152,7 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
 
     @Override
     public void postDeleteEntityNoTrans(OrmContext context, EntityMapping em, DeleteEntityEvent e) {
-        for (PostDeleteListener listener : getListeners(em).getNoTransPostDeleteListeners()) {
+        for (PostDeleteListener listener : getListeners(context, em).getNoTransPostDeleteListeners()) {
             listener.postDeleteEntity(e);
         }
         clearContext(em);
@@ -158,13 +160,18 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
 
     @Override
     public void postLoadEntityNoTrans(OrmContext context, EntityMapping em, LoadEntityEvent e) {
-        for (PostLoadListener listener : getListeners(em).getPostLoadListeners()) {
+        for (PostLoadListener listener : getListeners(context, em).getPostLoadListeners()) {
             listener.postLoadEntity(e);
         }
         clearContext(em);
     }
 
-    protected EntityListeners getListeners(EntityMapping em) {
+    protected EntityListeners getListeners(OrmContext context, EntityMapping em) {
+        boolean withEvents = context.getDao().isWithEvents();
+        if (!withEvents) {
+            return EMPTY_LISTENERS;
+        }
+
         List<EntityListeners> list = EntityMapping.getContextListeners();
         if (null != list && !list.isEmpty()) {
             List<EntityListeners> all = new ArrayList<>(list);

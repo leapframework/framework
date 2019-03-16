@@ -96,6 +96,11 @@ public interface OrmConfig {
     boolean isMappingFieldExplicitly();
 
     /**
+     * Returns true if the dao events is enabled by default.
+     */
+    boolean isEventsDefaultEnabled();
+
+    /**
      * Returns true if enables filter column(s).
      */
     default boolean isFilterColumnEnabled() {

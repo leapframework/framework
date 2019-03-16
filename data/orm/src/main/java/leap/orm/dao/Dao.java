@@ -24,6 +24,7 @@ import leap.core.transaction.TransactionDefinition;
 import leap.core.validation.Errors;
 import leap.core.value.Record;
 import leap.orm.Orm;
+import leap.orm.OrmConfig;
 import leap.orm.OrmContext;
 import leap.orm.OrmMetadata;
 import leap.orm.command.DeleteCommand;
@@ -41,6 +42,7 @@ import leap.orm.value.EntityBase;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * Dao means Data Access Object.
@@ -962,4 +964,33 @@ public abstract class Dao implements JdbcExecutor {
 	 */
 	public abstract <T> T doTransaction(TransactionCallbackWithResult<T> callback, boolean requiresNew);
 
+	//------------------ events --------------------
+
+	/**
+	 * Executes with events.
+	 */
+	public abstract void withEvents(Runnable func);
+
+	/**
+	 * Executes with events and returns result.
+	 */
+	public abstract <T> T withEvents(Supplier<T> func);
+
+	/**
+	 * Executes without events.
+	 */
+	public abstract void withoutEvents(Runnable func);
+
+	/**
+	 * Executes without events and returns result.
+	 */
+	public abstract <T> T withoutEvents(Supplier<T> func);
+
+	/**
+	 * Returns <code>true</code> if events is enabled at current execution.
+	 *
+	 * <p/>
+	 * See {@link OrmConfig#isEventsDefaultEnabled()}.
+	 */
+	public abstract boolean isWithEvents();
 }

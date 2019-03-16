@@ -99,30 +99,32 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
         ModelExecutionContext context = new DefaultModelExecutionContext(this.context);
 
-        if (null != ex.handler) {
-            ex.handler.processQueryOneOptions(context, id, options);
-        }
+        return dao.withEvents(() -> {
+            if (null != ex.handler) {
+                ex.handler.processQueryOneOptions(context, id, options);
+            }
 
-        Record record;
+            Record record;
 
-        CriteriaQuery<Record> query = createCriteriaQuery().whereById(id);
-        applySelect(query, options, new HashMap<>());
+            CriteriaQuery<Record> query = createCriteriaQuery().whereById(id);
+            applySelect(query, options, new HashMap<>());
 
-        ex.preQueryOne(context, id, query);
-        if (null != ex.handler) {
-            ex.handler.preQueryOne(context, id, query);
-        }
-        record = query.firstOrNull();
+            ex.preQueryOne(context, id, query);
+            if (null != ex.handler) {
+                ex.handler.preQueryOne(context, id, query);
+            }
+            record = query.firstOrNull();
 
-        List<ExpandError> expandErrors = expandOne(record, options);
+            List<ExpandError> expandErrors = expandOne(record, options);
 
-        if (null != ex.handler && null != record) {
-            ex.handler.postQueryOne(context, id, record);
-        }
+            if (null != ex.handler && null != record) {
+                ex.handler.postQueryOne(context, id, record);
+            }
 
-        Object entity = ex.processQueryOneRecord(context, id, record);
+            Object entity = ex.processQueryOneRecord(context, id, record);
 
-        return new QueryOneResult(record, entity, expandErrors);
+            return new QueryOneResult(record, entity, expandErrors);
+        });
     }
 
     protected List<ExpandError> expandOne(Record record, QueryOptionsBase options) {

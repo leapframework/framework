@@ -43,6 +43,7 @@ import leap.orm.value.Entity;
 import javax.sql.DataSource;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public abstract class DaoWrapper extends Dao {
 
@@ -620,7 +621,7 @@ public abstract class DaoWrapper extends Dao {
 
     @Override
     public void doTransaction(TransactionCallback callback, boolean requiresNew) {
-        dao().doTransaction(callback,requiresNew);
+        dao().doTransaction(callback, requiresNew);
     }
 
     @Override
@@ -701,5 +702,30 @@ public abstract class DaoWrapper extends Dao {
     @Override
     public <T> T executeQuery(String sql, Object[] args, int[] types, ResultSetReader<T> reader) throws NestedSQLException {
         return dao().executeQuery(sql, args, types, reader);
+    }
+
+    @Override
+    public void withEvents(Runnable func) {
+        dao().withEvents(func);
+    }
+
+    @Override
+    public <T> T withEvents(Supplier<T> func) {
+        return dao().withEvents(func);
+    }
+
+    @Override
+    public void withoutEvents(Runnable func) {
+        dao().withEvents(func);
+    }
+
+    @Override
+    public <T> T withoutEvents(Supplier<T> func) {
+        return dao().withoutEvents(func);
+    }
+
+    @Override
+    public boolean isWithEvents() {
+        return dao().isWithEvents();
     }
 }

@@ -208,56 +208,58 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
 
         AtomicInteger result = new AtomicInteger();
 
-        if(relationProperties.isEmpty()) {
-            result.set(executeUpdate(update, id));
-        }else {
-            dao.doTransaction((conn) -> {
+        dao.withEvents(() -> {
+            if(relationProperties.isEmpty()) {
                 result.set(executeUpdate(update, id));
+            }else {
+                dao.doTransaction((conn) -> {
+                    result.set(executeUpdate(update, id));
 
-                if(result.get() > 0) {
-                    for(Map.Entry<RelationProperty, Object[]> entry : relationProperties.entrySet()) {
-                        //todo : valid for many-to-many only ?
+                    if(result.get() > 0) {
+                        for(Map.Entry<RelationProperty, Object[]> entry : relationProperties.entrySet()) {
+                            //todo : valid for many-to-many only ?
 
-                        RelationProperty rp = entry.getKey();
+                            RelationProperty rp = entry.getKey();
 
-                        RelationMapping rm = em.getRelationMapping(rp.getRelationName());
-                        if(rm.isManyToMany()) {
-                            EntityMapping joinEntity = md.getEntityMapping(rm.getJoinEntityName());
+                            RelationMapping rm = em.getRelationMapping(rp.getRelationName());
+                            if(rm.isManyToMany()) {
+                                EntityMapping joinEntity = md.getEntityMapping(rm.getJoinEntityName());
 
-                            RelationMapping manyToOne1 = joinEntity.tryGetKeyRelationMappingOfTargetEntity(em.getEntityName());
+                                RelationMapping manyToOne1 = joinEntity.tryGetKeyRelationMappingOfTargetEntity(em.getEntityName());
 
-                            String joinIdFieldName1 = manyToOne1.getJoinFields()[0].getLocalFieldName();
+                                String joinIdFieldName1 = manyToOne1.getJoinFields()[0].getLocalFieldName();
 
-                            String localName;
-                            String targetName;
+                                String localName;
+                                String targetName;
 
-                            if(joinEntity.getKeyFieldMappings()[0].getFieldName().equals(manyToOne1.getJoinFields()[0].getLocalFieldName())){
-                                localName  = joinEntity.getKeyFieldNames()[0];
-                                targetName = joinEntity.getKeyFieldNames()[1];
-                            }else{
-                                localName  = joinEntity.getKeyFieldNames()[1];
-                                targetName = joinEntity.getKeyFieldNames()[0];
+                                if(joinEntity.getKeyFieldMappings()[0].getFieldName().equals(manyToOne1.getJoinFields()[0].getLocalFieldName())){
+                                    localName  = joinEntity.getKeyFieldNames()[0];
+                                    targetName = joinEntity.getKeyFieldNames()[1];
+                                }else{
+                                    localName  = joinEntity.getKeyFieldNames()[1];
+                                    targetName = joinEntity.getKeyFieldNames()[0];
+                                }
+
+                                Object localId = id;
+
+                                List<Map<String,Object>> batchId = new ArrayList<>();
+
+                                for(Object targetId : entry.getValue()) {
+                                    batchId.add(New.hashMap(localName, localId, targetName, targetId));
+                                }
+
+                                //delete
+                                dao.createCriteriaQuery(joinEntity).where(joinIdFieldName1 + " = ?", id).delete();
+
+                                //insert
+                                dao.batchInsert(joinEntity, batchId);
                             }
-
-                            Object localId = id;
-
-                            List<Map<String,Object>> batchId = new ArrayList<>();
-
-                            for(Object targetId : entry.getValue()) {
-                                batchId.add(New.hashMap(localName, localId, targetName, targetId));
-                            }
-
-                            //delete
-                            dao.createCriteriaQuery(joinEntity).where(joinIdFieldName1 + " = ?", id).delete();
-
-                            //insert
-                            dao.batchInsert(joinEntity, batchId);
                         }
                     }
-                }
 
-            });
-        }
+                });
+            }
+        });
 
         return result.get();
     }

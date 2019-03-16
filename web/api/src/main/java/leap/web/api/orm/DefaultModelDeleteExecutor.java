@@ -34,39 +34,39 @@ public class DefaultModelDeleteExecutor extends ModelExecutorBase implements Mod
     public DeleteOneResult deleteOne(Object id, DeleteOptions options) {
         ModelExecutionContext context = new DefaultModelExecutionContext(this.context);
 
-        if(null == options) {
+        if (null == options) {
             options = new DeleteOptions();
         }
 
         ex.processDeleteOneOptions(context, id, options);
-        ex.processDeleteOneOptions((ModelExecutorContext)context, id, options);
+        ex.processDeleteOneOptions((ModelExecutorContext) context, id, options);
 
         DeleteOneResult result;
-        if(null != ex.handler) {
+        if (null != ex.handler) {
             ex.handler.processDeleteOptions(context, id, options);
             result = ex.handler.handleDeleteExecution(context, id, options);
-        }else {
+        } else {
             result = ex.handleDeleteOne(context, id, options);
         }
 
-        if(null == result) {
-            if(!em.isRemoteRest()) {
+        if (null == result) {
+            if (!em.isRemoteRest()) {
                 if (!options.isCascadeDelete()) {
-                    result = new DeleteOneResult(dao.delete(em, id) > 0);
+                    result = dao.withEvents(() -> new DeleteOneResult(dao.delete(em, id) > 0));
                 } else {
-                    result = new DeleteOneResult(dao.cascadeDelete(em, id));
+                    result = dao.withEvents(() -> new DeleteOneResult(dao.cascadeDelete(em, id)));
                 }
-            }else {
+            } else {
                 RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), em);
-                if(restResource.delete(id, options)){
+                if (restResource.delete(id, options)) {
                     result = new DeleteOneResult(true);
-                }else {
+                } else {
                     result = new DeleteOneResult(false);
                 }
             }
         }
 
-        if(null != ex.handler) {
+        if (null != ex.handler) {
             DeleteOneResult r = ex.handler.postDeleteRecord(context, id, options, result);
             if (null != r) {
                 result = r;
@@ -74,7 +74,7 @@ public class DefaultModelDeleteExecutor extends ModelExecutorBase implements Mod
         }
 
         Object entity = ex.processDeleteOneResult(context, id, result.success);
-        if(null != entity) {
+        if (null != entity) {
             result = new DeleteOneResult(result.success, entity);
         }
 
