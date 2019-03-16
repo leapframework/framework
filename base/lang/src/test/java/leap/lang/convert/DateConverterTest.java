@@ -19,6 +19,7 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.ParsePosition;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
@@ -82,6 +83,14 @@ public class DateConverterTest extends TestCase{
         System.out.println("Formatter.parse : " + sw.getElapsedMilliseconds());
 
         assertEquals("01:59:50", Converts.toString(d));
+    }
+    @Test
+    public void testStringDateToDate(){
+	    String str = "1988-04-10 00:00:00";
+        LocalDateTime ldt = LocalDateTime.parse(str, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        Date date =  Converts.convert(str, Date.class);
+        LocalDateTime converted = LocalDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC+8"));
+        assertEquals(ldt,converted);
     }
 
 }
