@@ -34,14 +34,23 @@ import java.util.*;
 public class EntityMapping extends ExtensibleBase {
     private static final Log log = LogFactory.get(EntityMapping.class);
 
-    private static final ThreadLocal<EntityListeners> CONTEXT_LISTENERS = new ThreadLocal<>();
+    private static final ThreadLocal<List<EntityListeners>> CONTEXT_LISTENERS = new ThreadLocal<>();
 
-    public static EntityListeners getContextListeners() {
+    public static List<EntityListeners> getContextListeners() {
         return CONTEXT_LISTENERS.get();
     }
 
-    public static void setContextListeners(EntityListeners listeners) {
-        CONTEXT_LISTENERS.set(listeners);
+    public static void addContextListeners(EntityListeners listeners) {
+        List<EntityListeners> list = CONTEXT_LISTENERS.get();
+        if(null == list) {
+            list = new ArrayList<>();
+            CONTEXT_LISTENERS.set(list);
+        }
+        list.add(listeners);
+    }
+
+    public static void clearContextListeners() {
+        CONTEXT_LISTENERS.remove();
     }
 
     protected final EntityMappingBuilder       builder;

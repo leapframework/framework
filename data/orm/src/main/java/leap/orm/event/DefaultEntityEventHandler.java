@@ -16,9 +16,12 @@
 
 package leap.orm.event;
 
-import leap.lang.Arrays2;
+import leap.lang.Collections2;
 import leap.orm.OrmContext;
 import leap.orm.mapping.EntityMapping;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class DefaultEntityEventHandler implements EntityEventHandler {
 
@@ -59,7 +62,7 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
 
     @Override
     public void preCreateEntityNoTrans(OrmContext context, EntityMapping em, CreateEntityEvent e) {
-        for(PreCreateListener listener : getListeners(em).getNoTransPreCreateListeners()) {
+        for (PreCreateListener listener : getListeners(em).getNoTransPreCreateListeners()) {
             listener.preCreateEntity(e);
         }
         clearContext(em);
@@ -67,7 +70,7 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
 
     @Override
     public void preCreateEntityInTrans(OrmContext context, EntityMapping em, CreateEntityEvent e) {
-        for(PreCreateListener listener : getListeners(em).getInTransPreCreateListeners()) {
+        for (PreCreateListener listener : getListeners(em).getInTransPreCreateListeners()) {
             listener.preCreateEntity(e);
         }
         clearContext(em);
@@ -75,7 +78,7 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
 
     @Override
     public void postCreateEntityInTrans(OrmContext context, EntityMapping em, CreateEntityEvent e) {
-        for(PostCreateListener listener : getListeners(em).getInTransPostCreateListeners()) {
+        for (PostCreateListener listener : getListeners(em).getInTransPostCreateListeners()) {
             listener.postCreateEntity(e);
         }
         clearContext(em);
@@ -83,7 +86,7 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
 
     @Override
     public void postCreateEntityNoTrans(OrmContext context, EntityMapping em, CreateEntityEvent e) {
-        for(PostCreateListener listener : getListeners(em).getNoTransPostCreateListeners()) {
+        for (PostCreateListener listener : getListeners(em).getNoTransPostCreateListeners()) {
             listener.postCreateEntity(e);
         }
         clearContext(em);
@@ -91,7 +94,7 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
 
     @Override
     public void preUpdateEntityNoTrans(OrmContext context, EntityMapping em, UpdateEntityEvent e) {
-        for(PreUpdateListener listener : getListeners(em).getNoTransPreUpdateListeners()) {
+        for (PreUpdateListener listener : getListeners(em).getNoTransPreUpdateListeners()) {
             listener.preUpdateEntity(e);
         }
         clearContext(em);
@@ -99,7 +102,7 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
 
     @Override
     public void preUpdateEntityInTrans(OrmContext context, EntityMapping em, UpdateEntityEvent e) {
-        for(PreUpdateListener listener : getListeners(em).getInTransPreUpdateListeners()) {
+        for (PreUpdateListener listener : getListeners(em).getInTransPreUpdateListeners()) {
             listener.preUpdateEntity(e);
         }
         clearContext(em);
@@ -107,7 +110,7 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
 
     @Override
     public void postUpdateEntityInTrans(OrmContext context, EntityMapping em, UpdateEntityEvent e) {
-        for(PostUpdateListener listener : getListeners(em).getInTransPostUpdateListeners()) {
+        for (PostUpdateListener listener : getListeners(em).getInTransPostUpdateListeners()) {
             listener.postUpdateEntity(e);
         }
         clearContext(em);
@@ -115,7 +118,7 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
 
     @Override
     public void postUpdateEntityNoTrans(OrmContext context, EntityMapping em, UpdateEntityEvent e) {
-        for(PostUpdateListener listener : getListeners(em).getNoTransPostUpdateListeners()) {
+        for (PostUpdateListener listener : getListeners(em).getNoTransPostUpdateListeners()) {
             listener.postUpdateEntity(e);
         }
         clearContext(em);
@@ -123,7 +126,7 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
 
     @Override
     public void preDeleteEntityNoTrans(OrmContext context, EntityMapping em, DeleteEntityEvent e) {
-        for(PreDeleteListener listener : getListeners(em).getNoTransPreDeleteListeners()) {
+        for (PreDeleteListener listener : getListeners(em).getNoTransPreDeleteListeners()) {
             listener.preDeleteEntity(e);
         }
         clearContext(em);
@@ -131,7 +134,7 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
 
     @Override
     public void preDeleteEntityInTrans(OrmContext context, EntityMapping em, DeleteEntityEvent e) {
-        for(PreDeleteListener listener : getListeners(em).getInTransPreDeleteListeners()) {
+        for (PreDeleteListener listener : getListeners(em).getInTransPreDeleteListeners()) {
             listener.preDeleteEntity(e);
         }
         clearContext(em);
@@ -139,7 +142,7 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
 
     @Override
     public void postDeleteEntityInTrans(OrmContext context, EntityMapping em, DeleteEntityEvent e) {
-        for(PostDeleteListener listener : getListeners(em).getInTransPostDeleteListeners()) {
+        for (PostDeleteListener listener : getListeners(em).getInTransPostDeleteListeners()) {
             listener.postDeleteEntity(e);
         }
         clearContext(em);
@@ -147,7 +150,7 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
 
     @Override
     public void postDeleteEntityNoTrans(OrmContext context, EntityMapping em, DeleteEntityEvent e) {
-        for(PostDeleteListener listener : getListeners(em).getNoTransPostDeleteListeners()) {
+        for (PostDeleteListener listener : getListeners(em).getNoTransPostDeleteListeners()) {
             listener.postDeleteEntity(e);
         }
         clearContext(em);
@@ -155,132 +158,184 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
 
     @Override
     public void postLoadEntityNoTrans(OrmContext context, EntityMapping em, LoadEntityEvent e) {
-        for(PostLoadListener listener : getListeners(em).getPostLoadListeners()) {
+        for (PostLoadListener listener : getListeners(em).getPostLoadListeners()) {
             listener.postLoadEntity(e);
         }
         clearContext(em);
     }
 
     protected EntityListeners getListeners(EntityMapping em) {
-        EntityListeners contextListeners = EntityMapping.getContextListeners();
-        if(null != contextListeners) {
-            return new CompositeListeners(contextListeners, em.getListeners());
-        }else {
+        List<EntityListeners> list = EntityMapping.getContextListeners();
+        if (null != list && !list.isEmpty()) {
+            List<EntityListeners> all = new ArrayList<>(list);
+            all.add(em.getListeners());
+            return new CompositeListeners(all);
+        } else {
             return em.getListeners();
         }
     }
 
     protected void clearContext(EntityMapping em) {
-        em.setContextListeners(null);
+        em.clearContextListeners();
     }
 
     protected static final class CompositeListeners implements EntityListeners {
-        private final EntityListeners context;
-        private final EntityListeners fixed;
+        private final List<EntityListeners> all;
 
-        public CompositeListeners(EntityListeners context, EntityListeners fixed) {
-            this.context = context;
-            this.fixed = fixed;
+        public CompositeListeners(List<EntityListeners> all) {
+            this.all = all;
         }
 
         @Override
         public boolean hasCreateListeners() {
-            return context.hasCreateListeners() || fixed.hasCreateListeners();
+            return all.stream().anyMatch(listeners -> listeners.hasCreateListeners());
         }
 
         @Override
         public boolean hasTransCreateListeners() {
-            return context.hasTransCreateListeners() || fixed.hasTransCreateListeners();
+            return all.stream().anyMatch(listeners -> listeners.hasTransCreateListeners());
         }
 
         @Override
         public boolean hasUpdateListeners() {
-            return context.hasUpdateListeners() || fixed.hasUpdateListeners();
+            return all.stream().anyMatch(listeners -> listeners.hasUpdateListeners());
         }
 
         @Override
         public boolean hasTransUpdateListeners() {
-            return context.hasTransUpdateListeners() || fixed.hasTransUpdateListeners();
+            return all.stream().anyMatch(listeners -> listeners.hasTransUpdateListeners());
         }
 
         @Override
         public boolean hasDeleteListeners() {
-            return context.hasDeleteListeners() || fixed.hasDeleteListeners();
+            return all.stream().anyMatch(listeners -> listeners.hasDeleteListeners());
         }
 
         @Override
         public boolean hasTransDeleteListeners() {
-            return context.hasTransDeleteListeners() || fixed.hasTransDeleteListeners();
+            return all.stream().anyMatch(listeners -> listeners.hasTransDeleteListeners());
         }
 
         @Override
         public boolean hasLoadListeners() {
-            return context.hasLoadListeners() || fixed.hasLoadListeners();
+            return all.stream().anyMatch(listeners -> listeners.hasLoadListeners());
         }
 
         @Override
         public PreCreateListener[] getNoTransPreCreateListeners() {
-            return Arrays2.concat(context.getNoTransPreCreateListeners(), fixed.getNoTransPreCreateListeners());
+            final List<PreCreateListener> result = new ArrayList<>();
+            for (EntityListeners listeners : all) {
+                Collections2.addAll(result, listeners.getNoTransPreCreateListeners());
+            }
+            return result.toArray(new PreCreateListener[result.size()]);
         }
 
         @Override
         public PreCreateListener[] getInTransPreCreateListeners() {
-            return Arrays2.concat(context.getInTransPreCreateListeners(), fixed.getInTransPreCreateListeners());
+            final List<PreCreateListener> result = new ArrayList<>();
+            for (EntityListeners listeners : all) {
+                Collections2.addAll(result, listeners.getInTransPreCreateListeners());
+            }
+            return result.toArray(new PreCreateListener[result.size()]);
         }
 
         @Override
         public PostCreateListener[] getNoTransPostCreateListeners() {
-            return Arrays2.concat(context.getNoTransPostCreateListeners(), fixed.getNoTransPostCreateListeners());
+            final List<PostCreateListener> result = new ArrayList<>();
+            for (EntityListeners listeners : all) {
+                Collections2.addAll(result, listeners.getNoTransPostCreateListeners());
+            }
+            return result.toArray(new PostCreateListener[result.size()]);
         }
 
         @Override
         public PostCreateListener[] getInTransPostCreateListeners() {
-            return Arrays2.concat(context.getInTransPostCreateListeners(), fixed.getInTransPostCreateListeners());
+            final List<PostCreateListener> result = new ArrayList<>();
+            for (EntityListeners listeners : all) {
+                Collections2.addAll(result, listeners.getInTransPostCreateListeners());
+            }
+            return result.toArray(new PostCreateListener[result.size()]);
         }
 
         @Override
         public PreUpdateListener[] getNoTransPreUpdateListeners() {
-            return Arrays2.concat(context.getNoTransPreUpdateListeners(), fixed.getNoTransPreUpdateListeners());
+            final List<PreUpdateListener> result = new ArrayList<>();
+            for (EntityListeners listeners : all) {
+                Collections2.addAll(result, listeners.getNoTransPreUpdateListeners());
+            }
+            return result.toArray(new PreUpdateListener[result.size()]);
         }
 
         @Override
         public PreUpdateListener[] getInTransPreUpdateListeners() {
-            return Arrays2.concat(context.getInTransPreUpdateListeners(), fixed.getInTransPreUpdateListeners());
+            final List<PreUpdateListener> result = new ArrayList<>();
+            for (EntityListeners listeners : all) {
+                Collections2.addAll(result, listeners.getInTransPreUpdateListeners());
+            }
+            return result.toArray(new PreUpdateListener[result.size()]);
         }
 
         @Override
         public PostUpdateListener[] getNoTransPostUpdateListeners() {
-            return Arrays2.concat(context.getNoTransPostUpdateListeners(), fixed.getNoTransPostUpdateListeners());
+            final List<PostUpdateListener> result = new ArrayList<>();
+            for (EntityListeners listeners : all) {
+                Collections2.addAll(result, listeners.getNoTransPostUpdateListeners());
+            }
+            return result.toArray(new PostUpdateListener[result.size()]);
         }
 
         @Override
         public PostUpdateListener[] getInTransPostUpdateListeners() {
-            return Arrays2.concat(context.getInTransPostUpdateListeners(), fixed.getInTransPostUpdateListeners());
+            final List<PostUpdateListener> result = new ArrayList<>();
+            for (EntityListeners listeners : all) {
+                Collections2.addAll(result, listeners.getInTransPostUpdateListeners());
+            }
+            return result.toArray(new PostUpdateListener[result.size()]);
         }
 
         @Override
         public PreDeleteListener[] getNoTransPreDeleteListeners() {
-            return Arrays2.concat(context.getNoTransPreDeleteListeners(), fixed.getNoTransPreDeleteListeners());
+            final List<PreDeleteListener> result = new ArrayList<>();
+            for (EntityListeners listeners : all) {
+                Collections2.addAll(result, listeners.getNoTransPreDeleteListeners());
+            }
+            return result.toArray(new PreDeleteListener[result.size()]);
         }
 
         @Override
         public PreDeleteListener[] getInTransPreDeleteListeners() {
-            return Arrays2.concat(context.getInTransPreDeleteListeners(), fixed.getInTransPreDeleteListeners());
+            final List<PreDeleteListener> result = new ArrayList<>();
+            for (EntityListeners listeners : all) {
+                Collections2.addAll(result, listeners.getInTransPreDeleteListeners());
+            }
+            return result.toArray(new PreDeleteListener[result.size()]);
         }
 
         @Override
         public PostDeleteListener[] getNoTransPostDeleteListeners() {
-            return Arrays2.concat(context.getNoTransPostDeleteListeners(), fixed.getNoTransPostDeleteListeners());
+            final List<PostDeleteListener> result = new ArrayList<>();
+            for (EntityListeners listeners : all) {
+                Collections2.addAll(result, listeners.getNoTransPostDeleteListeners());
+            }
+            return result.toArray(new PostDeleteListener[result.size()]);
         }
 
         @Override
         public PostDeleteListener[] getInTransPostDeleteListeners() {
-            return Arrays2.concat(context.getInTransPostDeleteListeners(), fixed.getInTransPostDeleteListeners());
+            final List<PostDeleteListener> result = new ArrayList<>();
+            for (EntityListeners listeners : all) {
+                Collections2.addAll(result, listeners.getInTransPostDeleteListeners());
+            }
+            return result.toArray(new PostDeleteListener[result.size()]);
         }
 
         @Override
         public PostLoadListener[] getPostLoadListeners() {
-            return Arrays2.concat(context.getPostLoadListeners(), fixed.getPostLoadListeners());
+            final List<PostLoadListener> result = new ArrayList<>();
+            for (EntityListeners listeners : all) {
+                Collections2.addAll(result, listeners.getPostLoadListeners());
+            }
+            return result.toArray(new PostLoadListener[result.size()]);
         }
     }
 }
