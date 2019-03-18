@@ -15,6 +15,9 @@
  */
 package leap.lang.yaml;
 
+import leap.lang.Strings;
+import leap.lang.json.JSON;
+import leap.lang.resource.Resource;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.Reader;
@@ -53,6 +56,20 @@ public class YAML {
      */
     public static <T> T decode(Reader reader) throws YamlException {
         return new Yaml().load(reader);
+    }
+
+    /**
+     * Decodes the value by yaml or json format.
+     */
+    public static <T> T decodeYamlOrJson(Resource resource) {
+        String filename = resource.getFilename();
+        if(Strings.endsWithIgnoreCase(filename, ".yml") || Strings.endsWithIgnoreCase(filename, ".yaml")) {
+            return decode(resource.getContent());
+        }else if(Strings.endsWithIgnoreCase(filename, ".json")) {
+            return JSON.decode(resource.getFilename());
+        }else {
+            throw new IllegalStateException("The file '" + filename + "' must be yml or json format");
+        }
     }
 
 	protected YAML() {

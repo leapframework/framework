@@ -21,6 +21,7 @@ import leap.lang.Strings;
 import leap.lang.convert.Converts;
 import leap.lang.json.JSON;
 import leap.lang.resource.Resource;
+import leap.lang.yaml.YAML;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -52,7 +53,7 @@ public abstract class AbstractExprReaderBean {
         if(null != resource) {
             readInclude(resource, map);
         }
-        processPlaceholderOrExpr(map);
+        processPlaceholderOrExpr(resource, map);
         return map;
     }
 
@@ -76,14 +77,18 @@ public abstract class AbstractExprReaderBean {
     }
 
     protected void readInclude(Resource resource, Map<String, Object> root, String incPath)  {
+        root.putAll((Map)readIncludeValue(resource, incPath));
+    }
+
+    protected Object readIncludeValue(Resource resource, String inc) {
         try {
-            Resource incRes = resource.createRelative(incPath);
+            Resource incRes = resource.createRelative(inc);
             if (!incRes.exists()) {
-                throw new IllegalStateException("The included file '" + incPath + "' not found");
+                throw new IllegalStateException("The included file '" + inc + "' not found");
             }
-            root.putAll(JSON.decodeMap(incRes.getContent()));
+            return YAML.decodeYamlOrJson(incRes);
         }catch (IOException e){
-            throw new UncheckedIOException("Err read include '" + incPath + "', " + e.getMessage(), e);
+            throw new UncheckedIOException("Err read include '" + inc + "', " + e.getMessage(), e);
         }
     }
 
@@ -101,11 +106,11 @@ public abstract class AbstractExprReaderBean {
         }
     }
 
-    protected void processPlaceholderOrExpr(Map<String, Object> map) {
-        processPlaceholderOrExpr(null, map);
+    protected void processPlaceholderOrExpr(Resource resource, Map<String, Object> map) {
+        processPlaceholderOrExpr(resource, null, map);
     }
 
-    protected void processPlaceholderOrExpr(String parent, Map<String, Object> map) {
+    protected void processPlaceholderOrExpr(Resource resource, String parent, Map<String, Object> map) {
         if (null == map || map.isEmpty()) {
             return;
         }
@@ -115,7 +120,7 @@ public abstract class AbstractExprReaderBean {
             String path = parent == null ? key : (parent + "." + key);
             Object item = map.get(key);
             if (null != item) {
-                Object value = processPlaceholderOrExpr(path, item);
+                Object value = processPlaceholderOrExpr(resource, path, item);
                 if (item != value) {
                     map.put(key, value);
                 }
@@ -123,9 +128,16 @@ public abstract class AbstractExprReaderBean {
         }
     }
 
-    protected Object processPlaceholderOrExpr(String path, Object v) {
+    protected Object processPlaceholderOrExpr(Resource resource, String path, Object v) {
         if (null == v) {
             return null;
+        }
+
+        if(null != resource && v instanceof String && ((String) v).startsWith("@include")) {
+            String[] parts = Strings.splitWhitespaces((String)v);
+            if(parts[0].equals("@include") && parts.length == 2) {
+                v = readIncludeValue(resource, parts[1]);
+            }
         }
 
         if (v instanceof String) {
@@ -144,7 +156,7 @@ public abstract class AbstractExprReaderBean {
 
         if (v instanceof Map) {
             if (!getDelayExprPaths().contains(path)) {
-                processPlaceholderOrExpr(path, (Map<String, Object>) v);
+                processPlaceholderOrExpr(resource, path, (Map<String, Object>) v);
             }
             return v;
         }
@@ -154,7 +166,7 @@ public abstract class AbstractExprReaderBean {
             String       itemPath = path + ".[]";
             for (int i = 0; i < list.size(); i++) {
                 Object item  = list.get(i);
-                Object value = processPlaceholderOrExpr(itemPath, item);
+                Object value = processPlaceholderOrExpr(resource, itemPath, item);
                 if (item != value) {
                     list.set(i, value);
                 }
