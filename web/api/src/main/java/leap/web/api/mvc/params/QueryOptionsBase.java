@@ -37,6 +37,10 @@ public class QueryOptionsBase {
 
     @NonParam
     @JsonIgnore
+    protected String sqlView;
+
+    @NonParam
+    @JsonIgnore
     protected Expand[] resolvedExpands;
 
     public String getSelect() {
@@ -67,6 +71,14 @@ public class QueryOptionsBase {
      */
     public void setParams(Params params) {
         this.params = params;
+    }
+
+    public String getSqlView() {
+        return sqlView;
+    }
+
+    public void setSqlView(String sqlView) {
+        this.sqlView = sqlView;
     }
 
     public Expand[] getResolvedExpands() {

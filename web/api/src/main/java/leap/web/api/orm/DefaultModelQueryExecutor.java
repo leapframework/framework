@@ -195,11 +195,15 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             ex.handler.processQueryListOptions(context, options);
         }
 
+        if (!Strings.isEmpty(options.getSqlView())) {
+            query.fromSqlView(options.getSqlView());
+        }
+
         Map<String, Object> allParams = new HashMap<>();
-        if(null != this.context.getActionContext()) {
+        if (null != this.context.getActionContext()) {
             allParams.putAll(this.context.getActionContext().getMergedParameters());
         }
-        if(null != options.getQueryParams()) {
+        if (null != options.getQueryParams()) {
             allParams.putAll(options.getQueryParams());
         }
         query.params(allParams);
