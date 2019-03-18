@@ -20,8 +20,12 @@ package leap.web.api.orm;
 
 import leap.core.value.Record;
 import leap.core.value.SimpleRecord;
-import leap.lang.*;
+import leap.lang.Enumerable;
+import leap.lang.Enumerables;
+import leap.lang.Strings;
 import leap.lang.convert.Converts;
+import leap.lang.jdbc.SimpleWhereBuilder;
+import leap.lang.jdbc.WhereBuilder;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.text.scel.ScelExpr;
@@ -704,12 +708,6 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
     }
 
-    /**
-     * @param record
-     * @param id
-     * @param expand
-     * @see DefaultModelQueryExecutor#expand(Expand expand, Record... records)
-     */
     @Deprecated
     protected void expand(Record record, Object id, Expand expand) {
         String name = expand.getName();
@@ -1020,23 +1018,20 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
     protected void applyFilters(ModelExecutionContext context, CriteriaQuery query, Params params,
                                 QueryOptions options, Map<String, ModelAndMapping> jms, Map<String, Object> fields, boolean filterByParams) {
-        StringBuilder whereExpr1 = new StringBuilder();
-        List<Object>  whereArgs1 = new ArrayList<>();
+        SimpleWhereBuilder where = new SimpleWhereBuilder();
 
         if (null != ex.handler) {
-            ex.handler.preProcessQueryListWhere(context, options, whereExpr1, whereArgs1);
+            ex.handler.preProcessQueryListWhere(context, options, where);
         }
-        ex.preProcessQueryListWhere(context, options, whereExpr1, whereArgs1);
+        ex.preProcessQueryListWhere(context, options, where);
 
         //view
         if (!Strings.isEmpty(options.getViewId()) && null == ex.handler) {
             throw new BadRequestException("'viewId' not supported");
         }
         if (null != ex.handler) {
-            ex.handler.handleQueryListView(context, options.getViewId(), whereExpr1, whereArgs1);
+            ex.handler.handleQueryListView(context, options.getViewId(), where);
         }
-
-        final WhereBuilder where = new WhereBuilder(whereExpr1, whereArgs1);
 
         //fields
         if (null != fields && !fields.isEmpty()) {
@@ -1176,12 +1171,12 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
 
         if (null != ex.handler) {
-            ex.handler.postProcessQueryListWhere(context, options, whereExpr1, whereArgs1);
+            ex.handler.postProcessQueryListWhere(context, options, where);
         }
-        ex.postProcessQueryListWhere(context, options, whereExpr1, whereArgs1);
+        ex.postProcessQueryListWhere(context, options, where);
 
-        if (whereExpr1.length() > 0) {
-            query.where(whereExpr1.toString(), whereArgs1.toArray());
+        if (!where.isEmpty()) {
+            query.where(where.getWhere().toString(), where.getArgs().toArray());
         }
     }
 
@@ -1341,92 +1336,4 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             this.field = field;
         }
     }
-
-    protected static class WhereBuilder {
-
-        private final StringBuilder where;
-        private final List<Object>  args;
-
-        public WhereBuilder(StringBuilder sql, List<Object> args) {
-            this.where = sql;
-            this.args = args;
-        }
-
-        public WhereBuilder and(String expr) {
-            return and(expr, Arrays2.EMPTY_OBJECT_ARRAY);
-        }
-
-        public WhereBuilder and(String expr, Object... args) {
-            if (this.where.length() == 0) {
-                this.where.append(expr);
-            } else {
-                this.where.insert(0, '(')
-                        .append(") and (")
-                        .append(expr)
-                        .append(')');
-            }
-            addArgs(args);
-            return this;
-        }
-
-        public WhereBuilder and(Consumer<Expr> func) {
-            Expr expr = new Expr();
-            func.accept(expr);
-            if (!Strings.isBlank(expr.buf)) {
-                return and(expr.buf.toString());
-            }
-            return this;
-        }
-
-        public WhereBuilder or(String expr) {
-            return or(expr, Arrays2.EMPTY_OBJECT_ARRAY);
-        }
-
-        public WhereBuilder or(String expr, Object... args) {
-            if (this.where.length() == 0) {
-                this.where.append(expr);
-            } else {
-                this.where.insert(0, '(')
-                        .append(" or (")
-                        .append(expr)
-                        .append(')');
-            }
-            addArgs(args);
-            return this;
-        }
-
-        public WhereBuilder or(Consumer<Expr> func) {
-            Expr expr = new Expr();
-            func.accept(expr);
-            if (!Strings.isBlank(expr.buf)) {
-                return or(expr.buf.toString());
-            }
-            return this;
-        }
-
-        private void addArgs(Object... args) {
-            Collections2.addAll(this.args, args);
-        }
-
-        protected class Expr {
-            private final StringBuilder buf = new StringBuilder();
-
-            public Expr append(String s) {
-                buf.append(s);
-                return this;
-            }
-
-            public Expr append(char c) {
-                buf.append(c);
-                return this;
-            }
-
-            public Expr arg(Object arg) {
-                args.add(arg);
-                return this;
-            }
-        }
-
-    }
-
 }

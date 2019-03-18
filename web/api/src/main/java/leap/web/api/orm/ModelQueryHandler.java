@@ -17,12 +17,14 @@
 package leap.web.api.orm;
 
 import leap.core.value.Record;
+import leap.lang.jdbc.WhereBuilder;
 import leap.orm.query.CriteriaQuery;
 import leap.web.api.mvc.params.QueryOptions;
 import leap.web.api.mvc.params.QueryOptionsBase;
 
 import java.util.List;
 
+@Deprecated
 public interface ModelQueryHandler {
 
     default void processQueryOneOptions(ModelExecutorContext context, Object id, QueryOptionsBase options) {
@@ -41,15 +43,15 @@ public interface ModelQueryHandler {
 
     }
 
-    default void preProcessQueryListWhere(ModelExecutorContext context, QueryOptions options, StringBuilder where, List<Object> args) {
+    default void preProcessQueryListWhere(ModelExecutorContext context, QueryOptions options, WhereBuilder where) {
 
     }
 
-    default void handleQueryListView(ModelExecutorContext context, String viewId, StringBuilder where, List<Object> args) {
+    default void handleQueryListView(ModelExecutorContext context, String viewId, WhereBuilder where) {
 
     }
 
-    default void postProcessQueryListWhere(ModelExecutorContext context, QueryOptions options, StringBuilder where, List<Object> args){
+    default void postProcessQueryListWhere(ModelExecutorContext context, QueryOptions options, WhereBuilder where) {
 
     }
 

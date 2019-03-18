@@ -17,6 +17,7 @@
 package leap.web.api.orm;
 
 import leap.core.value.Record;
+import leap.lang.jdbc.WhereBuilder;
 import leap.orm.query.CriteriaQuery;
 import leap.orm.query.PageResult;
 import leap.web.api.mvc.params.QueryOptions;
@@ -42,11 +43,11 @@ public interface ModelQueryInterceptor {
         return false;
     }
 
-    default boolean preProcessQueryListWhere(ModelExecutionContext context, QueryOptions options, StringBuilder where, List<Object> args) {
+    default boolean preProcessQueryListWhere(ModelExecutionContext context, QueryOptions options, WhereBuilder where) {
         return false;
     }
 
-    default boolean postProcessQueryListWhere(ModelExecutionContext context, QueryOptions options, StringBuilder where, List<Object> args){
+    default boolean postProcessQueryListWhere(ModelExecutionContext context, QueryOptions options, WhereBuilder where) {
         return false;
     }
 

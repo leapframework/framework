@@ -17,6 +17,7 @@
 package leap.web.api.orm;
 
 import leap.core.value.Record;
+import leap.lang.jdbc.WhereBuilder;
 import leap.orm.query.CriteriaQuery;
 import leap.orm.query.PageResult;
 import leap.web.api.mvc.params.QueryOptions;
@@ -82,9 +83,9 @@ public class ModelQueryExtension implements ModelQueryInterceptor {
     }
 
     @Override
-    public boolean preProcessQueryListWhere(ModelExecutionContext context, QueryOptions options, StringBuilder where, List<Object> args) {
+    public boolean preProcessQueryListWhere(ModelExecutionContext context, QueryOptions options, WhereBuilder where) {
         for(ModelQueryInterceptor interceptor : interceptors) {
-            if(interceptor.preProcessQueryListWhere(context, options, where, args)) {
+            if(interceptor.preProcessQueryListWhere(context, options, where)) {
                 return true;
             }
         }
@@ -92,9 +93,9 @@ public class ModelQueryExtension implements ModelQueryInterceptor {
     }
 
     @Override
-    public boolean postProcessQueryListWhere(ModelExecutionContext context, QueryOptions options, StringBuilder where, List<Object> args) {
+    public boolean postProcessQueryListWhere(ModelExecutionContext context, QueryOptions options, WhereBuilder where) {
         for(ModelQueryInterceptor interceptor : interceptors) {
-            if(interceptor.postProcessQueryListWhere(context, options, where, args)) {
+            if(interceptor.postProcessQueryListWhere(context, options, where)) {
                 return true;
             }
         }
