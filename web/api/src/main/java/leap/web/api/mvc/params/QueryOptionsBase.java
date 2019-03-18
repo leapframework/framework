@@ -20,6 +20,7 @@ package leap.web.api.mvc.params;
 
 import leap.lang.json.JsonIgnore;
 import leap.web.Params;
+import leap.web.Request;
 import leap.web.annotation.NonParam;
 import leap.web.annotation.ParamsWrapper;
 import leap.web.annotation.QueryParam;
@@ -54,10 +55,16 @@ public class QueryOptionsBase {
         this.expand = expand;
     }
 
+    /**
+     * The request params from {@link Request#params()}.
+     */
     public Params getParams() {
         return params;
     }
 
+    /**
+     * Auto set by {@link leap.web.action.ContextArgumentResolver}.
+     */
     public void setParams(Params params) {
         this.params = params;
     }

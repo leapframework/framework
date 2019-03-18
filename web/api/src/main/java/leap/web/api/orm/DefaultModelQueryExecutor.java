@@ -195,6 +195,15 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             ex.handler.processQueryListOptions(context, options);
         }
 
+        Map<String, Object> allParams = new HashMap<>();
+        if(null != this.context.getActionContext()) {
+            allParams.putAll(this.context.getActionContext().getMergedParameters());
+        }
+        if(null != options.getQueryParams()) {
+            allParams.putAll(options.getQueryParams());
+        }
+        query.params(allParams);
+
         long         count = -1;
         List<Record> list;
 

@@ -26,6 +26,9 @@ import leap.web.annotation.QueryParam;
 import leap.web.api.query.*;
 import leap.web.exception.BadRequestException;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @ParamsWrapper
 public class QueryOptions extends QueryOptionsBase {
 
@@ -52,6 +55,10 @@ public class QueryOptions extends QueryOptionsBase {
     @NonParam
     @JsonIgnore
     protected Join[] resolvedJoins;
+
+    @NonParam
+    @JsonIgnore
+    protected Map<String, Object> queryParams;
 
     public Integer getPageSize() {
         return pageSize;
@@ -155,6 +162,21 @@ public class QueryOptions extends QueryOptionsBase {
 
     public void setJoins(String joins) {
         this.joins = joins;
+    }
+
+    public Map<String, Object> getQueryParams() {
+        return queryParams;
+    }
+
+    public void setQueryParams(Map<String, Object> queryParams) {
+        this.queryParams = queryParams;
+    }
+
+    public void setQueryParam(String name, Object value) {
+        if(null == queryParams) {
+            queryParams = new HashMap<>();
+        }
+        queryParams.put(name, value);
     }
 
     public Page getPage(int defaultPageSize) {
