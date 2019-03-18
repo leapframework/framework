@@ -136,6 +136,16 @@ public abstract class CrudOperationBase extends RestdOperationBase {
         return r;
     }
 
+    protected MApiResponseBuilder addModelQueryResponse(FuncActionBuilder action, String typeName) {
+        action.setReturnType(ApiResponse.class);
+
+        MApiResponseBuilder r = newModelQueryResponse(typeName);
+
+        action.setExtension(new MApiResponseBuilder[]{r});
+
+        return r;
+    }
+
     protected MApiResponseBuilder addModelCountResponse(FuncActionBuilder action, RestdModel model) {
         action.setReturnType(Long.class);
 
@@ -158,11 +168,15 @@ public abstract class CrudOperationBase extends RestdOperationBase {
         return r;
     }
 
-    private MApiResponseBuilder newModelQueryResponse(RestdModel model) {
+    protected MApiResponseBuilder newModelQueryResponse(RestdModel model) {
+        return newModelQueryResponse(model.getName());
+    }
+
+    protected MApiResponseBuilder newModelQueryResponse(String typeName) {
         MApiResponseBuilder r = new MApiResponseBuilder();
 
         r.setStatus(200);
-        r.setType(new MCollectionType(new MComplexTypeRef(model.getName())));
+        r.setType(new MCollectionType(new MComplexTypeRef(typeName)));
         r.setDescription("Success");
 
         MApiHeaderBuilder header = new MApiHeaderBuilder();

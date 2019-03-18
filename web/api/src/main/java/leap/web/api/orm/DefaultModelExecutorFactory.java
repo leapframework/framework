@@ -17,9 +17,8 @@
 package leap.web.api.orm;
 
 import leap.core.annotation.Inject;
+import leap.lang.Arrays2;
 import leap.lang.annotation.Init;
-import leap.orm.mapping.EntityMapping;
-import leap.web.api.remote.RestResource;
 import leap.web.api.remote.RestResourceFactory;
 
 public class DefaultModelExecutorFactory implements ModelExecutorFactory {
@@ -57,32 +56,57 @@ public class DefaultModelExecutorFactory implements ModelExecutorFactory {
     }
 
     @Override
-    public ModelCreateExecutor newCreateExecutor(ModelExecutorContext context) {
-        return new DefaultModelCreateExecutor(handleContext(context), createExtension);
+    public ModelCreateExecutor newCreateExecutor(ModelExecutorContext context, ModelCreateInterceptor... interceptors) {
+        ModelCreateExtension extension =
+                Arrays2.isEmpty(interceptors) ?
+                        this.createExtension :
+                        new ModelCreateExtension(createHandler, Arrays2.concat(interceptors, createInterceptors));
+
+        return new DefaultModelCreateExecutor(handleContext(context), extension);
     }
 
     @Override
-    public ModelUpdateExecutor newUpdateExecutor(ModelExecutorContext context) {
-        return new DefaultModelUpdateExecutor(handleContext(context), updateExtension);
+    public ModelUpdateExecutor newUpdateExecutor(ModelExecutorContext context, ModelUpdateInterceptor... interceptors) {
+        ModelUpdateExtension extension =
+                Arrays2.isEmpty(interceptors) ?
+                        this.updateExtension :
+                        new ModelUpdateExtension(updateHandler, Arrays2.concat(interceptors, updateInterceptors), replaceInterceptors);
+
+        return new DefaultModelUpdateExecutor(handleContext(context), extension);
     }
 
     @Override
-    public ModelDeleteExecutor newDeleteExecutor(ModelExecutorContext context) {
-        return new DefaultModelDeleteExecutor(handleContext(context), deleteExtension);
+    public ModelDeleteExecutor newDeleteExecutor(ModelExecutorContext context, ModelDeleteInterceptor... interceptors) {
+        ModelDeleteExtension extension =
+                Arrays2.isEmpty(interceptors) ?
+                        this.deleteExtension :
+                        new ModelDeleteExtension(deleteHandler, Arrays2.concat(interceptors, deleteInterceptors));
+
+        return new DefaultModelDeleteExecutor(handleContext(context), extension);
     }
 
     @Override
-    public ModelQueryExecutor newQueryExecutor(ModelExecutorContext context) {
-        return new DefaultModelQueryExecutor(handleContext(context), queryExtension);
+    public ModelQueryExecutor newQueryExecutor(ModelExecutorContext context, ModelQueryInterceptor... interceptors) {
+        ModelQueryExtension extension =
+                Arrays2.isEmpty(interceptors) ?
+                        this.queryExtension :
+                        new ModelQueryExtension(queryHandler, Arrays2.concat(interceptors, queryInterceptors));
+
+        return new DefaultModelQueryExecutor(handleContext(context), extension);
+    }
+
+    @Override
+    public RelationQueryExecutor newRelationQueryExecutor(RelationExecutorContext context, RelationQueryInterceptor... interceptors) {
+        RelationQueryExtension extension =
+                Arrays2.isEmpty(interceptors) ?
+                        this.relationQueryExtension :
+                        new RelationQueryExtension(Arrays2.concat(interceptors, relationQueryInterceptors));
+
+        return new DefaultRelationQueryExecutor(handleContext(context), extension);
     }
 
     protected <T extends ModelExecutorContext> T handleContext(T context) {
         context.setRestResourceFactory(restResourceFactory);
         return context;
-    }
-
-    @Override
-    public RelationQueryExecutor newRelationQueryExecutor(RelationExecutorContext context) {
-        return new DefaultRelationQueryExecutor(handleContext(context), relationQueryExtension);
     }
 }
