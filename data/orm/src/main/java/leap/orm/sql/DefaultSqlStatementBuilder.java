@@ -134,7 +134,7 @@ public class DefaultSqlStatementBuilder implements SqlStatementBuilder {
 		return this;
 	}
 	
-	public boolean removeLastEqualsOperator(){
+	public int removeLastEqualsOperator(){
 		int len = buf.length();
 		
 		for(int i=len-1;i > 0;i--){
@@ -142,15 +142,20 @@ public class DefaultSqlStatementBuilder implements SqlStatementBuilder {
 			
 			if(c == '=' && i > 1 && Character.isWhitespace(buf.charAt(i-1))){
 				buf.delete(i-1,len);
-				return true;
-			}			
-			
+				return 1;
+			}
+
+			if(c == '=' && i > 1 && '!' == buf.charAt(i-1)){
+				buf.delete(i-2,len);
+				return 2;
+			}
+
 			if(!Character.isWhitespace(c)){
-				return false;
+				return 0;
 			}
 		}
 		
-		return false;
+		return 0;
 	}
 	
 	public boolean isLastInOperator(){

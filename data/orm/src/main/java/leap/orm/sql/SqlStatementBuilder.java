@@ -93,7 +93,7 @@ public interface SqlStatementBuilder extends Appendable,Buildable<SqlStatement> 
 	/**
 	 * todo : doc
 	 */
-	boolean removeLastEqualsOperator();
+	int removeLastEqualsOperator();
 
     /**
      * Creates a new {@link SavePoint}.
