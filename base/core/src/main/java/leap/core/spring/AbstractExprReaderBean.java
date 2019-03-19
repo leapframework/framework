@@ -47,23 +47,23 @@ public abstract class AbstractExprReaderBean {
     }
 
     protected Map<String, Object> processMap(Resource resource, Map<String, Object> map) {
-        if(null == map || map.isEmpty()) {
+        if (null == map || map.isEmpty()) {
             return map;
         }
-        if(null != resource) {
+        if (null != resource) {
             readInclude(resource, map);
         }
         processPlaceholderOrExpr(resource, map);
         return map;
     }
 
-    protected <T> T processMapAndConvert(Resource resource, Map<String, Object> map, Class<T> type)  {
+    protected <T> T processMapAndConvert(Resource resource, Map<String, Object> map, Class<T> type) {
         processMap(resource, map);
         checkMissingProperties(type, resource.getDescription(), map);
         return Converts.convert(map, type);
     }
 
-    protected <T> T processMapAndConvert(Object source, Map<String, Object> map, Class<T> type)  {
+    protected <T> T processMapAndConvert(Object source, Map<String, Object> map, Class<T> type) {
         processMap(null, map);
         checkMissingProperties(type, source, map);
         return Converts.convert(map, type);
@@ -76,20 +76,24 @@ public abstract class AbstractExprReaderBean {
         }
     }
 
-    protected void readInclude(Resource resource, Map<String, Object> root, String incPath)  {
-        root.putAll((Map)readIncludeValue(resource, incPath));
+    protected void readInclude(Resource resource, Map<String, Object> root, String incPath) {
+        root.putAll((Map) readIncludeValue(resource, incPath));
     }
 
     protected Object readIncludeValue(Resource resource, String inc) {
         try {
-            Resource incRes = resource.createRelative(inc);
-            if (!incRes.exists()) {
+            Resource incRes = resolveIncludeResource(resource, inc);
+            if (null == incRes || !incRes.exists()) {
                 throw new IllegalStateException("The included file '" + inc + "' not found");
             }
             return YAML.decodeYamlOrJson(incRes);
-        }catch (IOException e){
+        } catch (IOException e) {
             throw new UncheckedIOException("Err read include '" + inc + "', " + e.getMessage(), e);
         }
+    }
+
+    protected Resource resolveIncludeResource(Resource resource, String inc) throws IOException {
+        return resource.createRelative(inc);
     }
 
     protected void checkMissingProperties(Class<?> type, Object source, Map<String, Object> map) {
@@ -133,9 +137,9 @@ public abstract class AbstractExprReaderBean {
             return null;
         }
 
-        if(null != resource && v instanceof String && ((String) v).startsWith("@include")) {
-            String[] parts = Strings.splitWhitespaces((String)v);
-            if(parts[0].equals("@include") && parts.length == 2) {
+        if (null != resource && v instanceof String && ((String) v).startsWith("@include")) {
+            String[] parts = Strings.splitWhitespaces((String) v);
+            if (parts[0].equals("@include") && parts.length == 2) {
                 v = readIncludeValue(resource, parts[1]);
             }
         }

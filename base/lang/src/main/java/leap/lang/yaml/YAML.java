@@ -27,20 +27,20 @@ public class YAML {
     /**
      * Parse the yaml content to {@link YamlValue}.
      */
-	public static YamlValue parse(String string) throws YamlException {
+    public static YamlValue parse(String string) throws YamlException {
         return YamlValue.of(decode(string));
-	}
+    }
 
     /**
      * Parse the yaml content to {@link YamlValue}.
      */
-	public static YamlValue parse(Reader reader) throws YamlException {
-		return YamlValue.of(decode(reader));
-	}
+    public static YamlValue parse(Reader reader) throws YamlException {
+        return YamlValue.of(decode(reader));
+    }
 
     /**
      * Decodes the yaml content to raw value.
-     *
+     * <p>
      * <p/>
      * The raw value may be null, map, list or simpl value.
      */
@@ -50,7 +50,7 @@ public class YAML {
 
     /**
      * Decodes the yaml content to raw value.
-     *
+     * <p>
      * <p/>
      * The raw value may be null, map, list or simpl value.
      */
@@ -63,17 +63,17 @@ public class YAML {
      */
     public static <T> T decodeYamlOrJson(Resource resource) {
         String filename = resource.getFilename();
-        if(Strings.endsWithIgnoreCase(filename, ".yml") || Strings.endsWithIgnoreCase(filename, ".yaml")) {
+        if (Strings.endsWithIgnoreCase(filename, ".yml") || Strings.endsWithIgnoreCase(filename, ".yaml")) {
             return decode(resource.getContent());
-        }else if(Strings.endsWithIgnoreCase(filename, ".json")) {
-            return JSON.decode(resource.getFilename());
-        }else {
+        } else if (Strings.endsWithIgnoreCase(filename, ".json")) {
+            return JSON.decode(resource.getContent());
+        } else {
             throw new IllegalStateException("The file '" + filename + "' must be yml or json format");
         }
     }
 
-	protected YAML() {
-		
-	}
+    protected YAML() {
+
+    }
 
 }
