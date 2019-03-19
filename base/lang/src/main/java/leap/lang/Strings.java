@@ -1166,6 +1166,18 @@ public class Strings {
 		}		
 		return false;
 	}
+
+	public static int indexOfWhitespace(String s) {
+		if(null == s || s.length() == 0) {
+			return Arrays2.INDEX_NOT_FOUND;
+		}
+		for(int i=0;i<s.length();i++) {
+			if(Character.isWhitespace(s.charAt(i))) {
+				return i;
+			}
+		}
+		return Arrays2.INDEX_NOT_FOUND;
+	}
 	
 	public static int indexOf(String string,String indexOf){
 		if(null == string || null == indexOf){
