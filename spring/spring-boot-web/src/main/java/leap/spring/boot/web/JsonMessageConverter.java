@@ -20,6 +20,7 @@ import leap.lang.Charsets;
 import leap.lang.io.IO;
 import leap.lang.json.*;
 import leap.lang.reflect.Reflection;
+import leap.web.json.JsonSerialize;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpMessage;
 import org.springframework.http.HttpOutputMessage;
@@ -59,38 +60,40 @@ public class JsonMessageConverter extends AbstractHttpMessageConverter implement
 
     protected boolean canRead(Class<?> c) {
         return JsonParsable.class.isAssignableFrom(c) ||
-                (c.isArray() && JsonParsable.class.isAssignableFrom(c.getComponentType()));
+                (c.isArray() && JsonParsable.class.isAssignableFrom(c.getComponentType())) ||
+                c.isAnnotationPresent(JsonSerialize.class);
     }
 
     protected boolean canWrite(Class<?> c) {
         return JsonStringable.class.isAssignableFrom(c) ||
-                (c.isArray() && JsonStringable.class.isAssignableFrom(c.getComponentType()));
+                (c.isArray() && JsonStringable.class.isAssignableFrom(c.getComponentType())) ||
+                c.isAnnotationPresent(JsonSerialize.class);
     }
 
     @Override
     public boolean canRead(Type type, Class contextClass, MediaType mediaType) {
-        if(type instanceof Class) {
-            return canRead((Class<?>)type, mediaType);
-        }else {
-            if(type instanceof ParameterizedType) {
-                ParameterizedType parameterizedType = (ParameterizedType)type;
-                Type rawType = parameterizedType.getRawType();
-                if(!(rawType instanceof Class)) {
+        if (type instanceof Class) {
+            return canRead((Class<?>) type, mediaType);
+        } else {
+            if (type instanceof ParameterizedType) {
+                ParameterizedType parameterizedType = (ParameterizedType) type;
+                Type              rawType           = parameterizedType.getRawType();
+                if (!(rawType instanceof Class)) {
                     return false;
                 }
-                Class rawClass = (Class)rawType;
-                if(!Collection.class.isAssignableFrom(rawClass)) {
+                Class rawClass = (Class) rawType;
+                if (!Collection.class.isAssignableFrom(rawClass)) {
                     return false;
                 }
                 Type[] typeArguments = parameterizedType.getActualTypeArguments();
-                if(typeArguments.length != 1) {
+                if (typeArguments.length != 1) {
                     return false;
                 }
                 Type typeArgument = typeArguments[0];
-                if(!(typeArgument instanceof Class)) {
+                if (!(typeArgument instanceof Class)) {
                     return false;
                 }
-                return canRead((Class)typeArgument);
+                return canRead((Class) typeArgument);
             }
             return false;
         }
@@ -99,52 +102,50 @@ public class JsonMessageConverter extends AbstractHttpMessageConverter implement
 
     @Override
     public boolean canWrite(Type type, Class clazz, MediaType mediaType) {
-        if(type instanceof Class) {
+        if (type instanceof Class) {
             return canWrite((Class<?>) type, mediaType);
-        }else {
-            if(!Collection.class.isAssignableFrom(clazz)) {
+        } else {
+            if (!Collection.class.isAssignableFrom(clazz)) {
                 return false;
             }
-            if(!(type instanceof ParameterizedType)) {
+            if (!(type instanceof ParameterizedType)) {
                 return false;
             }
             Type[] typeArguments = ((ParameterizedType) type).getActualTypeArguments();
-            if(typeArguments.length != 1) {
+            if (typeArguments.length != 1) {
                 return false;
             }
 
             Type typeArgument = typeArguments[0];
-            if(!(typeArgument instanceof Class)) {
+            if (!(typeArgument instanceof Class)) {
                 return false;
             }
 
-            return canWrite((Class)typeArgument);
+            return canWrite((Class) typeArgument);
         }
     }
 
     @Override
     public Object read(Type type, Class contextClass, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
-        if(type instanceof Class<?>) {
-            return readInternal((Class)type, inputMessage);
-        }else {
-            ParameterizedType parameterizedType = (ParameterizedType)type;
-            Class typeArgument = (Class)parameterizedType.getActualTypeArguments()[0];
+        if (type instanceof Class<?>) {
+            return readInternal((Class) type, inputMessage);
+        } else {
+            ParameterizedType parameterizedType = (ParameterizedType) type;
+            Class             typeArgument      = (Class) parameterizedType.getActualTypeArguments()[0];
 
-            Collection c = newCollection((Class)parameterizedType.getRawType());
-            try(InputStream is = inputMessage.getBody()) {
-                try(InputStreamReader reader = new InputStreamReader(is, getCharset(inputMessage))) {
+            Collection c = newCollection((Class) parameterizedType.getRawType());
+            try (InputStream is = inputMessage.getBody()) {
+                try (InputStreamReader reader = new InputStreamReader(is, getCharset(inputMessage))) {
                     try {
                         JsonArray a = JSON.parse(reader).asJsonArray();
                         a.forEach(item -> {
-                            if(null == item) {
+                            if (null == item) {
                                 c.add(null);
-                            }else {
-                                Object o = Reflection.newInstance(typeArgument);
-                                ((JsonParsable)o).parseJson(item);
-                                c.add(o);
+                            } else {
+                                c.add(JSON.decode(item.asJsonObject(), typeArgument));
                             }
                         });
-                    }catch (Exception e) {
+                    } catch (Exception e) {
                         throw new HttpMessageNotReadableException(e.getMessage(), e);
                     }
                 }
@@ -154,32 +155,24 @@ public class JsonMessageConverter extends AbstractHttpMessageConverter implement
     }
 
     protected Collection newCollection(Class c) {
-        if(List.class.equals(c)) {
+        if (List.class.equals(c)) {
             return new ArrayList();
         }
-        if(Set.class.equals(c)) {
+        if (Set.class.equals(c)) {
             return new LinkedHashSet();
         }
-        return (Collection)Reflection.newInstance(c);
+        return (Collection) Reflection.newInstance(c);
     }
 
     @Override
     public void write(Object o, Type type, MediaType contentType, HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
-        if(type instanceof Class) {
+        if (type instanceof Class) {
             writeInternal(o, outputMessage);
-        }else {
-            try (OutputStream os = outputMessage.getBody()){
+        } else {
+            try (OutputStream os = outputMessage.getBody()) {
                 try (OutputStreamWriter writer = new OutputStreamWriter(os, getCharset(outputMessage))) {
                     JsonWriter jsonWriter = JSON.writer(writer).create();
-                    if(null == o) {
-                        jsonWriter.startArray().endArray();
-                        return;
-                    }
-
-                    Collection c = (Collection)o;
-                    jsonWriter.array(c, item -> {
-                        ((JsonStringable)item).toJson(jsonWriter);
-                    });
+                    jsonWriter.value(o);
                 }
             }
         }
@@ -187,29 +180,31 @@ public class JsonMessageConverter extends AbstractHttpMessageConverter implement
 
     @Override
     protected Object readInternal(Class clazz, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
-        try(InputStream is = inputMessage.getBody()) {
-            if(clazz.isArray()) {
-                try(InputStreamReader reader = new InputStreamReader(is, getCharset(inputMessage))) {
+        try (InputStream is = inputMessage.getBody()) {
+            if (clazz.isArray()) {
+                try (InputStreamReader reader = new InputStreamReader(is, getCharset(inputMessage))) {
                     try {
                         JsonArray a = JSON.parse(reader).asJsonArray();
 
                         Object o = Array.newInstance(clazz.getComponentType(), a.length());
-                        for(int i=0;i<a.length();i++) {
-                            Object item = Reflection.newInstance(clazz.getComponentType());
-                            ((JsonParsable)item).parseJson(a.getObject(i));
-                            Array.set(o, i, item);
+                        for (int i = 0; i < a.length(); i++) {
+                            Array.set(o, i, JSON.decode(a.getObject(i), clazz.getComponentType()));
                         }
                         return o;
-                    }catch (Exception e) {
+                    } catch (Exception e) {
                         throw new HttpMessageNotReadableException(e.getMessage(), e);
                     }
                 }
-            }else {
-                Object o = Reflection.newInstance(clazz);
+            } else {
                 try {
-                    ((JsonParsable)o).parseJson(IO.readString(is, getCharset(inputMessage)));
-                    return o;
-                }catch (Exception e) {
+                    if (clazz.isAssignableFrom(JsonParsable.class)) {
+                        Object o = Reflection.newInstance(clazz);
+                        ((JsonParsable) o).parseJson(IO.readString(is, getCharset(inputMessage)));
+                        return o;
+                    } else {
+                        return JSON.decode(IO.readString(is, getCharset(inputMessage)), clazz);
+                    }
+                } catch (Exception e) {
                     throw new HttpMessageNotReadableException(e.getMessage(), e);
                 }
             }
@@ -218,31 +213,17 @@ public class JsonMessageConverter extends AbstractHttpMessageConverter implement
 
     @Override
     protected void writeInternal(Object o, HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
-        try (OutputStream os = outputMessage.getBody()){
+        try (OutputStream os = outputMessage.getBody()) {
             try (OutputStreamWriter writer = new OutputStreamWriter(os, getCharset(outputMessage))) {
                 JsonWriter jsonWriter = JSON.writer(writer).create();
-                if(o == null) {
-                    jsonWriter.null_();
-                    return;
-                }
-
-                if(o.getClass().isArray()) {
-                    Object[] a = (Object[])o;
-                    jsonWriter.startArray();
-                    for(Object item : a) {
-                        ((JsonStringable)item).toJson(jsonWriter);
-                    }
-                    jsonWriter.endArray();
-                }else {
-                    ((JsonStringable)o).toJson(jsonWriter);
-                }
+                jsonWriter.value(o);
             }
         }
     }
 
     protected Charset getCharset(HttpMessage message) {
         MediaType contentType = message.getHeaders().getContentType();
-        Charset charset = null == contentType ? null: contentType.getCharset();
+        Charset   charset     = null == contentType ? null : contentType.getCharset();
         return null == charset ? Charsets.defaultCharset() : charset;
     }
 }
