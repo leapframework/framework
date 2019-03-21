@@ -22,7 +22,10 @@ import leap.lang.naming.NamingStyle;
 import leap.lang.path.Paths;
 import leap.web.api.config.model.*;
 import leap.web.api.meta.ApiMetadataBuilder;
-import leap.web.api.meta.model.*;
+import leap.web.api.meta.model.MApiModelBuilder;
+import leap.web.api.meta.model.MApiPermission;
+import leap.web.api.meta.model.MApiResponse;
+import leap.web.api.meta.model.MApiResponseBuilder;
 import leap.web.api.mvc.ApiFailureHandler;
 import leap.web.api.permission.ResourcePermissionsSet;
 import leap.web.api.route.ApiRoute;
@@ -33,29 +36,30 @@ import leap.web.route.Routes;
 import java.util.*;
 
 public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiConfigurator {
-	protected final Object source;
-	protected final String name;
+    protected final Object source;
+    protected final String name;
 
-	protected String         basePath;
-    protected String         basePackage;
-    protected String         title;
-    protected String         summary;
-    protected String         description;
-    protected String         version                     = DEFAULT_VERSION;
-    protected String[]       protocols;
-    protected String[]       produces;
-    protected String[]       consumes;
-    protected boolean        defaultAnonymous            = false;
-    protected boolean        corsEnabled                 = true;
-    protected boolean        uniqueOperationId           = false;
-    protected NamingStyle    parameterNamingStyle;
-    protected NamingStyle    propertyNamingStyle;
-    protected int            maxPageSize                 = MAX_PAGE_SIZE;
-    protected int            defaultPageSize             = DEFAULT_PAGE_SIZE;
-    protected int            maxExpand                   = MAX_EXPAND;
-    protected int            expandLimit                 = EXPAND_LIMIT;
-    protected Set<String> 	 removalModelNamePrefixes    = new HashSet<String>();
-    protected Set<String> 	 removalModelNamePrefixesImv = Collections.unmodifiableSet(removalModelNamePrefixes);
+    protected String      basePath;
+    protected String      basePackage;
+    protected String      title;
+    protected String      summary;
+    protected String      description;
+    protected String      version                     = DEFAULT_VERSION;
+    protected String[]    protocols;
+    protected String[]    produces;
+    protected String[]    consumes;
+    protected boolean     defaultAnonymous            = false;
+    protected boolean     corsEnabled                 = true;
+    protected boolean     uniqueOperationId           = false;
+    protected NamingStyle parameterNamingStyle;
+    protected NamingStyle propertyNamingStyle;
+    protected int         maxPageSize                 = MAX_PAGE_SIZE;
+    protected int         defaultPageSize             = DEFAULT_PAGE_SIZE;
+    protected int         maxPageSizeWithExpandMany   = MAX_PAGE_SIZE_WITH_EXPAND_MANY;
+    protected int         maxPageSizeWithExpandOne    = MAX_PAGE_SIZE_WITH_EXPAND_ONE;
+    protected int         maxRecordsPerExpand         = MAX_RECORDS_PER_EXPAND;
+    protected Set<String> removalModelNamePrefixes    = new HashSet<String>();
+    protected Set<String> removalModelNamePrefixesImv = Collections.unmodifiableSet(removalModelNamePrefixes);
 
     protected Set<ApiRoute> routes    = new LinkedHashSet<>();
     protected Set<ApiRoute> routesImv = Collections.unmodifiableSet(routes);
@@ -83,22 +87,22 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
 
     protected ResourcePermissionsSet resourcePermissionsSet = new ResourcePermissionsSet();
 
-    protected OAuthConfigImpl oauthConfig = new OAuthConfigImpl();
-    protected RestdConfig restdConfig;
-    protected Routes      containerRoutes;
+    protected OAuthConfigImpl    oauthConfig = new OAuthConfigImpl();
+    protected RestdConfig        restdConfig;
+    protected Routes             containerRoutes;
     protected ApiMetadataBuilder metadata;
 
     protected @Inject ApiFailureHandler failureHandler;
 
-	public DefaultApiConfig(String name, String basePath, Object source) {
-		Args.notEmpty(name, "name");
-		Args.notEmpty(basePath, "basePath");
-		Args.assertTrue(basePath.startsWith("/"), "The base path must be leading with a slash '/'");
-		this.source   = source;
-		this.name     = name;
-		this.title    = name;
+    public DefaultApiConfig(String name, String basePath, Object source) {
+        Args.notEmpty(name, "name");
+        Args.notEmpty(basePath, "basePath");
+        Args.assertTrue(basePath.startsWith("/"), "The base path must be leading with a slash '/'");
+        this.source = source;
+        this.name = name;
+        this.title = name;
         this.setBasePath(basePath);
-	}
+    }
 
     @Override
     public Object getSource() {
@@ -106,14 +110,14 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     }
 
     @Override
-	public ApiConfig config() {
-		return this;
-	}
+    public ApiConfig config() {
+        return this;
+    }
 
-	@Override
-	public String getBasePath() {
-		return basePath;
-	}
+    @Override
+    public String getBasePath() {
+        return basePath;
+    }
 
     public void setBasePath(String basePath) {
         Args.notEmpty(basePath, "basePath");
@@ -121,43 +125,43 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
         this.basePath = Paths.suffixWithoutSlash(basePath);
     }
 
-	@Override
-	public String getName() {
-		return name;
-	}
+    @Override
+    public String getName() {
+        return name;
+    }
 
-	@Override
+    @Override
     public String getSummary() {
-	    return summary;
+        return summary;
     }
 
-	@Override
+    @Override
     public String getDescription() {
-	    return description;
+        return description;
     }
 
-	@Override
+    @Override
     public String getTitle() {
-	    return title;
+        return title;
     }
-	
-	@Override
+
+    @Override
     public String getVersion() {
-	    return version;
+        return version;
     }
 
-	public String[] getProtocols() {
-		return protocols;
-	}
+    public String[] getProtocols() {
+        return protocols;
+    }
 
-	@Override
+    @Override
     public String[] getProduces() {
-	    return produces;
+        return produces;
     }
 
-	@Override
+    @Override
     public String[] getConsumes() {
-	    return consumes;
+        return consumes;
     }
 
     @Override
@@ -172,8 +176,8 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     }
 
     public boolean isCorsDisabled() {
-		return !corsEnabled;
-	}
+        return !corsEnabled;
+    }
 
     @Override
     public Routes getContainerRoutes() {
@@ -186,9 +190,9 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
         return this;
     }
 
-	@Override
+    @Override
     public Set<ApiRoute> getApiRoutes() {
-	    return routesImv;
+        return routesImv;
     }
 
     @Override
@@ -203,12 +207,12 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
 
     @Override
     public ModelConfig getModelConfigByClassName(String className) {
-        if(Strings.isEmpty(className)) {
+        if (Strings.isEmpty(className)) {
             return null;
         }
 
-        for(ModelConfig model : modelConfigs) {
-            if(className.equals(model.getClassName())) {
+        for (ModelConfig model : modelConfigs) {
+            if (className.equals(model.getClassName())) {
                 return model;
             }
         }
@@ -217,12 +221,12 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
 
     @Override
     public ModelConfig getModelConfig(String name) {
-        if(Strings.isEmpty(name)) {
+        if (Strings.isEmpty(name)) {
             return null;
         }
 
-        for(ModelConfig model : modelConfigs) {
-            if(name.equalsIgnoreCase(model.getName())) {
+        for (ModelConfig model : modelConfigs) {
+            if (name.equalsIgnoreCase(model.getName())) {
                 return model;
             }
         }
@@ -264,13 +268,13 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
 
     @Override
     public ParamConfig getParam(String className, String name) {
-        if(Strings.isEmpty(className) && Strings.isEmpty(name)) {
+        if (Strings.isEmpty(className) && Strings.isEmpty(name)) {
             return null;
         }
 
         String key = ParamConfig.key(className, name);
-        for(ParamConfig param : params) {
-            if(key.equals(param.getKey())) {
+        for (ParamConfig param : params) {
+            if (key.equals(param.getKey())) {
                 return param;
             }
         }
@@ -284,49 +288,49 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     }
 
     public NamingStyle getParameterNamingStyle() {
-		return parameterNamingStyle;
-	}
-	
-	public NamingStyle getPropertyNamingStyle() {
-		return propertyNamingStyle;
-	}
-	
-	public Set<String> getRemovalModelNamePrefixes() {
-		return removalModelNamePrefixesImv;
-	}
-	
-	public ApiConfigurator setTitle(String title) {
-		Args.notEmpty(title, "title");
-		this.title = title;
-		return this;
-	}
-	
-	@Override
+        return parameterNamingStyle;
+    }
+
+    public NamingStyle getPropertyNamingStyle() {
+        return propertyNamingStyle;
+    }
+
+    public Set<String> getRemovalModelNamePrefixes() {
+        return removalModelNamePrefixesImv;
+    }
+
+    public ApiConfigurator setTitle(String title) {
+        Args.notEmpty(title, "title");
+        this.title = title;
+        return this;
+    }
+
+    @Override
     public ApiConfigurator setSummary(String s) {
-		this.summary = s;
-	    return this;
+        this.summary = s;
+        return this;
     }
 
-	@Override
+    @Override
     public ApiConfigurator setDescription(String s) {
-		this.description = s;
-	    return this;
+        this.description = s;
+        return this;
     }
 
-	public ApiConfigurator setVersion(String v) {
-		Args.notEmpty(v, "version");
-		this.version = v;
-		return this;
-	}
-	
-	public ApiConfigurator setProtocols(String... protocols) {
-		this.protocols = null == protocols ? Arrays2.EMPTY_STRING_ARRAY : protocols;
-		return this;
-	}
+    public ApiConfigurator setVersion(String v) {
+        Args.notEmpty(v, "version");
+        this.version = v;
+        return this;
+    }
+
+    public ApiConfigurator setProtocols(String... protocols) {
+        this.protocols = null == protocols ? Arrays2.EMPTY_STRING_ARRAY : protocols;
+        return this;
+    }
 
     @Override
     public ApiConfigurator putCommonResponseBuilder(String name, MApiResponseBuilder response) {
-        commonResponseBuilders.put(name,response);
+        commonResponseBuilders.put(name, response);
         return this;
     }
 
@@ -338,36 +342,36 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
 
     @Override
     public ApiConfigurator setProduces(String... produces) {
-		this.produces = null == produces ? Arrays2.EMPTY_STRING_ARRAY : produces;
-	    return this;
+        this.produces = null == produces ? Arrays2.EMPTY_STRING_ARRAY : produces;
+        return this;
     }
 
-	@Override
+    @Override
     public ApiConfigurator setConsumes(String... consumes) {
-		this.consumes = null == consumes ? Arrays2.EMPTY_STRING_ARRAY : consumes;
-		return this;
+        this.consumes = null == consumes ? Arrays2.EMPTY_STRING_ARRAY : consumes;
+        return this;
     }
-	
-	public ApiConfigurator setParameterNamingStyle(NamingStyle ns) {
-		this.parameterNamingStyle = ns;
-		return this;
-	}
-	
-	public ApiConfigurator setPropertyNamingStyle(NamingStyle namingStyle) {
-		this.propertyNamingStyle = namingStyle;
-		return this;
-	}
 
-	@Override
-    public ApiConfigurator removeModelNamePrefixes(String... prefixes) {
-		Collections2.addAll(removalModelNamePrefixes, prefixes);
-	    return this;
+    public ApiConfigurator setParameterNamingStyle(NamingStyle ns) {
+        this.parameterNamingStyle = ns;
+        return this;
     }
-	
-	@Override
+
+    public ApiConfigurator setPropertyNamingStyle(NamingStyle namingStyle) {
+        this.propertyNamingStyle = namingStyle;
+        return this;
+    }
+
+    @Override
+    public ApiConfigurator removeModelNamePrefixes(String... prefixes) {
+        Collections2.addAll(removalModelNamePrefixes, prefixes);
+        return this;
+    }
+
+    @Override
     public ApiConfigurator setCorsEnabled(boolean enabled) {
-		this.corsEnabled = enabled;
-	    return this;
+        this.corsEnabled = enabled;
+        return this;
     }
 
     @Override
@@ -400,7 +404,7 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
 
     @Override
     public ApiConfigurator tryAddPermission(MApiPermission p) {
-        if(!permissions.containsKey(p.getValue())) {
+        if (!permissions.containsKey(p.getValue())) {
             setPermission(p);
         }
         return this;
@@ -429,22 +433,32 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     }
 
     @Override
-    public int getMaxExpand() {
-        return maxExpand;
+    public int getMaxPageSizeWithExpandMany() {
+        return maxPageSizeWithExpandMany;
     }
 
-    public ApiConfigurator setMaxExpand(int maxExpand) {
-        this.maxExpand = maxExpand;
+    public ApiConfigurator setMaxPageSizeWithExpand(int maxExpand) {
+        this.maxPageSizeWithExpandMany = maxExpand;
         return this;
     }
 
     @Override
-    public int getExpandLimit() {
-        return expandLimit;
+    public int getMaxPageSizeWithExpandOne() {
+        return maxPageSizeWithExpandOne;
     }
 
-    public ApiConfigurator setExpandLimit(int expandLimit) {
-        this.expandLimit = expandLimit;
+    public ApiConfigurator setMaxPageSizeWithExpandOne(int maxPageSizeWithExpandOne) {
+        this.maxPageSizeWithExpandOne = maxPageSizeWithExpandOne;
+        return this;
+    }
+
+    @Override
+    public int getMaxRecordsPerExpand() {
+        return maxRecordsPerExpand;
+    }
+
+    public ApiConfigurator setMaxRecordsPerExpand(int limit) {
+        this.maxRecordsPerExpand = limit;
         return this;
     }
 
@@ -459,9 +473,9 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     }
 
     public ApiConfigurator addRoute(Route route, boolean dynamic, boolean operation) {
-        if(null != route.getPermissions()) {
-            for(String p : route.getPermissions()) {
-                if(!permissions.containsKey(p)) {
+        if (null != route.getPermissions()) {
+            for (String p : route.getPermissions()) {
+                if (!permissions.containsKey(p)) {
                     permissions.put(p, new MApiPermission(p, ""));
                 }
             }
@@ -469,7 +483,7 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
 
         routes.add(new SimpleApiRoute(route, dynamic, operation));
 
-        if(!containerRoutes.exists(route)) {
+        if (!containerRoutes.exists(route)) {
             containerRoutes.add(route);
         }
 
@@ -527,7 +541,7 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
 
     @Override
     public ApiConfigurator enableRestd() {
-        if(null == restdConfig) {
+        if (null == restdConfig) {
             restdConfig = new RestdConfig();
         }
         return this;

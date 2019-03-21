@@ -135,13 +135,14 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         if (null != record && null != options) {
             Expand[] expands = options.getResolvedExpands();
             if (expands.length > 0) {
-                final List<ExpandError> expandErrors = new ArrayList<>();
-                final List<Record>      list         = Arrays.asList(record);
-                for (Expand expand : expands) {
+                final List<ExpandError> expandErrors    = new ArrayList<>();
+                final List<Record>      list            = Arrays.asList(record);
+                final ResolvedExpand[]  resolvedExpands = resolveExpands(expands);
+                for (ResolvedExpand expand : resolvedExpands) {
                     try {
                         expand(expand, list);
                     } catch (ExpandException e) {
-                        expandErrors.add(new ExpandError(expand.getName(), e.getMessage(), e));
+                        expandErrors.add(new ExpandError(expand.name, e.getMessage(), e));
                     }
                 }
                 return expandErrors;
@@ -282,12 +283,24 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         if (!list.isEmpty()) {
             Expand[] expands = ExpandParser.parse(options.getExpand());
             if (expands.length > 0) {
+                ResolvedExpand[] resolvedExpands = resolveExpands(expands);
 
-                if (list.size() > ac.getMaxExpand()) {
-                    throw new BadRequestException("The result size " + list.size() + " exceed max expand " + ac.getMaxExpand() + ", please decrease your page_size");
+                int maxPageSize = ac.getMaxPageSizeWithExpandOne();
+                for(ResolvedExpand expand : resolvedExpands) {
+                    if(expand.isEmbedded()) {
+                        continue;
+                    }
+                    if(expand.rm.isOneToMany() || expand.rm.isOneToMany()) {
+                        maxPageSize = ac.getMaxPageSizeWithExpandMany();
+                        break;
+                    }
                 }
 
-                for (Expand expand : expands) {
+                if (list.size() > maxPageSize) {
+                    throw new BadRequestException("The result size " + list.size() + " exceed max expand " + maxPageSize + ", please decrease your page_size");
+                }
+
+                for (ResolvedExpand expand : resolvedExpands) {
                     try {
                         expand(expand, list);
                     } catch (ExpandException e) {
@@ -335,53 +348,33 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         return dao.createCriteriaQuery(em).fromSqlView(sqlView);
     }
 
-    protected void expand(Expand expand, List<Record> records) {
+    protected void expand(ResolvedExpand expand, List<Record> records) {
         if (records == null || records.size() == 0) {
             return;
         }
-
-        String       name = expand.getName();
-        MApiProperty ap   = am.tryGetProperty(name);
-        if (null == ap) {
-            throw new BadRequestException("The expand property '" + name + "' not exists!");
-        }
-
-        RelationProperty rp = em.tryGetRelationProperty(name);
-        if (null == rp) {
-            throw new BadRequestException("Property '" + name + "' cannot be expanded");
-        }
-
-        EntityMapping targetEm = dao.getOrmContext().getMetadata().tryGetEntityMapping(rp.getTargetEntityName());
-        if (targetEm == null) {
-            throw new IllegalStateException("Can't find target entity '" + rp.getTargetEntityName() + "'");
-        }
-
-        if (targetEm.isRemoteRest()) {
-            expandByRest(expand, records, rp);
+        if (expand.isRemoteRest()) {
+            expandByRest(expand, records);
         } else {
-            expandByDb(expand, records, rp);
+            expandByDb(expand, records);
         }
     }
 
-    protected void expandByRest(Expand expand, List<Record> records, RelationProperty rp) {
-        RelationMapping rm = em.getRelationMapping(rp.getRelationName());
-        if (rm.isEmbedded()) {
-            expandByRestEmbedded(expand, records, rp, rm);
+    protected void expandByRest(ResolvedExpand expand, List<Record> records) {
+        if (expand.isEmbedded()) {
+            expandByRestEmbedded(expand, records);
             return;
         }
 
-        EntityMapping targetEm = this.md.getEntityMapping(rm.getTargetEntityName());
-
         QueryOptions opts = new QueryOptions();
-        opts.setLimit(ac.getExpandLimit() + 1);
+        opts.setLimit(ac.getMaxRecordsPerExpand() + 1);
 
-        RestResource resource =
-                restResourceFactory.createResource(dao.getOrmContext(), targetEm);
+        RestResource resource = restResourceFactory.createResource(dao.getOrmContext(), expand.tem);
 
         //根据不同类型的关系，计算引用的源字段、被引用字段
         String localFieldName;
         String referredFieldName;
 
+        final RelationMapping rm = expand.rm;
         if (rm.isOneToMany()) {
             RelationMapping inverseRm = this.md.getEntityMapping(rm.getJoinEntityName()).getRelationMapping(rm.getInverseRelationName());
             localFieldName = inverseRm.getJoinFields()[0].getReferencedFieldName();
@@ -430,8 +423,8 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             log.error("Expand by rest error, {}", e.getMessage(), e);
             throw new ExpandException(e);
         }
-        if (resultList.getCount() > ac.getExpandLimit()) {
-            throw new BadRequestException("Expanded records of '" + rp.getName() + "' exceed max limit " + ac.getExpandLimit());
+        if (resultList.getCount() > ac.getMaxRecordsPerExpand()) {
+            throw new BadRequestException("Expanded records of '" + expand.getName() + "' exceed max limit " + ac.getMaxRecordsPerExpand());
         }
 
         //根据引用字段值，对所有查询出来的被引用数据，进行分组
@@ -461,6 +454,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
 
         //填充expand指定的属性
+        final RelationProperty rp = expand.rp;
         for (Record record : records) {
             Object       fk             = record.get(localFieldName);
             List<Record> fieldToRecords = referredRecords.get(fk);
@@ -476,14 +470,15 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
     }
 
-    protected void expandByDb(Expand expand, List<Record> records, RelationProperty rp) {
-        RelationMapping rm = em.getRelationMapping(rp.getRelationName());
-        if (rm.isEmbedded()) {
-            expandByDbEmbedded(expand, records, rp, rm);
+    protected void expandByDb(ResolvedExpand expand, List<Record> records) {
+        if (expand.isEmbedded()) {
+            expandByDbEmbedded(expand, records);
             return;
         }
 
-        CriteriaQuery<Record> expandQuery = dao.createCriteriaQuery(rp.getTargetEntityName()).limit(ac.getExpandLimit() + 1);
+        final RelationProperty rp          = expand.rp;
+        final RelationMapping  rm          = expand.rm;
+        CriteriaQuery<Record>  expandQuery = dao.createCriteriaQuery(rp.getTargetEntityName()).limit(ac.getMaxRecordsPerExpand() + 1);
 
         //根据不同类型的关系，计算引用的源字段、被引用字段
         String localFieldName;
@@ -539,8 +534,8 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             }
         }
         List<Record> resultList = expandQuery.list();
-        if (resultList.size() > ac.getExpandLimit()) {
-            throw new BadRequestException("Expanded records of '" + rp.getName() + "' exceed max limit " + ac.getExpandLimit());
+        if (resultList.size() > ac.getMaxRecordsPerExpand()) {
+            throw new BadRequestException("Expanded records of '" + rp.getName() + "' exceed max limit " + ac.getMaxRecordsPerExpand());
         }
 
         //根据引用字段值，对所有查询出来的被引用数据，进行分组
@@ -587,7 +582,10 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
     }
 
-    protected void expandByRestEmbedded(Expand expand, List<Record> records, RelationProperty rp, RelationMapping rm) {
+    protected void expandByRestEmbedded(ResolvedExpand expand, List<Record> records) {
+        final RelationMapping  rm = expand.rm;
+        final RelationProperty rp = expand.rp;
+
         Set<Object> ids = new HashSet<>();
         records.forEach(r -> calcIdsByEmbeddedField(ids, r, rm.getEmbeddedFileName()));
         if (ids.isEmpty()) {
@@ -666,7 +664,9 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         return list;
     }
 
-    protected void expandByDbEmbedded(Expand expand, List<Record> records, RelationProperty rp, RelationMapping rm) {
+    protected void expandByDbEmbedded(ResolvedExpand expand, List<Record> records) {
+        final RelationMapping rm = expand.rm;
+
         //calc target ids
         Set<Object> ids = new HashSet<>();
         records.forEach(r -> calcIdsByEmbeddedField(ids, r, rm.getEmbeddedFileName()));
@@ -684,9 +684,9 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             applySelect(expandQuery, expand.getSelect(), false, idFieldName);
         }
 
-        List<Record> totalExpanded = expandQuery.limit(ac.getExpandLimit() + 1).list();
-        if (totalExpanded.size() > ac.getExpandLimit()) {
-            throw new BadRequestException("Expanded records of '" + rp.getName() + "' exceed max limit " + ac.getExpandLimit());
+        List<Record> totalExpanded = expandQuery.limit(ac.getMaxRecordsPerExpand() + 1).list();
+        if (totalExpanded.size() > ac.getMaxRecordsPerExpand()) {
+            throw new BadRequestException("Expanded records of '" + expand.getName() + "' exceed max limit " + ac.getMaxRecordsPerExpand());
         }
         Map<Object, Record> totalExpandedMap =
                 totalExpanded.stream().collect(Collectors.toMap((r) -> r.get(idFieldName), r -> r));
@@ -702,7 +702,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                     }
                 }
             }
-            record.put(rp.getName(), expandedList);
+            record.put(expand.rp.getName(), expandedList);
         }
     }
 
@@ -1328,6 +1328,39 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         throw new IllegalStateException("Not supported operator '" + op + "'");
     }
 
+    protected ResolvedExpand[] resolveExpands(Expand[] expands) {
+        if (null == expands) {
+            return null;
+        }
+
+        ResolvedExpand[] resolvedExpands = new ResolvedExpand[expands.length];
+
+        for (int i = 0; i < expands.length; i++) {
+            Expand expand = expands[i];
+
+            String       name = expand.getName();
+            MApiProperty ap   = am.tryGetProperty(name);
+            if (null == ap) {
+                throw new BadRequestException("The expand property '" + name + "' not exists!");
+            }
+
+            RelationProperty rp = em.tryGetRelationProperty(name);
+            if (null == rp) {
+                throw new BadRequestException("Property '" + name + "' cannot be expanded");
+            }
+            RelationMapping rm = em.getRelationMapping(rp.getRelationName());
+
+            EntityMapping tem = dao.getOrmContext().getMetadata().tryGetEntityMapping(rp.getTargetEntityName());
+            if (tem == null) {
+                throw new IllegalStateException("Can't find target entity '" + rp.getTargetEntityName() + "'");
+            }
+
+            resolvedExpands[i] = new ResolvedExpand(expand, rp, rm, tem);
+        }
+
+        return resolvedExpands;
+    }
+
     protected static class ModelAndMapping {
 
         public final MApiModel     model;
@@ -1347,6 +1380,38 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             super(mm.model, mm.mapping);
             this.property = property;
             this.field = field;
+        }
+    }
+
+    protected static class ResolvedExpand {
+        protected final String           name;
+        protected final String           select;
+        protected final RelationProperty rp;
+        protected final RelationMapping  rm;
+        protected final EntityMapping    tem;
+
+        public ResolvedExpand(Expand expand, RelationProperty rp, RelationMapping rm, EntityMapping tem) {
+            this.name = expand.getName();
+            this.select = expand.getSelect();
+            this.rp = rp;
+            this.rm = rm;
+            this.tem = tem;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getSelect() {
+            return select;
+        }
+
+        public boolean isRemoteRest() {
+            return tem.isRemoteRest();
+        }
+
+        public boolean isEmbedded() {
+            return rm.isEmbedded();
         }
     }
 }
