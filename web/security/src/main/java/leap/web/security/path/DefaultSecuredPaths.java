@@ -145,6 +145,11 @@ public class DefaultSecuredPaths implements SecuredPaths {
         return paths.remove(new AntPathPattern(path));
     }
 
+    @Override
+    public boolean remove(SecuredPath path) {
+        return null != paths.remove(path.getPattern());
+    }
+
     public void apply(SecuredPathConfigurator c, SecuredPath p) {
         paths.put(p.getPattern(), new PathEntry(p, c));
     }
@@ -160,6 +165,11 @@ public class DefaultSecuredPaths implements SecuredPaths {
         PathEntry(SecuredPath p, SecuredPathConfigurator c) {
             this.path = p;
             this.configurator = c;
+        }
+
+        @Override
+        public Object getSource() {
+            return path.getSource();
         }
 
         @Override

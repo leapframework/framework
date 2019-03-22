@@ -17,6 +17,7 @@ package leap.web.security.path;
 
 import leap.core.web.RequestBase;
 import leap.core.web.RequestMatcher;
+import leap.lang.Sourced;
 import leap.lang.path.PathPattern;
 import leap.web.route.Route;
 import leap.web.security.SecuredObject;
@@ -24,7 +25,7 @@ import leap.web.security.SecurityFailureHandler;
 
 import java.util.Comparator;
 
-public interface SecuredPath extends SecuredObject, RequestMatcher, Comparable<SecuredPath> {
+public interface SecuredPath extends SecuredObject, RequestMatcher, Comparable<SecuredPath>, Sourced {
 
     Comparator<SecuredPath> COMPARATOR = (p1, p2) -> {
         if (p1 == null && p2 == null) {

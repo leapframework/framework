@@ -37,6 +37,11 @@ public class MergedSecuredPath implements SecuredPath {
     }
 
     @Override
+    public Object getSource() {
+        return merged.getSource();
+    }
+
+    @Override
     public Route getRoute() {
         return route;
     }
@@ -93,6 +98,12 @@ public class MergedSecuredPath implements SecuredPath {
 
     private SecuredPath merge(SecuredPath p1, SecuredPath p2) {
         SecuredPathBuilder spb = new DefaultSecuredPathBuilder(route);
+
+        if(null != p1.getSource()) {
+            spb.setSource(p1.getSource());
+        }else if(null != p2.getSource()) {
+            spb.setSource(p2.getSource());
+        }
 
         if(null != p1.getAllowAnonymous()) {
             spb.setAllowAnonymous(p1.getAllowAnonymous());

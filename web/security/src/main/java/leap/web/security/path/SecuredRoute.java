@@ -36,6 +36,11 @@ public class SecuredRoute extends SecuredObjectBase implements SecuredPath {
     }
 
     @Override
+    public Object getSource() {
+        return null;
+    }
+
+    @Override
     public Route getRoute() {
         return route;
     }
@@ -75,36 +80,36 @@ public class SecuredRoute extends SecuredObjectBase implements SecuredPath {
         Authentication authc = context.getAuthentication();
 
         //allow anonymous
-        if(route.getAllowAnonymous() == Boolean.TRUE) {
+        if (route.getAllowAnonymous() == Boolean.TRUE) {
             return true;
         }
 
         SimpleSecurity[] securities = route.getSecurities();
-        if(null != securities && securities.length > 0) {
+        if (null != securities && securities.length > 0) {
             List<SimpleSecurity> matches = new ArrayList<>();
-            for(SimpleSecurity security : securities) {
-                if(security.matchAuthentication(authc)) {
+            for (SimpleSecurity security : securities) {
+                if (security.matchAuthentication(authc)) {
                     matches.add(security);
                 }
             }
-            if(matches.isEmpty()) {
+            if (matches.isEmpty()) {
                 context.setDenyMessage(getAuthenticationDenyMessage(authc, securities));
                 return false;
-            }else {
+            } else {
                 context.setSecurities(matches.toArray(new SimpleSecurity[matches.size()]));
                 return true;
             }
         }
 
-        if(authc == null || !authc.isAuthenticated()){
+        if (authc == null || !authc.isAuthenticated()) {
             return false;
         }
 
-        if(authc.isRememberMe() && (null == route.getAllowRememberMe() || !route.getAllowRememberMe())){
+        if (authc.isRememberMe() && (null == route.getAllowRememberMe() || !route.getAllowRememberMe())) {
             return false;
         }
 
-        if(authc.isClientOnly() && (null == route.getAllowClientOnly() || !route.getAllowClientOnly())) {
+        if (authc.isClientOnly() && (null == route.getAllowClientOnly() || !route.getAllowClientOnly())) {
             context.setDenyMessage("client only authentication not allowed");
             return false;
         }
@@ -115,21 +120,21 @@ public class SecuredRoute extends SecuredObjectBase implements SecuredPath {
     @Override
     public Boolean tryCheckAuthorization(SecurityContextHolder context) {
         //Check roles
-        if(!checkRoles(context, route.getRoles())) {
+        if (!checkRoles(context, route.getRoles())) {
             context.setDenyMessage("Roles [" + Strings.join(route.getRoles(), ',') + "] required");
             return false;
         }
 
         //Check permissions
-        if(!checkPermissions(context, route.getPermissions())) {
+        if (!checkPermissions(context, route.getPermissions())) {
             context.setDenyMessage("Permissions [" + Strings.join(route.getPermissions(), ',') + "] required");
             return false;
         }
 
         SimpleSecurity[] securities = context.getSecurities();
-        if(null != securities && securities.length > 0) {
-            for(SimpleSecurity security : securities) {
-                if(checkPermissions(context, security.getPermissions()) &&
+        if (null != securities && securities.length > 0) {
+            for (SimpleSecurity security : securities) {
+                if (checkPermissions(context, security.getPermissions()) &&
                         checkRoles(context, security.getRoles())) {
                     return true;
                 }
@@ -146,10 +151,10 @@ public class SecuredRoute extends SecuredObjectBase implements SecuredPath {
 
         s.append("Expected one of authentications [ ");
 
-        for(int i=0;i<securities.length;i++) {
+        for (int i = 0; i < securities.length; i++) {
             SimpleSecurity sec = securities[i];
 
-            if(i > 0) {
+            if (i > 0) {
                 s.append(" , ");
             }
 
@@ -173,10 +178,10 @@ public class SecuredRoute extends SecuredObjectBase implements SecuredPath {
 
         s.append("Expected one of authorizations [ ");
 
-        for(int i=0;i<securities.length;i++) {
+        for (int i = 0; i < securities.length; i++) {
             SimpleSecurity sec = securities[i];
 
-            if(i > 0) {
+            if (i > 0) {
                 s.append(" , ");
             }
 

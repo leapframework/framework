@@ -32,6 +32,7 @@ public class DefaultSecuredPath extends SecuredObjectBase implements SecuredPath
 
 	private static final Log log = LogFactory.get(DefaultSecuredPath.class);
 
+	protected final Object                 source;
     protected final Route                  route;
     protected final PathPattern            pattern;
     protected final Boolean                allowAnonymous;
@@ -41,7 +42,8 @@ public class DefaultSecuredPath extends SecuredObjectBase implements SecuredPath
     protected final String[]               permissions;
     protected final String[]               roles;
 
-	public DefaultSecuredPath(Route route,
+	public DefaultSecuredPath(Object source,
+                              Route route,
                               PathPattern pattern,
                               Boolean allowAnonymous,
                               Boolean allowClientOnly,
@@ -50,6 +52,7 @@ public class DefaultSecuredPath extends SecuredObjectBase implements SecuredPath
                               String[] permissions,
                               String[] roles) {
 		Args.notNull(pattern,"path pattern");
+		this.source          = source;
         this.route           = route;
 		this.pattern         = pattern;
 	    this.allowAnonymous  = allowAnonymous;
@@ -58,6 +61,11 @@ public class DefaultSecuredPath extends SecuredObjectBase implements SecuredPath
         this.failureHandler  = failureHandler;
         this.permissions     = permissions;
         this.roles           = roles;
+    }
+
+    @Override
+    public Object getSource() {
+        return source;
     }
 
     @Override

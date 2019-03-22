@@ -28,6 +28,7 @@ import java.util.List;
 
 public class DefaultSecuredPathBuilder implements SecuredPathBuilder {
 
+    protected Object      source;
     protected Route       route;
     protected PathPattern pattern;
 
@@ -66,6 +67,12 @@ public class DefaultSecuredPathBuilder implements SecuredPathBuilder {
 		Collections2.addAll(permissions, path.getPermissions());
 		Collections2.addAll(roles, path.getRoles());
 	}
+
+    @Override
+    public SecuredPathBuilder setSource(Object source) {
+	    this.source = source;
+        return this;
+    }
 
     public Route getRoute() {
         return route;
@@ -142,7 +149,8 @@ public class DefaultSecuredPathBuilder implements SecuredPathBuilder {
 
     @Override
     public SecuredPath build() {
-        return new DefaultSecuredPath(route,
+        return new DefaultSecuredPath(source,
+                                      route,
                                       pattern,
                                       allowAnonymous,
                                       allowClientOnly,

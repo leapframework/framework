@@ -23,6 +23,11 @@ import leap.web.security.SecurityFailureHandler;
 public interface SecuredPathConfigurator {
 
     /**
+     * Set the source.
+     */
+    SecuredPathConfigurator setSource(Object source);
+
+    /**
      * Allow anonymous (not authenticated) user to access the path.
      */
     default SecuredPathConfigurator allowAnonymous() {

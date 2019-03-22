@@ -59,4 +59,12 @@ public interface SecuredPaths extends Iterable<SecuredPath>,Emptiable {
      */
     SecuredPath remove(String path);
 
+    /**
+     * Removes the secured path and returns the removed {@link SecuredPath} object.
+     *
+     * <p/>
+     * Returns false if not exists.
+     */
+    boolean remove(SecuredPath path);
+
 }
