@@ -59,4 +59,7 @@
     <bean type="leap.oauth2.webapp.user.UserInfoLookup"
           class="leap.oauth2.webapp.user.DefaultUserInfoLookup" primary="true"/>
 
+    <bean type="leap.oauth2.webapp.user.UserDetailsLookup"
+          class="leap.oauth2.webapp.user.DefaultUserDetailsLookup" primary="true"/>
+
 </beans>

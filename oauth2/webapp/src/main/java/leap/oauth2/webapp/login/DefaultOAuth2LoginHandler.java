@@ -19,6 +19,7 @@ package leap.oauth2.webapp.login;
 import leap.core.annotation.Inject;
 import leap.core.security.Authentication;
 import leap.core.security.ClientPrincipal;
+import leap.core.security.UserNotFoundException;
 import leap.core.security.UserPrincipal;
 import leap.core.security.token.TokenVerifyException;
 import leap.lang.Strings;
@@ -151,6 +152,8 @@ public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
             return State.CONTINUE;
         }catch (TokenVerifyException e) {
             return error(request, response, e.getErrorCode().name(), e.getMessage());
+        }catch (UserNotFoundException e) {
+            return error(request, response, UserNotFoundException.ERR_CODE, e.getMessage());
         }
     }
 
@@ -165,8 +168,12 @@ public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
             user = userInfoLookup.lookupUserInfo(at.getToken(), userId);
         }
 
-        if(null != userDetailsLookup && !Strings.isEmpty(userId)) {
+        if(null != userDetailsLookup && userDetailsLookup.isEnabled() && !Strings.isEmpty(userId)) {
             user = userDetailsLookup.lookupUserDetails(at.getToken(), userId);
+        }
+
+        if(null == user) {
+            throw new UserNotFoundException("User '" + userId + "' not found");
         }
 
         if(null == client && !Strings.isEmpty(clientId)) {

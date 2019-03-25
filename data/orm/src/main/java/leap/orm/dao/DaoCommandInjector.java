@@ -39,27 +39,35 @@ public class DaoCommandInjector implements BeanInjector {
             return false;
         }
 
-        if(null == a && Strings.isEmpty(bd.getId()) && Strings.isEmpty(bd.getName())) {
+        if (null == a && Strings.isEmpty(bd.getId()) && Strings.isEmpty(bd.getName())) {
             return false;
         }
+
+        boolean required = true;
 
         KeyAndDataSource kds;
         if (null != a && a.annotationType().equals(Inject.class)) {
             kds = resolveSqlIdentity(bd, v, (Inject) a);
         } else if (null != a && a.annotationType().equals(SqlKey.class)) {
-            kds = resolveSqlIdentity(bd, v, (SqlKey) a);
+            SqlKey sqlKey = (SqlKey) a;
+            kds = resolveSqlIdentity(bd, v, sqlKey);
+            required = sqlKey.required();
         } else {
             String key = Strings.firstNotEmpty(bd.getId(), bd.getName());
-            if(!Strings.isEmpty(key)) {
+            if (!Strings.isEmpty(key)) {
                 kds = new KeyAndDataSource(key, null);
-            }else {
+            } else {
                 return false;
             }
         }
 
         SqlCommand sql = sqls.tryGetSqlCommand(kds.key);
         if (null == sql) {
-            throw new BeanCreationException("Sql key '" + kds.key + "' not found, check the bean : " + bd);
+            if (required) {
+                throw new BeanCreationException("Sql key '" + kds.key + "' not found, check the bean : " + bd);
+            } else {
+                return false;
+            }
         }
 
         Dao dao;
@@ -89,7 +97,7 @@ public class DaoCommandInjector implements BeanInjector {
     }
 
     protected KeyAndDataSource resolveSqlIdentity(BeanDefinition bd, ReflectValued v, SqlKey a) {
-        String key = a.value();
+        String key        = Strings.firstNotEmpty(a.key(), a.value());
         String datasource = a.datasource();
         if (Strings.isEmpty(datasource)) {
             datasource = null;

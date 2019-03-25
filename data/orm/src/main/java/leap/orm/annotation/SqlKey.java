@@ -29,10 +29,20 @@ public @interface SqlKey {
     /**
      * The key of command.
      */
-    String value();
+    String value() default "";
+
+    /**
+     * Same as {@link #value()}.
+     */
+    String key() default "";
 
     /**
      * The datasource of command
      */
     String datasource() default "";
+
+    /**
+     * Is the key must be exists?
+     */
+    boolean required() default true;
 }

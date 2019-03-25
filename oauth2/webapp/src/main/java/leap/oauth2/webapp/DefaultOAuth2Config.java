@@ -343,7 +343,7 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Ap
             }
 
             //Auto enable login access token if user details lookup exists.
-            if(null != userDetailsLookup) {
+            if(null != userDetailsLookup && userDetailsLookup.isEnabled()) {
                 loginWithAccessToken = true;
             }
         }

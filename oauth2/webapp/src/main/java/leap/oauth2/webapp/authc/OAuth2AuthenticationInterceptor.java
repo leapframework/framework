@@ -17,8 +17,10 @@
 package leap.oauth2.webapp.authc;
 
 import leap.core.annotation.Inject;
+import leap.core.security.UserNotFoundException;
 import leap.core.security.token.TokenVerifyException;
 import leap.core.web.RequestIgnore;
+import leap.lang.http.HTTP;
 import leap.lang.intercepting.State;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -93,12 +95,15 @@ public class OAuth2AuthenticationInterceptor implements SecurityInterceptor {
             errorHandler.handleInvalidToken(request, response, e.getMessage());
             return State.INTERCEPTED;
         } catch (OAuth2ResponseException e) {
-            if(null != context.getSecuredPath() && context.getSecuredPath().isAllowAnonymous()){
+            if (null != context.getSecuredPath() && context.getSecuredPath().isAllowAnonymous()) {
                 log.warn("Got oauth2 server error, ignore for anonymous allowed at '{}'", context.getSecuredPath());
                 return State.CONTINUE;
             }
             errorHandler.responseError(request, response, e.getStatus(), e.getError(), e.getMessage());
             return State.INTERCEPTED;
+        } catch (UserNotFoundException e) {
+          errorHandler.responseError(request, response, HTTP.SC_FORBIDDEN, UserNotFoundException.ERR_CODE, e.getMessage());
+          return State.INTERCEPTED;
         } catch (Throwable e) {
             log.error("Error resolving authentication from access token : {}", e.getMessage(), e);
             errorHandler.handleServerError(request, response, e);

@@ -20,6 +20,8 @@ import leap.core.security.UserPrincipal;
 
 public interface UserDetailsLookup {
 
+    boolean isEnabled();
+
     UserPrincipal lookupUserDetails(String at, String userId);
 
 }
