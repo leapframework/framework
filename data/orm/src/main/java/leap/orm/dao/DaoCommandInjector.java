@@ -16,6 +16,7 @@
 
 package leap.orm.dao;
 
+import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.ioc.BeanDefinition;
 import leap.core.ioc.BeanInjector;
@@ -31,7 +32,9 @@ import java.lang.annotation.Annotation;
 
 public class DaoCommandInjector implements BeanInjector {
 
-    protected @Inject SqlRegistry sqls;
+    protected @Inject SqlRegistry       sqls;
+    protected @Inject BeanFactory       beanFactory;
+    protected @Inject DaoCommandFactory commandFactory;
 
     @Override
     public boolean resolveInjectValue(BeanDefinition bd, Object bean, ReflectValued v, Annotation a, Out<Object> value) {
@@ -72,14 +75,17 @@ public class DaoCommandInjector implements BeanInjector {
 
         Dao dao;
         if (!Strings.isEmpty(sql.getDataSourceName())) {
-            dao = Dao.get(sql.getDataSourceName());
+            dao = beanFactory.getBean(Dao.class, sql.getDataSourceName());
         } else if (!Strings.isEmpty(kds.dataSource)) {
-            dao = Dao.get(kds.dataSource);
+            dao = beanFactory.getBean(Dao.class, kds.dataSource);
         } else {
-            dao = Dao.get();
+            dao = beanFactory.getBean(Dao.class);
         }
 
-        value.set(new SimpleDaoCommand(dao, sql));
+        DaoCommand daoCommand = null == commandFactory ?
+                                        new SimpleDaoCommand(dao, sql) :
+                                        commandFactory.createDaoCommand(dao, sql);
+        value.set(daoCommand);
         return true;
     }
 

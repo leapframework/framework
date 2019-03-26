@@ -30,6 +30,13 @@ import java.util.Map;
 public interface DaoCommand {
 
     /**
+     * Is the command exists?
+     */
+    default boolean exists() {
+        return true;
+    }
+
+    /**
      * Returns the {@link Dao} for executing this command.
      */
     Dao dao();
