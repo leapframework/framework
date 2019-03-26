@@ -16,6 +16,7 @@
 
     <!-- injector -->
     <bean type="leap.core.ioc.BeanInjector" class="leap.orm.dao.DaoCommandInjector"/>
+    <bean type="leap.orm.dao.DaoCommandFactory" class="leap.orm.dao.SimpleDaoCommandFactory"/>
     
     <!-- domains -->
     <bean type="leap.orm.domain.Domains"       class="leap.orm.domain.DefaultDomains" primary="true"/>

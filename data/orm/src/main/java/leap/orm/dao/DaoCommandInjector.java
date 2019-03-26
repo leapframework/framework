@@ -25,14 +25,11 @@ import leap.lang.Strings;
 import leap.lang.beans.BeanCreationException;
 import leap.lang.reflect.ReflectValued;
 import leap.orm.annotation.SqlKey;
-import leap.orm.metadata.SqlRegistry;
-import leap.orm.sql.SqlCommand;
 
 import java.lang.annotation.Annotation;
 
 public class DaoCommandInjector implements BeanInjector {
 
-    protected @Inject SqlRegistry       sqls;
     protected @Inject BeanFactory       beanFactory;
     protected @Inject DaoCommandFactory commandFactory;
 
@@ -48,7 +45,7 @@ public class DaoCommandInjector implements BeanInjector {
 
         boolean required = true;
 
-        KeyAndDataSource kds;
+        DaoCommandDef kds;
         if (null != a && a.annotationType().equals(Inject.class)) {
             kds = resolveSqlIdentity(bd, v, (Inject) a);
         } else if (null != a && a.annotationType().equals(SqlKey.class)) {
@@ -58,38 +55,25 @@ public class DaoCommandInjector implements BeanInjector {
         } else {
             String key = Strings.firstNotEmpty(bd.getId(), bd.getName());
             if (!Strings.isEmpty(key)) {
-                kds = new KeyAndDataSource(key, null);
+                kds = new DaoCommandDef(key, null);
             } else {
                 return false;
             }
         }
 
-        SqlCommand sql = sqls.tryGetSqlCommand(kds.key);
-        if (null == sql) {
+        DaoCommand command = commandFactory.createDaoCommand(kds);
+        if (null == command) {
             if (required) {
                 throw new BeanCreationException("Sql key '" + kds.key + "' not found, check the bean : " + bd);
             } else {
                 return false;
             }
         }
-
-        Dao dao;
-        if (!Strings.isEmpty(sql.getDataSourceName())) {
-            dao = beanFactory.getBean(Dao.class, sql.getDataSourceName());
-        } else if (!Strings.isEmpty(kds.dataSource)) {
-            dao = beanFactory.getBean(Dao.class, kds.dataSource);
-        } else {
-            dao = beanFactory.getBean(Dao.class);
-        }
-
-        DaoCommand daoCommand = null == commandFactory ?
-                                        new SimpleDaoCommand(dao, sql) :
-                                        commandFactory.createDaoCommand(dao, sql);
-        value.set(daoCommand);
+        value.set(command);
         return true;
     }
 
-    protected KeyAndDataSource resolveSqlIdentity(BeanDefinition bd, ReflectValued v, Inject inject) {
+    protected DaoCommandDef resolveSqlIdentity(BeanDefinition bd, ReflectValued v, Inject inject) {
         String key = Strings.firstNotEmpty(inject.name(), inject.value());
 
         SqlKey sk = v.getAnnotation(SqlKey.class);
@@ -99,10 +83,10 @@ public class DaoCommandInjector implements BeanInjector {
         if (Strings.isEmpty(key)) {
             key = v.getName();
         }
-        return new KeyAndDataSource(key, null);
+        return new DaoCommandDef(key, null);
     }
 
-    protected KeyAndDataSource resolveSqlIdentity(BeanDefinition bd, ReflectValued v, SqlKey a) {
+    protected DaoCommandDef resolveSqlIdentity(BeanDefinition bd, ReflectValued v, SqlKey a) {
         String key        = Strings.firstNotEmpty(a.key(), a.value());
         String datasource = a.datasource();
         if (Strings.isEmpty(datasource)) {
@@ -111,16 +95,7 @@ public class DaoCommandInjector implements BeanInjector {
         if (Strings.isEmpty(key)) {
             throw new BeanCreationException("The value of '" + SqlKey.class + "' must not be empty, check the bean : " + bd);
         }
-        return new KeyAndDataSource(key, datasource);
+        return new DaoCommandDef(key, datasource);
     }
 
-    protected final class KeyAndDataSource {
-        public final String key;
-        public final String dataSource;
-
-        public KeyAndDataSource(String key, String dataSource) {
-            this.key = key;
-            this.dataSource = dataSource;
-        }
-    }
 }

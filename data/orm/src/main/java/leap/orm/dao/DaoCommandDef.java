@@ -18,8 +18,22 @@
 
 package leap.orm.dao;
 
-public interface DaoCommandFactory {
+public final class DaoCommandDef {
 
-    DaoCommand createDaoCommand(DaoCommandDef def);
+    public final String key;
+    public final String dataSource;
+
+    public DaoCommandDef(String key, String dataSource) {
+        this.key = key;
+        this.dataSource = dataSource;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public String getDataSource() {
+        return dataSource;
+    }
 
 }
