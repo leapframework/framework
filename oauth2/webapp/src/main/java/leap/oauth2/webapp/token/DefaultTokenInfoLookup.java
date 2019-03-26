@@ -17,6 +17,7 @@
 package leap.oauth2.webapp.token;
 
 import leap.core.annotation.Inject;
+import leap.core.security.SimpleUserPrincipal;
 import leap.lang.Strings;
 import leap.lang.codec.Base64;
 import leap.lang.http.ContentTypes;
@@ -108,6 +109,15 @@ public class DefaultTokenInfoLookup implements TokenInfoLookup {
         info.setExpiresIn(((Integer)map.get("expires_in")));
         info.setScope((String)map.get("scope"));
         info.setClaims(map);
+
+        String username = (String)map.get("username");
+        if(null != username) {
+            SimpleUserPrincipal user = new SimpleUserPrincipal();
+            user.setId(info.getUserId());
+            user.setLoginName(username);
+            user.setName(username);
+            info.setUserInfo(user);
+        }
 
         return info;
     }

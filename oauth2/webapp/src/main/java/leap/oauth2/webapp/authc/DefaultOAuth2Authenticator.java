@@ -125,22 +125,16 @@ public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCrea
         ClientPrincipal client = null;
 
         if (null != user) {
-            if (null != userDetailsLookup && userDetailsLookup.isEnabled()) {
-                log.debug("lookup user details by '{}'", userDetailsLookup.getClass().getSimpleName());
-                user = userDetailsLookup.lookupUserDetails(user.getIdAsString(), user.getName(), user.getLoginName());
-                if (null == user) {
-                    log.error("User details '{}' '{}' not found", user.getId(), user.getLoginName());
-                    throw new UserNotFoundException();
-                }
-            }
+            user = lookupUserDetails(user);
         } else if (!Strings.isEmpty(userId)) {
             //user info lookup
-            log.debug("lookup user info");
+            log.debug("lookup user info at oauth2 server");
             user = userInfoLookup.lookupUserInfo(at.getToken(), userId);
             if (null == user) {
                 log.error("User info not exists in oauth2 server, user id -> {}, access token -> {}", userId, at.getToken());
                 throw new UserNotFoundException();
             }
+            user = lookupUserDetails(user);
         }
 
         if (!Strings.isEmpty(clientId)) {
@@ -155,6 +149,18 @@ public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCrea
         cacheAuthentication(at, tokenInfo, authc);
 
         return authc;
+    }
+
+    protected UserPrincipal lookupUserDetails(UserPrincipal user) {
+        if (null != userDetailsLookup && userDetailsLookup.isEnabled()) {
+            log.debug("lookup user details by '{}'", userDetailsLookup.getClass().getSimpleName());
+            user = userDetailsLookup.lookupUserDetails(user.getIdAsString(), user.getName(), user.getLoginName());
+            if (null == user) {
+                log.error("User details '{}' '{}' not found", user.getId(), user.getLoginName());
+                throw new UserNotFoundException();
+            }
+        }
+        return user;
     }
 
     protected CachedAuthentication getCachedAuthentication(Token at) {

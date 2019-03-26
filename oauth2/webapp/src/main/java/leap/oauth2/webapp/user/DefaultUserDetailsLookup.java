@@ -36,15 +36,15 @@ public class DefaultUserDetailsLookup implements UserDetailsLookup {
 
     @Override
     public boolean isEnabled() {
-        return null != findUserDetails;
+        return null != findUserDetails && findUserDetails.exists();
     }
 
     @Override
     public UserPrincipal lookupUserDetails(String userId, String name, String loginName) {
         UserPrincipal user = findUserDetails(userId);
 
-        if(null == user && null != createUser && !Strings.isEmpty(loginName)) {
-            if(Strings.isEmpty(name)) {
+        if (null == user && (null != createUser && createUser.exists()) && !Strings.isEmpty(loginName)) {
+            if (Strings.isEmpty(name)) {
                 name = loginName;
             }
             createUser.executeUpdate(New.hashMap("userId", userId, "name", name, "loginName", loginName));
