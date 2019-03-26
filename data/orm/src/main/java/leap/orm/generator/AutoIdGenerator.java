@@ -56,6 +56,9 @@ public class AutoIdGenerator implements IdGenerator {
     @Override
     public void mapping(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder fmb) {
 		Db db = context.getDb();
+		if(null == db) {
+			return;
+		}
 		
 		//smallint, integer or big integer type for sequence , identity or table generator 
 		if(isIntegerType(fmb)){
