@@ -169,7 +169,7 @@ public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
         }
 
         if(null != userDetailsLookup && userDetailsLookup.isEnabled() && !Strings.isEmpty(userId)) {
-            user = userDetailsLookup.lookupUserDetails(at.getToken(), userId);
+            user = userDetailsLookup.lookupUserDetails(userId, user.getName(), user.getLoginName());
         }
 
         if(null == user) {

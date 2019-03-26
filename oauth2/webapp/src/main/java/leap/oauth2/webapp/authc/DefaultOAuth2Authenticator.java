@@ -127,8 +127,8 @@ public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCrea
         if (null != user) {
             if (null != userDetailsLookup && userDetailsLookup.isEnabled()) {
                 log.debug("lookup user details by '{}'", userDetailsLookup.getClass().getSimpleName());
-                user = userDetailsLookup.lookupUserDetails(at.getToken(), user.getIdAsString());
-                if(null == user) {
+                user = userDetailsLookup.lookupUserDetails(user.getIdAsString(), user.getName(), user.getLoginName());
+                if (null == user) {
                     log.error("User details '{}' '{}' not found", user.getId(), user.getLoginName());
                     throw new UserNotFoundException();
                 }

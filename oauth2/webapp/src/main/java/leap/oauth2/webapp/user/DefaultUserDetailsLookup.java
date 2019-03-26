@@ -20,6 +20,8 @@ package leap.oauth2.webapp.user;
 
 import leap.core.security.SimpleUserPrincipal;
 import leap.core.security.UserPrincipal;
+import leap.lang.New;
+import leap.lang.Strings;
 import leap.orm.annotation.SqlKey;
 import leap.orm.dao.DaoCommand;
 import leap.web.security.user.JdbcUserStore;
@@ -29,13 +31,30 @@ public class DefaultUserDetailsLookup implements UserDetailsLookup {
     @SqlKey(key = JdbcUserStore.SQL_KEY_FIND_USER_DETAILS_BY_ID, required = false)
     protected DaoCommand findUserDetails;
 
+    @SqlKey(key = "security.createUser", required = false)
+    protected DaoCommand createUser;
+
     @Override
     public boolean isEnabled() {
         return null != findUserDetails;
     }
 
     @Override
-    public UserPrincipal lookupUserDetails(String at, String userId) {
+    public UserPrincipal lookupUserDetails(String userId, String name, String loginName) {
+        UserPrincipal user = findUserDetails(userId);
+
+        if(null == user && null != createUser && !Strings.isEmpty(loginName)) {
+            if(Strings.isEmpty(name)) {
+                name = loginName;
+            }
+            createUser.executeUpdate(New.hashMap("userId", userId, "name", name, "loginName", loginName));
+            user = findUserDetails(userId);
+        }
+
+        return user;
+    }
+
+    protected UserPrincipal findUserDetails(String userId) {
         return findUserDetails.createQuery(SimpleUserPrincipal.class)
                 .param(JdbcUserStore.SQL_PARAM_USER_ID, userId)
                 .singleOrNull();

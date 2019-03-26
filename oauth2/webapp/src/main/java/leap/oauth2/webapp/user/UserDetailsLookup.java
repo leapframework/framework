@@ -22,6 +22,6 @@ public interface UserDetailsLookup {
 
     boolean isEnabled();
 
-    UserPrincipal lookupUserDetails(String at, String userId);
+    UserPrincipal lookupUserDetails(String userId, String name, String loginName);
 
 }
