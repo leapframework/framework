@@ -42,6 +42,7 @@ public class YamlMessageReader extends AbstractMessageReader implements MessageR
     public boolean read(MessageContext context, Resource resource) {
         if (Strings.endsWith(resource.getFilename(), ".yaml") || Strings.endsWith(resource.getFilename(), ".yml")) {
             readMessages(context, resource);
+            return true;
         }
         return false;
     }
@@ -60,6 +61,8 @@ public class YamlMessageReader extends AbstractMessageReader implements MessageR
                 props = Maps.toProperties(map);
             }
 
+            log.debug("Found {} message keys", props.keySet().size());
+
             for (String key : props.keySet()) {
                 readMessage(context, resource, locale, props, (String) key);
             }
@@ -74,7 +77,7 @@ public class YamlMessageReader extends AbstractMessageReader implements MessageR
 
         if (null != message) {
             throw new AppConfigException("Message key '" + name + "' in locale '" + locale +
-                    "' aleady exists in '" + message.getSource() +
+                    "' already exists in '" + message.getSource() +
                     "', check the file : " + resource.getURLString());
         }
 

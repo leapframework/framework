@@ -21,6 +21,8 @@ import leap.core.AppResource;
 import leap.core.annotation.Inject;
 import leap.core.validation.annotations.NotNull;
 import leap.lang.Strings;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -28,6 +30,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ResourceMessageSource extends AbstractMessageSource implements AppConfigAware {
+
+	private static final Log log = LogFactory.get(ResourceMessageSource.class);
 	
 	protected static final Message UNRESOLVED_MESSAGE = new Message("", "");
 	
@@ -115,7 +119,9 @@ public class ResourceMessageSource extends AbstractMessageSource implements AppC
 		if(null != ar){
             context.setDefaultOverride(ar.isDefaultOverride());
 			for(MessageReader reader : readers){
+				log.debug("Try read '{}' by '{}'", ar, reader.getClass().getSimpleName());
 				if(reader.read(context,ar.getResource())){
+					log.info("Read '{}' by '{}'", ar, reader.getClass().getSimpleName());
 					break;
 				}
 			}
