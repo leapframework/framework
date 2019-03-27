@@ -40,6 +40,7 @@ public class PropertiesMessageReader extends AbstractMessageReader implements Ap
 	public boolean read(MessageContext context, Resource resource) {
 		if(Strings.endsWith(resource.getFilename(), ".properties")){
 			readMessages(context, resource);
+			return true;
 		}
 		return false;
 	}
@@ -56,6 +57,8 @@ public class PropertiesMessageReader extends AbstractMessageReader implements Ap
             try (Reader reader = resource.getInputStreamReader(charset)) {
                 props.load(reader);
             }
+
+            log.debug("Found {} message keys", props.keySet().size());
 
             for (Object key : props.keySet()) {
                 readMessage(context, resource, locale, props, (String) key);
@@ -77,6 +80,6 @@ public class PropertiesMessageReader extends AbstractMessageReader implements Ap
 										 "', check the file : " + resource.getURLString());	
 		}
 		
-		context.addMessage(locale, name, createMessage(resource.getURLString(), props.getProperty(name)));
+		context.addMessage(locale, name, createMessage(resource.getURLString(), locale, props.getProperty(name)));
 	}
 }

@@ -148,6 +148,6 @@ public class XmlMessageReader extends AbstractMessageReader {
 			}
 		}
 		
-		context.addMessage(locale, key, createMessage(reader.getSource(), value));
+		context.addMessage(locale, key, createMessage(reader.getSource(), locale, value));
  	}
 }
