@@ -81,6 +81,6 @@ public class YamlMessageReader extends AbstractMessageReader implements MessageR
                     "', check the file : " + resource.getURLString());
         }
 
-        context.addMessage(locale, name, createMessage(resource.getURLString(), props.get(name)));
+        context.addMessage(locale, name, createMessage(resource.getURLString(), locale, props.get(name)));
     }
 }

@@ -80,6 +80,6 @@ public class PropertiesMessageReader extends AbstractMessageReader implements Ap
 										 "', check the file : " + resource.getURLString());	
 		}
 		
-		context.addMessage(locale, name, createMessage(resource.getURLString(), props.getProperty(name)));
+		context.addMessage(locale, name, createMessage(resource.getURLString(), locale, props.getProperty(name)));
 	}
 }

@@ -22,14 +22,16 @@ import leap.core.el.ExpressionLanguage;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 
+import java.util.Locale;
+
 public abstract class AbstractMessageReader implements MessageReader {
 
     protected final Log log = LogFactory.get(this.getClass());
 
     protected @Inject ExpressionLanguage el;
 
-    protected final Message createMessage(Object source, String string) {
-        return new Message(source, EL.createCompositeExpression(el, string));
+    protected final Message createMessage(Object source, Locale locale, String string) {
+        return new Message(source, locale, EL.createCompositeExpression(el, string));
     }
 
 }

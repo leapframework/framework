@@ -19,19 +19,22 @@ import leap.lang.expression.CompositeExpression;
 import leap.lang.expression.Expression;
 
 import java.util.Collections;
+import java.util.Locale;
 import java.util.Map;
 
 public final class Message {
 
     private final Object              source;
+    private final Locale              locale;
     private final CompositeExpression expression;
 
-    protected Message(Object source, String string) {
-        this(source, new CompositeExpression(string));
+    protected Message(Object source, Locale locale, String string) {
+        this(source, locale, new CompositeExpression(string));
     }
 
-    protected Message(Object source, CompositeExpression expression) {
+    protected Message(Object source, Locale locale, CompositeExpression expression) {
         this.source = source;
+        this.locale = locale;
         this.expression = expression;
     }
 
@@ -39,8 +42,12 @@ public final class Message {
         return source;
     }
 
+    public Locale getLocale() {
+        return locale;
+    }
+
     public String getString(Map<String, Object> vars) {
-        return (String)expression.getValue(null == vars ? Collections.emptyMap() : vars);
+        return (String) expression.getValue(null == vars ? Collections.emptyMap() : vars);
     }
 
     public Expression getExpression() {
