@@ -22,6 +22,7 @@ import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.beans.DynaProps;
+import leap.lang.beans.PreSerializable;
 import leap.lang.codec.Base64;
 import leap.lang.naming.NamingStyle;
 import leap.lang.time.DateFormats;
@@ -963,6 +964,10 @@ public class JsonWriterImpl implements JsonWriter {
 
             JsonSetting jb         = bean.getClass().getAnnotation(JsonSetting.class);
             boolean     ignoreNull = (null != jb && jb.ignoreNull().isPresent()) ? jb.ignoreNull().getValue() : this.isIgnoreNull();
+
+            if(bean instanceof PreSerializable) {
+                ((PreSerializable) bean).preSerialize();
+            }
 
             for (BeanProperty prop : beanType.getProperties()) {
                 if (prop.isTransient()) {
