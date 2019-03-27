@@ -37,15 +37,19 @@ import leap.oauth2.webapp.token.TokenInfoLookup;
 import leap.oauth2.webapp.token.TokenVerifier;
 import leap.oauth2.webapp.user.UserDetailsLookup;
 import leap.oauth2.webapp.user.UserInfoLookup;
+import leap.web.Request;
 
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Default implementation of {@link OAuth2Authenticator}.
  */
 public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCreateBean {
+    public static final String TOKENINFO_ATTR_NAME = DefaultOAuth2Authenticator.class.getName()+"$tokeninfo";
+    
     private static final Log log = LogFactory.get(DefaultOAuth2Authenticator.class);
-
+    
     protected @Inject OAuth2Config      config;
     protected @Inject TokenInfoLookup   tokenInfoLookup;
     protected @Inject UserInfoLookup    userInfoLookup;
@@ -90,6 +94,8 @@ public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCrea
                 removeCachedAuthentication(at, cached);
             } else {
                 log.debug("Returns the cached authentication of access token : {}", at.getToken());
+                Optional.ofNullable(Request.tryGetCurrent())
+                        .ifPresent(request -> request.setAttribute(TOKENINFO_ATTR_NAME, cached.tokenInfo));
                 return cached.authentication;
             }
         }
@@ -145,9 +151,10 @@ public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCrea
         if (null != tokenInfo.getScope()) {
             authc.setPermissions(Strings.split(tokenInfo.getScope(), ',', ' '));
         }
-
+        
         cacheAuthentication(at, tokenInfo, authc);
-
+        Optional.ofNullable(Request.tryGetCurrent())
+                .ifPresent(request -> request.setAttribute(TOKENINFO_ATTR_NAME, tokenInfo));
         return authc;
     }
 

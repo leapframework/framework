@@ -58,8 +58,10 @@
     <!-- user -->
     <bean type="leap.oauth2.webapp.user.UserInfoLookup"
           class="leap.oauth2.webapp.user.DefaultUserInfoLookup" primary="true"/>
-
+    
     <bean type="leap.oauth2.webapp.user.UserDetailsLookup"
           class="leap.oauth2.webapp.user.DefaultUserDetailsLookup" primary="true"/>
 
+    <!-- variable -->
+    <bean name="tokeninfo" type="leap.core.variable.Variable" class="leap.oauth2.webapp.variable.TokenInfoVariable"/>
 </beans>
