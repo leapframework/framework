@@ -22,12 +22,14 @@ import leap.lang.Classes;
 import leap.lang.Enumerable;
 import leap.lang.Enumerables;
 
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
 public class BeanTraverser {
 
-    private final Object bean;
+    private final Object                           bean;
+    private final IdentityHashMap<Object, Boolean> traversed = new IdentityHashMap<>();
 
     public BeanTraverser(Object bean) {
         this.bean = bean;
@@ -38,11 +40,17 @@ public class BeanTraverser {
     }
 
     protected void traverse(ValMeta meta, Object val, BiConsumer<ValMeta, Object> func) {
+        if (null != val && traversed.containsKey(val)) {
+            return;
+        }
+
         func.accept(meta, val);
 
         if (null == val) {
             return;
         }
+
+        traversed.put(val, Boolean.TRUE);
 
         if (val instanceof Map) {
             traverseMap((Map) val, func);
@@ -75,7 +83,7 @@ public class BeanTraverser {
 
     protected void traverseBean(Object bean, BiConsumer<ValMeta, Object> func) {
         for (BeanProperty bp : BeanType.of(bean.getClass()).getProperties()) {
-            if(!bp.isReadable()) {
+            if (!bp.isReadable()) {
                 continue;
             }
             Object p = bp.getValue(bean);
