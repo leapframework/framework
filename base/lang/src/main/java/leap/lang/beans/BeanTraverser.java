@@ -19,18 +19,41 @@
 package leap.lang.beans;
 
 import leap.lang.Classes;
+import leap.lang.Collections2;
 import leap.lang.Enumerable;
 import leap.lang.Enumerables;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiConsumer;
 
 public class BeanTraverser {
 
-    private final Object bean;
+    private final Object        bean;
+    private final Set<Object>   traversed     = new HashSet<>();
+    private final Set<Class<?>> skipClasses   = new HashSet<>();
+    private final Set<String>   skipPackages  = new HashSet<>();
+    private final Set<Class<?>> acceptClasses = new HashSet<>();
 
     public BeanTraverser(Object bean) {
         this.bean = bean;
+        skipPackages.add("java.");
+    }
+
+    public BeanTraverser acceptClassesOnly(Class<?>... cs) {
+        Collections2.addAll(acceptClasses, cs);
+        return this;
+    }
+
+    public BeanTraverser skipClasses(Class<?>... cs) {
+        Collections2.addAll(skipClasses, cs);
+        return this;
+    }
+
+    public BeanTraverser skipPackages(String... pkgs) {
+        Collections2.addAll(skipPackages, pkgs);
+        return this;
     }
 
     public void traverse(BiConsumer<ValMeta, Object> func) {
@@ -38,11 +61,17 @@ public class BeanTraverser {
     }
 
     protected void traverse(ValMeta meta, Object val, BiConsumer<ValMeta, Object> func) {
+        if (null != val && traversed.contains(val)) {
+            return;
+        }
+
         func.accept(meta, val);
 
         if (null == val) {
             return;
         }
+
+        traversed.add(val);
 
         if (val instanceof Map) {
             traverseMap((Map) val, func);
@@ -53,6 +82,31 @@ public class BeanTraverser {
         if (null != e) {
             traverseEnumerable(val, e, func);
             return;
+        }
+
+        if(!acceptClasses.isEmpty()) {
+            boolean accept = false;
+            for(Class<?> c : acceptClasses) {
+                if(c.isAssignableFrom(val.getClass())) {
+                    accept = true;
+                    break;
+                }
+            }
+            if(!accept) {
+                return;
+            }
+        }
+
+        for (String pkg : skipPackages) {
+            if (Classes.getPackageName(val.getClass()).startsWith(pkg)) {
+                return;
+            }
+        }
+
+        for (Class<?> c : skipClasses) {
+            if (c.isAssignableFrom(val.getClass())) {
+                return;
+            }
         }
 
         if (!Classes.isSimpleValueType(val.getClass())) {
@@ -75,7 +129,7 @@ public class BeanTraverser {
 
     protected void traverseBean(Object bean, BiConsumer<ValMeta, Object> func) {
         for (BeanProperty bp : BeanType.of(bean.getClass()).getProperties()) {
-            if(!bp.isReadable()) {
+            if (!bp.isReadable()) {
                 continue;
             }
             Object p = bp.getValue(bean);
