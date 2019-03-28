@@ -93,7 +93,7 @@ public class BeanTraverser {
                 }
             }
             if(!accept) {
-
+                return;
             }
         }
 
