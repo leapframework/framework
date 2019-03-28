@@ -22,6 +22,8 @@ import leap.lang.Classes;
 import leap.lang.Collections2;
 import leap.lang.Enumerable;
 import leap.lang.Enumerables;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -29,6 +31,9 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 
 public class BeanTraverser {
+    private static final Log log = LogFactory.get(BeanTraverser.class);
+
+    private static final Object UNRESOLVED = new Object();
 
     private final Object        bean;
     private final Set<Object>   traversed     = new HashSet<>();
@@ -84,34 +89,40 @@ public class BeanTraverser {
             return;
         }
 
-        if(!acceptClasses.isEmpty()) {
+        if (!Classes.isSimpleValueType(val.getClass())) {
+            if (skipType(val.getClass())) {
+                return;
+            }
+            traverseBean(val, func);
+        }
+    }
+
+    protected boolean skipType(Class<?> type) {
+        if (!acceptClasses.isEmpty()) {
             boolean accept = false;
-            for(Class<?> c : acceptClasses) {
-                if(c.isAssignableFrom(val.getClass())) {
+            for (Class<?> c : acceptClasses) {
+                if (c.isAssignableFrom(type)) {
                     accept = true;
                     break;
                 }
             }
-            if(!accept) {
-                return;
+            if (!accept) {
+                return true;
             }
         }
 
         for (String pkg : skipPackages) {
-            if (Classes.getPackageName(val.getClass()).startsWith(pkg)) {
-                return;
+            if (Classes.getPackageName(type).startsWith(pkg)) {
+                return true;
             }
         }
 
         for (Class<?> c : skipClasses) {
-            if (c.isAssignableFrom(val.getClass())) {
-                return;
+            if (c.isAssignableFrom(type)) {
+                return true;
             }
         }
-
-        if (!Classes.isSimpleValueType(val.getClass())) {
-            traverseBean(val, func);
-        }
+        return false;
     }
 
     protected void traverseMap(Map map, BiConsumer<ValMeta, Object> func) {
@@ -132,8 +143,19 @@ public class BeanTraverser {
             if (!bp.isReadable()) {
                 continue;
             }
-            Object p = bp.getValue(bean);
-            traverse(new ValMeta(bean, bp), p, func);
+            if (skipType(bp.getType())) {
+                continue;
+            }
+            Object p;
+            try {
+                p = bp.getValue(bean);
+            } catch (Exception e) {
+                log.warn("Err get property, {}" + e.getMessage(), e);
+                p = UNRESOLVED;
+            }
+            if (p != UNRESOLVED) {
+                traverse(new ValMeta(bean, bp), p, func);
+            }
         }
     }
 
