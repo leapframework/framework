@@ -150,6 +150,11 @@ public interface WebConfig {
     boolean isFormatParameterEnabled();
 
     /**
+     * Returns <code>true</code> if handles the external(non managed by leap framework) response errors.
+     */
+    boolean isHandleExternalResponseErrors();
+
+    /**
      * Required.
      *
      * Returns the name of home controller.
