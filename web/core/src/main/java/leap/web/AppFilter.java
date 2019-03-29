@@ -27,6 +27,7 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.servlet.Servlets;
 import leap.web.assets.AssetHandler;
+import leap.web.config.WebConfig;
 import leap.web.exception.ResponseException;
 
 import javax.servlet.Filter;
@@ -46,6 +47,7 @@ public class AppFilter implements Filter {
 	protected ServletContext  servletContext;
 	protected AppBootstrap    bootstrap;
 	protected App			  app;
+	protected WebConfig       config;
 	protected AppHandler	  appHandler;
 	protected AppContext	  appContext;
 	protected AssetHandler	  assetHandler;
@@ -85,6 +87,7 @@ public class AppFilter implements Filter {
 
 			//get beans
 			this.app		  = bootstrap.getApp();
+			this.config       = app.getWebConfig();
 			this.appHandler   = bootstrap.getAppHandler();
 			this.appContext   = bootstrap.getAppContext();
 			this.assetHandler = bootstrap.getBeanFactory().tryGetBean(AssetHandler.class);
@@ -240,20 +243,20 @@ public class AppFilter implements Filter {
 			
 			//service the request
 	        if(!appHandler.handleRequest(request,response)){
-	        	ErrorServletResponseWrapper espw = new ErrorServletResponseWrapper(response.getServletResponse());
-	        	
-	        	chain.doFilter(request.getServletRequest(), espw);
-
-	        	if(espw.isError()) {
-
-                    if(response.isCommitted()) {
-                        return;
+	            if(!config.isHandleExternalResponseErrors()) {
+                    chain.doFilter(request.getServletRequest(), response.getServletResponse());
+                }else {
+                    ErrorServletResponseWrapper espw = new ErrorServletResponseWrapper(response.getServletResponse());
+                    chain.doFilter(request.getServletRequest(), espw);
+                    if(espw.isError()) {
+                        if(response.isCommitted()) {
+                            return;
+                        }
+                        if(!appHandler.handleError(request, response, espw.getErrorStatus(), espw.getErrorMessage())) {
+                            espw.commitError();
+                        }
                     }
-
-	        		if(!appHandler.handleError(request, response, espw.getErrorStatus(), espw.getErrorMessage())) {
-	        			espw.commitError();
-	        		}
-	        	}
+                }
 	        }
 		} catch (RuntimeException e) {
 			throw e;

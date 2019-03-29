@@ -25,26 +25,28 @@ import java.util.Map;
 
 public class SpringExpression extends AbstractExpression {
 
-    protected final Expression        expr;
-    protected final EvaluationContext context;
-    protected final Object            env;
+    protected final Expression          expr;
+    protected final EvaluationContext   context;
+    protected final Map<String, Object> globalVariables;
 
-    public SpringExpression(Expression expr, EvaluationContext context, Object env) {
+    public SpringExpression(Expression expr, EvaluationContext context, Map<String, Object> globalVariables) {
         this.expr = expr;
         this.context = context;
-        this.env = env;
+        this.globalVariables = globalVariables;
     }
 
     @Override
     protected Object eval(Object context, Map<String, Object> vars) {
-        if(null == vars) {
+        if (null == vars) {
             vars = new HashMap<>();
         }
-        vars.put("env", env);
+        if (null != globalVariables) {
+            vars.putAll(globalVariables);
+        }
 
         try {
             return expr.getValue(this.context, vars);
-        }catch (Exception e) {
+        } catch (Exception e) {
             throw new ElException("Err eval expr [ " + expr.getExpressionString() + " ], " + e.getMessage(), e);
         }
     }

@@ -28,10 +28,13 @@ import leap.web.security.user.JdbcUserStore;
 
 public class DefaultUserDetailsLookup implements UserDetailsLookup {
 
-    @SqlKey(key = JdbcUserStore.SQL_KEY_FIND_USER_DETAILS_BY_ID, required = false)
+    public static final String SQL_KEY_FIND_USER_DETAILS_BY_ID = "oauth2.findUserDetailsById";
+    public static final String SQL_KEY_CREATE_USER             = "oauth2.createUser";
+
+    @SqlKey(key = SQL_KEY_FIND_USER_DETAILS_BY_ID, required = false)
     protected DaoCommand findUserDetails;
 
-    @SqlKey(key = "security.createUser", required = false)
+    @SqlKey(key = SQL_KEY_CREATE_USER, required = false)
     protected DaoCommand createUser;
 
     @Override
