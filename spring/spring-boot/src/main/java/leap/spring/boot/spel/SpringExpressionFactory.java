@@ -30,6 +30,7 @@ import org.springframework.expression.spel.SpelParserConfiguration;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class SpringExpressionFactory implements ExpressionFactory<org.springframework.expression.Expression> {
@@ -42,9 +43,13 @@ public class SpringExpressionFactory implements ExpressionFactory<org.springfram
     @Inject
     protected BeanFactory beanFactory;
 
+    @Inject
+    protected SpringExpressionInitializer[] initializers;
+
     protected EnvPropertyAccessor       envProperty;
     protected SpelExpressionParser      spelParser;
     protected StandardEvaluationContext evalContext;
+    protected Map<String, Object>       globalVariables = new HashMap<>();
 
     @Init
     public void init() {
@@ -58,14 +63,19 @@ public class SpringExpressionFactory implements ExpressionFactory<org.springfram
 
         evalContext = new StandardEvaluationContext();
         envProperty = new EnvPropertyAccessor(env);
+        globalVariables.put("env", envProperty);
 
         evalContext.getPropertyAccessors().add(0, envProperty);
         evalContext.getPropertyAccessors().add(0, new MapPropertyAccessor());
         evalContext.setBeanResolver(new BeanFactoryResolver(beanFactory));
+
+        for(SpringExpressionInitializer initializer : initializers) {
+            initializer.initExpressionContext(evalContext, globalVariables);
+        }
     }
 
     public Expression createExpression(String expr) {
-        return new SpringExpression(createSpringExpression(expr), evalContext, envProperty);
+        return new SpringExpression(createSpringExpression(expr), evalContext, globalVariables);
     }
 
     public org.springframework.expression.Expression createSpringExpression(String expr) {
