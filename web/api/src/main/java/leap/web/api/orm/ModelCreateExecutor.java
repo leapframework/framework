@@ -16,9 +16,50 @@
 
 package leap.web.api.orm;
 
+import leap.core.value.Record;
+import leap.orm.mapping.RelationProperty;
+
 import java.util.Map;
 
 public interface ModelCreateExecutor {
+
+    class Created {
+        private final Object id;
+        private final Record record;
+
+        public Created(Object id, Record record) {
+            this.id = id;
+            this.record = record;
+        }
+
+        public Object getId() {
+            return id;
+        }
+
+        public Record getRecord() {
+            return record;
+        }
+    }
+
+    interface Creation {
+        /**
+         * The properties of entity.
+         */
+        Map<String, Object> getProperties();
+
+        /**
+         * The relation properties of entity.
+         */
+        Map<RelationProperty, Object[]> getRelationProperties();
+    }
+
+    interface CreateHandler {
+
+        Created createOne(ModelExecutionContext context, Creation creation);
+
+    }
+
+    ModelCreateExecutor withHandler(CreateHandler handler);
 
     default CreateOneResult createOne(Object request) {
         return createOne(request, null, null);
@@ -29,4 +70,5 @@ public interface ModelCreateExecutor {
     }
 
     CreateOneResult createOne(Object request, Object id, Map<String, Object> extraProperties);
+
 }
