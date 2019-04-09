@@ -44,6 +44,9 @@
     <bean type="leap.oauth2.webapp.token.at.AccessTokenStore"
           class="leap.oauth2.webapp.token.at.DefaultAccessTokenStore" primary="true"/>
 
+    <bean type="leap.oauth2.webapp.token.at.AccessTokenRefresher"
+          class="leap.oauth2.webapp.token.at.DefaultAccessTokenRefresher" primary="true"/>
+
     <bean name="jwt"
           type="leap.oauth2.webapp.token.TokenVerifier"
           class="leap.oauth2.webapp.token.jwt.JwtTokenVerifier"/>
