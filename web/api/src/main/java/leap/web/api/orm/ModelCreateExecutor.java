@@ -51,6 +51,11 @@ public interface ModelCreateExecutor {
          * The relation properties of entity.
          */
         Map<RelationProperty, Object[]> getRelationProperties();
+
+        /**
+         * Returns the properties combined with {@link #getProperties()} & {@link #getRelationProperties()}
+         */
+        Map<String, Object> getCombinedProperties();
     }
 
     interface CreateHandler {

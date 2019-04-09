@@ -170,6 +170,10 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
             created = new Created(createdId, record);
         }
 
+        if(null == created) {
+            return new CreateOneResult(null, null);
+        }
+
         if(null != created.getRecord()) {
             created.getRecord().put("$id", created.getId());
         }
@@ -267,6 +271,29 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
         @Override
         public Map<RelationProperty, Object[]> getRelationProperties() {
             return relationProperties;
+        }
+
+        @Override
+        public Map<String, Object> getCombinedProperties() {
+            if(null == relationProperties || relationProperties.isEmpty()) {
+                return properties;
+            }
+
+            Map<String, Object> m = new LinkedHashMap<>(properties);
+            relationProperties.forEach((rp, vals) -> {
+                if(vals.length == 0) {
+                    return;
+                }
+                if(rp.isMany()) {
+                    m.put(rp.getName(), vals);
+                }else {
+                    if(vals.length > 1) {
+                        throw new IllegalStateException("Found multi values fo to-one relation property '" + rp.getName() + "'");
+                    }
+                    m.put(rp.getName(), vals[0]);
+                }
+            });
+            return m;
         }
     }
 
