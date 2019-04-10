@@ -130,16 +130,16 @@ public class DefaultResponse extends Response {
 		try {
 			if(null != location){
 				if(location.startsWith("/")) {
-				    String cp = request.getContextPath();
+				    String cp = request.getReverseProxyContextUrl();
 				    if(!cp.isEmpty()) {
 				        if(!(location.equals(cp) || location.startsWith(cp + "/"))) {
 				            location = cp + location;    
 				        }
 				    }
 				}else if(location.startsWith("~/")){
-					location = request.getContextPath() + location.substring(1);
+					location = request.getReverseProxyContextUrl() + location.substring(1);
 				}else if(location.startsWith("^/")) {
-					location = location.substring(1);
+					location = request.getReverseProxyServerUrl() + location.substring(1);
 				}
 			}
 	        resp.sendRedirect(location);
