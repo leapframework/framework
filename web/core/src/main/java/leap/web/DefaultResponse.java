@@ -136,10 +136,11 @@ public class DefaultResponse extends Response {
 				            location = cp + location;    
 				        }
 				    }
+					location = request.getReverseProxyServerUrl() + location;
 				}else if(location.startsWith("~/")){
-					location = request.getContextPath() + location.substring(1);
+					location = request.getReverseProxyContextUrl() + location.substring(1);
 				}else if(location.startsWith("^/")) {
-					location = location.substring(1);
+					location = request.getReverseProxyServerUrl() + location.substring(1);
 				}
 			}
 	        resp.sendRedirect(location);

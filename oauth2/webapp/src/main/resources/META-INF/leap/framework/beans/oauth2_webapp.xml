@@ -43,7 +43,10 @@
 
     <bean type="leap.oauth2.webapp.token.at.AccessTokenStore"
           class="leap.oauth2.webapp.token.at.DefaultAccessTokenStore" primary="true"/>
-
+    
+    <bean type="leap.oauth2.webapp.token.at.AccessTokenFetcher" 
+          class="leap.oauth2.webapp.token.at.DefaultAccessTokenFetcher" primary="true"/>
+    
     <bean type="leap.oauth2.webapp.token.at.AccessTokenRefresher"
           class="leap.oauth2.webapp.token.at.DefaultAccessTokenRefresher" primary="true"/>
 
