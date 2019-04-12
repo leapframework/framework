@@ -26,6 +26,7 @@ import leap.lang.Enumerable;
 import leap.lang.Enumerables;
 import leap.lang.New;
 import leap.orm.command.InsertCommand;
+import leap.orm.event.EntityListeners;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.Mappings;
 import leap.orm.mapping.RelationMapping;
@@ -41,7 +42,8 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
 
     protected final ModelCreateExtension ex;
 
-    protected CreateHandler handler;
+    protected CreateHandler   handler;
+    protected EntityListeners listeners;
 
     public DefaultModelCreateExecutor(ModelExecutorContext context, ModelCreateExtension ex) {
         super(context);
@@ -51,6 +53,12 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
     @Override
     public ModelCreateExecutor withHandler(CreateHandler handler) {
         this.handler = handler;
+        return this;
+    }
+
+    @Override
+    public ModelCreateExecutor withListeners(EntityListeners listeners) {
+        this.listeners = listeners;
         return this;
     }
 
@@ -157,9 +165,12 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
         Created created;
 
         if (!em.isRemoteRest()) {
-            if(null != handler) {
+            if(null != listeners) {
+                em.addContextListeners(listeners);
+            }
+            if (null != handler) {
                 created = handler.createOne(context, creation);
-            }else {
+            } else {
                 created = createByDb(creation);
             }
         } else {
@@ -170,11 +181,11 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
             created = new Created(createdId, record);
         }
 
-        if(null == created) {
+        if (null == created) {
             return new CreateOneResult(null, null);
         }
 
-        if(null != created.getRecord()) {
+        if (null != created.getRecord()) {
             created.getRecord().put("$id", created.getId());
         }
 
@@ -254,7 +265,7 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
         private final Map<RelationProperty, Object[]> relationProperties;
 
         public CreationImpl(Object id, Map<String, Object> properties, Map<RelationProperty, Object[]> relationProperties) {
-            this.id         = id;
+            this.id = id;
             this.properties = properties;
             this.relationProperties = relationProperties;
         }
@@ -275,19 +286,19 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
 
         @Override
         public Map<String, Object> getCombinedProperties() {
-            if(null == relationProperties || relationProperties.isEmpty()) {
+            if (null == relationProperties || relationProperties.isEmpty()) {
                 return properties;
             }
 
             Map<String, Object> m = new LinkedHashMap<>(properties);
             relationProperties.forEach((rp, vals) -> {
-                if(vals.length == 0) {
+                if (vals.length == 0) {
                     return;
                 }
-                if(rp.isMany()) {
+                if (rp.isMany()) {
                     m.put(rp.getName(), vals);
-                }else {
-                    if(vals.length > 1) {
+                } else {
+                    if (vals.length > 1) {
                         throw new IllegalStateException("Found multi values fo to-one relation property '" + rp.getName() + "'");
                     }
                     m.put(rp.getName(), vals[0]);

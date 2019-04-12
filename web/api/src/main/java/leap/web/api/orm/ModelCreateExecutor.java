@@ -17,6 +17,8 @@
 package leap.web.api.orm;
 
 import leap.core.value.Record;
+import leap.orm.event.EntityEvent;
+import leap.orm.event.EntityListeners;
 import leap.orm.mapping.RelationProperty;
 
 import java.util.Map;
@@ -77,6 +79,8 @@ public interface ModelCreateExecutor {
     }
 
     ModelCreateExecutor withHandler(CreateHandler handler);
+
+    ModelCreateExecutor withListeners(EntityListeners listeners);
 
     default CreateOneResult createOne(Object request) {
         return createOne(request, null, null);
