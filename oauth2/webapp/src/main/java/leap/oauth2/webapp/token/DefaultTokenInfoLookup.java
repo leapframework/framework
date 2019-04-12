@@ -116,6 +116,14 @@ public class DefaultTokenInfoLookup implements TokenInfoLookup {
             user.setId(info.getUserId());
             user.setLoginName(username);
             user.setName(username);
+
+            String name = (String)map.get("name");
+            if(null != name) {
+                user.setName(name);
+            }else {
+                user.setName(username);
+            }
+
             info.setUserInfo(user);
         }
 
