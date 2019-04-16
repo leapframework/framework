@@ -169,9 +169,8 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase<RelationExec
             CriteriaQuery<Record> query =
                     createCriteriaQuery().joinById(rm.getTargetEntityName(), rm.getName(), "j", relatedId);
 
-            Map<String, ModelAndMapping> joinedModels = New.hashMap("j", new ModelAndMapping(am, em));
-
-            applySelect(query, options, joinedModels);
+            JoinModels joinModels = new JoinModels("j", new ModelAndMapping(am, em));
+            applySelect(query, options, joinModels);
 
             Record record = query.firstOrNull();
 
@@ -187,9 +186,8 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase<RelationExec
             CriteriaQuery<Record> query =
                     createCriteriaQuery().joinById(rm.getTargetEntityName(), rm.getName(), "j", relatedId);
 
-            Map<String, ModelAndMapping> joinedModels = New.hashMap("j", new ModelAndMapping(am, em));
-
-            return doQueryListResult(query, joinedModels, options, null, null);
+            JoinModels joinModels = new JoinModels("j", new ModelAndMapping(am, em));
+            return doQueryListResult(query, joinModels, options, null, null);
         }
 
         public QueryListResult queryListByIds(Set<Object> ids, QueryOptions options) {
@@ -208,7 +206,7 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase<RelationExec
                 CriteriaQuery<Record> query =
                         createCriteriaQuery().where(idFieldName + " in ?", ids);
 
-                return doQueryListResult(query, new HashMap<>(), options, null, null);
+                return doQueryListResult(query, new JoinModels(), options, null, null);
             }
         }
     }

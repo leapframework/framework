@@ -40,6 +40,10 @@ public class OrderBy {
 
             Item item = items[i];
 
+            if(null != item.alias) {
+                s.append(item.alias).append('.');
+            }
+
             s.append(item.name);
 
             if(!item.isAscending()) {
@@ -52,11 +56,25 @@ public class OrderBy {
 
     public static final class Item {
 
+        private String  alias;
         private String  name;
         private boolean ascending = true;
 
         public Item(String name) {
             this.name = name;
+        }
+
+        public Item(String name, String alias) {
+            this.name  = name;
+            this.alias = alias;
+        }
+
+        public boolean hasAlias() {
+            return null != alias;
+        }
+
+        public String alias() {
+            return alias;
         }
 
         public String name() {

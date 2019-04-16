@@ -23,6 +23,7 @@ import leap.core.value.SimpleRecord;
 import leap.lang.Enumerable;
 import leap.lang.Enumerables;
 import leap.lang.Strings;
+import leap.lang.collection.SimpleCaseInsensitiveMap;
 import leap.lang.convert.Converts;
 import leap.lang.jdbc.SimpleWhereBuilder;
 import leap.lang.jdbc.WhereBuilder;
@@ -111,7 +112,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             Record record;
 
             CriteriaQuery<Record> query = createCriteriaQuery().whereById(id);
-            applySelect(query, options, new HashMap<>());
+            applySelect(query, options, new JoinModels());
 
             ex.preQueryOne(context, id, query);
             if (null != ex.handler) {
@@ -167,22 +168,20 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             return new QueryListResult(result.getList(), result.getCount());
         }
 
-        CriteriaQuery<Record>        query        = createCriteriaQuery();
-        Map<String, ModelAndMapping> joinedModels = new HashMap<>();
-
-        return doQueryListResult(query, joinedModels, options, filters, callback, filterByParams);
+        CriteriaQuery<Record> query = createCriteriaQuery();
+        return doQueryListResult(query, new JoinModels(), options, filters, callback, filterByParams);
     }
 
     protected QueryListResult doQueryListResult(CriteriaQuery<Record> query,
-                                                Map<String, ModelAndMapping> joinedModels,
+                                                JoinModels joinModels,
                                                 QueryOptions options,
                                                 Map<String, Object> filters,
                                                 Consumer<CriteriaQuery> callback) {
-        return doQueryListResult(query, joinedModels, options, filters, callback, filterByParams);
+        return doQueryListResult(query, joinModels, options, filters, callback, filterByParams);
     }
 
     protected QueryListResult doQueryListResult(CriteriaQuery<Record> query,
-                                                Map<String, ModelAndMapping> joinedModels,
+                                                JoinModels joinModels,
                                                 QueryOptions options,
                                                 Map<String, Object> filters,
                                                 Consumer<CriteriaQuery> callback, boolean filterByParams) {
@@ -212,11 +211,6 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         long         count = -1;
         List<Record> list;
 
-        OrderBy orderBy = options.getResolvedOrderBy();
-        if (null != orderBy) {
-            applyOrderBy(query, orderBy);
-        }
-
         Join[] joins = options.getResolvedJoins();
         if (null != joins && joins.length > 0) {
             Set<String> relations = new HashSet<>();
@@ -227,7 +221,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                     throw new BadRequestException("Duplicated join relation '" + join.getRelation() + "'");
                 }
 
-                if (joinedModels.containsKey(join.getAlias().toLowerCase())) {
+                if (joinModels.contains(join.getAlias())) {
                     throw new BadRequestException("Duplicated join alias '" + join.getAlias() + "'");
                 }
 
@@ -249,16 +243,17 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
                 relations.add(join.getRelation().toLowerCase());
 
-                ModelAndMapping joinedModel = lookupModelAndMapping(rp.getTargetEntityName());
-                if (null == joinedModel) {
+                ModelAndMapping joinModel = lookupModelAndMapping(rp.getTargetEntityName());
+                if (null == joinModel) {
                     throw new BadRequestException("The joined model '" + rp.getTargetEntityName() + "' of relation '" + join.getRelation() + "' not found");
                 }
-                joinedModels.put(join.getAlias().toLowerCase(), joinedModel);
+                joinModels.add(join.getAlias(), joinModel);
             }
         }
 
-        applySelectOrAggregates(query, options, joinedModels);
-        applyFilters(context, query, options.getParams(), options, joinedModels, filters, filterByParams);
+        applyOrderBy(query, options.getResolvedOrderBy(), joinModels);
+        applySelectOrAggregates(query, options, joinModels);
+        applyFilters(context, query, options.getParams(), options, joinModels, filters, filterByParams);
 
         if (callback != null) {
             callback.accept(query);
@@ -286,11 +281,11 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                 ResolvedExpand[] resolvedExpands = resolveExpands(expands);
 
                 int maxPageSize = ac.getMaxPageSizeWithExpandOne();
-                for(ResolvedExpand expand : resolvedExpands) {
-                    if(expand.isEmbedded()) {
+                for (ResolvedExpand expand : resolvedExpands) {
+                    if (expand.isEmbedded()) {
                         continue;
                     }
-                    if(expand.rm.isOneToMany() || expand.rm.isOneToMany()) {
+                    if (expand.rm.isOneToMany() || expand.rm.isOneToMany()) {
                         maxPageSize = ac.getMaxPageSizeWithExpandMany();
                         break;
                     }
@@ -756,7 +751,11 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
     }
 
-    protected void applyOrderBy(CriteriaQuery query, OrderBy orderBy) {
+    protected void applyOrderBy(CriteriaQuery query, OrderBy orderBy, JoinModels joinModels) {
+        if (null == orderBy) {
+            return;
+        }
+
         OrderBy.Item[] items = orderBy.items();
 
         StringBuilder s = new StringBuilder();
@@ -769,22 +768,34 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
             OrderBy.Item item = items[i];
 
-            String name = item.name();
+            MApiModel model;
 
-            MApiProperty ap = am.tryGetProperty(name);
-            if (null == ap) {
-                throw new BadRequestException("Property '" + name + "' not exists in model '" + am.getName() + "'");
-            }
-
-            if (ap.isNotSortableExplicitly()) {
-                throw new BadRequestException("Property '" + name + "' is not sortable!");
-            }
-            if (Strings.isNotEmpty(query.alias())) {
-                s.append(query.alias() + "." + name);
+            if (item.hasAlias() && !item.alias().equalsIgnoreCase(query.alias())) {
+                ModelAndMapping jm = joinModels.get(item.alias());
+                if (null == jm) {
+                    throw new BadRequestException("Can't found join alias '" + item.alias() + "', check order by");
+                }
+                model = jm.model;
             } else {
-                s.append(name);
+                model = am;
             }
 
+            String       name = item.name();
+            MApiProperty ap   = model.tryGetProperty(name);
+            if (null == ap) {
+                throw new BadRequestException("Property '" + name + "' not exists in model '" + model.getName() + "'");
+            }
+            if (ap.isNotSortableExplicitly()) {
+                throw new BadRequestException("Property '" + name + "' is not sortable in model '" + model.getName() + "'");
+            }
+
+            if (item.hasAlias()) {
+                s.append(item.alias()).append('.').append(item.name());
+            } else if (Strings.isNotEmpty(query.alias())) {
+                s.append(query.alias()).append('.').append(item.name());
+            } else {
+                s.append(item.name());
+            }
             if (!item.isAscending()) {
                 s.append(" desc");
             }
@@ -880,7 +891,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         query.select(fields.toArray(new String[fields.size()]));
     }
 
-    protected void applySelect(CriteriaQuery query, QueryOptionsBase options, Map<String, ModelAndMapping> joins) {
+    protected void applySelect(CriteriaQuery query, QueryOptionsBase options, JoinModels joins) {
         String select = null == options ? null : options.getSelect();
 
         List<String> fields = new ArrayList<>();
@@ -974,7 +985,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         query.select(fields.toArray(new String[fields.size()]));
     }
 
-    protected void applySelectOrAggregates(CriteriaQuery query, QueryOptions options, Map<String, ModelAndMapping> joins) {
+    protected void applySelectOrAggregates(CriteriaQuery query, QueryOptions options, JoinModels joins) {
         if (Strings.isEmpty(options.getAggregates()) && Strings.isEmpty(options.getGroupBy())) {
             applySelect(query, options, joins);
             return;
@@ -1025,12 +1036,12 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
     }
 
     protected void applyFilters(ModelExecutionContext context, CriteriaQuery query, Params params,
-                                QueryOptions options, Map<String, ModelAndMapping> jms, Map<String, Object> fields) {
+                                QueryOptions options, JoinModels jms, Map<String, Object> fields) {
         applyFilters(context, query, params, options, jms, fields, filterByParams);
     }
 
     protected void applyFilters(ModelExecutionContext context, CriteriaQuery query, Params params,
-                                QueryOptions options, Map<String, ModelAndMapping> jms, Map<String, Object> fields, boolean filterByParams) {
+                                QueryOptions options, JoinModels jms, Map<String, Object> fields, boolean filterByParams) {
         SimpleWhereBuilder where = new SimpleWhereBuilder();
 
         if (null != ex.handler) {
@@ -1075,7 +1086,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                         alias = name.substring(0, dotIndex);
                         name = name.substring(dotIndex + 1);
 
-                        if (null == jms || !jms.containsKey(alias.toLowerCase())) {
+                        if (null == jms || !jms.contains(alias.toLowerCase())) {
                             throw new BadRequestException("Unknown alias '" + alias + "' at param '" + (alias + "." + name) + "'");
                         }
                     } else {
@@ -1144,7 +1155,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                         String    value = nodes[++i].literal();
 
                         if (null != alias) {
-                            if (null == jms || !jms.containsKey(alias.toLowerCase())) {
+                            if (null == jms || !jms.contains(alias)) {
                                 throw new BadRequestException("Unknown alias '" + alias + "' at property '" + nameNode.toString() + "'");
                             }
                         } else {
@@ -1231,7 +1242,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         return new ModelAndMapping(model, mapping);
     }
 
-    protected ModelAndProp lookupModelAndProp(Map<String, ModelAndMapping> joinedModels, String alias, String propertyName) {
+    protected ModelAndProp lookupModelAndProp(JoinModels joinedModels, String alias, String propertyName) {
         ModelAndMapping modelAndMapping = null;
         if (null != joinedModels) {
             modelAndMapping = joinedModels.get(alias.toLowerCase());
@@ -1359,6 +1370,34 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
 
         return resolvedExpands;
+    }
+
+    protected static class JoinModels {
+        private final Map<String, ModelAndMapping> m = new SimpleCaseInsensitiveMap<>();
+
+        public JoinModels() {
+
+        }
+
+        public JoinModels(String alias, ModelAndMapping join) {
+            add(alias, join);
+        }
+
+        public void add(String alias, ModelAndMapping join) {
+            m.put(alias, join);
+        }
+
+        public ModelAndMapping get(String alias) {
+            return m.get(alias);
+        }
+
+        public boolean isEmpty() {
+            return !m.isEmpty();
+        }
+
+        public boolean contains(String alias) {
+            return m.containsKey(alias);
+        }
     }
 
     protected static class ModelAndMapping {

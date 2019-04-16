@@ -48,8 +48,14 @@ public class OrderByParser extends ParserBase {
             }
 
             if(null == item) {
-                String name = scanIdentifier();
-                item = new OrderBy.Item(name);
+                String name = scanName();
+                int dotIndex = name.indexOf('.');
+                if(dotIndex > 0) {
+                    item = new OrderBy.Item(name.substring(dotIndex + 1), name.substring(0, dotIndex));
+                }else {
+                    item = new OrderBy.Item(name);
+                }
+
                 items.add(item);
                 continue;
             }else{
@@ -76,7 +82,7 @@ public class OrderByParser extends ParserBase {
         return new OrderBy(items.toArray(new OrderBy.Item[items.size()]));
     }
 
-    private String scanIdentifier() {
+    private String scanName() {
         skipWhitespaces();
 
         int start = pos;
@@ -88,7 +94,7 @@ public class OrderByParser extends ParserBase {
                 break;
             }
 
-            if(!isIdentifierChar(ch)) {
+            if(ch != '.' && !isIdentifierChar(ch)) {
                 error("Illegal identifier char '" + ch + "'");
             }
         }

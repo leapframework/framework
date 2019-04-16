@@ -34,6 +34,13 @@ public class OrderByParserTest extends TestBase {
     }
 
     @Test
+    public void testAlias() {
+        assertParse("a.name", "a.name");
+        assertParse("a.name asc", "a.name");
+        assertParse("a.name asc,col", "a.name,col");
+    }
+
+    @Test
     public void testMultiItems() {
         assertParse("a,b","a,b");
         assertParse("a asc , b", "a,b");
