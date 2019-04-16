@@ -1004,38 +1004,53 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                 throw new BadRequestException("Must use groupby with aggregates");
             }
 
-            String[] names = Strings.split(options.getGroupBy(), ',');
-            for (String name : names) {
-                MApiModel m;
+            StringBuilder groupBy = new StringBuilder();
 
-                String alias = null;
-                int dotIndex = name.indexOf('.');
-                if(dotIndex > 0) {
-                    alias = name.substring(0, dotIndex);
-                    name = name.substring(dotIndex + 1);
-                    ModelAndMapping join = joins.get(alias);
-                    if(null == join) {
-                        throw new BadRequestException("Can't found join alias '" + alias + "', check group by");
+            String[] items = Strings.split(options.getGroupBy(), ',');
+            for (int i = 0; i< items.length; i++) {
+                if(i > 0) {
+                    groupBy.append(',');
+                }
+                String item = items[i];
+                String name = item;
+                String expr = em.getGroupByExprs().get(item);
+                if(null != expr) {
+                    select.add("(" + expr + ") as " + name);
+                    groupBy.append("(" + expr + ")");
+                }else {
+                    MApiModel m;
+
+                    String alias = null;
+                    int dotIndex = name.indexOf('.');
+                    if(dotIndex > 0) {
+                        alias = name.substring(0, dotIndex);
+                        name = name.substring(dotIndex + 1);
+                        ModelAndMapping join = joins.get(alias);
+                        if(null == join) {
+                            throw new BadRequestException("Can't found join alias '" + alias + "', check group by");
+                        }
+                        m = join.model;
+                    }else {
+                        m = am;
                     }
-                    m = join.model;
-                }else {
-                    m = am;
-                }
 
-                MApiProperty p = m.tryGetProperty(name);
-                if (null == p) {
-                    throw new BadRequestException("Property '" + m.getName() + "." + name + "' not exists, check the 'groupby'");
-                }
-                if (!p.isSelectableExplicitly()) {
-                    throw new BadRequestException("Property '" + m.getName() + "." + name + "' is not groupable");
-                }
-                if(null != alias) {
-                    select.add(alias + "." + p.getName());
-                }else {
-                    select.add(p.getName());
+                    MApiProperty p = m.tryGetProperty(name);
+                    if (null == p) {
+                        throw new BadRequestException("Property '" + m.getName() + "." + name + "' not exists, check the 'groupby'");
+                    }
+                    if (!p.isSelectableExplicitly()) {
+                        throw new BadRequestException("Property '" + m.getName() + "." + name + "' is not groupable");
+                    }
+                    if(null != alias) {
+                        select.add(alias + "." + p.getName());
+                    }else {
+                        select.add(p.getName());
+                    }
+
+                    groupBy.append(item);
                 }
             }
-            query.groupBy(options.getGroupBy());
+            query.groupBy(groupBy.toString());
         }
 
         Aggregate[] aggregates = AggregateParser.parse(options.getAggregates());

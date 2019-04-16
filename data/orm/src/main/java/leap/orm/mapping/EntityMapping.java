@@ -24,7 +24,6 @@ import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.orm.event.EntityListeners;
-import leap.orm.event.EntityListenersImpl;
 import leap.orm.interceptor.EntityExecutionInterceptor;
 import leap.orm.model.Model;
 import leap.orm.validation.EntityValidator;
@@ -42,7 +41,7 @@ public class EntityMapping extends ExtensibleBase {
 
     public static void addContextListeners(EntityListeners listeners) {
         List<EntityListeners> list = CONTEXT_LISTENERS.get();
-        if(null == list) {
+        if (null == list) {
             list = new ArrayList<>();
             CONTEXT_LISTENERS.set(list);
         }
@@ -77,17 +76,18 @@ public class EntityMapping extends ExtensibleBase {
     protected final EntityExecutionInterceptor findInterceptor;
     protected final Class<? extends Model>     modelClass;
 
-    protected final EntityValidator[]  validators;
-    protected final RelationMapping[]  relationMappings;
-    protected final RelationProperty[] relationProperties;
-    protected final boolean            autoCreateTable;
-    protected final boolean            selfReferencing;
-    protected final RelationMapping[]  selfReferencingRelations;
-    protected final EntityListeners    listeners;
-    protected final boolean            queryFilterEnabled;
-    protected final boolean            autoValidate;
-    protected final boolean            remote;
-    protected final RemoteSettings     remoteSettings;
+    protected final EntityValidator[]   validators;
+    protected final RelationMapping[]   relationMappings;
+    protected final RelationProperty[]  relationProperties;
+    protected final boolean             autoCreateTable;
+    protected final boolean             selfReferencing;
+    protected final RelationMapping[]   selfReferencingRelations;
+    protected final EntityListeners     listeners;
+    protected final boolean             queryFilterEnabled;
+    protected final boolean             autoValidate;
+    protected final boolean             remote;
+    protected final RemoteSettings      remoteSettings;
+    protected final Map<String, String> groupByExprs;
 
     private final Map<String, FieldMapping>    columnNameToFields;
     private final Map<String, FieldMapping>    fieldNameToFields;
@@ -108,6 +108,7 @@ public class EntityMapping extends ExtensibleBase {
                          RelationProperty[] relationProperties,
                          boolean autoCreateTable,
                          boolean queryFilterEnabled, boolean autoValidate, boolean remote, RemoteSettings remoteSettings,
+                         Map<String, String> groupByExprs,
                          EntityListeners listeners) {
 
         Args.notEmpty(entityName, "entity name");
@@ -157,6 +158,7 @@ public class EntityMapping extends ExtensibleBase {
         this.autoValidate = autoValidate;
         this.remote = remote;
         this.remoteSettings = remoteSettings;
+        this.groupByExprs = null == groupByExprs ? Collections.emptyMap() : Collections.unmodifiableMap(groupByExprs);
 
         this.selfReferencingRelations = evalSelfReferencingRelations();
         this.selfReferencing = selfReferencingRelations.length > 0;
@@ -569,6 +571,14 @@ public class EntityMapping extends ExtensibleBase {
         return false;
     }
 
+    public RemoteSettings getRemoteSettings() {
+        return remoteSettings;
+    }
+
+    public Map<String, String> getGroupByExprs() {
+        return groupByExprs;
+    }
+
     public EntityListeners getListeners() {
         return listeners;
     }
@@ -767,9 +777,5 @@ public class EntityMapping extends ExtensibleBase {
     @Override
     public String toString() {
         return "Entity[name=" + getEntityName() + ",table=" + getTableName() + ",class=" + (entityClass == null ? "null" : entityClass.getName()) + "]";
-    }
-
-    public RemoteSettings getRemoteSettings() {
-        return remoteSettings;
     }
 }

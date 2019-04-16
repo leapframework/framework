@@ -16,38 +16,38 @@
 package leap.orm.mapping;
 
 import leap.db.model.*;
+import leap.lang.Comparators;
 import leap.lang.*;
+import leap.lang.collection.SimpleCaseInsensitiveMap;
 import leap.lang.exception.ObjectExistsException;
 import leap.orm.event.EntityListenersBuilder;
 import leap.orm.interceptor.EntityExecutionInterceptor;
 import leap.orm.model.Model;
 import leap.orm.validation.EntityValidator;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
 
 public class EntityMappingBuilder extends ExtensibleBase implements Buildable<EntityMapping> {
 
-    protected String         entityName;
-    protected String         wideEntityName;
-    protected Class<?>       entityClass;
-    protected Class<?>       extendedEntityClass;
-    protected boolean        _abstract;
-    protected DbTableBuilder table;
-    protected DbTableBuilder secondaryTable;
-    protected String         tablePrefix;
-    protected String         dynamicTableName;
-    protected boolean        tableNameDeclared;
-    protected boolean        idDeclared;
-    protected boolean        autoCreateTable;
-    protected boolean        autoGenerateColumns;
-    protected Boolean        queryFilterEnabled;
-    protected boolean        autoValidate;
-    protected boolean        remote;
-    protected RemoteSettings remoteSettings;
+    protected String              entityName;
+    protected String              wideEntityName;
+    protected Class<?>            entityClass;
+    protected Class<?>            extendedEntityClass;
+    protected boolean             _abstract;
+    protected DbTableBuilder      table;
+    protected DbTableBuilder      secondaryTable;
+    protected String              tablePrefix;
+    protected String              dynamicTableName;
+    protected boolean             tableNameDeclared;
+    protected boolean             idDeclared;
+    protected boolean             autoCreateTable;
+    protected boolean             autoGenerateColumns;
+    protected Boolean             queryFilterEnabled;
+    protected boolean             autoValidate;
+    protected boolean             remote;
+    protected RemoteSettings      remoteSettings;
+    protected Map<String, String> groupByExprs = new SimpleCaseInsensitiveMap<>();
 
     protected List<FieldMappingBuilder>     fieldMappings      = new ArrayList<>();
     protected EntityExecutionInterceptor    insertInterceptor;
@@ -285,6 +285,18 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
 
     public void setRemote(boolean remote) {
         this.remote = remote;
+    }
+
+    public void addGroupByExpr(String name, String expr) {
+        groupByExprs.put(name, expr);
+    }
+
+    public Map<String, String> getGroupByExprs() {
+        return groupByExprs;
+    }
+
+    public void setGroupByExprs(Map<String, String> groupByExprs) {
+        this.groupByExprs = groupByExprs;
     }
 
     public boolean mayBeJoinEntityOf(EntityMappingBuilder e1, EntityMappingBuilder e2) {
@@ -602,7 +614,7 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
                         Builders.buildArray(relationProperties, new RelationProperty[0]),
                         autoCreateTable, queryFilterEnabled == null ? false : queryFilterEnabled,
                         autoValidate,
-                        remote, remoteSettings,
+                        remote, remoteSettings, groupByExprs,
                         listeners.build());
 
         em.getExtensions().putAll(extensions);
