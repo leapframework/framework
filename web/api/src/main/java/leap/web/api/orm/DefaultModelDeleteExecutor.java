@@ -67,19 +67,19 @@ public class DefaultModelDeleteExecutor extends ModelExecutorBase implements Mod
 
         if (null == result) {
             if (!em.isRemoteRest()) {
-                if(null != listeners) {
-                    em.addContextListeners(listeners);
-                }
+                final DeleteOptions finalOptions = options;
 
-                if(null != handler) {
-                    result = new DeleteOneResult(handler.deleteOne(context, id, options) > 0);
-                }else {
-                    if (!options.isCascadeDelete()) {
-                        result = dao.withEvents(() -> new DeleteOneResult(dao.delete(em, id) > 0));
-                    } else {
-                        result = dao.withEvents(() -> new DeleteOneResult(dao.cascadeDelete(em, id)));
+                result = em.withContextListeners(listeners, () -> {
+                    if(null != handler) {
+                        return new DeleteOneResult(handler.deleteOne(context, id, finalOptions) > 0);
+                    }else {
+                        if (!finalOptions.isCascadeDelete()) {
+                            return dao.withEvents(() -> new DeleteOneResult(dao.delete(em, id) > 0));
+                        } else {
+                            return dao.withEvents(() -> new DeleteOneResult(dao.cascadeDelete(em, id)));
+                        }
                     }
-                }
+                });
             } else {
                 RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), em);
                 if (restResource.delete(id, options)) {

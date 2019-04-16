@@ -33,6 +33,7 @@ import leap.lang.text.scel.ScelExpr;
 import leap.lang.text.scel.ScelName;
 import leap.lang.text.scel.ScelNode;
 import leap.lang.text.scel.ScelToken;
+import leap.orm.event.EntityListeners;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
 import leap.orm.mapping.RelationMapping;
@@ -62,9 +63,10 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
     protected final ModelAndMapping     modelAndMapping;
     protected final ModelQueryExtension ex;
 
-    protected String   sqlView;
-    protected String[] excludedFields;
-    protected boolean  filterByParams = true;
+    protected EntityListeners listeners;
+    protected String          sqlView;
+    protected String[]        excludedFields;
+    protected boolean         filterByParams = true;
 
     public DefaultModelQueryExecutor(ModelExecutorContext context) {
         this(context, null);
@@ -74,6 +76,12 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         super(context);
         this.modelAndMapping = new ModelAndMapping(am, em);
         this.ex = null == ex ? ModelQueryExtension.EMPTY : ex;
+    }
+
+    @Override
+    public ModelQueryExecutor withListeners(EntityListeners listeners) {
+        this.listeners = listeners;
+        return this;
     }
 
     @Override
@@ -104,7 +112,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
         ModelExecutionContext context = new DefaultModelExecutionContext(this.context);
 
-        return dao.withEvents(() -> {
+        return em.withContextListeners(listeners, () -> dao.withEvents(() -> {
             if (null != ex.handler) {
                 ex.handler.processQueryOneOptions(context, id, options);
             }
@@ -129,7 +137,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             Object entity = ex.processQueryOneRecord(context, id, record);
 
             return new QueryOneResult(record, entity, expandErrors);
-        });
+        }));
     }
 
     protected List<ExpandError> expandOne(Record record, QueryOptionsBase options) {
@@ -259,59 +267,64 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             callback.accept(query);
         }
 
-        ex.preQueryList(context, query);
-        if (null != ex.handler) {
-            ex.handler.preQueryList(context, query);
-        }
+        em.addContextListeners(listeners);
+        try {
+            ex.preQueryList(context, query);
+            if (null != ex.handler) {
+                ex.handler.preQueryList(context, query);
+            }
 
-        PageResult page = query.pageResult(options.getPage(ac.getDefaultPageSize()));
-        list = ex.executeQueryList(context, options, query);
-        if (null == list) {
-            list = page.list();
-        }
+            PageResult page = query.pageResult(options.getPage(ac.getDefaultPageSize()));
+            list = ex.executeQueryList(context, options, query);
+            if (null == list) {
+                list = page.list();
+            }
 
-        if (null != ex.handler) {
-            ex.handler.postQueryList(context, list);
-        }
+            if (null != ex.handler) {
+                ex.handler.postQueryList(context, list);
+            }
 
-        List<ExpandError> expandErrors = new ArrayList<>();
-        if (!list.isEmpty()) {
-            Expand[] expands = ExpandParser.parse(options.getExpand());
-            if (expands.length > 0) {
-                ResolvedExpand[] resolvedExpands = resolveExpands(expands);
+            List<ExpandError> expandErrors = new ArrayList<>();
+            if (!list.isEmpty()) {
+                Expand[] expands = ExpandParser.parse(options.getExpand());
+                if (expands.length > 0) {
+                    ResolvedExpand[] resolvedExpands = resolveExpands(expands);
 
-                int maxPageSize = ac.getMaxPageSizeWithExpandOne();
-                for (ResolvedExpand expand : resolvedExpands) {
-                    if (expand.isEmbedded()) {
-                        continue;
+                    int maxPageSize = ac.getMaxPageSizeWithExpandOne();
+                    for (ResolvedExpand expand : resolvedExpands) {
+                        if (expand.isEmbedded()) {
+                            continue;
+                        }
+                        if (expand.rm.isOneToMany() || expand.rm.isOneToMany()) {
+                            maxPageSize = ac.getMaxPageSizeWithExpandMany();
+                            break;
+                        }
                     }
-                    if (expand.rm.isOneToMany() || expand.rm.isOneToMany()) {
-                        maxPageSize = ac.getMaxPageSizeWithExpandMany();
-                        break;
+
+                    if (list.size() > maxPageSize) {
+                        throw new BadRequestException("The result size " + list.size() + " exceed max expand " + maxPageSize + ", please decrease your page_size");
                     }
-                }
 
-                if (list.size() > maxPageSize) {
-                    throw new BadRequestException("The result size " + list.size() + " exceed max expand " + maxPageSize + ", please decrease your page_size");
-                }
-
-                for (ResolvedExpand expand : resolvedExpands) {
-                    try {
-                        expand(expand, list);
-                    } catch (ExpandException e) {
-                        expandErrors.add(new ExpandError(expand.getName(), e.getMessage(), e.getCause()));
+                    for (ResolvedExpand expand : resolvedExpands) {
+                        try {
+                            expand(expand, list);
+                        } catch (ExpandException e) {
+                            expandErrors.add(new ExpandError(expand.getName(), e.getMessage(), e.getCause()));
+                        }
                     }
                 }
             }
+
+            if (options.isTotal()) {
+                count = query.count();
+            }
+
+            Object entity = ex.processQueryListResult(context, page, count, list);
+
+            return new QueryListResult(list, count, entity, expandErrors);
+        }finally {
+            em.clearContextListeners();
         }
-
-        if (options.isTotal()) {
-            count = query.count();
-        }
-
-        Object entity = ex.processQueryListResult(context, page, count, list);
-
-        return new QueryListResult(list, count, entity, expandErrors);
     }
 
     @Override
@@ -1007,30 +1020,30 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             StringBuilder groupBy = new StringBuilder();
 
             String[] items = Strings.split(options.getGroupBy(), ',');
-            for (int i = 0; i< items.length; i++) {
-                if(i > 0) {
+            for (int i = 0; i < items.length; i++) {
+                if (i > 0) {
                     groupBy.append(',');
                 }
                 String item = items[i];
                 String name = item;
                 String expr = em.getGroupByExprs().get(item);
-                if(null != expr) {
+                if (null != expr) {
                     select.add("(" + expr + ") as " + name);
                     groupBy.append("(" + expr + ")");
-                }else {
+                } else {
                     MApiModel m;
 
-                    String alias = null;
-                    int dotIndex = name.indexOf('.');
-                    if(dotIndex > 0) {
+                    String alias    = null;
+                    int    dotIndex = name.indexOf('.');
+                    if (dotIndex > 0) {
                         alias = name.substring(0, dotIndex);
                         name = name.substring(dotIndex + 1);
                         ModelAndMapping join = joins.get(alias);
-                        if(null == join) {
+                        if (null == join) {
                             throw new BadRequestException("Can't found join alias '" + alias + "', check group by");
                         }
                         m = join.model;
-                    }else {
+                    } else {
                         m = am;
                     }
 
@@ -1041,9 +1054,9 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                     if (!p.isSelectableExplicitly()) {
                         throw new BadRequestException("Property '" + m.getName() + "." + name + "' is not groupable");
                     }
-                    if(null != alias) {
+                    if (null != alias) {
                         select.add(alias + "." + p.getName());
-                    }else {
+                    } else {
                         select.add(p.getName());
                     }
 

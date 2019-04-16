@@ -16,6 +16,7 @@
 
 package leap.web.api.orm;
 
+import leap.orm.event.EntityListeners;
 import leap.orm.query.CriteriaQuery;
 import leap.web.api.mvc.params.CountOptions;
 import leap.web.api.mvc.params.QueryOptions;
@@ -28,6 +29,11 @@ import java.util.function.Consumer;
  * Not thread-safe, creates a new instance for a query.
  */
 public interface ModelQueryExecutor {
+
+    /**
+     * Set the {@link EntityListeners}.
+     */
+    ModelQueryExecutor withListeners(EntityListeners listeners);
 
     /**
      * @see {@link CriteriaQuery#fromSqlView(String)}.

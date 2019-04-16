@@ -29,6 +29,7 @@ import leap.orm.model.Model;
 import leap.orm.validation.EntityValidator;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 public class EntityMapping extends ExtensibleBase {
     private static final Log log = LogFactory.get(EntityMapping.class);
@@ -40,6 +41,9 @@ public class EntityMapping extends ExtensibleBase {
     }
 
     public static void addContextListeners(EntityListeners listeners) {
+        if(null == listeners) {
+            return;
+        }
         List<EntityListeners> list = CONTEXT_LISTENERS.get();
         if (null == list) {
             list = new ArrayList<>();
@@ -50,6 +54,24 @@ public class EntityMapping extends ExtensibleBase {
 
     public static void clearContextListeners() {
         CONTEXT_LISTENERS.remove();
+    }
+
+    public static void withContextListeners(EntityListeners listeners, Runnable func) {
+        try {
+            addContextListeners(listeners);
+            func.run();
+        }finally {
+            clearContextListeners();
+        }
+    }
+
+    public static <T> T withContextListeners(EntityListeners listeners, Supplier<T> func) {
+        try {
+            addContextListeners(listeners);
+            return func.get();
+        }finally {
+            clearContextListeners();
+        }
     }
 
     protected final EntityMappingBuilder       builder;

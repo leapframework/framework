@@ -67,7 +67,6 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
         for (PreCreateListener listener : getListeners(context, em).getNoTransPreCreateListeners()) {
             listener.preCreateEntity(e);
         }
-        clearContext(em);
     }
 
     @Override
@@ -75,7 +74,6 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
         for (PreCreateListener listener : getListeners(context, em).getInTransPreCreateListeners()) {
             listener.preCreateEntity(e);
         }
-        clearContext(em);
     }
 
     @Override
@@ -83,7 +81,6 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
         for (PostCreateListener listener : getListeners(context, em).getInTransPostCreateListeners()) {
             listener.postCreateEntity(e);
         }
-        clearContext(em);
     }
 
     @Override
@@ -91,7 +88,6 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
         for (PostCreateListener listener : getListeners(context, em).getNoTransPostCreateListeners()) {
             listener.postCreateEntity(e);
         }
-        clearContext(em);
     }
 
     @Override
@@ -99,7 +95,6 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
         for (PreUpdateListener listener : getListeners(context, em).getNoTransPreUpdateListeners()) {
             listener.preUpdateEntity(e);
         }
-        clearContext(em);
     }
 
     @Override
@@ -107,7 +102,6 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
         for (PreUpdateListener listener : getListeners(context, em).getInTransPreUpdateListeners()) {
             listener.preUpdateEntity(e);
         }
-        clearContext(em);
     }
 
     @Override
@@ -115,7 +109,6 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
         for (PostUpdateListener listener : getListeners(context, em).getInTransPostUpdateListeners()) {
             listener.postUpdateEntity(e);
         }
-        clearContext(em);
     }
 
     @Override
@@ -123,7 +116,6 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
         for (PostUpdateListener listener : getListeners(context, em).getNoTransPostUpdateListeners()) {
             listener.postUpdateEntity(e);
         }
-        clearContext(em);
     }
 
     @Override
@@ -131,7 +123,6 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
         for (PreDeleteListener listener : getListeners(context, em).getNoTransPreDeleteListeners()) {
             listener.preDeleteEntity(e);
         }
-        clearContext(em);
     }
 
     @Override
@@ -139,7 +130,6 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
         for (PreDeleteListener listener : getListeners(context, em).getInTransPreDeleteListeners()) {
             listener.preDeleteEntity(e);
         }
-        clearContext(em);
     }
 
     @Override
@@ -147,7 +137,6 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
         for (PostDeleteListener listener : getListeners(context, em).getInTransPostDeleteListeners()) {
             listener.postDeleteEntity(e);
         }
-        clearContext(em);
     }
 
     @Override
@@ -155,7 +144,6 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
         for (PostDeleteListener listener : getListeners(context, em).getNoTransPostDeleteListeners()) {
             listener.postDeleteEntity(e);
         }
-        clearContext(em);
     }
 
     @Override
@@ -163,7 +151,6 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
         for (PostLoadListener listener : getListeners(context, em).getPostLoadListeners()) {
             listener.postLoadEntity(e);
         }
-        clearContext(em);
     }
 
     protected EntityListeners getListeners(OrmContext context, EntityMapping em) {
@@ -180,10 +167,6 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
         } else {
             return em.getListeners();
         }
-    }
-
-    protected void clearContext(EntityMapping em) {
-        em.clearContextListeners();
     }
 
     protected static final class CompositeListeners implements EntityListeners {

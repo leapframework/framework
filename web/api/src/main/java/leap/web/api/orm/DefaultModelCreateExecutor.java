@@ -163,14 +163,13 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
         Record record    = null;
 
         if (!em.isRemoteRest()) {
-            if(null != listeners) {
-                em.addContextListeners(listeners);
-            }
-            if (null != createOneHandler) {
-                createdId = createOneHandler.create(context, creation);
-            } else {
-                createdId = createByDb(creation);
-            }
+            createdId = em.withContextListeners(listeners, () -> {
+                if (null != createOneHandler) {
+                    return createOneHandler.create(context, creation);
+                } else {
+                    return createByDb(creation);
+                }
+            });
 
             if(null != createdId) {
                 record = dao.find(em, createdId);

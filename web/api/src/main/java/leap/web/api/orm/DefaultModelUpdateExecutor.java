@@ -106,7 +106,7 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
 
         removes.forEach(record::remove);
 
-        int    affected = doUpdate(context, id, record, false);
+        int    affected = em.withContextListeners(listeners, () -> doUpdate(context, id, record, false));;
         Object entity   = ex.postReplaceRecord(context, id, affected);
 
         return new UpdateOneResult(affected, entity);
@@ -132,15 +132,13 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
         int affected;
 
         if (!em.isRemoteRest()) {
-            if(null != listeners) {
-                em.addContextListeners(listeners);
-            }
-
-            if (null != handler) {
-                affected = handler.partialUpdate(context, id, properties);
-            } else {
-                affected = doUpdate(context, id, properties, true);
-            }
+            affected = em.withContextListeners(listeners, () -> {
+                if (null != handler) {
+                    return handler.partialUpdate(context, id, properties);
+                } else {
+                    return doUpdate(context, id, properties, true);
+                }
+            });
         } else {
             RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), em);
             if (restResource.update(id, properties)) {

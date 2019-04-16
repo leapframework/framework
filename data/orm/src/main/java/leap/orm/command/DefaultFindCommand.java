@@ -18,36 +18,36 @@ package leap.orm.command;
 import leap.core.exception.RecordNotFoundException;
 import leap.core.exception.TooManyRecordsException;
 import leap.core.jdbc.ResultSetReader;
+import leap.lang.New;
 import leap.lang.params.Params;
 import leap.lang.value.Limit;
 import leap.orm.dao.Dao;
+import leap.orm.event.EntityEventHandler;
 import leap.orm.event.LoadEntityEventImpl;
-import leap.orm.event.PostLoadListener;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.query.QueryContext;
 import leap.orm.reader.ResultSetReaders;
 import leap.orm.sql.SqlCommand;
 
-import java.util.ArrayList;
-import java.util.List;
+public class DefaultFindCommand<T> extends AbstractEntityDaoCommand implements FindCommand<T>, QueryContext {
 
-public class DefaultFindCommand<T> extends AbstractEntityDaoCommand implements FindCommand<T>,QueryContext {
-	
-    protected final Class<T>   resultClass;
-    protected final SqlCommand sqlCommand;
-    protected final Object     id;
-    protected final Params     idParameters;
-    protected final boolean    checkNotFound;
+    protected final Class<T>           resultClass;
+    protected final SqlCommand         sqlCommand;
+    protected final Object             id;
+    protected final Params             idParameters;
+    protected final boolean            checkNotFound;
+    protected final EntityEventHandler eventHandler;
 
-	public DefaultFindCommand(Dao dao, EntityMapping em, Object id, Class<T> resultClass, boolean checkNotFound) {
-		super(dao,em);
-		
-		this.resultClass  = resultClass;
-		this.sqlCommand   = metadata.getSqlCommand(em.getEntityName(), SqlCommand.FIND_COMMAND_NAME);
-		this.id           = id;
-		this.idParameters = context.getParameterStrategy().createIdParameters(context, em, id);
-		this.checkNotFound = checkNotFound;
-	}
+    public DefaultFindCommand(Dao dao, EntityMapping em, Object id, Class<T> resultClass, boolean checkNotFound) {
+        super(dao, em);
+
+        this.resultClass = resultClass;
+        this.sqlCommand = metadata.getSqlCommand(em.getEntityName(), SqlCommand.FIND_COMMAND_NAME);
+        this.id = id;
+        this.idParameters = context.getParameterStrategy().createIdParameters(context, em, id);
+        this.checkNotFound = checkNotFound;
+        this.eventHandler = context.getEntityEventHandler();
+    }
 
     @Override
     public boolean isFind() {
@@ -56,34 +56,29 @@ public class DefaultFindCommand<T> extends AbstractEntityDaoCommand implements F
 
     @Override
     public Limit getLimit() {
-	    return null;
+        return null;
     }
 
-	@Override
+    @Override
     public String getOrderBy() {
-	    return null;
+        return null;
     }
 
-	@Override
+    @Override
     public T execute() throws TooManyRecordsException {
-		ResultSetReader<T> reader = ResultSetReaders.forSingleEntity(context,this, em, resultClass);
-		
-	    T result = sqlCommand.executeQuery(this, idParameters, reader);
-	    
-	    if(null == result && checkNotFound) {
-	        throw new RecordNotFoundException("Record not found for the id '" + id + "'");
-	    }
+        ResultSetReader<T> reader = ResultSetReaders.forSingleEntity(context, this, em, resultClass);
 
-        if(null != result && null != em.getListeners() && em.getListeners().hasLoadListeners()) {
-            List list = new ArrayList();
-            list.add(result);
+        T result = sqlCommand.executeQuery(this, idParameters, reader);
 
-            LoadEntityEventImpl event = new LoadEntityEventImpl(this, em, list, true);
-            for(PostLoadListener listener : em.getListeners().getPostLoadListeners()) {
-                listener.postLoadEntity(event);
-            }
+        if (null == result && checkNotFound) {
+            throw new RecordNotFoundException("Record not found for the id '" + id + "'");
         }
-	    
-	    return result;
+
+        if (null != result && eventHandler.isHandleLoadEvent(context, em)) {
+            LoadEntityEventImpl event = new LoadEntityEventImpl(this, em, New.arrayList(result), true);
+            eventHandler.postLoadEntityNoTrans(context, em, event);
+        }
+
+        return result;
     }
 }
