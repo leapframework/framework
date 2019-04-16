@@ -126,6 +126,21 @@ public class Mappings {
 
 		return sb.toString();
 	}
+
+	public static void setId(EntityMapping em, Map<String, Object> map, Object id) {
+        String[] keyNames = em.getKeyFieldNames();
+        if(keyNames.length == 1) {
+            map.put(keyNames[0], id);
+        }else {
+            Map idMap;
+            if(id instanceof Map) {
+                idMap = (Map)id;
+            }else {
+                idMap = Beans.toMap(id);
+            }
+            map.putAll(idMap);
+        }
+    }
 	
 	public static Object getOptimisticLockVersion(EntityMapping em, Map<String, Object> attributes) {
 		if(em.hasOptimisticLock()){
