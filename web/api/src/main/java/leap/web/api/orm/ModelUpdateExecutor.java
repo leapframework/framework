@@ -16,11 +16,25 @@
 
 package leap.web.api.orm;
 
+import leap.orm.event.EntityListeners;
 import leap.web.api.mvc.params.Partial;
 
 import java.util.Map;
 
 public interface ModelUpdateExecutor {
+
+    interface UpdateHandler {
+
+        /**
+         * Returns the affected rows.
+         */
+        int partialUpdate(ModelExecutionContext context, Object id, Map<String, Object> properties);
+
+    }
+
+    ModelUpdateExecutor withHandler(UpdateHandler handler);
+
+    ModelUpdateExecutor withListeners(EntityListeners listeners);
 
     UpdateOneResult replaceUpdateOne(Object id, Map<String, Object> record);
 

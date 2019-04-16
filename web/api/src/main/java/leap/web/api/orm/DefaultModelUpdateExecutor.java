@@ -20,8 +20,11 @@ package leap.web.api.orm;
 
 import leap.core.validation.Errors;
 import leap.core.validation.ValidationException;
-import leap.lang.*;
+import leap.lang.Enumerable;
+import leap.lang.Enumerables;
+import leap.lang.New;
 import leap.orm.command.UpdateCommand;
+import leap.orm.event.EntityListeners;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
 import leap.orm.mapping.RelationMapping;
@@ -38,47 +41,62 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
 
     protected final ModelUpdateExtension ex;
 
+    private UpdateHandler   handler;
+    private EntityListeners listeners;
+
     public DefaultModelUpdateExecutor(ModelExecutorContext context, ModelUpdateExtension ex) {
         super(context);
         this.ex = null == ex ? ModelUpdateExtension.EMPTY : ex;
     }
 
     @Override
+    public ModelUpdateExecutor withHandler(UpdateHandler handler) {
+        this.handler = handler;
+        return this;
+    }
+
+    @Override
+    public ModelUpdateExecutor withListeners(EntityListeners listeners) {
+        this.listeners = listeners;
+        return this;
+    }
+
+    @Override
     public UpdateOneResult replaceUpdateOne(Object id, Map<String, Object> record) {
-        if(null == record || record.isEmpty()) {
+        if (null == record || record.isEmpty()) {
             throw new BadRequestException("No update properties");
         }
 
         ModelExecutionContext context = new DefaultModelExecutionContext(this.context);
         ex.processReplaceRecord(context, id, record);
-        if(null != ex.handler) {
+        if (null != ex.handler) {
             ex.handler.processReplaceRecord(context, id, record);
         }
 
         Set<String> removes = new HashSet<>();
 
-        if(!ex.processReplaceNONEProperties(context, id, record, removes)) {
-            for(FieldMapping fm : em.getFieldMappings()) {
-                if(!fm.isUpdate()) {
+        if (!ex.processReplaceNONEProperties(context, id, record, removes)) {
+            for (FieldMapping fm : em.getFieldMappings()) {
+                if (!fm.isUpdate()) {
                     continue;
                 }
 
-                if(!record.containsKey(fm.getFieldName())) {
-                    if(fm.isNullable()) {
+                if (!record.containsKey(fm.getFieldName())) {
+                    if (fm.isNullable()) {
                         record.put(fm.getFieldName(), null);
-                    }else {
-                        if(null != fm.getDefaultValue()) {
+                    } else {
+                        if (null != fm.getDefaultValue()) {
                             record.put(fm.getFieldName(), fm.getDefaultValue().getValue());
-                        }else {
+                        } else {
                             throw new BadRequestException("Property '" + fm.getFieldName() + "' is required!");
                         }
                     }
-                }else {
+                } else {
                     Object value = record.get(fm.getFieldName());
-                    if(null == value && !fm.isNullable()) {
-                        if(null != fm.getDefaultValue()) {
+                    if (null == value && !fm.isNullable()) {
+                        if (null != fm.getDefaultValue()) {
                             record.put(fm.getFieldName(), fm.getDefaultValue().getValue());
-                        }else {
+                        } else {
                             throw new BadRequestException("Property '" + fm.getFieldName() + "' is required, but null!");
                         }
                     }
@@ -88,8 +106,8 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
 
         removes.forEach(record::remove);
 
-        int affected = doUpdate(context, id, record, false);
-        Object entity = ex.postReplaceRecord(context, id, affected);
+        int    affected = doUpdate(context, id, record, false);
+        Object entity   = ex.postReplaceRecord(context, id, affected);
 
         return new UpdateOneResult(affected, entity);
     }
@@ -107,19 +125,27 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
     public UpdateOneResult partialUpdateOne(Object id, Map<String, Object> properties) {
         ModelExecutionContext context = new DefaultModelExecutionContext(this.context);
         ex.processUpdateProperties(context, id, properties);
-        if(null != ex.handler) {
+        if (null != ex.handler) {
             ex.handler.processUpdateProperties(context, id, properties);
         }
 
         int affected;
 
-        if(!em.isRemoteRest()) {
-            affected = doUpdate(context, id, properties, true);
-        }else {
+        if (!em.isRemoteRest()) {
+            if(null != listeners) {
+                em.addContextListeners(listeners);
+            }
+
+            if (null != handler) {
+                affected = handler.partialUpdate(context, id, properties);
+            } else {
+                affected = doUpdate(context, id, properties, true);
+            }
+        } else {
             RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), em);
-            if(restResource.update(id, properties)) {
+            if (restResource.update(id, properties)) {
                 affected = 1;
-            }else {
+            } else {
                 affected = 0;
             }
         }
@@ -140,12 +166,12 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
             MApiProperty p = am.tryGetProperty(name);
 
             if (null == p) {
-                if(partial) {
-                    if(ex.handleUpdatePropertyNotFound(context, name, entry.getValue(), removes)) {
+                if (partial) {
+                    if (ex.handleUpdatePropertyNotFound(context, name, entry.getValue(), removes)) {
                         continue;
                     }
-                }else {
-                    if(ex.handleReplacePropertyNotFound(context, name, entry.getValue(), removes)) {
+                } else {
+                    if (ex.handleReplacePropertyNotFound(context, name, entry.getValue(), removes)) {
                         continue;
                     }
                 }
@@ -153,13 +179,13 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
             }
 
             if (p.isNotUpdatableExplicitly()) {
-                if(partial) {
-                    if(ex.handleUpdatePropertyReadonly(context, name, entry.getValue(), removes)) {
+                if (partial) {
+                    if (ex.handleUpdatePropertyReadonly(context, name, entry.getValue(), removes)) {
                         continue;
                     }
                     throw new BadRequestException("Property '" + name + "' is not updatable!");
-                }else {
-                    if(ex.handleReplacePropertyReadonly(context, name, entry.getValue(), removes)) {
+                } else {
+                    if (ex.handleReplacePropertyReadonly(context, name, entry.getValue(), removes)) {
                         continue;
                     }
                     removes.add(name);
@@ -191,15 +217,15 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
             throw new ValidationException(errors);
         }
 
-        if(!removes.isEmpty()) {
+        if (!removes.isEmpty()) {
             removes.forEach(properties::remove);
         }
 
-        if(null != ex.handler) {
+        if (null != ex.handler) {
             ex.handler.preUpdateProperties(context, id, properties);
         }
 
-        if(properties.isEmpty()) {
+        if (properties.isEmpty()) {
             throw new BadRequestException("No update properties");
         }
 
@@ -209,20 +235,20 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
         AtomicInteger result = new AtomicInteger();
 
         dao.withEvents(() -> {
-            if(relationProperties.isEmpty()) {
+            if (relationProperties.isEmpty()) {
                 result.set(executeUpdate(update, id));
-            }else {
+            } else {
                 dao.doTransaction((conn) -> {
                     result.set(executeUpdate(update, id));
 
-                    if(result.get() > 0) {
-                        for(Map.Entry<RelationProperty, Object[]> entry : relationProperties.entrySet()) {
+                    if (result.get() > 0) {
+                        for (Map.Entry<RelationProperty, Object[]> entry : relationProperties.entrySet()) {
                             //todo : valid for many-to-many only ?
 
                             RelationProperty rp = entry.getKey();
 
                             RelationMapping rm = em.getRelationMapping(rp.getRelationName());
-                            if(rm.isManyToMany()) {
+                            if (rm.isManyToMany()) {
                                 EntityMapping joinEntity = md.getEntityMapping(rm.getJoinEntityName());
 
                                 RelationMapping manyToOne1 = joinEntity.tryGetKeyRelationMappingOfTargetEntity(em.getEntityName());
@@ -232,19 +258,19 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
                                 String localName;
                                 String targetName;
 
-                                if(joinEntity.getKeyFieldMappings()[0].getFieldName().equals(manyToOne1.getJoinFields()[0].getLocalFieldName())){
-                                    localName  = joinEntity.getKeyFieldNames()[0];
+                                if (joinEntity.getKeyFieldMappings()[0].getFieldName().equals(manyToOne1.getJoinFields()[0].getLocalFieldName())) {
+                                    localName = joinEntity.getKeyFieldNames()[0];
                                     targetName = joinEntity.getKeyFieldNames()[1];
-                                }else{
-                                    localName  = joinEntity.getKeyFieldNames()[1];
+                                } else {
+                                    localName = joinEntity.getKeyFieldNames()[1];
                                     targetName = joinEntity.getKeyFieldNames()[0];
                                 }
 
                                 Object localId = id;
 
-                                List<Map<String,Object>> batchId = new ArrayList<>();
+                                List<Map<String, Object>> batchId = new ArrayList<>();
 
-                                for(Object targetId : entry.getValue()) {
+                                for (Object targetId : entry.getValue()) {
                                     batchId.add(New.hashMap(localName, localId, targetName, targetId));
                                 }
 
@@ -267,7 +293,7 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
     protected int executeUpdate(UpdateCommand update, Object id) {
         int r = update.execute();
 
-        if(null != ex.handler) {
+        if (null != ex.handler) {
             ex.handler.postUpdateProperties(context, id, r);
         }
 

@@ -42,7 +42,7 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
 
     protected final ModelCreateExtension ex;
 
-    protected CreateHandler   handler;
+    protected CreateHandler   createOneHandler;
     protected EntityListeners listeners;
 
     public DefaultModelCreateExecutor(ModelExecutorContext context, ModelCreateExtension ex) {
@@ -52,7 +52,7 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
 
     @Override
     public ModelCreateExecutor withHandler(CreateHandler handler) {
-        this.handler = handler;
+        this.createOneHandler = handler;
         return this;
     }
 
@@ -159,41 +159,42 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
 
         CreationImpl creation = new CreationImpl(id, properties, relationProperties);
 
-        Object createdId;
-        Record record;
-
-        Created created;
+        Object createdId = null;
+        Record record    = null;
 
         if (!em.isRemoteRest()) {
             if(null != listeners) {
                 em.addContextListeners(listeners);
             }
-            if (null != handler) {
-                created = handler.createOne(context, creation);
+            if (null != createOneHandler) {
+                createdId = createOneHandler.create(context, creation);
             } else {
-                created = createByDb(creation);
+                createdId = createByDb(creation);
+            }
+
+            if(null != createdId) {
+                record = dao.find(em, createdId);
             }
         } else {
             RestResource restResource =
                     restResourceFactory.createResource(dao.getOrmContext(), em);
             record = restResource.create(properties);
             createdId = Mappings.getId(em, record);
-            created = new Created(createdId, record);
         }
 
-        if (null == created) {
+        if (null == createdId) {
             return new CreateOneResult(null, null);
         }
 
-        if (null != created.getRecord()) {
-            created.getRecord().put("$id", created.getId());
+        if (null != record) {
+            record.put("$id", createdId);
         }
 
-        Object entity = ex.postCreateRecord(context, created.getId(), created.getRecord());
+        Object entity = ex.postCreateRecord(context, createdId, record);
         if (null != entity) {
-            return new CreateOneResult(created.getId(), entity);
+            return new CreateOneResult(createdId, entity);
         } else {
-            return new CreateOneResult(created.getId(), created.getRecord());
+            return new CreateOneResult(createdId, record);
         }
     }
 
@@ -204,7 +205,7 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
         }
     }
 
-    protected Created createByDb(CreationImpl creation) {
+    protected Object createByDb(CreationImpl creation) {
         InsertCommand insert = dao.cmdInsert(em.getEntityName()).from(creation.getProperties());
         if (null != creation.getId()) {
             insert.withId(creation.getId());
@@ -255,10 +256,10 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
             }
         });
 
-        return new Created(insert.id(), dao.find(em, insert.id()));
+        return insert.id();
     }
 
-    protected static class CreationImpl implements Creation {
+    protected static class CreationImpl implements CreateParams {
 
         private final Object                          id;
         private final Map<String, Object>             properties;
