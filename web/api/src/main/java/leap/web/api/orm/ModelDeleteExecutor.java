@@ -16,9 +16,23 @@
 
 package leap.web.api.orm;
 
+import leap.orm.event.EntityListeners;
 import leap.web.api.mvc.params.DeleteOptions;
 
 public interface ModelDeleteExecutor {
+
+    interface DeleteHandler {
+
+        /**
+         * Returns the affected rows.
+         */
+        int deleteOne(ModelExecutionContext context, Object id, DeleteOptions options);
+
+    }
+
+    ModelDeleteExecutor withHandler(DeleteHandler handler);
+
+    ModelDeleteExecutor withListeners(EntityListeners listeners);
 
     DeleteOneResult deleteOne(Object id, DeleteOptions options);
 

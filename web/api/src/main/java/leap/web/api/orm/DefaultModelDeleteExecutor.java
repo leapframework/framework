@@ -18,6 +18,7 @@
 
 package leap.web.api.orm;
 
+import leap.orm.event.EntityListeners;
 import leap.web.api.mvc.params.DeleteOptions;
 import leap.web.api.remote.RestResource;
 
@@ -25,9 +26,24 @@ public class DefaultModelDeleteExecutor extends ModelExecutorBase implements Mod
 
     protected final ModelDeleteExtension ex;
 
+    private DeleteHandler   handler;
+    private EntityListeners listeners;
+
     public DefaultModelDeleteExecutor(ModelExecutorContext context, ModelDeleteExtension ex) {
         super(context);
         this.ex = null == ex ? ModelDeleteExtension.EMPTY : ex;
+    }
+
+    @Override
+    public ModelDeleteExecutor withHandler(DeleteHandler handler) {
+        this.handler = handler;
+        return this;
+    }
+
+    @Override
+    public ModelDeleteExecutor withListeners(EntityListeners listeners) {
+        this.listeners = listeners;
+        return this;
     }
 
     @Override
@@ -51,10 +67,18 @@ public class DefaultModelDeleteExecutor extends ModelExecutorBase implements Mod
 
         if (null == result) {
             if (!em.isRemoteRest()) {
-                if (!options.isCascadeDelete()) {
-                    result = dao.withEvents(() -> new DeleteOneResult(dao.delete(em, id) > 0));
-                } else {
-                    result = dao.withEvents(() -> new DeleteOneResult(dao.cascadeDelete(em, id)));
+                if(null != listeners) {
+                    em.addContextListeners(listeners);
+                }
+
+                if(null != handler) {
+                    result = new DeleteOneResult(handler.deleteOne(context, id, options) > 0);
+                }else {
+                    if (!options.isCascadeDelete()) {
+                        result = dao.withEvents(() -> new DeleteOneResult(dao.delete(em, id) > 0));
+                    } else {
+                        result = dao.withEvents(() -> new DeleteOneResult(dao.cascadeDelete(em, id)));
+                    }
                 }
             } else {
                 RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), em);
