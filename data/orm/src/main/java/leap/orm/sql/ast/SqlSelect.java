@@ -65,6 +65,14 @@ public class SqlSelect extends SqlQuery implements SqlTableSource {
 		if(null == selectItemAliases) {
 			selectItemAliases = new HashMap<>();
 		}
+		if(null == alias) {
+			return;
+		}
+		if(alias.startsWith("`") && alias.endsWith("`")) {
+			alias = alias.substring(1, alias.length() - 1);
+		}else if(alias.startsWith("\"") && alias.endsWith("\"")) {
+			alias = alias.substring(1, alias.length() - 1);
+		}
 		selectItemAliases.put(alias.toLowerCase(),alias);
 	}
 
