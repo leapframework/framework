@@ -489,7 +489,7 @@ public class SqlParser extends SqlParserBase {
 		}
 		
 		if(parseMore){
-			if(lexer.token().isKeywordOrIdentifier() && parseSqlDotName()){
+			if(lexer.token().isKeywordOrIdentifier() && parseSqlObjectName()){
 				return;
 			}
 		}

@@ -88,7 +88,19 @@ public class SqlResolverTest extends OrmTestCase {
 		//order by
 		assertEquals("select * from person_ order by id_ desc",resolve("select * from Person order by id desc").toString());
 	}
-	
+
+	@Test
+	public void testComplexSelectItem() {
+		assertEquals("select (round(age_)), name_ from person_", resolve("select (round(age)), name from person"));
+		assertEquals("select (round(p.age_)), name_ from person_ p", resolve("select (round(p.age)), name from person p"));
+		assertEquals("select (age_ + 1), name_ from person_", resolve("select (age + 1), name from person"));
+		assertEquals("select (t.age_ + 1), name_ from person_ t", resolve("select (t.age + 1), name from person t"));
+
+		//todo: fix bug
+		//assertEquals("select age_ + 1, name_ from person_", resolve("select age + 1, name from person"));
+		//assertEquals("select 1 + age_, name_ from person_", resolve("select 1 + age_, name from person"));
+	}
+
 	@Test
 	public void testSubQuery() {
 		assertEquals("select * from person_ where id_ = (select model_id from model_with_id2 where model_id = ?)",
@@ -149,7 +161,9 @@ public class SqlResolverTest extends OrmTestCase {
 		
 		assertEquals("select id_,name_ from person_ where id_ = ? union select id_,name_ from team_ where name_ = ? union select id_,name_ from person_",
 				 resolve("select id,name from Person where id = ? union select id,name from Team where name = ? union select id,name from Person"));
-		
+
+		assertEquals("select * from (select id_, name_ from person_ union select '', '' from dual) t order by t.name_",
+				resolve("select * from (select id, name from person union select '', '' from dual) t order by t.name"));
 	}
 	
 	@Test
