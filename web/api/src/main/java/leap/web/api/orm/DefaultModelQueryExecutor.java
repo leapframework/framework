@@ -20,6 +20,7 @@ package leap.web.api.orm;
 
 import leap.core.value.Record;
 import leap.core.value.SimpleRecord;
+import leap.lang.Beans;
 import leap.lang.Enumerable;
 import leap.lang.Enumerables;
 import leap.lang.Strings;
@@ -63,6 +64,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
     protected final ModelAndMapping     modelAndMapping;
     protected final ModelQueryExtension ex;
 
+    protected FindHandler     findHandler;
     protected EntityListeners listeners;
     protected String          sqlView;
     protected String[]        excludedFields;
@@ -76,6 +78,12 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         super(context);
         this.modelAndMapping = new ModelAndMapping(am, em);
         this.ex = null == ex ? ModelQueryExtension.EMPTY : ex;
+    }
+
+    @Override
+    public ModelQueryExecutor withFindHandler(FindHandler handler) {
+        this.findHandler = handler;
+        return this;
     }
 
     @Override
@@ -119,14 +127,18 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
             Record record;
 
-            CriteriaQuery<Record> query = createCriteriaQuery().whereById(id);
-            applySelect(query, options, new JoinModels());
+            if(null != findHandler) {
+                record = queryOneByHandler(context, id, options);
+            }else {
+                CriteriaQuery<Record> query = createCriteriaQuery().whereById(id);
+                applySelect(query, options, new JoinModels());
 
-            ex.preQueryOne(context, id, query);
-            if (null != ex.handler) {
-                ex.handler.preQueryOne(context, id, query);
+                ex.preQueryOne(context, id, query);
+                if (null != ex.handler) {
+                    ex.handler.preQueryOne(context, id, query);
+                }
+                record = query.firstOrNull();
             }
-            record = query.firstOrNull();
 
             List<ExpandError> expandErrors = expandOne(record, options);
 
@@ -138,6 +150,21 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
             return new QueryOneResult(record, entity, expandErrors);
         }));
+    }
+
+    protected Record queryOneByHandler(ModelExecutionContext context, Object id, QueryOptionsBase options) {
+        Object result = findHandler.findOrNull(context, id, options);
+        if(null == result) {
+            return null;
+        }
+        if(result instanceof Record) {
+            return (Record)result;
+        }
+        if(result instanceof Map) {
+            return new SimpleRecord((Map)result);
+        }
+        Map map = Beans.toMap(result);
+        return new SimpleRecord(map);
     }
 
     protected List<ExpandError> expandOne(Record record, QueryOptionsBase options) {

@@ -62,9 +62,14 @@ public interface ModelExecutorFactory {
     }
 
     /**
-     * Returns a new {@link ModelQueryExecutor}.
+     * Returns a new {@link ModelQueryExecutor} for executing query or find operation.
      */
     ModelQueryExecutor newQueryExecutor(ModelExecutorContext context, ModelQueryInterceptor... interceptors);
+
+    /**
+     * Returns a new {@link ModelQueryExecutor} for executing find operation.
+     */
+    ModelQueryExecutor newQueryExecutor(ModelExecutorContext context, ModelFindInterceptor... interceptors);
 
     /**
      * Returns a new {@link RelationQueryExecutor}.

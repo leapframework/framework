@@ -30,6 +30,17 @@ import java.util.function.Consumer;
  */
 public interface ModelQueryExecutor {
 
+    interface FindHandler {
+
+        Object findOrNull(ModelExecutionContext context, Object id, QueryOptionsBase options);
+
+    }
+
+    /**
+     * Set the {@link FindHandler}
+     */
+    ModelQueryExecutor withFindHandler(FindHandler handler);
+
     /**
      * Set the {@link EntityListeners}.
      */
@@ -71,7 +82,7 @@ public interface ModelQueryExecutor {
 
     /**
      * Query the records of model with the given filter fields.
-     *
+     * <p>
      * <p/>
      * The callback will be invoked before executing the query.
      */
@@ -79,7 +90,7 @@ public interface ModelQueryExecutor {
 
     /**
      * Query the records of model with the given filter fields.
-     *
+     * <p>
      * <p/>
      * The callback will be invoked before executing the query.
      */
@@ -94,7 +105,7 @@ public interface ModelQueryExecutor {
 
     /**
      * Query the total count of records.
-     *
+     * <p>
      * <p/>
      * The callback will be invoked before executing the query.
      */

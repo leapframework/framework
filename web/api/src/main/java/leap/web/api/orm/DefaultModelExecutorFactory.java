@@ -96,6 +96,11 @@ public class DefaultModelExecutorFactory implements ModelExecutorFactory {
     }
 
     @Override
+    public ModelQueryExecutor newQueryExecutor(ModelExecutorContext context, ModelFindInterceptor... interceptors) {
+        return newQueryExecutor(context, ModelFindToQueryInterceptor.of(interceptors));
+    }
+
+    @Override
     public RelationQueryExecutor newRelationQueryExecutor(RelationExecutorContext context, RelationQueryInterceptor... interceptors) {
         RelationQueryExtension extension =
                 Arrays2.isEmpty(interceptors) ?

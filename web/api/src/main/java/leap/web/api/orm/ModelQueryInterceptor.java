@@ -25,19 +25,7 @@ import leap.web.api.mvc.params.QueryOptionsBase;
 
 import java.util.List;
 
-public interface ModelQueryInterceptor {
-
-    default boolean processQueryOneOptions(ModelExecutionContext context, QueryOptionsBase options) {
-        return false;
-    }
-
-    default boolean preQueryOne(ModelExecutionContext context, Object id, CriteriaQuery query) {
-        return false;
-    }
-
-    default Object processQueryOneRecord(ModelExecutionContext context, Object id, Record record) {
-        return null;
-    }
+public interface ModelQueryInterceptor extends ModelFindInterceptor {
 
     default boolean processQueryListOptions(ModelExecutionContext context, QueryOptions options) {
         return false;
