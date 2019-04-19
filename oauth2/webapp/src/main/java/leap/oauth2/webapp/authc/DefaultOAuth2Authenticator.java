@@ -130,7 +130,7 @@ public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCrea
         UserPrincipal   user   = tokenInfo.getUserInfo();
         ClientPrincipal client = null;
 
-        if (null != user) {
+        if (null != user && isUserDetailsLookupEnabled()) {
             user = lookupUserDetails(user);
         } else if (!Strings.isEmpty(userId)) {
             //user info lookup
@@ -140,7 +140,9 @@ public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCrea
                 log.error("User info not exists in oauth2 server, user id -> {}, access token -> {}", userId, at.getToken());
                 throw new UserNotFoundException();
             }
-            user = lookupUserDetails(user);
+            if(isUserDetailsLookupEnabled()) {
+                user = lookupUserDetails(user);
+            }
         }
 
         if (!Strings.isEmpty(clientId)) {
@@ -158,14 +160,16 @@ public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCrea
         return authc;
     }
 
+    protected boolean isUserDetailsLookupEnabled() {
+        return null != userDetailsLookup && userDetailsLookup.isEnabled();
+    }
+
     protected UserPrincipal lookupUserDetails(UserPrincipal user) {
-        if (null != userDetailsLookup && userDetailsLookup.isEnabled()) {
-            log.debug("lookup user details by '{}'", userDetailsLookup.getClass().getSimpleName());
-            user = userDetailsLookup.lookupUserDetails(user.getIdAsString(), user.getName(), user.getLoginName());
-            if (null == user) {
-                log.error("User details '{}' '{}' not found", user.getId(), user.getLoginName());
-                throw new UserNotFoundException();
-            }
+        log.debug("lookup user details by '{}'", userDetailsLookup.getClass().getSimpleName());
+        user = userDetailsLookup.lookupUserDetails(user.getIdAsString(), user.getName(), user.getLoginName());
+        if (null == user) {
+            log.error("User details '{}' '{}' not found", user.getId(), user.getLoginName());
+            throw new UserNotFoundException();
         }
         return user;
     }
