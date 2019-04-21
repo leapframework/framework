@@ -418,6 +418,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
     @Override
     public CriteriaQuery<T> whereById(Object id) {
+        this.id = id;
 
         StringBuilder s = new StringBuilder();
 

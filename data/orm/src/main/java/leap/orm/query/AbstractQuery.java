@@ -53,6 +53,7 @@ public abstract class AbstractQuery<T> implements Query<T>, QueryContext {
     protected Boolean queryFilterEnabled;
     protected Boolean filterColumnEnabled;
 
+    protected Object id;
     protected Limit  limit;
     protected String orderBy;
     protected String having;
@@ -230,7 +231,7 @@ public abstract class AbstractQuery<T> implements Query<T>, QueryContext {
 
         if (null != em) {
             if (eventHandler.isHandleLoadEvent(context, em)) {
-                LoadEntityEventImpl event = new LoadEntityEventImpl(this, em, result.list(), false);
+                LoadEntityEventImpl event = new LoadEntityEventImpl(this, em, result.list(), null != id);
                 eventHandler.postLoadEntityNoTrans(context, em, event);
             }
         }
