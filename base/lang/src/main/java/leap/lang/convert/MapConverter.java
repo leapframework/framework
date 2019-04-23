@@ -20,7 +20,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import leap.lang.NamedWithSetter;
 import leap.lang.Out;
+import leap.lang.Strings;
 import leap.lang.Types;
 import leap.lang.reflect.Reflection;
 
@@ -64,6 +66,13 @@ public class MapConverter extends AbstractConverter<Map> {
 
             Object key = Converts.convert(entry.getKey(),   keyType, typeArguments[0], context);
             Object val = Converts.convert(entry.getValue(), valType, typeArguments[1], context);
+
+            if(val instanceof NamedWithSetter && key instanceof String) {
+                String name = ((NamedWithSetter) val).getName();
+                if(Strings.isEmpty(name)) {
+                    ((NamedWithSetter) val).setName((String)key);
+                }
+            }
 
             to.put(key,val);
         }
