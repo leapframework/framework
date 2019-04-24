@@ -12,6 +12,8 @@
     </bean>
     <bean type="leap.core.spring.ExpressionFactory" class="leap.spring.boot.spel.SpringExpressionFactory" primary="true" override="true"/>
 
+    <bean type="leap.core.bean.BeanAutowirer" class="leap.spring.boot.SpringBeanAutowirer" primary="true" override="true"/>
+
     <!-- spring transaction integration -->
     <beans if-class-present="org.springframework.transaction.PlatformTransactionManager">
         <bean type="leap.core.transaction.TransactionProviderFactory"

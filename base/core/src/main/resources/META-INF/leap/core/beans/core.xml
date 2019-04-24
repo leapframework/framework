@@ -89,4 +89,8 @@
 
     <!--doc-->
     <bean type="leap.core.doc.DocResolver" class="leap.core.doc.DefaultDocResolver" primary="true"/>
+
+    <!-- bean -->
+    <bean type="leap.core.bean.BeanAutowirer" class="leap.core.bean.DefaultBeanAutowirer" primary="true"/>
+    <bean type="leap.core.bean.BeanCreator"   class="leap.core.bean.DefaultBeanCreator" primary="true"/>
 </beans>
