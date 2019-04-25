@@ -16,6 +16,8 @@
 package leap.lang.el.spel.ast;
 
 import leap.lang.Beans;
+import leap.lang.accessor.Getter;
+import leap.lang.accessor.ObjectPropertyGetter;
 import leap.lang.beans.BeanType;
 import leap.lang.beans.DynaBean;
 import leap.lang.el.ElEvalContext;
@@ -87,9 +89,13 @@ public class AstItem extends AstExpr {
     		return ((ElPropertyResolver) o).resolveProperty(name, context);
     	}
     	
-    	if(o instanceof DynaBean){
+    	if(o instanceof ObjectPropertyGetter){
     		return ((DynaBean)o).getProperty(name);
     	}
+
+    	if(o instanceof Getter) {
+    		return ((Getter) o).get(name);
+		}
     	
     	return Beans.getProperty(BeanType.of(o.getClass()), o, name);
     }
