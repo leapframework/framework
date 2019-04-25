@@ -128,10 +128,10 @@ public class DefaultBeanCreator implements BeanCreator {
                         }
                     }
                     Object config = Converts.convert(def.getConfig(), cc);
-                    if (config instanceof Valid) {
+                    if (config.getClass().isAnnotationPresent(Valid.class)) {
                         validator.validate(type.getSimpleName() + "(" + def.getType() + ")", config);
                     }
-                    cb.initConfiguration(this.config);
+                    cb.initConfiguration(config);
                 }
             }
         }
