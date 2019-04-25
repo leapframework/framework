@@ -18,7 +18,6 @@ package tests;
 
 import app.beans.IfBean;
 import leap.core.BeanFactory;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -28,7 +27,6 @@ public class SpringPropertiesTest extends AbstractTest {
     protected BeanFactory factory;
 
     @Test
-    @Ignore
     public void testBeanIf() {
         assertNull(factory.tryGetBean(IfBean.class, "if1"));
         assertNull(factory.tryGetBean(IfBean.class, "if2"));

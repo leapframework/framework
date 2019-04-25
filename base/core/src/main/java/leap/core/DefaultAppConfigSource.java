@@ -19,8 +19,8 @@ import leap.core.config.*;
 import leap.core.ds.DataSourceProps;
 import leap.core.ioc.ConfigBean;
 import leap.core.sys.SysPermissionDef;
-import leap.lang.*;
 import leap.lang.Comparators;
+import leap.lang.*;
 import leap.lang.accessor.MapAttributeAccessor;
 import leap.lang.accessor.PropertyGetter;
 import leap.lang.accessor.SystemPropertyAccessor;
@@ -69,6 +69,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
     private static final List<AppPropertyReader> propertyReaders = Factory.newInstances(AppPropertyReader.class);
     private static final List<AppConfigReader>   configReaders   = Factory.newInstances(AppConfigReader.class);
     private static final List<AppConfigListener> configListeners = Factory.newInstances(AppConfigListener.class);
+    private static final List<AppConfigSupport>  configSupports  = Factory.newInstances(AppConfigSupport.class);
 
     protected AppPropertyProcessor propertyProcessor = new PropertyProcessorWrapper();
 
@@ -243,7 +244,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
         Loader(Object externalContext, Map<String,AppProperty> props, String profile) {
             this.externalContext = externalContext;
             this.initProperties  = props;
-            this.config          = new DefaultAppConfig(profile);
+            this.config          = new DefaultAppConfig(profile, configSupports.toArray(new AppConfigSupport[0]));
             this.appResources    = AppResources.create(config, externalContext);
             this.configResources = appResources.search("config");
 
@@ -460,7 +461,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
                     loadBasePackageResources(urlResourceMap, basePackage);
                 }
                 loadResources(urlResourceMap);
-                
+
                 config.resources = new SimpleResourceSet(urlResourceMap.values().toArray(new Resource[]{}));
             } catch (IOException e) {
                 throw new AppConfigException("Unexpected IOException : " + e.getMessage(), e);
