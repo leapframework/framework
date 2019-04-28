@@ -69,7 +69,8 @@ public class OAuth2Errors {
     public static void response(Response response, OAuth2Error error) {
         response.setStatus(error.getStatus());
         response.setContentType(ContentTypes.APPLICATION_JSON_UTF8);
-        
+        log.error("oauth2 error response {}: {error: \"{}\", error_code: \"{}\", referral: \"{}\", error_description:\"{}\"",
+                error.getStatus(), error.getError(), error.getErrorCode(), error.getReferral(), error.getErrorDescription());
         JsonWriter w = JSON.createWriter(response.getWriter());
         w.startObject()
                 .property("error", error.getError())
