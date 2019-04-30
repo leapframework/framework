@@ -1306,11 +1306,13 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                         }
 
                         //env
-                        if (value.endsWith("()")) {
-                            String valueExpr = "#{env." + value.substring(0, value.length() - 2) + "}";
-                            applyFieldFilterExpr(expr, alias, modelAndProp.field, valueExpr, sqlOperator);
-                        } else if (op == ScelToken.IN) {
+                        if (op == ScelToken.IN) {
                             applyFieldFilterIn(expr, alias, modelAndProp.field, nodes[i].values());
+                        } else if (value.endsWith("()") && value.length() > 2) {
+                            String envName = value.substring(0, value.length() - 2);
+                            //todo: check env is valid or allowed?
+                            String valueExpr = "#{env." + envName + "}";
+                            applyFieldFilterExpr(expr, alias, modelAndProp.field, valueExpr, sqlOperator);
                         } else {
                             applyFieldFilter(expr, alias, modelAndProp.field, value, sqlOperator);
                         }
