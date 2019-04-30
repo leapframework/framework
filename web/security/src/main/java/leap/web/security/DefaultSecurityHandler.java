@@ -91,7 +91,11 @@ public class DefaultSecurityHandler implements SecurityHandler {
         
         loginManager.promoteLogin(request, response, context.getLoginContext());
         if(response.getStatus() < HTTP.SC_MULTIPLE_CHOICES && response.getStatus() >= HTTP.SC_OK){
-            response.setStatus(HTTP.SC_UNAUTHORIZED);
+            if(null != context.getAuthentication() && context.getAuthentication().isAuthenticated()) {
+                response.setStatus(HTTP.SC_FORBIDDEN);
+            }else {
+                response.setStatus(HTTP.SC_UNAUTHORIZED);
+            }
         }
     }
 

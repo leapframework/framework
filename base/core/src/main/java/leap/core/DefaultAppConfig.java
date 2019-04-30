@@ -59,6 +59,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 		INIT_PROPERTIES.add(INIT_PROPERTY_DEFAULT_LOCALE);
 	}
 
+	protected AppConfigSupport[]            initialSupports     = new AppConfigSupport[0];
     protected AppConfigSupport[]            preSupports         = new AppConfigSupport[0];
     protected AppConfigSupport[]            postSupports        = new AppConfigSupport[0];
     protected PropertyProvider              propertyProvider    = null;
@@ -83,8 +84,9 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     protected ResourceSet                resources           = null;
     protected DefaultPlaceholderResolver placeholderResolver = new DefaultPlaceholderResolver(this);
 
-    public DefaultAppConfig(String profile) {
+    public DefaultAppConfig(String profile, AppConfigSupport[] initialSupports) {
         this.profile = profile;
+        this.initialSupports = initialSupports;
         this.properties.put(INIT_PROPERTY_PROFILE, profile);
     }
 
@@ -228,23 +230,21 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     public Set<String> getPropertyNames() {
         Set<String> set = new LinkedHashSet<>();
 
-        for(AppConfigSupport support : preSupports) {
-            Set<String> names = support.getPropertyNames();
-            if(null != names) {
-                set.addAll(names);
-            }
-        }
-
+        addPropertyNames(set, initialSupports);
+        addPropertyNames(set, preSupports);
         set.addAll(properties.keySet());
-
-        for(AppConfigSupport support : postSupports) {
-            Set<String> names = support.getPropertyNames();
-            if(null != names) {
-                set.addAll(names);
-            }
-        }
+        addPropertyNames(set, postSupports);
 
         return set;
+    }
+
+    protected void addPropertyNames(Set<String> set, AppConfigSupport[] supports) {
+        for(AppConfigSupport support : supports) {
+            Set<String> names = support.getPropertyNames();
+            if(null != names) {
+                set.addAll(names);
+            }
+        }
     }
 
     @Override
@@ -272,6 +272,12 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 	@Override
     public String getProperty(String name) {
         String v;
+
+        for(AppConfigSupport support : initialSupports) {
+            if((v = support.getProperty(name)) != null) {
+                return v;
+            }
+        }
 
         for(AppConfigSupport support : preSupports) {
             if((v = support.getProperty(name)) != null) {

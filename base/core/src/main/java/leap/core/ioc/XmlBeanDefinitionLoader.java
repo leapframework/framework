@@ -21,6 +21,7 @@ import leap.core.AppResource;
 import leap.core.AppResources;
 import leap.core.el.EL;
 import leap.lang.*;
+import leap.lang.accessor.Getter;
 import leap.lang.beans.BeanType;
 import leap.lang.convert.Converts;
 import leap.lang.el.DefaultElParseContext;
@@ -1419,7 +1420,12 @@ class XmlBeanDefinitionLoader {
     protected static Map<String,Object> newExprVars(AppConfig config) {
         Map<String, Object> vars = New.hashMap();
         vars.put("config", config);
-        vars.put("properties",  config.getProperties());
+        vars.put("properties", new Getter() {
+            @Override
+            public Object get(String name) {
+                return config.getProperty(name);
+            }
+        });
         return vars;
     }
 

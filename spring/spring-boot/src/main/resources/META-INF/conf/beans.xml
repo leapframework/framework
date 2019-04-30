@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.leapframework.org/schema/beans">
 
+    <!--
     <bean type="leap.core.AppConfigSupport"   class="leap.spring.boot.LeapEnvSupport"    qualifier="pre" sort-order="0"/>
     <bean type="leap.core.AppConfigSupport"   class="leap.spring.boot.LeapConfigSupport" qualifier="pre"/>
+    -->
     <bean type="leap.core.BeanFactorySupport" class="leap.spring.boot.LeapBeanSupport"/>
 
     <bean type="leap.core.spring.PropertyResolver" class="leap.spring.boot.SpringPropertyResolver" primary="true" override="true">

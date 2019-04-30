@@ -16,6 +16,7 @@
 package leap.lang.el.spel;
 
 import leap.lang.New;
+import leap.lang.accessor.Getter;
 import leap.lang.expression.ExpressionException;
 import org.junit.Test;
 
@@ -65,8 +66,19 @@ public class SpelExpressionTest extends SpelTestCase {
 
     @Test
     public void testProperty() {
+		//map
         Map<String,Object> m = New.hashMap("a","b");
         assertEquals("b", eval("['a']", m));
+
+        //getter
+		Getter getter = new Getter() {
+			@Override
+			public Object get(String name) {
+				return m.get(name);
+			}
+		};
+		Map<String, Object> vars = New.hashMap("o", getter);
+		assertEquals("b", eval("o['a']", vars));
     }
 	
 	@Test
