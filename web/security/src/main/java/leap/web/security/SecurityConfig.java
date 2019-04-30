@@ -44,7 +44,7 @@ public interface SecurityConfig {
 	 * Default is <code>false</code>.
 	 */
 	boolean isCrossContext();
-	
+
 	/**
 	 * Returns <code>true</code> if csrf security enabled.
 	 * 
@@ -52,6 +52,11 @@ public interface SecurityConfig {
 	 * Default is <code>true</code>, it should not be disabled for security reason. 
 	 */
 	boolean isCsrfEnabled();
+
+    /**
+     * Returns <code>true</code> if ignore cors request.
+     */
+    boolean isCorsIgnored();
 	
 	/**
 	 * Returns <code>true</code> if all request paths will be intercepted by security module and checks the user authentication.
@@ -154,6 +159,22 @@ public interface SecurityConfig {
 	 * Optional.
 	 */
 	String getCookieDomain();
+
+    /**
+     * Default is true.
+     */
+    boolean isLoginEnabled();
+
+    /**
+     * Is redirect to root path after login success.
+     *
+     * <p/>
+     * If false will redirect to current request uri.
+     *
+     * <p/>
+     * Default is true.
+     */
+    boolean isLoginRedirectRoot();
 	
     /**
      * Returns the url for promote user login.
@@ -164,6 +185,11 @@ public interface SecurityConfig {
 	 * Required. Returns the action path for handling user's login authentication.
 	 */
 	String getLoginAction();
+
+    /**
+     * Default is true.
+     */
+    boolean isLogoutEnabled();
 	
 	/** 
 	 * Required. Returns the action path for handling user's logout request.

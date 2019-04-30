@@ -29,6 +29,7 @@ import leap.htpl.ast.Element;
 import leap.htpl.ast.Expr;
 import leap.htpl.ast.Node;
 import leap.htpl.processor.AbstractNamedAttrProcessor;
+import leap.lang.Strings;
 import leap.lang.expression.AbstractExpression;
 
 public class ErrorsAttrProcessor extends AbstractNamedAttrProcessor {
@@ -39,29 +40,47 @@ public class ErrorsAttrProcessor extends AbstractNamedAttrProcessor {
 	    super(ATTR_NAME);
     }
 
-	@Override
+    @Override
+    public boolean required() {
+        return false;
+    }
+
+    @Override
 	public Node processStartElement(HtplEngine engine, HtplDocument doc, Element e,Attr attr) {
 		//errors="objectName"
 		
 		final String objectName = attr.getString();
-		
-		e.removeAttribute(attr);
-		e.setChildNode(Expr.text(objectName, new AbstractExpression() {
-			@Override
-            protected Object eval(Object context, Map<String, Object> vars) {
-				Errors errors = ((HtplContext)context).getErrors();
-				List<String> messages = errors.getMessages(objectName);
-				return messages.isEmpty() ? "" : messages.get(0);
-            }
-		}));
-		
-		return new Condition(e, new Function<HtplContext,Boolean>() {
-			@Override
-			public Boolean apply(HtplContext context) {
-				Errors errors = context.getErrors();
-				return null != errors && errors.contains(objectName);
-			}
-		});
+
+		if(Strings.isEmpty(objectName)) {
+            e.removeAttribute(attr);
+            e.setChildNode(Expr.text("errors", new AbstractExpression() {
+                @Override
+                protected Object eval(Object context, Map<String, Object> vars) {
+                    Errors errors = ((HtplContext)context).getErrors();
+                    return errors.first().getMessage();
+                }
+            }));
+
+            return new Condition(e, context -> {
+                Errors errors = context.getErrors();
+                return null != errors && !errors.isEmpty();
+            });
+        }else {
+            e.removeAttribute(attr);
+            e.setChildNode(Expr.text(objectName, new AbstractExpression() {
+                @Override
+                protected Object eval(Object context, Map<String, Object> vars) {
+                    Errors errors = ((HtplContext)context).getErrors();
+                    List<String> messages = errors.getMessages(objectName);
+                    return messages.isEmpty() ? "" : messages.get(0);
+                }
+            }));
+
+            return new Condition(e, context -> {
+                Errors errors = context.getErrors();
+                return null != errors && errors.contains(objectName);
+            });
+        }
 	}
 
 }

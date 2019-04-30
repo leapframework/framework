@@ -34,6 +34,7 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.oauth2.webapp.OAuth2InternalServerException;
 import leap.oauth2.webapp.OAuth2Config;
+import leap.web.security.user.SimpleUserDetails;
 
 import java.util.Map;
 
@@ -102,8 +103,7 @@ public class DefaultUserInfoLookup implements UserInfoLookup {
         userInfo.setId(json.getString("sub"));
         userInfo.setName(json.getString("name"));
         userInfo.setLoginName(json.getString("login_name"));
-
-        //todo: other user properties
+        userInfo.setProperties(json.asMap());
 
         return userInfo;
     }

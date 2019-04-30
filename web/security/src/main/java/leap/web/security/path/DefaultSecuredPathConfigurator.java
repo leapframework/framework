@@ -29,7 +29,6 @@ public class DefaultSecuredPathConfigurator implements SecuredPathConfigurator {
         this.path  = new DefaultSecuredPathBuilder(route);
     }
 
-
     public DefaultSecuredPathConfigurator(DefaultSecuredPaths paths, PathPattern pp) {
         this.paths = paths;
         this.path  = new DefaultSecuredPathBuilder(pp);
@@ -43,6 +42,12 @@ public class DefaultSecuredPathConfigurator implements SecuredPathConfigurator {
     public DefaultSecuredPathConfigurator(DefaultSecuredPaths paths, SecuredPathBuilder sp) {
         this.paths = paths;
         this.path  = sp;
+    }
+
+    @Override
+    public SecuredPathConfigurator setSource(Object source) {
+        path.setSource(source);
+        return this;
     }
 
     @Override
@@ -86,13 +91,13 @@ public class DefaultSecuredPathConfigurator implements SecuredPathConfigurator {
 
     @Override
     public SecuredPathConfigurator setPermissionsAllowed(String... permissions) {
-        path.setPermissionsAllowed(permissions);
+        path.setPermissions(permissions);
         return this;
     }
 
     @Override
     public SecuredPathConfigurator setRolesAllowed(String... roles) {
-        path.setRolesAllowed(roles);
+        path.setRoles(roles);
         return this;
     }
 

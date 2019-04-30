@@ -43,6 +43,12 @@
 
     <bean type="leap.oauth2.webapp.token.at.AccessTokenStore"
           class="leap.oauth2.webapp.token.at.DefaultAccessTokenStore" primary="true"/>
+    
+    <bean type="leap.oauth2.webapp.token.at.AccessTokenFetcher" 
+          class="leap.oauth2.webapp.token.at.DefaultAccessTokenFetcher" primary="true"/>
+    
+    <bean type="leap.oauth2.webapp.token.at.AccessTokenRefresher"
+          class="leap.oauth2.webapp.token.at.DefaultAccessTokenRefresher" primary="true"/>
 
     <bean name="jwt"
           type="leap.oauth2.webapp.token.TokenVerifier"
@@ -58,5 +64,10 @@
     <!-- user -->
     <bean type="leap.oauth2.webapp.user.UserInfoLookup"
           class="leap.oauth2.webapp.user.DefaultUserInfoLookup" primary="true"/>
+    
+    <bean type="leap.oauth2.webapp.user.UserDetailsLookup"
+          class="leap.oauth2.webapp.user.DefaultUserDetailsLookup" primary="true"/>
 
+    <!-- variable -->
+    <bean name="tokeninfo" type="leap.core.variable.Variable" class="leap.oauth2.webapp.variable.TokenInfoVariable"/>
 </beans>

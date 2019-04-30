@@ -15,11 +15,11 @@
  */
 package leap.orm.df;
 
-import leap.orm.domain.FieldDomain;
+import leap.orm.domain.Domain;
 
 public interface DomainDatas {
 
-	DomainData tryGetDomainData(FieldDomain domain);
+	DomainData tryGetDomainData(Domain domain);
 	
 	DomainData tryGetDomainData(String qualifedDomainName);
 

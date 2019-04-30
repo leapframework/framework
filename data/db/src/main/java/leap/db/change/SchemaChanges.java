@@ -16,6 +16,7 @@
 package leap.db.change;
 
 import java.sql.Connection;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import leap.db.DbCommand;
@@ -37,6 +38,11 @@ public interface SchemaChanges extends Enumerable<SchemaChange>, JsonStringable 
 	 * Returns the filtered schema changes.
 	 */
 	SchemaChanges filter(Predicate<SchemaChange> predicate);
+
+    /**
+     * Returns the processed schema changes.
+     */
+    SchemaChanges process(Function<SchemaChange, SchemaChange> processor);
 	
 	/**
 	 * Finds the first change of the given change type.

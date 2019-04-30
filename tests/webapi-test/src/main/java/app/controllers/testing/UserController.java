@@ -31,6 +31,11 @@ import java.util.List;
 @AllowAnonymous
 public class UserController extends ModelController<User> implements UserControllerDesc {
 
+//    @GET("/test/dup")
+//    public app.models.User testDup() {
+//        return null;
+//    }
+
     @GET
     public ApiResponse<List<User>> getAllUsers(QueryOptions options) {
         return queryList(options);

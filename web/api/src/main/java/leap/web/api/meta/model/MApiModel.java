@@ -15,23 +15,35 @@
  */
 package leap.web.api.meta.model;
 
+import leap.lang.Extensible;
 import leap.lang.Strings;
 
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class MApiModel extends MApiNamedWithDesc {
+public class MApiModel extends MApiNamedWithDesc implements Extensible {
 
+    protected final Map<Class<?>, Object> extensions = new ConcurrentHashMap<>();
+
+    protected final boolean        entity;
     protected final String         baseName;
-    protected final Class<?>       javaType;
+    protected final Class<?>[]     javaTypes;
     protected final MApiProperty[] properties;
+    protected final MApiExtension  extension;
 
-    public MApiModel(String baseName, String name, String title, String summary, String description,
-                     Class<?> javaType, MApiProperty[] properties, Map<String, Object> attrs) {
+    public MApiModel(boolean entity, String baseName, String name, String title, String summary, String description,
+                     Class<?>[] javaTypes, MApiProperty[] properties, Map<String, Object> attrs, MApiExtension extension) {
         super(name, title, summary, description, attrs);
 
+        this.entity = entity;
         this.baseName = baseName;
-        this.javaType = javaType;
+        this.javaTypes = javaTypes;
         this.properties = properties;
+        this.extension = extension;
+    }
+
+    public boolean isEntity() {
+        return entity;
     }
 
     public boolean hasBaseModel() {
@@ -48,8 +60,8 @@ public class MApiModel extends MApiNamedWithDesc {
     /**
      * Optional.
      */
-    public Class<?> getJavaType() {
-        return javaType;
+    public Class<?>[] getJavaTypes() {
+        return javaTypes;
     }
 
     public MApiProperty[] getProperties() {
@@ -67,5 +79,29 @@ public class MApiModel extends MApiNamedWithDesc {
             }
         }
         return null;
+    }
+
+    public MApiExtension getExtension() {
+        return extension;
+    }
+
+    @Override
+    public Map<Class<?>, Object> getExtensions() {
+        return extensions;
+    }
+
+    @Override
+    public final <T> T getExtension(Class<?> type) {
+        return (T)extensions.get(type);
+    }
+
+    @Override
+    public final <T> void setExtension(Class<T> type, Object extension) {
+        extensions.put(type, extension);
+    }
+
+    @Override
+    public <T> T removeExtension(Class<?> type) {
+        return (T)extensions.remove(type);
     }
 }

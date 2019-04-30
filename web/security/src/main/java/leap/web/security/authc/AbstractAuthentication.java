@@ -25,6 +25,8 @@ public abstract class AbstractAuthentication implements Authentication {
     protected boolean  rememberMe;
     protected String[] permissions;
     protected String[] roles;
+    protected String[] rules;
+    protected String   accessMode;
 
     @Override
     public String getToken() {
@@ -66,6 +68,26 @@ public abstract class AbstractAuthentication implements Authentication {
     @Override
     public void setRoles(String... roles) {
         this.roles = roles;
+    }
+
+    @Override
+    public String[] getRules() {
+        return rules;
+    }
+
+    @Override
+    public void setRules(String[] rules) {
+        this.rules = rules;
+    }
+
+    @Override
+    public String getAccessMode() {
+        return accessMode;
+    }
+
+    @Override
+    public void setAccessMode(String accessMode) {
+        this.accessMode = accessMode;
     }
 
     @Override

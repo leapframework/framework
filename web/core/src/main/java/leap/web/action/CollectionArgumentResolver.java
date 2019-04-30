@@ -39,8 +39,9 @@ public class CollectionArgumentResolver extends AbstractMapResolver {
 	private final TypeInfo 						  			  elementType;
 	private final BiFunction<ActionContext, Argument, Object> resolver;
 	private final String									  arrayPrefix;
+	private final RequestBodyArgumentResolver                 bodyResolver;
 	
-	public CollectionArgumentResolver(App app, RouteBase route, Argument argument) {
+	public CollectionArgumentResolver(App app, RouteBase route, Argument argument, RequestBodyArgumentResolver bodyResolver) {
 		super(app,route,argument);
 		
 		this.elementType = argument.getTypeInfo().getElementTypeInfo();
@@ -51,6 +52,8 @@ public class CollectionArgumentResolver extends AbstractMapResolver {
 		}else{
 			this.resolver = (ac,arg) -> resolveComplexCollection(ac, arg);
 		}
+
+		this.bodyResolver = bodyResolver;
 	}
 
 	@Override
@@ -78,7 +81,15 @@ public class CollectionArgumentResolver extends AbstractMapResolver {
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-    protected Object resolveSimpleCollectionNoDirectMapping(ActionContext ac, Argument arg) {
+    protected Object resolveSimpleCollectionNoDirectMapping(ActionContext ac, Argument arg) throws Throwable {
+	    //Only one argument for non-GET request
+	    if(!ac.getRequest().isGet() && ac.getAction().getArguments().length == 1) {
+	        Object value = bodyResolver.resolveValue(ac, arg);
+	        if(null != value) {
+	            return value;
+            }
+        }
+
 		Map<String, Object> params = ac.getMergedParameters();
 		
 		List list = null;

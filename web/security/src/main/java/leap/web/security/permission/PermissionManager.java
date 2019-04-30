@@ -23,7 +23,14 @@ public interface PermissionManager extends PermissionChecker {
      * Checks if the specified permissions are implied all of the "impliedBy" permissions.
      *
      * see {@link java.security.Permission#implies(Permission)}.
+     *
+     * @deprecated use {@link #checkPermissionImplies(String[], String[])} instead.
      */
+    @Deprecated
     boolean checkPermissionImpliesAll(String[] checkingPermissions,String[] impliedByPermissions);
 
+    /**
+     * Checks if the expected permissions are all implied by the actual permissions.
+     */
+    boolean checkPermissionImplies(String[] expected, String[] actual);
 }

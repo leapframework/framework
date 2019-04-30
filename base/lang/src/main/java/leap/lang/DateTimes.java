@@ -40,7 +40,7 @@ public class DateTimes {
 		if(d == null) {
 			d = tryParseLocalDate(text, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 			if(d == null) {
-				Date ld = Dates.tryParse(text.toString(),DateFormats.DATETIME_FORMAT);
+				Date ld = Dates.tryParse(text.toString(),DateFormats.DATETIME_FORMATTER);
 				if(null != ld) {
 					return toLocalDate(ld);
 				}
@@ -68,7 +68,7 @@ public class DateTimes {
 			t = tryParseLocalTime(text, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 			
 			if(null == t) {
-				Date d = Dates.tryParse(text.toString(), DateFormats.DATETIME_FORMAT);
+				Date d = Dates.tryParse(text.toString(), DateFormats.DATETIME_FORMATTER);
 				if(null != d) {
 					return toLocalTime(d);
 				}
@@ -94,12 +94,12 @@ public class DateTimes {
 		if(dt == null) {
 			String s = text.toString();
 			
-			Date d = Dates.tryParse(s,DateFormats.DATETIME_FORMAT);
+			Date d = Dates.tryParse(s,DateFormats.DATETIME_FORMATTER);
 			if(null != d){
 				return toLocalDateTime(d);
 			}
-			
-			d = Dates.tryParse(s,DateFormats.DATE_FORMAT);
+
+			d = Dates.tryParse(s,DateFormats.DATE_FORMATTER);
 			if(null != d){
 				return toLocalDateTime(d);
 			}

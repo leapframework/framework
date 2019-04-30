@@ -16,103 +16,17 @@
 
 package leap.web.api.query;
 
+import leap.lang.text.AbstractStringParser;
 import leap.web.exception.BadRequestException;
 
-abstract class ParserBase {
-
-    protected static final char EOI = 0x1A;
-
-    protected final StringBuilder chars;
-
-    protected char ch;
-    protected int  pos;
+abstract class ParserBase extends AbstractStringParser {
 
     public ParserBase(String expr) {
-        this.chars = new StringBuilder(expr.trim());
-        this.pos   = -1;
-    }
-
-    protected final boolean eof() {
-        return ch == EOI;
-    }
-
-    protected final boolean isWhitespace() {
-        return Character.isWhitespace(ch);
-    }
-
-    protected final char charAt(int index) {
-        return index < chars.length() ? chars.charAt(index) : EOI;
-    }
-
-    protected final void nextChar(){
-        ch = charAt(++pos);
-    }
-
-    protected final String substring(int start,int end){
-        return chars.substring(start,end);
-    }
-
-    protected final void skipWhitespaces(){
-        for(;;){
-            if(!Character.isWhitespace(ch)){
-                break;
-            }
-            if(eof()) {
-                error("Unexpected eof");
-            }
-            nextChar();
-        }
+        super(expr);
     }
 
     protected final void error(String message) {
         throw new BadRequestException(message + ", " + describePosition());
-    }
-
-    protected final String describePosition(){
-        return describePosition(pos);
-    }
-
-    protected final String describePosition(int pos){
-        int fromIndex;
-        int endIndex;
-
-        if(pos > chars.length() - 5){
-            fromIndex = Math.max(pos - 15, 0);
-            endIndex  = chars.length()-1;
-        }else{
-            fromIndex = pos;
-            endIndex  = Math.min(pos + 20, chars.length() - 1);
-        }
-
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("pos ").append(pos).append(", \" ");
-        sb.append(substring(fromIndex,endIndex));
-        if(endIndex < chars.length() - 1){
-            sb.append("...");
-        }
-        sb.append(" \"");
-
-        return sb.toString();
-    }
-
-    private final static boolean[] identifierFlags = new boolean[256];
-    static {
-        for (char c = 0; c < identifierFlags.length; ++c) {
-            if (c >= 'A' && c <= 'Z') {
-                identifierFlags[c] = true;
-            } else if (c >= 'a' && c <= 'z') {
-                identifierFlags[c] = true;
-            } else if (c >= '0' && c <= '9') {
-                identifierFlags[c] = true;
-            }
-        }
-        identifierFlags['_'] = true;
-        identifierFlags['$'] = true;
-    }
-
-    protected static boolean isIdentifierChar(char c) {
-        return c > identifierFlags.length || identifierFlags[c];
     }
 
 }

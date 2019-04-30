@@ -558,7 +558,7 @@ public class Lexer {
 						return;
 					}					
 				default:
-                    if (Character.isLetter(ch)) {
+                    if (isFirstIdentifierChar(ch)) {
                     	startToken();
                         scanIdentifier();
                         setIdentifierToken();

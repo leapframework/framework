@@ -15,8 +15,8 @@
  */
 package leap.orm.tested;
 
+import leap.orm.annotation.Domain;
 import leap.orm.annotation.Entity;
-import leap.orm.annotation.NonDomain;
 import leap.orm.tested.domains.TestDomain;
 import leap.orm.tested.domains.TestDomain1;
 import leap.orm.tested.domains.TestDomain2;
@@ -34,7 +34,8 @@ public class DomainEntity {
 
 	@TestDomain2
 	private String test2;
-	@NonDomain
+
+	@Domain(autoMapping = false)
 	private Timestamp createdAt;
 
 	private Timestamp updatedAt;

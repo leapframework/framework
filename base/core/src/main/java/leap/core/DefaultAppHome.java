@@ -65,9 +65,11 @@ public class DefaultAppHome implements AppHome, PostCreateBean {
 		
 		initHomeDirectory();
 
+        /*
         if(log.isInfoEnabled()) {
             log.info("\n\n   *** app home : {} ***\n", dir.getFilepath());
         }
+        */
 
     }
 	

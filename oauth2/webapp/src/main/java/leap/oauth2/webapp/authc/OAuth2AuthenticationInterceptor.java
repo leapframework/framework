@@ -17,15 +17,20 @@
 package leap.oauth2.webapp.authc;
 
 import leap.core.annotation.Inject;
+import leap.core.security.UserNotFoundException;
 import leap.core.security.token.TokenVerifyException;
+import leap.core.web.RequestIgnore;
+import leap.lang.http.HTTP;
 import leap.lang.intercepting.State;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.oauth2.webapp.OAuth2Config;
 import leap.oauth2.webapp.OAuth2ErrorHandler;
 import leap.oauth2.webapp.OAuth2ResponseException;
+import leap.oauth2.webapp.Oauth2InvalidTokenException;
 import leap.oauth2.webapp.token.Token;
 import leap.oauth2.webapp.token.TokenExtractor;
+import leap.web.App;
 import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.SecurityInterceptor;
@@ -38,7 +43,8 @@ import leap.web.security.csrf.CSRF;
 public class OAuth2AuthenticationInterceptor implements SecurityInterceptor {
     
     private static final Log log = LogFactory.get(OAuth2AuthenticationInterceptor.class);
-
+    
+    protected @Inject App                 app;
     protected @Inject OAuth2Config        config;
     protected @Inject TokenExtractor      tokenExtractor;
     protected @Inject OAuth2ErrorHandler  errorHandler;
@@ -49,7 +55,21 @@ public class OAuth2AuthenticationInterceptor implements SecurityInterceptor {
 		if (!config.isEnabled()) {
             return State.CONTINUE;
         }
-
+        Object o = app.getAttribute("oauth2.skipTokenAuthenticateUrl");
+		if(o instanceof String[]){
+            String[] skips = (String[]) o;
+            for (String skip : skips){
+                if(request.getPath().equals(skip)){
+                    return State.CONTINUE;
+                }
+            }
+        }
+        for(RequestIgnore ignore : config.getIgnores()){
+		    if(ignore.matches(request)){
+                return State.CONTINUE;
+            }
+        }
+        
         //Extract access token from request.
         Token token = tokenExtractor.extractTokenFromRequest(request);
         if(null == token) {
@@ -75,8 +95,15 @@ public class OAuth2AuthenticationInterceptor implements SecurityInterceptor {
             errorHandler.handleInvalidToken(request, response, e.getMessage());
             return State.INTERCEPTED;
         } catch (OAuth2ResponseException e) {
+            if (null != context.getSecuredPath() && context.getSecuredPath().isAllowAnonymous()) {
+                log.warn("Got oauth2 server error, ignore for anonymous allowed at '{}'", context.getSecuredPath());
+                return State.CONTINUE;
+            }
             errorHandler.responseError(request, response, e.getStatus(), e.getError(), e.getMessage());
             return State.INTERCEPTED;
+        } catch (UserNotFoundException e) {
+          errorHandler.responseError(request, response, HTTP.SC_FORBIDDEN, UserNotFoundException.ERR_CODE, e.getMessage());
+          return State.INTERCEPTED;
         } catch (Throwable e) {
             log.error("Error resolving authentication from access token : {}", e.getMessage(), e);
             errorHandler.handleServerError(request, response, e);

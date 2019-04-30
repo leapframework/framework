@@ -15,33 +15,34 @@
  */
 package leap.orm.command;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Predicate;
-
 import leap.db.DbCommand;
 import leap.db.DbCommands;
 import leap.db.DbExecution;
-import leap.db.change.ColumnDefinitionChange;
-import leap.db.change.SchemaChange;
-import leap.db.change.SchemaChanges;
-import leap.db.command.DropColumn;
-import leap.db.command.DropForeignKey;
-import leap.db.command.DropIndex;
-import leap.db.command.DropPrimaryKey;
-import leap.db.command.DropTable;
+import leap.db.change.*;
+import leap.db.command.*;
+import leap.db.model.DbColumn;
+import leap.db.model.DbColumnBuilder;
 import leap.db.model.DbSchema;
 import leap.db.model.DbTable;
+import leap.lang.Collections2;
 import leap.lang.Error;
+import leap.lang.Strings;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.orm.dmo.Dmo;
 import leap.orm.mapping.EntityMapping;
 
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+import java.util.function.Predicate;
+
 public class DefaultUpgradeSchemaCommand extends AbstractDmoCommand implements UpgradeSchemaCommand,Predicate<DbCommand> {
-	
+
 	private static final Log log = LogFactory.get(DefaultUpgradeSchemaCommand.class);
-	
+
     protected EntityMapping[] entityMappings;
     protected boolean         dropTableEnabled;
     protected boolean         dropTableObjectsEnabled;
@@ -55,7 +56,7 @@ public class DefaultUpgradeSchemaCommand extends AbstractDmoCommand implements U
 	public DefaultUpgradeSchemaCommand(Dmo dmo) {
 	    super(dmo);
     }
-	
+
     public DefaultUpgradeSchemaCommand(Dmo dmo, EntityMapping[] entityMappings) {
         super(dmo);
         this.entityMappings = entityMappings;
@@ -66,12 +67,12 @@ public class DefaultUpgradeSchemaCommand extends AbstractDmoCommand implements U
 		this.dropTableObjectsEnabled = dropTableObjectsEnabled;
 	    return this;
     }
-	
+
 	@Override
 	public boolean isDropTableObjectsEnabled() {
 		return dropTableObjectsEnabled;
 	}
-	
+
 	@Override
 	public boolean isDropColumnEnabled() {
 		return dropColumnEnabled;
@@ -126,7 +127,7 @@ public class DefaultUpgradeSchemaCommand extends AbstractDmoCommand implements U
 		this.dropIndexEnabled = dropIndexEnabled;
 		return this;
 	}
-	
+
 	@Override
 	public boolean isAlterColumnEnabled() {
 		return alterColumnEnabled;
@@ -141,37 +142,37 @@ public class DefaultUpgradeSchemaCommand extends AbstractDmoCommand implements U
 	@Override
     public boolean test(DbCommand command) {
 		boolean apply = false;
-		
+
 		if(command instanceof DropTable){
 			apply = isDropTableEnabled();
-			
+
 			if(!apply){
 				log.info("Dropping table '{}' is disabled",((DropTable)command).getTableName());
 			}
-			
+
 		}else if(command instanceof DropColumn){
 			apply = isDropTableObjectsEnabled() || isDropColumnEnabled();
-			
+
 			if(!apply){
 				log.info("Dropping column '{}.{}' is disabled",
 						 ((DropColumn)command).getTableName(),((DropColumn)command).getColumnName());
 			}
 		}else if(command instanceof DropPrimaryKey){
 			apply = isDropTableObjectsEnabled() || isDropPrimaryKeyEnabled();
-			
+
 			if(!apply){
 				log.info("Dropping primary key of table '{}' is disabled",((DropPrimaryKey)command).getTableName());
 			}
 		}else if(command instanceof DropForeignKey){
 			apply = isDropTableObjectsEnabled() || isDropForeignKeyEnabled();
-			
+
 			if(!apply){
 				log.info("Dropping foreign key '{}' of table '{}' is disabled",
 						 ((DropForeignKey)command).getForeignKeyName(),((DropForeignKey)command).getTableName());
 			}
 		}else if(command instanceof DropIndex){
 			apply = isDropTableObjectsEnabled() || isDropIndexEnabled();
-			
+
 			if(!apply){
 				log.info("Dropping index '{}' of table '{}' is disabled",
 						((DropIndex)command).getIndexName(),((DropIndex)command).getTableName());
@@ -179,7 +180,7 @@ public class DefaultUpgradeSchemaCommand extends AbstractDmoCommand implements U
 		}else{
 			apply = true;
 		}
-		
+
 	    return apply;
     }
 
@@ -188,43 +189,103 @@ public class DefaultUpgradeSchemaCommand extends AbstractDmoCommand implements U
 	    return execution.errors();
     }
 
-	@Override
-    protected boolean doExecute() {
-	    
-	    
-		Predicate<SchemaChange> changePredicate = change -> {
-            if(change instanceof ColumnDefinitionChange){
-                if(!isAlterColumnEnabled()){
-                    
-                    ColumnDefinitionChange cdc = (ColumnDefinitionChange)change;
-                    
+    @Override
+    public void printUpgradeScripts(PrintWriter out) {
+        out.println();
+        for(String s : getUpgradeScripts()) {
+            out.println(s);
+            out.println();
+        }
+    }
+
+    @Override
+    public void printUpgradeScripts(PrintStream out) {
+        out.println();
+        for(String s : getUpgradeScripts()) {
+            out.println(s);
+            out.println();
+        }
+    }
+
+    @Override
+    public List<String> getUpgradeScripts() {
+        Predicate<SchemaChange> changePredicate = change -> {
+            if (change instanceof ColumnDefinitionChange) {
+                if (!isAlterColumnEnabled()) {
+
+                    ColumnDefinitionChange cdc = (ColumnDefinitionChange) change;
+
                     log.info("Ignore the definition change of column '{}.{}'",
-                            cdc.getTable().getName(),cdc.getOldColumn().getName());
-                    
+                            cdc.getTable().getName(), cdc.getOldColumn().getName());
+
                     return false;
                 }
                 return true;
             }
+
+            if(change instanceof TablePropertyChange) {
+                //todo: handle table property change.
+                return false;
+            }
+
+            if(change instanceof IndexDefinitionChange) {
+                //todo: handle index definition change
+                return false;
+            }
+
+            if(change instanceof ForeignKeyDefinitionChange) {
+                //todo: handle foreign key definition change.
+                return false;
+            }
+
             return true;
-};
-		
-		execution = db.createExecution();
-		List<SchemaChanges> allChanges = compareChanges();
-		
-		for(SchemaChanges changes : allChanges){
-			DbCommands changeCommands = changes.filter(changePredicate).getChangeCommands();
-			execution.addAll(changeCommands.filter(this).getExecutionScripts());
-		}
-		
+        };
+
+        Function<SchemaChange, SchemaChange> changeProcessor = change -> {
+            //make column not null -> null if no default value for safe add column.
+            if(change instanceof AddColumnChange) {
+                AddColumnChange acc = (AddColumnChange)change;
+                DbColumn column = acc.getNewColumn();
+                if(!column.isNullable() && Strings.isEmpty(column.getDefaultValue())) {
+                    log.warn("Can't add not null column '{}.{}' without default value, change to null",
+                            acc.getTable().getName(), column.getName());
+                    DbColumnBuilder nullColumn = new DbColumnBuilder(column);
+                    nullColumn.setNullable(true);
+                    return new AddColumnChange(acc.getTable(), nullColumn.build());
+                }
+            }
+            return null;
+        };
+
+        List<SchemaChanges> allChanges = compareChanges();
+
+        List<String> scripts = new ArrayList<>();
+        for(SchemaChanges changes : allChanges){
+
+            DbCommands changeCommands = changes.filter(changePredicate)
+                                               .process(changeProcessor)
+                                               .getChangeCommands();
+
+            Collections2.addAll(scripts, changeCommands.filter(this).getExecutionScripts());
+        }
+
+        return scripts;
+    }
+
+    @Override
+    protected boolean doExecute() {
+        execution = db.createExecution();
+        execution.addAll(getUpgradeScripts());
+
 		if(execution.numberOfStatements() == 0){
 			log.info("Found 0 changes, no need to upgrade schemas on db '{}'",db.getDescription());
 			return true;
 		}else{
-			log.info("Applying {} sql(s) for schema upgration on db '{}'", execution.numberOfStatements() ,db.getDescription());
+			log.info("Applying {} sql(s) for schema upgrade on db '{}'", execution.numberOfStatements() ,db.getDescription());
 		    return execution.execute();
 		}
     }
-	
+
 	protected List<SchemaChanges> compareChanges() {
         List<SchemaChanges> allChanges = new ArrayList<SchemaChanges>();
 
@@ -237,13 +298,19 @@ public class DefaultUpgradeSchemaCommand extends AbstractDmoCommand implements U
                 allChanges.add(db.getComparator().compareSchema(source, target));
             }
         }else{
-            DbTable[] tables = new DbTable[entityMappings.length];
-            for(int i=0;i<tables.length;i++) {
-                tables[i] = entityMappings[i].getTable();
+            List<DbTable> tables = new ArrayList<>();
+            for(EntityMapping em : entityMappings) {
+            	if(em.isRemote() || em.isNarrowEntity()) {
+            	    continue;
+                }
+                tables.add(em.getTable());
+                if(em.hasSecondaryTable()) {
+                    tables.add(em.getSecondaryTable());
+                }
             }
-            log.info("Comparing {} tables in db '{}'", tables.length, db.getDescription());
+            log.info("Comparing {} tables in db '{}'", tables.size(), db.getDescription());
             DbSchema target = db.getMetadata().getSchema();
-            allChanges.add(db.getComparator().compareTables(tables, target));
+            allChanges.add(db.getComparator().compareTables(tables.toArray(new DbTable[0]), target));
         }
 
         return allChanges;

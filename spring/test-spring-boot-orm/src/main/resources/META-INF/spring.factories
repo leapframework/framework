@@ -1,0 +1,4 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+pkg0.AutoConfiguration,\
+pkg4.AutoConfiguration,\
+pkg5.AutoConfiguration

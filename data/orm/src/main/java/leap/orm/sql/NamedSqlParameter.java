@@ -49,14 +49,15 @@ public class NamedSqlParameter implements SqlParameter {
     @Override
 	public SqlValue getValue(SqlContext context, Params parameters) {
 		Object v;
-		if(parameters.isIndexed()){
-			v = parameters.get(index);
-		}else{
-			v = parameters.get(name);	
-		}
-		
+
+		if(parameters.isArray()) {
+		    v = parameters.get(index);
+        }else {
+            v = parameters.get(name);
+        }
+
 		if(null == v && null != defaultValue) {
-			v = defaultValue.getValue(context, parameters.map());
+			v = defaultValue.getValue(parameters, parameters.map());
             return SqlValue.generated(trySerialize(v));
 		}else{
             return SqlValue.of(trySerialize(v));

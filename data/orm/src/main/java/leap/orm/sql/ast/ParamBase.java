@@ -93,6 +93,8 @@ public abstract class ParamBase extends AstNode {
 			return;
 		}
 		*/
+
+		int op;
 		
 		//TODO : optimize performance
 		if(stm.isLastInOperator()){
@@ -126,8 +128,12 @@ public abstract class ParamBase extends AstNode {
 			}
 			
 			stm.append(')');
-		}else if(where && null == value && stm.removeLastEqualsOperator()){
-			stm.append(" is null");
+		}else if(where && null == value && (op = stm.removeLastEqualsOperator()) > 0){
+			if(op == 1) {
+				stm.append(" is null");
+			}else {
+				stm.append(" is not null");
+			}
 		}else{
 			stm.append(JDBC.PARAMETER_PLACEHOLDER_CHAR);
 			stm.addParameter(value);

@@ -35,10 +35,17 @@ class RequestInterceptors implements RequestInterceptor {
 	}
 
 	@Override
-	public State preHandleRequest(Request request, Response response) throws Throwable {
+	public void onPrepareRequest(Request request, Response response) {
+		for(int i=0;i<interceptors.size();i++){
+			interceptors.get(i).onPrepareRequest(request, response);
+		}
+	}
+
+	@Override
+	public State preHandleRequest(Request request, Response response, ActionContext ac) throws Throwable {
 		State state = null;
 		for(int i=0;i<interceptors.size();i++){
-			if(!State.isContinue(state = interceptors.get(i).preHandleRequest(request, response))){
+			if(!State.isContinue(state = interceptors.get(i).preHandleRequest(request, response,ac))){
 				response.markHandled();
 				break;
 			}

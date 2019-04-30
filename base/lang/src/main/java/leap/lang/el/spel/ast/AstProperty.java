@@ -90,13 +90,24 @@ public class AstProperty extends AstExpr implements Named {
     	if(o instanceof ElPropertyResolver){
     		return ((ElPropertyResolver) o).resolveProperty(name, context);
     	}
-    	
-    	if(o instanceof ObjectPropertyGetter){
-    		return ((ObjectPropertyGetter) o).getProperty(name);
-    	}
 
-        if(o instanceof Getter) {
-            return ((Getter) o).get(name);
+        boolean dyna;
+    	Object v = null;
+    	if(o instanceof ObjectPropertyGetter){
+            dyna = true;
+    		v = ((ObjectPropertyGetter) o).getProperty(name);
+    	}else if(o instanceof Getter) {
+            dyna = true;
+            v = ((Getter) o).get(name);
+        }else {
+    	    dyna = false;
+        }
+        if(null != v) {
+            return v;
+        }
+
+        if(ElProperty.NULL == this.p) {
+            return null;
         }
     	
     	if(null == this.p){
@@ -104,10 +115,10 @@ public class AstProperty extends AstExpr implements Named {
 	            if(null == this.p){
 	            	if(o instanceof Class<?>){
 	            		this.c = (Class<?>)o;
-	            		this.p = resolveProperty(context, c);
+	            		this.p = resolveProperty(context, c, false);
 	            	}else{
 	            		this.c = o.getClass();
-	            		this.p = resolveProperty(context, o, c);
+	            		this.p = resolveProperty(context, o, c, dyna);
 	            	}
 	            }
     		}
@@ -117,11 +128,15 @@ public class AstProperty extends AstExpr implements Named {
     	Class<?> c = cls(o);
     	if(this.c != c){
     		if(c == o){
-    			p = resolveProperty(context, c);
+    			p = resolveProperty(context, c, dyna);
     		}else{
-    			p = resolveProperty(context, o, c);
+    			p = resolveProperty(context, o, c, dyna);
     		}
     	}
+
+    	if(ElProperty.NULL == p) {
+    	    return null;
+        }
 
     	try {
 	        return p.getValue(context, o);
@@ -130,17 +145,23 @@ public class AstProperty extends AstExpr implements Named {
         }
     }
     
-    protected ElProperty resolveProperty(ElEvalContext ctx, Class<?> c) {
+    protected ElProperty resolveProperty(ElEvalContext ctx, Class<?> c, boolean dyna) {
     	ElProperty p = ctx.resolveProperty(c, name);
     	if(null == p){
+            if(dyna) {
+                return ElProperty.NULL;
+            }
     		throw new ElException(ctx.getMessage("el.errors.noSuchProperty",name,c));
     	}
     	return p;
     }
     
-    protected ElProperty resolveProperty(ElEvalContext ctx, Object o, Class<?> c) {
+    protected ElProperty resolveProperty(ElEvalContext ctx, Object o, Class<?> c, boolean dyna) {
     	ElProperty p = ctx.resolveProperty(o, c, name);
     	if(null == p){
+    	    if(dyna) {
+    	        return ElProperty.NULL;
+            }
     		throw new ElException(ctx.getMessage("el.errors.noSuchProperty",name,c));
     	}
     	return p;

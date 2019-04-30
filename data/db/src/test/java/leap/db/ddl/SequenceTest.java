@@ -15,19 +15,12 @@
  */
 package leap.db.ddl;
 
-import java.util.function.Consumer;
-
 import leap.db.DbTestCase;
-import leap.db.model.DbColumnBuilder;
-import leap.db.model.DbSequence;
-import leap.db.model.DbSequenceBuilder;
-import leap.db.model.DbTable;
-import leap.db.model.DbTableBuilder;
+import leap.db.model.*;
 import leap.junit.contexual.Contextual;
 import leap.lang.Arrays2;
 import leap.lang.Out;
 import leap.lang.convert.Converts;
-
 import org.junit.Test;
 
 public class SequenceTest extends DbTestCase {
@@ -64,13 +57,7 @@ public class SequenceTest extends DbTestCase {
 			if(dialect.supportsCurrentSequenceValue()) {
 				db.executeUpdate(sql,Arrays2.EMPTY_OBJECT_ARRAY,Arrays2.EMPTY_INT_ARRAY,
 						 dialect.getInsertedSequenceValueHandler("tested_sequence", input -> id.set(input)));
-				DbSequence[] sequences = db.getMetadata().getSchema().getSequences();
-				for(DbSequence seq : sequences){
-					if(seq.getName().equalsIgnoreCase(sequence.getName())){
-						sequence = seq;
-						break;
-					}
-				}
+				sequence = db.getMetadata().getSchema().findSequence(sequence.getName());
 				long current = sequence.getStart() == null?1:sequence.getStart()+1;
 				assertEquals(current, Converts.toInt(id.getValue()));
 			}else{

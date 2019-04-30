@@ -35,12 +35,12 @@ public class RenderableDownload implements Renderable {
 		Resource resource;
 
 		if(path.startsWith("/")) {
-			resource = Servlets.getResource(request.getServletContext(), path);
+			resource = Utils.getResource(request.getServletContext(), path);
 		}else if(Urls.hasProtocolPrefix(path)) {
 			resource = Resources.getResource(path);
 		}else{
-			resource = Servlets.getResource(request.getServletContext(), 
-									 		Paths.applyRelative(request.getPath(), path));
+			resource = Utils.getResource(request.getServletContext(),
+									 	  Paths.applyRelative(request.getPath(), path));
 		}
 
 		new ResourceDownload(resource).render(request, response);

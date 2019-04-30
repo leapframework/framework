@@ -110,7 +110,7 @@ public abstract class OrmTestBase extends AppTestBase {
 			dmo = dmos.get(name);
 			db  = dbs.get(name);
 			
-			ModelRegistry.setThreadLocalCotnext(dao.getOrmContext());
+			ModelRegistry.setThreadLocalContext(dao.getOrmContext());
         }
 
 		@Override

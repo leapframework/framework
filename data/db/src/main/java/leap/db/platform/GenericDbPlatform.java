@@ -23,8 +23,10 @@ import leap.core.i18n.I18N;
 import leap.core.i18n.MessageSource;
 import leap.core.ioc.PostCreateBean;
 import leap.db.DbBase;
+import leap.db.DbDialect;
 import leap.db.DbDriver;
 import leap.db.DbPlatformBase;
+import leap.db.model.DbSchemaName;
 import leap.lang.exception.NestedIOException;
 import leap.lang.json.JSON;
 import leap.lang.resource.Resource;
@@ -36,6 +38,7 @@ import java.io.Reader;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -84,12 +87,21 @@ public abstract class GenericDbPlatform extends DbPlatformBase implements PostCr
     protected DbBase doTryCreateDbInstance(String name,DataSource ds, Connection connection, DatabaseMetaData jdbcMetadata) throws SQLException {
 		GenericDbDialect        dialect        = createDialect(jdbcMetadata);
 		GenericDbMetadataReader metadataReader = createMetadataReader(jdbcMetadata);
-		GenericDbMetadata       metadata       = createMetadata(connection, jdbcMetadata, dialect.getDefaultSchemaName(connection, jdbcMetadata),metadataReader);
+        String                  defaultSchema  = getDefaultSchema(dialect, connection, jdbcMetadata);
+		GenericDbMetadata       metadata       = createMetadata(connection, jdbcMetadata, defaultSchema ,metadataReader);
 		GenericDbComparator     comparator     = createComparator(jdbcMetadata);
 		
 		metadataReader.init(dialect);
 		
 	    return createDb(name, ds, jdbcMetadata, metadata, dialect,comparator);
+    }
+
+    protected String getDefaultSchema(DbDialect dialect, Connection connection, DatabaseMetaData dm) throws SQLException {
+        try {
+            return dialect.getDefaultSchemaName(connection, dm);
+        }catch (SQLFeatureNotSupportedException e) {
+            return DbSchemaName.UNSUPPORTED;
+        }
     }
 	
 	protected abstract GenericDbDialect createDialect(DatabaseMetaData jdbcMetadata) throws SQLException;

@@ -26,6 +26,7 @@ import leap.lang.logging.Log;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +41,9 @@ public class GenericDbMetadata implements DbMetadata,DbAware {
 	private final Object asyncSchemaReaderMonitor      = new Object();
 	
 	private Thread asyncSchemaReaderThread;
-	
+
+    protected final String           url;
+    protected final String           username;
     protected final String           productName;
     protected final String           productVersion;
     protected final int              productMajorVersion;
@@ -65,7 +68,9 @@ public class GenericDbMetadata implements DbMetadata,DbAware {
 		Args.notNull(dm,"DatabaseMetaData");
 		Args.notEmpty(defaultSchemaName,"default schema name");
 		Args.notNull(metadataReader,"metadata reader");
-		
+
+        this.url                              = dm.getURL();
+        this.username                         = dm.getUserName();
         this.productName                      = dm.getDatabaseProductName();
         this.productVersion                   = dm.getDatabaseProductVersion();
         this.productMajorVersion              = dm.getDatabaseMajorVersion();
@@ -77,10 +82,18 @@ public class GenericDbMetadata implements DbMetadata,DbAware {
         this.supportsAlterTableWithDropColumn = dm.supportsAlterTableWithDropColumn();
         this.maxTableNameLength				  = dm.getMaxTableNameLength();
         this.maxColumnNameLength			  = dm.getMaxColumnNameLength();
-        this.catalog						  = dm.getConnection().getCatalog();
+        this.catalog						  = getCatalog(dm);
         this.defaultSchemaName				  = defaultSchemaName;
         this.metadataReader					  = metadataReader;
 	}
+
+    protected String getCatalog(DatabaseMetaData dm) throws SQLException {
+        try {
+            return dm.getConnection().getCatalog();
+        }catch (SQLFeatureNotSupportedException e) {
+            return null;
+        }
+    }
 	
 	@Override
     public synchronized void setDb(Db db) {
@@ -89,7 +102,17 @@ public class GenericDbMetadata implements DbMetadata,DbAware {
 		this.log = this.db.getLog(this.getClass());
     }
 
-	@Override
+    @Override
+    public String getURL() {
+        return url;
+    }
+
+    @Override
+    public String getUsername() {
+        return username;
+    }
+
+    @Override
 	public String getProductName() {
 		return productName;
 	}
@@ -276,6 +299,7 @@ public class GenericDbMetadata implements DbMetadata,DbAware {
 
 	protected void refreshSchemasAsync(){
 		cachedSchemas.clear();
+
         if(null != asyncSchemaReaderThread){
             try {
             	int times = 0;
@@ -294,21 +318,25 @@ public class GenericDbMetadata implements DbMetadata,DbAware {
             		}
                 }
             } catch (Throwable e) {
-            	;
+
+            } finally {
+                asyncSchemaReaderThread = null;
             }
         }
+
 		if(null == asyncSchemaReaderThread){
 			synchronized (asyncSchemaReaderMonitor){
 				if(null == asyncSchemaReaderThread){
 					asyncSchemaReaderThread = new Thread(() -> {
 						try {
-							Thread.sleep(100);
+                            Thread.sleep(100); //wait for ddl changes ok, todo: improves it
 							getSchema();
 						} catch (Throwable e) {
 							log.info("Error reading schema : {}",e.getMessage(),e);
 						} finally{
 							synchronized (asyncSchemaReaderMonitor) {
 								asyncSchemaReaderMonitor.notifyAll();
+                                asyncSchemaReaderThread = null;
 								log.debug("Notify schema reader finished");
 							}
 						}

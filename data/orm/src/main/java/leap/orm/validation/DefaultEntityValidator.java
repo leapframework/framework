@@ -18,10 +18,7 @@ package leap.orm.validation;
 import leap.core.AppConfig;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
-import leap.core.validation.Validatable;
-import leap.core.validation.Validation;
-import leap.core.validation.ValidationManager;
-import leap.core.validation.Validator;
+import leap.core.validation.*;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
 import leap.orm.value.EntityWrapper;
@@ -30,8 +27,20 @@ public class DefaultEntityValidator implements EntityValidator {
 
     protected @Inject @M AppConfig         appConfig;
     protected @Inject @M ValidationManager validationManager;
-	
-	@Override
+
+    @Override
+    public Errors validate(EntityWrapper entity) {
+        return validate(entity, null);
+    }
+
+    @Override
+    public Errors validate(EntityWrapper entity, Iterable<String> fields) {
+        Validation validation = validationManager.createValidation();
+        validate(entity, validation, 1, fields);
+        return validation.errors();
+    }
+
+    @Override
 	public boolean validate(EntityWrapper entity, Validation validation, int maxErrors) {
         return validate(entity, validation, maxErrors, null);
 	}

@@ -25,6 +25,8 @@ import leap.lang.jdbc.ConnectionCallback;
 import leap.lang.jdbc.ConnectionCallbackWithResult;
 import leap.orm.OrmContext;
 
+import javax.sql.DataSource;
+
 public class DefaultJdbcExecutor implements JdbcExecutor {
 
 	protected final OrmContext context;
@@ -40,7 +42,12 @@ public class DefaultJdbcExecutor implements JdbcExecutor {
 		db.execute(callback);
     }
 
-	@Override
+    @Override
+    public void withDataSource(DataSource dataSource, Runnable runnable) {
+        db.withDataSource(dataSource, runnable);
+    }
+
+    @Override
     public <T> T executeWithResult(ConnectionCallbackWithResult<T> callback) throws NestedSQLException {
 	    return db.executeWithResult(callback);
     }

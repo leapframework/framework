@@ -25,27 +25,51 @@ public class MApiProperty extends MApiParameterBase {
 
     protected final MProperty    metaProperty;
     protected final BeanProperty beanProperty;
+    protected final boolean      identity;
+    protected final boolean      unique;
+    protected final boolean      reference;
     protected final boolean      discriminator;
+    protected final Boolean      readOnly;
+    protected final Boolean      selectable;
+    protected final Boolean      aggregatable;
+    protected final Boolean      groupable;
     protected final Boolean      creatable;
     protected final Boolean      updatable;
     protected final Boolean      sortable;
     protected final Boolean      filterable;
+    protected final Boolean      expandable;
 
 	public MApiProperty(String name, String title, String summary, String description,
                         MProperty metaProperty,BeanProperty beanProperty,
-                        MType type, String format, boolean discriminator, boolean password, Boolean required,
-                        String defaultValue, String[] enumValues,
-                        MApiValidation validation, Map<String, Object> attrs,
-                        Boolean creatable, Boolean updatable, Boolean sortable, Boolean filterable) {
-	    super(name, title, summary, description, type, format, false, password, required, defaultValue, enumValues, validation, attrs);
+                        MType type, String format, boolean identity, boolean unique, boolean reference,
+                        boolean discriminator, boolean password, Boolean required,
+                        Object defaultValue, String[] enumValues,
+                        MApiValidation validation, Map<String, Object> attrs, Boolean readOnly,
+                        Boolean selectable, Boolean aggregatable, Boolean groupable,
+                        Boolean creatable, Boolean updatable, Boolean sortable, Boolean filterable,
+                        Boolean expandable, MApiExtension extension) {
+	    super(name, title, summary, description, type, format, false, password, required, defaultValue, enumValues, validation, extension, attrs);
 
+        this.identity = identity;
+        this.unique = unique;
+        this.reference = reference;
         this.discriminator = discriminator;
         this.metaProperty = metaProperty;
         this.beanProperty = beanProperty;
+        this.selectable = selectable;
+        this.aggregatable = aggregatable;
+        this.groupable = groupable;
         this.creatable = creatable;
         this.updatable = updatable;
         this.sortable = sortable;
         this.filterable = filterable;
+        this.expandable = expandable;
+
+        if(isNotCreatableExplicitly() && isNotUpdatableExplicitly()) {
+            this.readOnly = true;
+        }else {
+            this.readOnly = null == readOnly ? false : readOnly;
+        }
     }
 
     public MProperty getMetaProperty() {
@@ -59,12 +83,36 @@ public class MApiProperty extends MApiParameterBase {
         return beanProperty;
     }
 
+    public boolean isIdentity() {
+        return identity;
+    }
+
+    public boolean isUnique() {
+        return unique;
+    }
+
     public boolean isDiscriminator() {
         return discriminator;
     }
 
     public boolean isReference() {
-        return null != metaProperty && metaProperty.isReference();
+        return reference;
+    }
+
+    public boolean isReadonly() {
+        return readOnly;
+    }
+
+    public Boolean getSelectable() {
+        return selectable;
+    }
+
+    public Boolean getAggregatable() {
+        return aggregatable;
+    }
+
+    public Boolean getGroupable() {
+        return groupable;
     }
 
     public Boolean getCreatable() {
@@ -83,6 +131,22 @@ public class MApiProperty extends MApiParameterBase {
         return filterable;
     }
 
+    public Boolean getExpandable() {
+        return expandable;
+    }
+
+    public boolean isSelectableExplicitly() {
+        return null != selectable && selectable;
+    }
+
+    public boolean isAggregatableExplicitly() {
+        return null != aggregatable && aggregatable;
+    }
+
+    public boolean isGroupableExplicitly() {
+        return null != groupable && groupable;
+    }
+
     public boolean isCreatableExplicitly() {
         return null != creatable && creatable;
     }
@@ -99,6 +163,14 @@ public class MApiProperty extends MApiParameterBase {
         return null != filterable && filterable;
     }
 
+    public boolean isExpandableExplicitly() {
+        return null != expandable && expandable;
+    }
+
+    public boolean isNotSelectableExplicitly() {
+        return null != selectable && !selectable;
+    }
+
     public boolean isNotCreatableExplicitly() {
         return null != creatable && !creatable;
     }
@@ -113,5 +185,9 @@ public class MApiProperty extends MApiParameterBase {
 
     public boolean isNotFilterableExplicitly() {
         return null != filterable && !filterable;
+    }
+
+    public boolean isNotExpandableExplicitly() {
+        return null != expandable && !expandable;
     }
 }

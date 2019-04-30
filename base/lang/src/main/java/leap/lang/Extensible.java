@@ -18,7 +18,14 @@
 
 package leap.lang;
 
+import java.util.Map;
+
 public interface Extensible extends ExtensibleGetter {
+
+    /**
+     * Returns all the extensions.
+     */
+    Map<Class<?>, Object> getExtensions();
 
     /**
      * Set extension.

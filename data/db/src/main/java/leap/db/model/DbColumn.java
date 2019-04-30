@@ -17,8 +17,11 @@ package leap.db.model;
 
 import leap.lang.Args;
 import leap.lang.Strings;
+import leap.lang.jdbc.JdbcTypes;
 import leap.lang.json.JsonStringable;
 import leap.lang.json.JsonWriter;
+
+import java.sql.Types;
 
 public class DbColumn extends DbNamedObject implements JsonStringable {
 	
@@ -100,6 +103,10 @@ public class DbColumn extends DbNamedObject implements JsonStringable {
 	public String getComment() {
 		return comment;
 	}
+
+	public boolean isDatetime() {
+	    return typeCode == Types.TIMESTAMP && JdbcTypes.DATETIME.equals(typeName);
+    }
 	
 	@Override
     public String toString() {

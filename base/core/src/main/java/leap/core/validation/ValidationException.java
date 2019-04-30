@@ -44,11 +44,13 @@ public class ValidationException extends AppException {
 	}
 
     public ValidationException(String message) {
+        super(message);
         errors = new SimpleErrors();
         errors.add("ValidationError",message);
     }
 
     public ValidationException(String code, String message) {
+        super(message);
         errors = new SimpleErrors();
         errors.add(code,message);
     }

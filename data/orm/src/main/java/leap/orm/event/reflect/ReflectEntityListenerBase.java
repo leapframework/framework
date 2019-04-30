@@ -16,6 +16,7 @@
 
 package leap.orm.event.reflect;
 
+import leap.core.annotation.Transactional;
 import leap.core.transaction.TransactionStatus;
 import leap.lang.Types;
 import leap.lang.beans.BeanProperty;
@@ -46,7 +47,8 @@ public abstract class ReflectEntityListenerBase<E extends EntityEvent> {
         boolean  withEntity = EntityEventWithWrapper.class.isAssignableFrom(eventType);
 
         if(m.getParameters().length == 1) {
-            this.transactional = false;
+
+            this.transactional = m.isAnnotationPresent(Transactional.class);
 
             ReflectParameter p = m.getParameters()[0];
 
@@ -91,7 +93,11 @@ public abstract class ReflectEntityListenerBase<E extends EntityEvent> {
                     return;
                 }
             }
+
+
         }
+
+
 
         throw new IllegalArgumentException("Incorrect parameters in method '" +
                                             Reflection.fullQualifyName(m.getReflectedMethod()) +
@@ -116,7 +122,7 @@ public abstract class ReflectEntityListenerBase<E extends EntityEvent> {
         if(!typeMatches) {
             bean = bt.newInstance();
             for (String name : entity.getFieldNames()) {
-                bt.trySet(bean, name, entity.get(name));
+                bt.trySetProperty(bean, name, entity.get(name));
             }
         }else {
             bean = e.getEntity().raw();

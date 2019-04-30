@@ -15,25 +15,27 @@
  */
 package leap.orm.domain;
 
+import leap.core.AppConfig;
 import leap.core.annotation.Inject;
 import leap.lang.resource.ResourceSet;
 
 public class ClassDomainSource implements DomainSource {
-    
+
+    protected @Inject AppConfig     config;
     protected @Inject DomainCreator creator;
 
 	@Override
-    public void loadDomains(DomainConfigContext context) {
-		ResourceSet resources = context.getAppConfig().getResources();
+    public void loadDomains(Domains context) {
+		ResourceSet resources = config.getResources();
 		
 		resources.processClasses((c) -> {
 			if(c.isAnnotation()){
-			    FieldDomainBuilder domain = creator.tryCreateFieldDomainByAnnotation(context, c);
+			    DomainBuilder domain = creator.tryCreateFieldDomainByAnnotation(context, c);
 			    if(null != domain) {
 			        if(domain.isUnnamed()) {
-			            context.addFieldDomain(c, domain.build());
+			            context.addAnnotationType(c, domain.build());
 			        }else{
-			            context.addFieldDomain(domain.build());
+			            context.addDomain(domain.build());
 			        }
 			    }
 			}

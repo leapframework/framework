@@ -15,10 +15,17 @@
  */
 package leap.lang;
 
+import java.text.DateFormat;
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import java.util.TimeZone;
 
+import leap.lang.time.DateFormats;
 import org.junit.Test;
 
 import leap.junit.TestBase;
@@ -50,7 +57,50 @@ public class DateTimesTest extends TestBase {
 		
 		assertEquals(dt,DateTimes.tryParseLocalDateTime("2014-11-01T10:01:01"));
 		assertEquals(dt,DateTimes.tryParseLocalDateTime("2014-11-01 10:01:01"));
-		assertEquals(LocalDateTime.of(2014, 11, 1, 00, 00, 00),DateTimes.tryParseLocalDateTime("2014-11-01"));
 	}
 
+    @Test
+    public void testFormatWithTimeZone() {
+        String s = "2018-02-06 09:01:01";
+
+        Date date = Dates.parse(s);
+
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        assertEquals(s, df.format(date));
+
+        df.setTimeZone(TimeZone.getTimeZone("GMT"));
+        assertEquals("2018-02-06 01:01:01", df.format(date));
+    }
+
+    @Test
+    public void testParseAndFormatDateTime() {
+        String s = "2018-02-06 09:01:01";
+
+        Date date = Dates.parse(s);
+        assertEquals(s, Dates.format(date, DateFormats.DATETIME_PATTERN));
+    }
+
+    @Test
+    public void testParseAndFormatDate() {
+        String s = "2018-02-06";
+
+        Date date = Dates.parse(s);
+        assertEquals(s, Dates.format(date, DateFormats.DATE_PATTERN));
+    }
+
+    @Test
+    public void testParseAndFormatTime() {
+        String s = "09:01:01";
+
+        Date date = Dates.parse(s);
+        assertEquals(s, Dates.format(date, DateFormats.TIME_PATTERN));
+    }
+
+    @Test
+    public void testParseAndFormatUTC() {
+        String s = "2018-02-06T12:31:53.240Z";
+
+        Date date = Dates.parse(s);
+        assertEquals("2018-02-06 20:31:53", Dates.format(date, DateFormats.DATETIME_PATTERN));
+    }
 }

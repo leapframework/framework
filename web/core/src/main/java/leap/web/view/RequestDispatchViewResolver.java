@@ -18,6 +18,7 @@ package leap.web.view;
 import java.util.Locale;
 
 import leap.lang.Classes;
+import leap.lang.resource.Resource;
 import leap.lang.servlet.ServletResource;
 
 public class RequestDispatchViewResolver extends AbstractServletResourceViewResolver {
@@ -37,7 +38,7 @@ public class RequestDispatchViewResolver extends AbstractServletResourceViewReso
 	}
 
 	@Override
-	protected View loadView(String prefix, String suffix, String viewPath, Locale locale, String resourcePath, ServletResource resource) {
+	protected View loadView(String prefix, String suffix, String viewPath, Locale locale, String resourcePath, Resource resource) {
 		RequestDispatchView view = createServletDispatchView(viewPath, resource);
 		
 		view.setReturnValueAttribute(AbstractView.DEFAULT_RETURN_VALUE_ATTRIBUTE);
@@ -53,7 +54,7 @@ public class RequestDispatchViewResolver extends AbstractServletResourceViewReso
 		return view;
 	}
 	
-	protected RequestDispatchView createServletDispatchView(String path,ServletResource resource){
+	protected RequestDispatchView createServletDispatchView(String path,Resource resource){
 		return jstlPresent ? new JstlView(app, path, resource) : new RequestDispatchView(app, path, resource);
 	}
 }

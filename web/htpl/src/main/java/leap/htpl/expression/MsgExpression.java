@@ -34,7 +34,7 @@ public class MsgExpression extends AbstractExpression {
 	@Override
     protected Object eval(Object context, Map<String, Object> vars) {
 		HtplContext tc = (HtplContext)context;
-		String s = tc.getMessageSource().tryGetMessage(tc.getLocale(), key);
+		String s = tc.getMessageSource().tryGetMessage(tc.getLocale(), key, vars);
 		return null == s ? key : s;
     }
 

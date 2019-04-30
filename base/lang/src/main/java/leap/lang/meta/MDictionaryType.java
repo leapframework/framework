@@ -29,6 +29,11 @@ public class MDictionaryType extends MType {
         this.valueType = valueType;
     }
 
+    @Override
+    public String getName() {
+        return "map";
+    }
+
     public MType getKeyType() {
         return keyType;
     }

@@ -49,9 +49,21 @@ public interface AppConfigContextBase extends AttributeAccessor {
     boolean hasProperty(String name);
 
     /**
+     * Returns the property.
+     */
+    AppProperty getProperty(String name);
+
+    /**
      * Sets the property.
      */
-    void putProperty(Object source, String name, String value);
+    default void putProperty(Object source, String name, String value) {
+        putProperty(source, name, value, false);
+    }
+
+    /**
+     * Sets the property.
+     */
+    void putProperty(Object source, String name, String value, boolean override);
 
     /**
      * Puts all the properties.

@@ -17,6 +17,6 @@ package leap.orm.domain;
 
 public interface DomainSource {
 	
-	void loadDomains(DomainConfigContext context);
+	void loadDomains(Domains context);
 
 }

@@ -55,6 +55,15 @@ public class DefaultOrmRegistry implements OrmRegistry {
     }
 
     @Override
+    public void registerContext(OrmContext context, String alias) throws ObjectExistsException {
+        String key = alias.toLowerCase();
+        if(contexts.containsKey(key)) {
+            throw new ObjectExistsException("Orm context '" + alias + "' already exists!");
+        }
+        contexts.put(key, context);
+    }
+
+    @Override
     public OrmContext removeContext(String name) {
         String key = name.toLowerCase();
 

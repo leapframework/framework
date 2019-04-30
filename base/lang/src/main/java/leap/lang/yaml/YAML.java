@@ -15,47 +15,65 @@
  */
 package leap.lang.yaml;
 
+import leap.lang.Strings;
+import leap.lang.json.JSON;
+import leap.lang.resource.Resource;
+import org.yaml.snakeyaml.Yaml;
+
 import java.io.Reader;
-import java.io.StringReader;
 
 public class YAML {
 
     /**
      * Parse the yaml content to {@link YamlValue}.
      */
-	public static YamlValue parse(String string) throws YamlException {
-        return parse(new StringReader(string));
-	}
+    public static YamlValue parse(String string) throws YamlException {
+        return YamlValue.of(decode(string));
+    }
 
     /**
      * Parse the yaml content to {@link YamlValue}.
      */
-	public static YamlValue parse(Reader reader) throws YamlException {
-		return YamlValue.of(new YamlDecoder(reader).decode());
-	}
+    public static YamlValue parse(Reader reader) throws YamlException {
+        return YamlValue.of(decode(reader));
+    }
 
     /**
      * Decodes the yaml content to raw value.
-     *
+     * <p>
      * <p/>
      * The raw value may be null, map, list or simpl value.
      */
     public static <T> T decode(String string) throws YamlException {
-        return (T)new YamlDecoder(new StringReader(string)).decode();
+        return new Yaml().load(string);
     }
 
     /**
      * Decodes the yaml content to raw value.
-     *
+     * <p>
      * <p/>
      * The raw value may be null, map, list or simpl value.
      */
     public static <T> T decode(Reader reader) throws YamlException {
-        return (T)new YamlDecoder(reader).decode();
+        return new Yaml().load(reader);
     }
 
-	protected YAML() {
-		
-	}
+    /**
+     * Decodes the value by yaml or json format.
+     */
+    public static <T> T decodeYamlOrJson(Resource resource) {
+        String filename = resource.getFilename();
+        if (Strings.endsWithIgnoreCase(filename, ".yml") || Strings.endsWithIgnoreCase(filename, ".yaml")) {
+            return decode(resource.getContent());
+        } else if (Strings.endsWithIgnoreCase(filename, ".json")) {
+            return JSON.decode(resource.getContent());
+        } else {
+            throw new IllegalStateException("The file '" + filename + "' must be yml or json format");
+        }
+    }
+
+    protected YAML() {
+
+    }
 
 }

@@ -20,10 +20,12 @@ import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.core.validation.SimpleErrors;
 import leap.core.validation.Validation;
+import leap.core.validation.ValidationException;
 import leap.core.validation.ValidationManager;
 import leap.lang.New;
 import leap.lang.Strings;
 import leap.lang.intercepting.State;
+import leap.lang.net.Urls;
 import leap.lang.time.StopWatch;
 import leap.web.action.ActionContext;
 import leap.web.action.ActionManager;
@@ -115,38 +117,44 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
         //format manager
         request.setFormatManager(formatManager);
 
-        //theme
-        Theme theme = themeManager.resolveTheme(request);
-        if (null != theme) {
-            request.setThemeName(theme.getName());
-
-            if (null != theme.getMessageSource()) {
-                request.setMessageSource(theme.getMessageSource());
-            }
-
-            if (null != theme.getAssetSource()) {
-                request.setAssetSource(theme.getAssetSource());
-            }
-
-            if (null != theme.getViewSource()) {
-                request.setViewSource(theme.getViewSource());
-            }
-        }
-
         //message source
         if (null == request.getMessageSource()) {
             request.setMessageSource(app.getMessageSource());
         }
 
-        //view source
-        if (null == request.getViewSource()) {
-            request.setViewSource(viewSource);
+        if(app.getWebConfig().isViewEnabled()) {
+            //theme
+            Theme theme = themeManager.resolveTheme(request);
+            if (null != theme) {
+                request.setThemeName(theme.getName());
+
+                if (null != theme.getMessageSource()) {
+                    request.setMessageSource(theme.getMessageSource());
+                }
+
+                if (null != theme.getAssetSource()) {
+                    request.setAssetSource(theme.getAssetSource());
+                }
+
+                if (null != theme.getViewSource()) {
+                    request.setViewSource(theme.getViewSource());
+                }
+            }
+
+            //view source
+            if (null == request.getViewSource()) {
+                request.setViewSource(viewSource);
+            }
+        }else {
+            request.setViewSource((viewName, locale) -> null);
         }
 
         //asset source
         if (null == request.getAssetSource()) {
             request.setAssetSource(assetSource);
         }
+
+        interceptors.onPrepareRequest(request, response);
     }
 
     protected synchronized void initServerInfoAndNotifyListener(Request request, Response response) {
@@ -179,10 +187,22 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
         StopWatch sw = StopWatch.startNew();
         DefaultRequestExecution execution = new DefaultRequestExecution();
         try {
-            boolean handled = false;
+            boolean handled;
             try {
+                // resolve route info
+                Router router = request.getExternalRouter();
+                if (null == router) {
+                    router = new SimpleRouter(app.routes(), null);
+                }
+                DefaultActionContext ac = newActionContext(request, response);
+                //resolve action path
+                String path = resolveActionPath(request, response, router, ac);
+                // resolve route
+                Route route = resolveRoute(request,response,router,ac);
+                ac.setRoute(route);
+
                 //handle by interceptors
-                handled = State.isIntercepted(interceptors.preHandleRequest(request, response));
+                handled = State.isIntercepted(interceptors.preHandleRequest(request, response,ac));
 
                 //handle by handlers
                 if (!handled) {
@@ -191,15 +211,6 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 
                 //routing to action
                 if (!handled) {
-                    Router router = request.getExternalRouter();
-                    if (null == router) {
-                        router = new SimpleRouter(app.routes(), null);
-                    }
-
-                    DefaultActionContext ac = newActionContext(request, response);
-
-                    //resolve action path
-                    String path = resolveActionPath(request, response, router, ac);
 
                     if (_debug) {
                         log.debug("Routing path '{}'", ac.getPath());
@@ -210,7 +221,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
                     } else {
                         int routeState = routeAndExecuteAction(request, response, router, ac);
 
-                        if (routeState == ROUTE_STATE_HANLDED) {
+                        if (routeState == ROUTE_STATE_HANDLED) {
                             handled = true;
                         } else if (routeState == ROUTE_STATE_NOT_HANDLED) {
 
@@ -325,26 +336,23 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
         return new DefaultActionContext(request, response);
     }
 
-    protected String resolveActionPath(Request request, Response response, Router routeInfo,
-                                       DefaultActionContext ac) throws Exception {
+    protected String resolveActionPath(Request request, Response response, Router router, DefaultActionContext ac) throws Exception {
         String path = null;
 
-        if (null == path) {
-            if (request.hasPathExtension()) {
-                if (webConfig.isActionExtensionEnabled() && webConfig.getActionExtensions().contains(
-                        request.getPathExtension())) {
-                    path = request.getServicePathWithoutExtension();
-                } else if (webConfig.isFormatExtensionEnabled()) {
-                    ResponseFormat fmt = request.getFormatManager().tryGetResponseFormat(request.getPathExtension());
-                    if (null != fmt) {
-                        ac.setResponseFormat(fmt);
-                    }
+        if (request.hasPathExtension()) {
+            if (webConfig.isActionExtensionEnabled() && webConfig.getActionExtensions().contains(
+                    request.getPathExtension())) {
+                path = request.getServicePathWithoutExtension();
+            } else if (webConfig.isFormatExtensionEnabled()) {
+                ResponseFormat fmt = request.getFormatManager().tryGetResponseFormat(request.getPathExtension());
+                if (null != fmt) {
+                    ac.setResponseFormat(fmt);
                 }
             }
+        }
 
-            if (null == path) {
-                path = request.getServicePath();
-            }
+        if (null == path) {
+            path = request.getServicePath();
         }
 
         path = "".equals(path) ? "/" : path;
@@ -354,10 +362,38 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
         return path;
     }
 
+    protected Route resolveRoute(Request request,Response response,Router router,DefaultActionContext ac){
+        Map<String, String> pathVariables = new LinkedHashMap<>();
+
+        Route route = router.match(request.getMethod(),
+                ac.getPath(),
+                request.getParameters(),
+                pathVariables);
+
+        if (null == route && request.hasPathExtension() && null != ac.getResponseFormat()) {
+            route = router.match(request.getMethod(),
+                    request.getServicePathWithoutExtension(),
+                    request.getParameters(),
+                    pathVariables);
+
+            if (null != route) {
+                ac.setPath(request.getServicePathWithoutExtension());
+            }
+        }
+        if(null != route){
+            // decode path variable value
+            pathVariables.forEach((key, value) -> {
+                pathVariables.put(key, Urls.decode(value));
+            });
+            ac.setPathParameters(pathVariables);
+        }
+        return route;
+    }
+
     //0 : not handled , 1: handled 2 : end
     private static final int ROUTE_STATE_NOT_HANDLED = 0;
-    private static final int ROUTE_STATE_HANLDED = 1;
-    private static final int ROUTE_STATE_END = 2;
+    private static final int ROUTE_STATE_HANDLED     = 1;
+    private static final int ROUTE_STATE_END         = 2;
 
     protected boolean handleCorePreflightRequest(Request request,
                                                  Response response,
@@ -372,18 +408,25 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
         if (!Strings.isEmpty(ac.getPath())) {
             Enumeration<String> methods = request.getServletRequest().getHeaders(REQUEST_HEADER_ACCESS_CONTROL_REQUEST_METHOD);
             Route route = null;
-            while (methods.hasMoreElements()){
-                String method = methods.nextElement();
-                route = router.match(method, ac.getPath(), request.getParameters(), New.hashMap());
-                if(null != route){
-                    break;
+
+            try {
+                while (methods.hasMoreElements()) {
+                    String method = methods.nextElement();
+                    route = router.match(method, ac.getPath(), request.getParameters(), New.hashMap());
+                    if (null != route) {
+                        break;
+                    }
                 }
-            }
-            if(null == route){
-                route = router.match(null, ac.getPath(), request.getParameters(), New.hashMap());
-            }
-            if (null == route) {
-                return false;
+                if (null == route) {
+                    route = router.match(null, ac.getPath(), request.getParameters(), New.hashMap());
+                }
+                if (null == route) {
+                    return false;
+                }
+            }catch (RuntimeException e) {
+                if(!e.getMessage().contains("Ambiguous")) {
+                    throw e;
+                }
             }
 
             handler.preHandle(request, response);
@@ -399,28 +442,12 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
                                         DefaultActionContext ac) throws Throwable {
 
         if (!Strings.isEmpty(ac.getPath())) {
-            Map<String, String> pathVariables = new LinkedHashMap<>();
-
-            Route route = router.match(request.getMethod(),
-                    ac.getPath(),
-                    request.getParameters(),
-                    pathVariables);
-
-            if (null == route && request.hasPathExtension() && null != ac.getResponseFormat()) {
-                route = router.match(request.getMethod(),
-                        request.getServicePathWithoutExtension(),
-                        request.getParameters(),
-                        pathVariables);
-
-                if (null != route) {
-                    ac.setPath(request.getServicePathWithoutExtension());
-                }
-            }
+            Route route = ac.getRoute();
 
             if (null != route) {
 
                 if (_debug) {
-                    log.debug("Handling request '{}' by action '{}'...", request.getPath(), route.getAction());
+                    log.debug("Found route '{}' with action '{}'...", request.getPath(), route.getAction());
                 }
 
                 //Check https only.
@@ -428,26 +455,29 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
                     //TODO : https only exception.
                     throw new BadRequestException("The request must be https");
                 }
-
-                ac.setRoute(route);
-                ac.setPathParameters(pathVariables);
-
+                
+                // handle cors request.
+                // support multipart cors
+                if (route.isCorsEnabled() || (webConfig.isCorsEnabled() && !route.isCorsDisabled())) {
+                    if (webConfig.getCorsHandler().preHandle(request, response).isIntercepted()) {
+                        log.debug("Request was intercepted by cors handler");
+                        return ROUTE_STATE_HANDLED;
+                    }
+                }
+                
                 if (route.supportsMultipart() && request.isMultipart()) {
                     log.debug("Found multipart request and action");
                     MultipartContext.setMultipartAction(request.getServletRequest(), ac);
                     return ROUTE_STATE_END;
                 }
 
-                //handle cors request.
-                if (route.isCorsEnabled() || (webConfig.isCorsEnabled() && !route.isCorsDisabled())) {
-                    if (webConfig.getCorsHandler().preHandle(request, response).isIntercepted()) {
-                        log.debug("Request was intercepted by cors handler");
-                        return ROUTE_STATE_HANLDED;
-                    }
+                if (State.isIntercepted(interceptors.handleRoute(request, response, ac.getRoute(), ac))) {
+                    return ROUTE_STATE_HANDLED;
                 }
 
-                if (State.isIntercepted(interceptors.handleRoute(request, response, ac.getRoute(), ac))) {
-                    return ROUTE_STATE_HANLDED;
+                if(!route.isExecutable()) {
+                    log.debug("Route is not executable, skip execution");
+                    return ROUTE_STATE_NOT_HANDLED;
                 }
 
                 Result result = new Result();
@@ -455,7 +485,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 
                 executeAndRenderAction(request, response, ac, result);
 
-                return ROUTE_STATE_HANLDED;
+                return ROUTE_STATE_HANDLED;
             }
         }
 
@@ -478,8 +508,10 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 
         DefaultActionContext ac = newActionContext(request, response);
         ac.setPath(actionPath);
-
-        if (ROUTE_STATE_HANLDED == routeAndExecuteAction(request, response, router, ac)) {
+        // resolve route
+        Route route = resolveRoute(request,response,router,ac);
+        ac.setRoute(route);
+        if (ROUTE_STATE_HANDLED == routeAndExecuteAction(request, response, router, ac)) {
             return true;
         }
 
@@ -487,8 +519,6 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
     }
 
     protected boolean handleNoAction(Request request, Response response, Router router, String path) throws Throwable {
-
-
         if (response.isHandled()) {
             return true;
         }
@@ -501,7 +531,16 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
             return true;
         }
 
-        View view = request.getViewSource().getView(path, request.getLocale());
+        if(!config.isAllowViewAction()) {
+            return false;
+        }
+
+        ViewSource viewSource = request.getViewSource();
+        if(null == viewSource) {
+            return false;
+        }
+
+        View view = viewSource.getView(path, request.getLocale());
         if (null == view) {
             if (path.endsWith("/")) {
                 path = path + "index";
@@ -554,6 +593,12 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
             view.render(request, response, m);
             return true;
         }
+
+        //todo: hard code validation exception handling
+        if(exception instanceof ValidationException) {
+            response.sendError(status, exception.getMessage());
+        }
+
         return false;
     }
 
@@ -563,7 +608,9 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
             return false;
         }
 
-        int status = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+        //todo: hard code validation exception handling
+        int status = exception instanceof ValidationException ?
+                HttpServletResponse.SC_BAD_REQUEST : HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 
         if (request.isAjax()) {
             webConfig.getAjaxHandler().handleError(request, response, status,
@@ -582,8 +629,8 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
             LinkedViewData m = LinkedViewData.of("error", new ErrorInfo(status, exception));
             view.render(request, response, m);
             return true;
-
         }
+
         return handleError(request, response, status, exception.getMessage(), exception);
     }
 
@@ -654,12 +701,14 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
                         "Result not found for action '" + actionContext.getAction().toString() + "'");
             }
 
-            response.setStatus(result.getStatus());
+            if(response.getStatus() == 200) {
+                response.setStatus(result.getStatus());
+            }
             return;
         }
 
         //set response status if the result status is valid.
-        if (result.getStatus() != Result.STATUS_UNDEFINED) {
+        if (result.getStatus() != Result.STATUS_UNDEFINED && response.getStatus() == 200) {
             response.setStatus(result.getStatus());
         }
 

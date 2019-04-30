@@ -18,21 +18,26 @@ package leap.web.json;
 import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
 import leap.lang.Args;
+import leap.lang.New;
 import leap.lang.naming.NamingStyle;
 import leap.lang.naming.NamingStyles;
 
 import java.text.DateFormat;
+import java.util.Collection;
+import java.util.List;
 
 @Configurable(prefix="webmvc.json")
 public class DefaultJsonConfig implements JsonConfig,JsonConfigurator {
 
-    protected boolean     defaultSerializationKeyQuoted   = true;
-    protected boolean     defaultSerializationIgnoreNull  = false;
-    protected boolean     defaultSerializationIgnoreEmpty = false;
-    protected NamingStyle defaultNamingStyle              = NamingStyles.RAW;
-    protected String      defaultDateFormat               = null;
-    protected boolean     jsonpEnabled                    = true;
-    protected String      jsonpParameter                  = DEFAULT_JSONP_PARAMETER;
+    protected boolean     defaultSerializationKeyQuoted    = true;
+    protected boolean     defaultSerializationIgnoreNull   = false;
+    protected boolean     defaultSerializationIgnoreEmpty  = false;
+    protected NamingStyle defaultNamingStyle               = NamingStyles.RAW;
+    protected String      defaultDateFormat                = null;
+    protected boolean     jsonpEnabled                     = true;
+	protected boolean     jsonpResponseHeaders             = true;
+    protected String      jsonpParameter                   = DEFAULT_JSONP_PARAMETER;
+    protected Collection<String> jsonpAllowResponseHeaders = New.arrayList("X-Total-Count");
 
     public DefaultJsonConfig() {
 	    super();
@@ -98,6 +103,29 @@ public class DefaultJsonConfig implements JsonConfig,JsonConfigurator {
 		this.jsonpEnabled = enabled;
 	    return this;
     }
+	@ConfigProperty
+	@Override
+	public JsonConfigurator setJsonpResponseHeaders(boolean enabled) {
+    	this.setJsonpResponseHeaders(enabled);
+		return this;
+	}
+
+	@Override
+	public Collection<String> getJsonpAllowResponseHeaders() {
+		return jsonpAllowResponseHeaders;
+	}
+	@ConfigProperty
+	@Override
+	public JsonConfigurator setJsonpAllowResponseHeaders(Collection<String> headerNames) {
+		Args.notEmpty(headerNames, "header names");
+    	this.jsonpAllowResponseHeaders = headerNames;
+		return this;
+	}
+
+	@Override
+	public boolean isJsonpResponseHeaders() {
+		return jsonpResponseHeaders;
+	}
 
 	@ConfigProperty
     public JsonConfigurator setJsonpParameter(String jsonpParameter) {

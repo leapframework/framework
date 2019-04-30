@@ -25,6 +25,7 @@ import leap.lang.Try;
 import leap.lang.jdbc.JDBC;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.lang.net.Urls;
 import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
 import leap.lang.resource.Resources;
@@ -40,6 +41,7 @@ public abstract class DbBase implements Db {
     protected final Log                 log;
     protected final String              name;
     protected final String              description;
+    protected final String              dataSourceDescription;
     protected final DbPlatform          platform;
     protected final DataSource          dataSource;
     protected final DbDialect           dialect;
@@ -61,7 +63,8 @@ public abstract class DbBase implements Db {
 		this.name        = name;
         this.server      = extractServerFromJdbcUrl(md);
 		this.description = metadata.getProductName() + " " + metadata.getProductVersion();
-		this.platform	 = platform;
+        this.dataSourceDescription = Strings.format("url: {0}, username: {1}", Urls.removeQueryString(metadata.getURL()), metadata.getUsername());
+        this.platform	 = platform;
 		this.dataSource  = ds;
 		this.metadata    = metadata;
 		this.dialect     = dialect;
@@ -94,8 +97,13 @@ public abstract class DbBase implements Db {
     public String getDescription() {
 	    return description;
     }
-	
-	@Override
+
+    @Override
+    public String getDataSourceDescription() {
+        return dataSourceDescription;
+    }
+
+    @Override
     public DbPlatform getPlatform() {
 	    return platform;
     }

@@ -34,8 +34,8 @@ public class DefaultAppPropertyPrinter implements AppPropertyPrinter {
         DEFAULT_SECRET_WORDS.add("secret");
     }
 
-    protected boolean     printSystem  = true;
-    protected Set<String> secrectWords = new HashSet<>(DEFAULT_SECRET_WORDS);
+    protected boolean     printSystem = true;
+    protected Set<String> secretWords = new HashSet<>(DEFAULT_SECRET_WORDS);
 
     public boolean isPrintSystem() {
         return printSystem;
@@ -153,7 +153,7 @@ public class DefaultAppPropertyPrinter implements AppPropertyPrinter {
 
         boolean isSecret = false;
 
-        for(String word : secrectWords) {
+        for(String word : secretWords) {
             if(Strings.containsIgnoreCase(name, word)) {
                 isSecret = true;
                 break;

@@ -15,67 +15,101 @@
  */
 package leap.orm.value;
 
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
-
 import leap.lang.Args;
 import leap.lang.Beans;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.beans.DynaBean;
 import leap.lang.params.Params;
+import leap.orm.OrmContext;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.model.Model;
+
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Wraps an entity object (may be a {@link Map}, an {@link Entity} or a bean).
  */
-public abstract class EntityWrapper implements EntityBase {
-	
-	/**
-	 * Wraps the given entity object to a {@link EntityWrapper} object.
-	 * 
-	 * <p>
-	 * The supported type must be a {@link Map}, a {@link DynaBean} , a {@link leap.lang.params.Params} or a pojo bean.
-	 */
-	@SuppressWarnings("rawtypes")
+public abstract class EntityWrapper implements EntityBase, Params {
+
+    /**
+     * Wraps the given entity object to a {@link EntityWrapper} object.
+     *
+     * <p>
+     * The supported type must be a {@link Map}, a {@link DynaBean} , a {@link leap.lang.params.Params} or a pojo bean.
+     */
+    @SuppressWarnings("rawtypes")
     public static EntityWrapper wrap(EntityMapping em, Object entity) {
-		Args.notNull(em,"entity mapping");
-		Args.notNull(entity,"entity");
-		
-		if(entity instanceof Map){
-			return new MapWrapper(em, (Map)entity);
-		}
+        return wrap(null, em, entity);
+    }
 
-        if(entity instanceof Model){
-            return new ModelWrapper(em, ((Model) entity));
+    /**
+     * Wraps the given entity object to a {@link EntityWrapper} object.
+     *
+     * <p>
+     * The supported type must be a {@link Map}, a {@link DynaBean} , a {@link leap.lang.params.Params} or a pojo bean.
+     */
+    @SuppressWarnings("rawtypes")
+    public static EntityWrapper wrap(OrmContext context, EntityMapping em, Object entity) {
+        Args.notNull(em, "entity mapping");
+        Args.notNull(entity, "entity");
+
+        if (entity instanceof Map) {
+            return new MapWrapper(em, (Map) entity);
         }
-		
-		if(entity instanceof DynaBean){
-			return new DynaWrapper(em, ((DynaBean) entity));
-		}
 
-        if(entity instanceof Params) {
-            return new ParamsWrapper(em, (Params)entity);
+        if (entity instanceof Model) {
+            if (null == context) {
+                throw new IllegalStateException("Orm context must be specified for Model class");
+            }
+            return new ModelWrapper(context, em, ((Model) entity));
         }
-		
-		return new BeanWrapper(em, entity);
-	}
 
-	protected final EntityMapping em;
-	protected final Object        raw;
-	
-	protected EntityWrapper(EntityMapping em, Object raw) {
-		this.em  = em;
-		this.raw = raw;
-	}
+        if (entity instanceof DynaBean) {
+            return new DynaWrapper(em, ((DynaBean) entity));
+        }
+
+        if (entity instanceof Params) {
+            return new ParamsWrapper(em, (Params) entity);
+        }
+
+        return new BeanWrapper(em, entity);
+    }
+
+    protected final EntityMapping em;
+    protected final Object        raw;
+
+    protected EntityWrapper(EntityMapping em, Object raw) {
+        this.em = em;
+        this.raw = raw;
+    }
+
+    @Override
+    public Map<String, Object> map() {
+        return toMap();
+    }
+
+    @Override
+    public Params setAll(Map<String, ?> m) {
+        if (null != m) {
+            m.forEach(this::set);
+        }
+        return this;
+    }
 
     /**
      * Returns the wrapped entity.
      */
     public final <T> T raw() {
-        return (T)raw;
+        return (T) raw;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return getFieldNames().isEmpty();
     }
 
     /**
@@ -112,23 +146,26 @@ public abstract class EntityWrapper implements EntityBase {
     }
 
     /**
-	 * Returns the {@link EntityMapping}.
-	 */
-	public final EntityMapping getEntityMapping() {
-		return em;
-	}
+     * Returns the {@link EntityMapping}.
+     */
+    public final EntityMapping getEntityMapping() {
+        return em;
+    }
 
-    public abstract Map<String,Object> toMap();
+    @Override
+    public abstract EntityWrapper set(String field, Object value);
 
-	@SuppressWarnings("rawtypes")
-	protected static final class MapWrapper extends EntityWrapper {
-		
+    public abstract Map<String, Object> toMap();
+
+    @SuppressWarnings("rawtypes")
+    protected static final class MapWrapper extends EntityWrapper {
+
         private final Map map;
 
-		public MapWrapper(EntityMapping mapping, Map map) {
-	        super(mapping, map);
-	        Args.notNull(map,"fields");
-	        this.map = map;
+        public MapWrapper(EntityMapping mapping, Map map) {
+            super(mapping, map);
+            Args.notNull(map, "fields");
+            this.map = map;
         }
 
         @Override
@@ -148,14 +185,14 @@ public abstract class EntityWrapper implements EntityBase {
 
         @Override
         public Object get(String field) {
-	        return map.get(field);
+            return map.get(field);
         }
 
         @Override
         @SuppressWarnings("unchecked")
-        public <T extends EntityBase> T set(String field, Object value) {
-        	map.put(field, value);
-	        return (T)this;
+        public EntityWrapper set(String field, Object value) {
+            map.put(field, value);
+            return this;
         }
 
         @Override
@@ -171,6 +208,11 @@ public abstract class EntityWrapper implements EntityBase {
         public ParamsWrapper(EntityMapping em, Params params) {
             super(em, params);
             this.params = params;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return params.isEmpty();
         }
 
         @Override
@@ -194,9 +236,9 @@ public abstract class EntityWrapper implements EntityBase {
         }
 
         @Override
-        public <T extends EntityBase> T set(String field, Object value) {
+        public EntityWrapper set(String field, Object value) {
             params.set(field, value);
-            return (T)this;
+            return this;
         }
 
         @Override
@@ -235,9 +277,9 @@ public abstract class EntityWrapper implements EntityBase {
         }
 
         @Override
-        public <T extends EntityBase> T set(String field, Object value) {
+        public EntityWrapper set(String field, Object value) {
             bean.setProperty(field, value);
-            return (T)this;
+            return this;
         }
 
         @Override
@@ -250,9 +292,10 @@ public abstract class EntityWrapper implements EntityBase {
 
         private final Model model;
 
-        public ModelWrapper(EntityMapping em, Model model) {
+        public ModelWrapper(OrmContext context, EntityMapping em, Model model) {
             super(em, model);
             this.model = model;
+            this.model.init(context, em);
         }
 
         @Override
@@ -276,9 +319,9 @@ public abstract class EntityWrapper implements EntityBase {
         }
 
         @Override
-        public <T extends EntityBase> T set(String field, Object value) {
+        public EntityWrapper set(String field, Object value) {
             model.set(field, value);
-            return (T)this;
+            return this;
         }
 
         @Override
@@ -286,16 +329,17 @@ public abstract class EntityWrapper implements EntityBase {
             return model.fields();
         }
     }
-	
-	protected static final class BeanWrapper extends EntityWrapper {
 
-		protected final BeanType beanType;
+    protected static final class BeanWrapper extends EntityWrapper {
+
+        protected final BeanType beanType;
 
         private Set<String> fieldNames;
-		
-		protected BeanWrapper(EntityMapping mapping, Object bean) {
-	        super(mapping, bean);
-	        this.beanType = BeanType.of(bean.getClass());
+        private Map         map;
+
+        protected BeanWrapper(EntityMapping mapping, Object bean) {
+            super(mapping, bean);
+            this.beanType = BeanType.of(bean.getClass());
         }
 
         @Override
@@ -305,12 +349,12 @@ public abstract class EntityWrapper implements EntityBase {
 
         @Override
         public Set<String> getFieldNames() {
-            if(null != fieldNames) {
+            if (null != fieldNames) {
                 return fieldNames;
             }
 
             fieldNames = new LinkedHashSet<>();
-            for(BeanProperty bp : beanType.getProperties()) {
+            for (BeanProperty bp : beanType.getProperties()) {
                 fieldNames.add(bp.getName());
             }
             return fieldNames;
@@ -318,25 +362,34 @@ public abstract class EntityWrapper implements EntityBase {
 
         @Override
         public boolean contains(String field) {
-	        return beanType.tryGetProperty(field, true) != null;
+            return beanType.tryGetProperty(field, true) != null;
         }
 
-		@Override
+        @Override
         public Object get(String field) {
-	        BeanProperty bp = beanType.tryGetProperty(field,true);
-	        return null == bp ? null : bp.getValue(raw);
+            BeanProperty bp = beanType.tryGetProperty(field, true);
+            return null == bp ? null : bp.getValue(raw);
         }
-		
+
         @Override
         @SuppressWarnings("unchecked")
-        public <T extends EntityBase> T set(String field, Object value) {
-        	beanType.setProperty(raw, field, value, true);
-	        return (T)this;
+        public EntityWrapper set(String field, Object value) {
+            if (!beanType.trySetProperty(raw, field, value, true)) {
+                if (null == map) {
+                    map = new HashMap();
+                }
+                map.put(field, value);
+            }
+            return this;
         }
 
         @Override
         public Map<String, Object> toMap() {
-            return Beans.toMap(raw);
+            Map<String, Object> props = Beans.toMap(raw);
+            if (null != map) {
+                props.putAll(map);
+            }
+            return props;
         }
     }
 }

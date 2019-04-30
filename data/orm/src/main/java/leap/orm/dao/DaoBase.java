@@ -37,8 +37,13 @@ import leap.orm.jdbc.JdbcExecutorFactory;
 import leap.orm.query.QueryFactory;
 import leap.orm.sql.SqlFactory;
 
-public abstract class DaoBase extends Dao implements PostCreateBean,PostInjectBean {
-	protected final Readonly _readonly = new Readonly(this);
+import javax.sql.DataSource;
+import java.util.function.Supplier;
+
+public abstract class DaoBase extends Dao implements PostCreateBean, PostInjectBean {
+    protected final Readonly _readonly = new Readonly(this);
+
+    protected static final ThreadLocal<Boolean> WITH_EVENTS = new ThreadLocal<>();
 
     protected @NotEmpty String              name;
     protected @NotNull  OrmContext          ormContext;
@@ -48,147 +53,199 @@ public abstract class DaoBase extends Dao implements PostCreateBean,PostInjectBe
 
     @Override
     public OrmContext getOrmContext() {
-	    return ormContext;
+        return ormContext;
     }
-	
-	public JdbcExecutor getJdbcExecutor() {
-		return jdbcExecutor;
-	}
 
-	public void setJdbcExecutor(JdbcExecutor jdbcExecutor) {
-		_readonly.check();
-		this.jdbcExecutor = jdbcExecutor;
-	}
-	
-	//---------------------jdbc executor---------------------------------------
-	
-	@Override
+    public JdbcExecutor getJdbcExecutor() {
+        return jdbcExecutor;
+    }
+
+    public void setJdbcExecutor(JdbcExecutor jdbcExecutor) {
+        _readonly.check();
+        this.jdbcExecutor = jdbcExecutor;
+    }
+
+    //---------------------jdbc executor---------------------------------------
+
+
+    @Override
+    public void withDataSource(DataSource dataSource, Runnable runnable) {
+        jdbcExecutor.withDataSource(dataSource, runnable);
+    }
+
+    @Override
     public void execute(ConnectionCallback callback) throws NestedSQLException {
-		jdbcExecutor.execute(callback);
+        jdbcExecutor.execute(callback);
     }
 
-	@Override
+    @Override
     public <T> T executeWithResult(ConnectionCallbackWithResult<T> callback) throws NestedSQLException {
-	    return jdbcExecutor.executeWithResult(callback);
+        return jdbcExecutor.executeWithResult(callback);
     }
 
-	@Override
+    @Override
     public int executeUpdate(String sql) throws NestedSQLException {
-	    return jdbcExecutor.executeUpdate(sql);
+        return jdbcExecutor.executeUpdate(sql);
     }
 
-	@Override
+    @Override
     public int executeUpdate(String sql, Object[] args) throws NestedSQLException {
-	    return jdbcExecutor.executeUpdate(sql, args);
+        return jdbcExecutor.executeUpdate(sql, args);
     }
 
-	@Override
+    @Override
     public int executeUpdate(String sql, Object[] args, int[] types) throws NestedSQLException {
-	    return jdbcExecutor.executeUpdate(sql, args, types);
+        return jdbcExecutor.executeUpdate(sql, args, types);
     }
 
-	@Override
+    @Override
     public int executeUpdate(String sql, Object[] args, int[] types, PreparedStatementHandler<?> handler) throws NestedSQLException {
-	    return jdbcExecutor.executeUpdate(sql, args, types, handler);
+        return jdbcExecutor.executeUpdate(sql, args, types, handler);
     }
 
-	@Override
+    @Override
     public int[] executeBatchUpdate(String... sqls) throws NestedSQLException {
-	    return jdbcExecutor.executeBatchUpdate(sqls);
+        return jdbcExecutor.executeBatchUpdate(sqls);
     }
 
-	@Override
+    @Override
     public int[] executeBatchUpdate(String sql, Object[][] batchArgs) throws NestedSQLException {
-	    return jdbcExecutor.executeBatchUpdate(sql, batchArgs);
+        return jdbcExecutor.executeBatchUpdate(sql, batchArgs);
     }
 
-	@Override
+    @Override
     public int[] executeBatchUpdate(String sql, Object[][] batchArgs, int[] types) throws NestedSQLException {
-	    return jdbcExecutor.executeBatchUpdate(sql, batchArgs, types);
+        return jdbcExecutor.executeBatchUpdate(sql, batchArgs, types);
     }
 
-	@Override
+    @Override
     public int[] executeBatchUpdate(String sql, Object[][] batchArgs, int[] types, BatchPreparedStatementHandler<?> handler)
             throws NestedSQLException {
-	    return jdbcExecutor.executeBatchUpdate(sql, batchArgs, types, handler);
+        return jdbcExecutor.executeBatchUpdate(sql, batchArgs, types, handler);
     }
 
-	@Override
+    @Override
     public <T> T executeQuery(String sql, ResultSetReader<T> reader) throws NestedSQLException {
-	    return jdbcExecutor.executeQuery(sql, reader);
+        return jdbcExecutor.executeQuery(sql, reader);
     }
 
-	@Override
+    @Override
     public <T> T executeQuery(String sql, Object[] args, ResultSetReader<T> reader) throws NestedSQLException {
-	    return jdbcExecutor.executeQuery(sql, args, reader);
+        return jdbcExecutor.executeQuery(sql, args, reader);
     }
 
-	@Override
+    @Override
     public <T> T executeQuery(String sql, Object[] args, int[] types, ResultSetReader<T> reader) throws NestedSQLException {
-	    return jdbcExecutor.executeQuery(sql, args, types, reader);
+        return jdbcExecutor.executeQuery(sql, args, types, reader);
     }
 
-	@Override
+    @Override
     public void doTransaction(TransactionCallback callback) {
-		transactionProvider.doTransaction(callback);
+        transactionProvider.doTransaction(callback);
     }
-	
-	@Override
+
+    @Override
     public <T> T doTransaction(TransactionCallbackWithResult<T> callback) {
-	    return transactionProvider.doTransaction(callback);
+        return transactionProvider.doTransaction(callback);
     }
-	
-	@Override
+
+    @Override
     public void doTransaction(TransactionCallback callback, boolean requiresNew) {
-		transactionProvider.doTransaction(callback,requiresNew);
+        transactionProvider.doTransaction(callback, requiresNew);
     }
 
-	@Override
+    @Override
     public void doTransaction(TransactionCallback callback, TransactionDefinition definition) {
-		transactionProvider.doTransaction(callback,definition);
+        transactionProvider.doTransaction(callback, definition);
     }
 
-	@Override
+    @Override
     public <T> T doTransaction(TransactionCallbackWithResult<T> callback, boolean requiresNew) {
-	    return transactionProvider.doTransaction(callback, requiresNew);
+        return transactionProvider.doTransaction(callback, requiresNew);
     }
 
-	@Override
+    @Override
+    public void withEvents(Runnable func) {
+        WITH_EVENTS.set(true);
+        try {
+            func.run();
+        } finally {
+            WITH_EVENTS.remove();
+        }
+    }
+
+    @Override
+    public <T> T withEvents(Supplier<T> func) {
+        WITH_EVENTS.set(true);
+        try {
+            return func.get();
+        } finally {
+            WITH_EVENTS.remove();
+        }
+    }
+
+    @Override
+    public void withoutEvents(Runnable func) {
+        WITH_EVENTS.set(false);
+        try {
+            func.run();
+        } finally {
+            WITH_EVENTS.remove();
+        }
+    }
+
+    @Override
+    public <T> T withoutEvents(Supplier<T> func) {
+        WITH_EVENTS.set(false);
+        try {
+            return func.get();
+        } finally {
+            WITH_EVENTS.remove();
+        }
+    }
+
+    @Override
+    public boolean isWithEvents() {
+        Boolean b = WITH_EVENTS.get();
+        return null == b ? ormContext.getConfig().isEventsDefaultEnabled() : b;
+    }
+
+    @Override
     public void postInject(BeanFactory factory) {
-		_readonly.check();
-		
-		if(null == jdbcExecutor){
-			jdbcExecutor = factory.getBean(JdbcExecutorFactory.class).createJdbcExecutor(ormContext);
-		}
-		
-		if(null == transactionProvider) {
-			transactionProvider = transactionManager.getProvider(ormContext.getDataSource());
-		}
+        _readonly.check();
+
+        if (null == jdbcExecutor) {
+            jdbcExecutor = factory.getBean(JdbcExecutorFactory.class).createJdbcExecutor(ormContext);
+        }
+
+        if (null == transactionProvider) {
+            transactionProvider = transactionManager.getProvider(ormContext.getDataSource());
+        }
     }
-	
-	@Override
+
+    @Override
     public void postCreate(BeanFactory beanFactory) throws Exception {
-	    _readonly.check().enable();
-	    this.doInit();	    
+        _readonly.check().enable();
+        this.doInit();
     }
-	
-	protected OrmMetadata metadata(){
-		return ormContext.getMetadata();
-	}
-	
-	protected CommandFactory commandFactory() {
-		return ormContext.getCommandFactory();
-	}
-	
+
+    protected OrmMetadata metadata() {
+        return ormContext.getMetadata();
+    }
+
+    protected CommandFactory commandFactory() {
+        return ormContext.getCommandFactory();
+    }
+
     protected SqlFactory sqlFactory() {
         return ormContext.getSqlFactory();
     }
 
-	protected QueryFactory queryFactory(){
-		return ormContext.getQueryFactory();
-	}
-	
-	protected void doInit() throws Exception {
-		
-	}
+    protected QueryFactory queryFactory() {
+        return ormContext.getQueryFactory();
+    }
+
+    protected void doInit() throws Exception {
+
+    }
 }

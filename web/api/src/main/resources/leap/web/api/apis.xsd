@@ -171,29 +171,24 @@
                 The configuration for sql operation.
             </xsd:documentation>
         </xsd:annotation>
-        <xsd:attribute name="name" type="xsd:string" use="required">
-            <xsd:annotation>
-                <xsd:documentation>
-                    The name of operation.
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="sql-key"  type="xsd:string" use="required">
-            <xsd:annotation>
-                <xsd:documentation>
-                    The key of sql command.
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-    </xsd:complexType>
-
-    <xsd:complexType name="restd-operation-sql">
-        <xsd:annotation>
-            <xsd:documentation>
-                The configuration for restd sql operation.
-            </xsd:documentation>
-        </xsd:annotation>
-        <xsd:attribute name="key" type="xsd:string" use="required"/>
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="name" type="xsd:string" use="required">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            The name of operation.
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="sql-key"  type="xsd:string" use="optional">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            The key of sql command.
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:simpleContent>
     </xsd:complexType>
 
     <xsd:complexType name="cors">

@@ -16,19 +16,83 @@
 
 package leap.web.api.dyna;
 
+import leap.web.api.Api;
 import leap.web.api.config.ApiConfig;
+import leap.web.api.config.ApiConfigurator;
+import leap.web.api.meta.ApiMetadata;
+
+import java.util.Map;
 
 public class DefaultDynaApi implements DynaApi {
 
-    private final ApiConfig config;
+    private final Api api;
 
-    public DefaultDynaApi(ApiConfig config) {
-        this.config = config;
+    public DefaultDynaApi(Api api) {
+        this.api = api;
+    }
+
+    @Override
+    public Map<Class<?>, Object> getExtensions() {
+        return api.getExtensions();
+    }
+
+    @Override
+    public <T> void setExtension(Class<T> type, Object extension) {
+        api.setExtension(type, extension);
+    }
+
+    @Override
+    public <T> T removeExtension(Class<?> type) {
+        return api.removeExtension(type);
+    }
+
+    @Override
+    public <T> T getExtension(Class<?> type) {
+        return api.getExtension(type);
+    }
+
+    @Override
+    public String getName() {
+        return api.getName();
+    }
+
+    @Override
+    public String getBasePath() {
+        return api.getBasePath();
     }
 
     @Override
     public ApiConfig getConfig() {
-        return config;
+        return api.getConfig();
     }
 
+    @Override
+    public ApiConfigurator getConfigurator() throws IllegalStateException {
+        return api.getConfigurator();
+    }
+
+    @Override
+    public ApiMetadata getMetadata() throws IllegalStateException {
+        return api.getMetadata();
+    }
+
+    @Override
+    public void setMetadata(ApiMetadata metadata) throws IllegalStateException {
+        api.setMetadata(metadata);
+    }
+
+    @Override
+    public boolean isCreated() {
+        return api.isCreated();
+    }
+
+    @Override
+    public void markCreated() throws IllegalStateException {
+        api.markCreated();
+    }
+
+    @Override
+    public void create() throws IllegalStateException {
+        api.create();
+    }
 }

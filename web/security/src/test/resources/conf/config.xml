@@ -8,8 +8,10 @@
 
     <properties>
         <property name="jdbc.driverClassName">org.h2.Driver</property>
-        <property name="jdbc.url">jdbc:h2:./target/test;DB_CLOSE_ON_EXIT=FALSE</property>
+        <property name="jdbc.url">jdbc:h2:mem:test;DB_CLOSE_ON_EXIT=FALSE</property>
         <property name="jdbc.username">sa</property>
     </properties>
+    
+    <property name="websecurity.defaultAuthenticationExpires">36000</property>
     
 </config>

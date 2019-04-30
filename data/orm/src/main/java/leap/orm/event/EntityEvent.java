@@ -18,6 +18,7 @@ package leap.orm.event;
 
 import leap.core.transaction.TransactionStatus;
 import leap.orm.OrmContext;
+import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
 
 public interface EntityEvent {
@@ -26,6 +27,13 @@ public interface EntityEvent {
      * Required.
      */
     OrmContext getContext();
+
+    /**
+     * Returns the dao.
+     */
+    default Dao getDao() {
+        return getContext().getDao();
+    }
 
     /**
      * Required.

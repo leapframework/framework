@@ -24,8 +24,10 @@ import leap.core.transaction.TransactionDefinition;
 import leap.core.validation.Errors;
 import leap.core.value.Record;
 import leap.orm.Orm;
+import leap.orm.OrmConfig;
 import leap.orm.OrmContext;
 import leap.orm.OrmMetadata;
+import leap.orm.command.DeleteCommand;
 import leap.orm.command.InsertCommand;
 import leap.orm.command.UpdateCommand;
 import leap.orm.mapping.EntityMapping;
@@ -40,6 +42,7 @@ import leap.orm.value.EntityBase;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * Dao means Data Access Object.
@@ -231,6 +234,11 @@ public abstract class Dao implements JdbcExecutor {
 	 * </strong>
 	 */
 	public abstract UpdateCommand cmdUpdate(EntityMapping em);
+
+	/**
+	 * Creates a new {@link DeleteCommand}.
+	 */
+	public abstract DeleteCommand cmdDelete(EntityMapping em, Object id);
 	
 	//----------------------------insert--------------------------------
 	
@@ -245,6 +253,23 @@ public abstract class Dao implements JdbcExecutor {
 	 * @return The affected row(s).
 	 */
 	public abstract int insert(Object entity) throws MappingNotFoundException;
+
+    /**
+     * Inserts a new entity into the underlying database immediately.
+     *
+     * <p>
+     * The given entity object must be a pojo or a {@link Entity} object.
+     *
+     * @throws MappingNotFoundException if cannot resolve a {@link EntityMapping} from the given entity class.
+     *
+     * @return The affected row(s).
+     */
+    public abstract int insert(Class<?> entityClass, Object entity) throws MappingNotFoundException;
+
+    /**
+     * Inserts a new entity.
+     */
+    public abstract int insert(String entityName, Object entity);
 
     /**
      * Inserts a new entity.
@@ -271,8 +296,76 @@ public abstract class Dao implements JdbcExecutor {
 	 * @return The affected row(s).
 	 */
 	public abstract int update(Object entity) throws MappingNotFoundException;
-	
-	//----------------------------delete--------------------------------
+
+    /**
+     * Updates the properties of the given entity into the underlying db.
+     *
+     * @throws MappingNotFoundException if the given entity not exists.
+     *
+     * @return The affected row(s).
+     */
+    public abstract int update(Class<?> entityClass, Object entity) throws MappingNotFoundException;
+
+    /**
+     * Updates the properties of the given entity into the underlying db.
+     *
+     * @throws MappingNotFoundException if the given entity not exists.
+     *
+     * @return The affected row(s).
+     */
+    public abstract int update(String entityName, Object entity) throws MappingNotFoundException;
+
+    /**
+     * Updates the properties of the given entity into the underlying db.
+     *
+     * @throws MappingNotFoundException if the given entity not exists.
+     *
+     * @return The affected row(s).
+     */
+    public abstract int update(EntityMapping em, Object entity) throws MappingNotFoundException;
+
+    /**
+     * Updates the properties of the given entity into the underlying db.
+     *
+     * @throws MappingNotFoundException if the given entity not exists.
+     *
+     * @return The affected row(s).
+     */
+    public abstract int update(Object entity, Map<String,Object> fields) throws MappingNotFoundException;
+
+    /**
+     * Updates the properties of the given entity into the underlying db.
+     *
+     * @throws MappingNotFoundException if the given entity not exists.
+     *
+     * @return The affected row(s).
+     */
+    public abstract int update(Class<?> entityClass, Object id, Map<String, Object> fields) throws MappingNotFoundException;
+
+    /**
+     * Updates the properties of the given entity into the underlying db.
+     *
+     * @throws MappingNotFoundException if the given entity not exists.
+     *
+     * @return The affected row(s).
+     */
+    public abstract int update(String entityName, Object id, Map<String, Object> fields) throws MappingNotFoundException;
+
+    /**
+     * Updates the properties of the given entity into the underlying db.
+     *
+     * @throws MappingNotFoundException if the given entity not exists.
+     *
+     * @return The affected row(s).
+     */
+    public abstract int update(EntityMapping em, Object id, Map<String, Object> fields) throws MappingNotFoundException;
+
+    //----------------------------delete--------------------------------
+
+    /**
+     * Deletes the entity record immediately.
+     */
+    public abstract int delete(Object entity);
 	
 	/**
 	 * Deletes an entity by the given id immediately.
@@ -383,6 +476,13 @@ public abstract class Dao implements JdbcExecutor {
      * Returns the record for the id.
      */
     public abstract Record find(EntityMapping em, Object id);
+
+    /**
+     * Returns the record for the id.
+     *
+     * @throws RecordNotFoundException if the record not exists.
+     */
+    public abstract <T> T find(Class<?> entityClass,Class<T> resultClass,Object id);
 	
     /**
      * Returns the record for the id.
@@ -421,7 +521,15 @@ public abstract class Dao implements JdbcExecutor {
      * Returns <code>null</code> if record not exists.
      */
     public abstract Record findOrNull(EntityMapping em,Object id);
-	
+
+    /**
+     * Returns the record for the id.
+     *
+     * <p>
+     * Returns <code>null</code> if record not exists.
+     */
+    public abstract <T> T findOrNull(Class<?> entityClass,Class<T> resultClass,Object id);
+
     /**
      * Returns the record for the id.
      *
@@ -502,9 +610,16 @@ public abstract class Dao implements JdbcExecutor {
 	 * Finds all the entities of the given entity class.
 	 */
 	public abstract <T> List<T> findAll(Class<T> entityClass);
+
+	/**
+	 * Finds all the entities of the given entity class.
+	 */
+	public List<Record> findAll(String entityName) {
+		return findAll(entityName, Record.class);
+	}
 	
 	/**
-	 * Finds all the entitties of the given entity name.
+	 * Finds all the entities of the given entity name.
 	 */
 	public abstract <T> List<T> findAll(String entityName,Class<T> resultClass);
 	
@@ -517,10 +632,27 @@ public abstract class Dao implements JdbcExecutor {
 	 */
 	public abstract boolean exists(Class<?> entityClass,Object id) throws MappingNotFoundException;
 
+    /**
+     * Checks is an entity of the given id exists in the underlying database.
+     *
+     * @throws MappingNotFoundException if the given entity not exists.
+     */
+    public abstract boolean exists(String entityName,Object id) throws MappingNotFoundException;
+
 	/**
 	 * Returns total rows in the underlying db of the given entity.
 	 */
 	public abstract long count(Class<?> entityClass);
+
+    /**
+     * Returns total rows in the underlying db of the given entity.
+     */
+    public abstract long count(String entityName);
+
+    /**
+     * Returns total rows in the underlying db of the given entity.
+     */
+    public abstract long count(EntityMapping em);
 	
 	//----------------------------execute-------------------------------
 	public abstract int executeUpdate(SqlCommand command, Object[] args);
@@ -608,9 +740,14 @@ public abstract class Dao implements JdbcExecutor {
 	/**
 	 * Creates a new {@link CriteriaQuery} for querying the records of the given entity.
 	 */
-	public abstract <T> CriteriaQuery<T> createCriteriaQuery(EntityMapping em, Class<T> resultClass); 
-	
-	/**
+	public abstract <T> CriteriaQuery<T> createCriteriaQuery(EntityMapping em, Class<T> resultClass);
+
+    /**
+     * Creates a new {@link CriteriaQuery} for querying the records of the given entity.
+     */
+    public abstract <T> CriteriaQuery<T> createCriteriaQuery(Class<?> entityClass, Class<T> resultClass);
+
+    /**
 	 * Creates a new {@link Query} object for querying data later.
 	 * 
 	 * <p>
@@ -657,23 +794,35 @@ public abstract class Dao implements JdbcExecutor {
 	 * @param queryName a unique key or command name use to get a {@link SqlCommand} from {@link OrmMetadata}.
 	 * 
 	 * @see OrmMetadata#getSqlCommand(String)
-	 * @see OrmMetadata#getSqlCommand(Class, String)
+	 * @see OrmMetadata#getSqlCommand(String, String)
+     *
+     * @deprecated The method will cause the mistake with another method {@link #createNamedQuery(String, Class)}.
 	 */
+    @Deprecated
 	public abstract <T> EntityQuery<T> createNamedQuery(Class<T> entityClass,String queryName);
 	
 	/**
 	 * Creates a new {@link Query} object for querying data later.
+     *
+     * @deprecated The method will cause the mistake with another method {@link #createNamedQuery(String, Class)}.
 	 */
+    @Deprecated
 	public abstract EntityQuery<Record> createNamedQuery(String entityName,String queryName);
 	
 	/**
 	 * Creates a new {@link Query} object for querying data later.
+     *
+     * @deprecated The method will cause the mistake with another method {@link #createNamedQuery(String, Class)}.
 	 */
+    @Deprecated
 	public abstract <T> EntityQuery<T> createNamedQuery(String entityName,Class<T> resultClass, String queryName);
 	
 	/**
 	 * Creates a new {@link EntityQuery} object for executing the given named query.
+     *
+     * @deprecated The method will cause the mistake with another method {@link #createNamedQuery(String, Class)}.
 	 */
+    @Deprecated
 	public abstract <T> EntityQuery<T> createNamedQuery(EntityMapping em, Class<T> resultClass, String queryName);
 	
 	
@@ -815,4 +964,33 @@ public abstract class Dao implements JdbcExecutor {
 	 */
 	public abstract <T> T doTransaction(TransactionCallbackWithResult<T> callback, boolean requiresNew);
 
+	//------------------ events --------------------
+
+	/**
+	 * Executes with events.
+	 */
+	public abstract void withEvents(Runnable func);
+
+	/**
+	 * Executes with events and returns result.
+	 */
+	public abstract <T> T withEvents(Supplier<T> func);
+
+	/**
+	 * Executes without events.
+	 */
+	public abstract void withoutEvents(Runnable func);
+
+	/**
+	 * Executes without events and returns result.
+	 */
+	public abstract <T> T withoutEvents(Supplier<T> func);
+
+	/**
+	 * Returns <code>true</code> if events is enabled at current execution.
+	 *
+	 * <p/>
+	 * See {@link OrmConfig#isEventsDefaultEnabled()}.
+	 */
+	public abstract boolean isWithEvents();
 }

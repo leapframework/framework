@@ -65,6 +65,10 @@ public class Objects2 {
 	public static String toStringOrEmpty(Object o){
 		return Objects.toString(o, Strings.EMPTY);
 	}
+
+	public static <T> T firstNotNull(T first, T second) {
+		return null != first ? first : second;
+	}
 	
 	/**
 	 * Convert the given array (which may be a primitive array) to an

@@ -35,8 +35,8 @@ public class DefaultParamsFactory implements ParamsFactory {
 			return (Params)param;
 		}
 		
-		if(param instanceof ParamsWrappable){
-			return ((ParamsWrappable) param).params();
+		if(param instanceof ParamsGetter){
+			return ((ParamsGetter) param).getParams();
 		}
 		
 		if(param instanceof Map){

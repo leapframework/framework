@@ -43,7 +43,9 @@ import java.io.File;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 public class App implements AttributeAccessor {
 	
@@ -68,11 +70,12 @@ public class App implements AttributeAccessor {
 	protected FileResource		baseDir;
 	protected FileResource      tempDir;
 	protected ServletResource   rootResource;
-	
+
 	private WebConfig			webConfig;
 	private WebConfigurator	    webConfigurator;
 	private Endpoint[]          endpoints;
-	
+
+    private final Set<String>           ignoredPaths       = new CopyOnWriteArraySet<>();
     private final List<BeanDefinition>  initializableBeans = new CopyOnWriteArrayList<>();
 	private final BeanList<AppListener> listeners          = new CopyOnWriteArrayBeanList<>();
 	
@@ -121,8 +124,8 @@ public class App implements AttributeAccessor {
 		}
 		return webConfig;
 	}
-	
-	/**
+
+    /**
 	 * Returns the configurator bean of {@link WebConfig} of current application.
 	 */
 	private final WebConfigurator getWebConfigurator() {
@@ -219,6 +222,10 @@ public class App implements AttributeAccessor {
 	public final MessageSource getMessageSource(){
 		return context.getMessageSource();
 	}
+
+    public final Set<String> ignoredPaths() {
+        return ignoredPaths;
+    }
 	
 	public final Routes routes() {
 		return getWebConfigurator().routes();
@@ -266,7 +273,9 @@ public class App implements AttributeAccessor {
 		this.config         = config;
 		initConfig();
 	}
+
 	
+
 	@Internal
 	final void onBeanFactoryReady(BeanFactory factory){
 		this.factory = factory;
@@ -312,7 +321,6 @@ public class App implements AttributeAccessor {
 		this.listeners.addAll(factory.getBeans(AppListener.class));
 		this.endpoints = factory.getBeans(Endpoint.class).toArray(new Endpoint[]{});
 	}
-	
 	private void notifyAppConfigure() throws Throwable {
 		for(AppListener listener : listeners){
 			try {

@@ -19,6 +19,8 @@
 package tests.query;
 
 import leap.junit.TestBase;
+import leap.lang.text.scel.ScelExpr;
+import leap.lang.text.scel.ScelNode;
 import leap.web.api.query.FiltersParser;
 import org.junit.Test;
 
@@ -49,7 +51,24 @@ public class FiltersParserTest extends TestBase {
         assertParse("( a eq b ) and ( c ge 10 ) or d like 'ddd'");
         assertParse("( a eq b ) and ( c ge 10 ) or ( d like 'ddd' )");
         assertParse("( a eq b ) and ( c ge 10 ) or ( d like 'ddd' ) and ( ( a eq b ) and ( c ge 10 ) or ( d like 'ddd' ) )");
+    }
 
+    @Test
+    public void testIn() {
+        assertParse("( v in 1 )");
+        assertParse("( v in (1) )");
+        assertParse("( ( v in (1) ) )");
+        assertParse("name in ',a'");
+        assertParse("name in ,'a'");
+        assertParse("name in 1,2");
+        assertParse("name in 1, 2");
+        assertParse("name in 1 , 2");
+        assertParse("name in '1' , 2");
+        assertParse("name in ('1' , 2)");
+
+        ScelExpr expr = FiltersParser.parse("name in a,b");
+        ScelNode node = expr.nodes()[2];
+        assertEquals(2, node.values().size());
     }
 
     private void assertParse(String expr) {

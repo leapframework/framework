@@ -40,14 +40,15 @@ public class MockDataSource implements DataSource {
 	private boolean defaultAutoCommit			= true;
 	private String  defaultCatalog				= null;
 
-    private boolean openConnectionError;
-    private int     maxOpenConnectionError;
+    private boolean       openConnectionError;
+    private int           maxOpenConnectionError;
     private AtomicInteger openConnectionErrorCount;
-    private boolean setAutoCommitError;
-    private AtomicInteger setAutoCommitErrorCount = new AtomicInteger(-1);
-    private boolean validateConnectionError;
-    private boolean returnSQLWarnings;
-    private int     openConnectionWaitMs;
+    private boolean       autoCommitError;
+    private boolean       autoCommitIllegalState;
+    private AtomicInteger autoCommitErrorCount = new AtomicInteger(-1);
+    private boolean       validateConnectionError;
+    private boolean       returnSQLWarnings;
+    private int           openConnectionWaitMs;
 
     public int getNrOfOpenedConnections() {
 		return nrOfOpenedConnections.get();
@@ -196,16 +197,24 @@ public class MockDataSource implements DataSource {
         this.openConnectionErrorCount = new AtomicInteger(0);
     }
 
-    public boolean isSetAutoCommitError() {
-        return setAutoCommitError;
+    public boolean isAutoCommitError() {
+        return autoCommitError;
     }
 
-    public void setSetAutoCommitError(boolean setAutoCommitError) {
-        this.setAutoCommitError = setAutoCommitError;
+    public void setAutoCommitError(boolean autoCommitError) {
+        this.autoCommitError = autoCommitError;
     }
 
-    public AtomicInteger getSetAutoCommitErrorCount() {
-        return setAutoCommitErrorCount;
+    public boolean isAutoCommitIllegalState() {
+        return autoCommitIllegalState;
+    }
+
+    public void setAutoCommitIllegalState(boolean autoCommitIllegalState) {
+        this.autoCommitIllegalState = autoCommitIllegalState;
+    }
+
+    public AtomicInteger getAutoCommitErrorCount() {
+        return autoCommitErrorCount;
     }
 
     public boolean isValidateConnectionError() {

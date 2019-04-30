@@ -17,22 +17,47 @@ package leap.lang.meta;
 
 
 public class MComplexTypeRef extends MTypeRef {
+
+    private final Boolean partial;
 	
 	public MComplexTypeRef(String refTypeName) {
-	    super(refTypeName);
+	    this(refTypeName, (Boolean)null);
+    }
+
+    public MComplexTypeRef(String refTypeName, Boolean partial) {
+        super(refTypeName);
+        this.partial = partial;
     }
 
 	public MComplexTypeRef(String refTypeName, String refTypeQName) {
-	    super(refTypeName, refTypeQName);
+        this(refTypeName, refTypeQName, null);
+    }
+
+    public MComplexTypeRef(String refTypeName, String refTypeQName, Boolean partial) {
+        super(refTypeName, refTypeQName);
+        this.partial = partial;
     }
 
 	public MComplexTypeRef(String summary, String description, String refTypeName, String refTypeQName) {
-		super(summary, description, refTypeName, refTypeQName);
+		this(summary, description, refTypeName, refTypeQName, null);
 	}
 
-	@Override
+    public MComplexTypeRef(String summary, String description, String refTypeName, String refTypeQName, Boolean partial) {
+        super(summary, description, refTypeName, refTypeQName);
+        this.partial = partial;
+    }
+
+    @Override
+    public String getName() {
+        return refTypeName;
+    }
+
+    @Override
 	public MTypeKind getRefTypeKind() {
 		return MTypeKind.COMPLEX;
 	}
 
+    public Boolean getPartial() {
+        return partial;
+    }
 }

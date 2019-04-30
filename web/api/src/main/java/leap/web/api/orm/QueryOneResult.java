@@ -20,12 +20,66 @@ package leap.web.api.orm;
 
 import leap.core.value.Record;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class QueryOneResult {
 
-    public final Record record;
+    public Record            record;
+    public Object            entity;
+    public List<ExpandError> expandErrors;
+
+    public QueryOneResult() {
+
+    }
 
     public QueryOneResult(Record record) {
+        this(record, null);
+    }
+
+    public QueryOneResult(Record record, List<ExpandError> expandErrors) {
+        this(record, null, expandErrors);
+    }
+
+    public QueryOneResult(Record record, Object entity) {
+        this.record = record;
+        this.entity = entity;
+    }
+
+    public QueryOneResult(Record record, Object entity, List<ExpandError> expandErrors) {
+        this.record = record;
+        this.entity = entity;
+        this.expandErrors = expandErrors;
+    }
+
+    public Record getRecord() {
+        return record;
+    }
+
+    public void setRecord(Record record) {
         this.record = record;
     }
 
+    public Object getEntity() {
+        return entity;
+    }
+
+    public void setEntity(Object entity) {
+        this.entity = entity;
+    }
+
+    public List<ExpandError> getExpandErrors() {
+        return expandErrors;
+    }
+
+    public void setExpandErrors(List<ExpandError> expandErrors) {
+        this.expandErrors = expandErrors;
+    }
+
+    public void addExpandError(ExpandError e) {
+        if(null == expandErrors) {
+            expandErrors = new ArrayList<>();
+        }
+        expandErrors.add(e);
+    }
 }

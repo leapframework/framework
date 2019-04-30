@@ -23,7 +23,7 @@ import leap.lang.exception.ObjectNotFoundException;
 
 import java.math.BigDecimal;
 
-public interface NamedGetter {
+public interface NamedGetter extends ObjectPropertyGetter, Getter {
 
     /**
      * Returns true if the name exists.
@@ -42,20 +42,17 @@ public interface NamedGetter {
         return this;
     }
 
-    /**
-     * Returns the named value (may be null).
-     *
-     * <p/>
-     * Returns <code>null</code> if the name not exists.
-     */
-    <T> T get(String name);
+    @Override
+    default Object getProperty(String name) {
+        return get(name);
+    }
 
     /**
      * Returns the named value (may be null).
      *
      * @throws ObjectNotFoundException if the name not exists.
      */
-    default <T> T mustGet(String name) {
+    default Object mustGet(String name) {
         return mustContains(name).get(name);
     }
 
@@ -65,7 +62,7 @@ public interface NamedGetter {
      * <p/>
      * Returns <code>null</code> if the name not exists.
      */
-    default <T> T get(Named named) {
+    default Object get(Named named) {
         return get(named.getName());
     }
 

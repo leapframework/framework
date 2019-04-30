@@ -19,6 +19,8 @@ package leap.web.action;
 import leap.lang.Args;
 import leap.lang.ExtensibleBase;
 import leap.web.action.*;
+import leap.web.format.RequestFormat;
+import leap.web.format.ResponseFormat;
 
 import java.util.function.Function;
 
@@ -27,14 +29,19 @@ public class FuncAction extends ExtensibleBase implements Action {
     protected final String                         name;
     protected final Class<?>                       returnType;
     protected final Argument[]                     arguments;
+    protected final RequestFormat[]                consumes;
+    protected final ResponseFormat[]               produces;
     protected final Function<ActionParams, Object> function;
 
-    public FuncAction(String name, Class<?> returnType, Argument[] arguments, Function<ActionParams, Object> function) {
+    public FuncAction(String name, Class<?> returnType, Argument[] arguments,
+                      RequestFormat[] consumes, ResponseFormat[] produces, Function<ActionParams, Object> function) {
         Args.notNull(arguments);
         Args.notNull(function);
         this.name       = name == null ? function.toString() : name;
         this.returnType = returnType;
         this.arguments = arguments;
+        this.consumes  = consumes;
+        this.produces = produces;
         this.function = function;
     }
 
@@ -54,8 +61,18 @@ public class FuncAction extends ExtensibleBase implements Action {
     }
 
     @Override
+    public RequestFormat[] getConsumes() {
+        return consumes;
+    }
+
+    @Override
+    public ResponseFormat[] getProduces() {
+        return produces;
+    }
+
+    @Override
     public Object execute(ActionContext context, Object[] args) throws Throwable {
-        SimpleActionParams params = new SimpleActionParams(arguments, args);
+        SimpleActionParams params = new SimpleActionParams(context, arguments, args);
 
         return function.apply(params);
     }

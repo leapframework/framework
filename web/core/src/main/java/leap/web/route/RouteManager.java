@@ -16,6 +16,7 @@
 
 package leap.web.route;
 
+import leap.lang.Strings;
 import leap.web.action.Action;
 
 public interface RouteManager {
@@ -24,6 +25,11 @@ public interface RouteManager {
      * Creates a new {@link Routes} object.
      */
     Routes createRoutes();
+
+    /**
+     * Creates a new {@link Routes} object.
+     */
+    Routes createRoutes(String pathPrefix);
 
     /**
      * Creates a new {@link RouteBuilder} for building a {@link Route}.
@@ -47,25 +53,25 @@ public interface RouteManager {
     /**
      * Loads all the routes defined in the controller class into the given {@link Routes}.
      */
-    default void loadRoutesFromController(Routes routes, Class<?> controllerClass) {
-        loadRoutesFromController(routes, controllerClass, "/");
+    default Route[] loadRoutesFromController(Routes routes, Class<?> controllerClass) {
+        return loadRoutesFromController(routes, controllerClass, Strings.isEmpty(routes.getPathPrefix()) ? "/" : routes.getPathPrefix());
     }
 
     /**
      * Loads all the routes defined in the controller class into the given {@link Routes}.
      */
-    void loadRoutesFromController(Routes routes, Class<?> controllerClass,String basePath);
+    Route[] loadRoutesFromController(Routes routes, Class<?> controllerClass,String basePath);
 
     /**
      * Loads all the routes defined in the controller object into the given {@link Routes}.
      */
-    default void loadRoutesFromController(Routes routes, Object controller) {
-        loadRoutesFromController(routes, controller, "/");
+    default Route[] loadRoutesFromController(Routes routes, Object controller) {
+        return loadRoutesFromController(routes, controller, Strings.isEmpty(routes.getPathPrefix()) ? "/" : routes.getPathPrefix());
     }
 
     /**
      * Loads all the routes defined in the controller object into the given {@link Routes}.
      */
-    void loadRoutesFromController(Routes routes, Object controller,String basePath);
+    Route[] loadRoutesFromController(Routes routes, Object controller,String basePath);
 
 }

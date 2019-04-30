@@ -18,9 +18,14 @@
 package tests.cp;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLTimeoutException;
 
+import leap.db.cp.PoolProperties;
+import leap.db.cp.PooledDataSource;
+import leap.lang.Randoms;
+import leap.lang.Threads;
 import tests.cp.mock.MockConnection;
 import tests.cp.mock.MockStatement;
 
@@ -133,16 +138,27 @@ public class BorrowTest extends PoolTestBase {
     public void testSetupConnectionErrorOnBorrowNew() throws SQLException {
         ds.setMaxActive(1);
         ds.setDefaultAutoCommit(false);
-        ms.setSetAutoCommitError(true);
+        ms.setAutoCommitError(true);
 
         try {
-            try(Connection conn = ds.getConnection()){}
+            try (Connection conn = ds.getConnection()) {
+            }
             fail("should throw SQLException");
         }catch (SQLException e) {
             assertContains(e.getMessage(), "Set AutoCommit Error");
         }
 
-        ms.setSetAutoCommitError(false);
+        ms.setAutoCommitIllegalState(true);
+        try {
+            try (Connection conn = ds.getConnection()) {
+            }
+            fail("should throw SQLException");
+        }catch (SQLException e) {
+            assertContains(e.getMessage(), "Set AutoCommit IllegalState");
+        }
+        ms.setAutoCommitIllegalState(false);
+
+        ms.setAutoCommitError(false);
         try(Connection conn = ds.getConnection()) {}
     }
 
@@ -154,7 +170,7 @@ public class BorrowTest extends PoolTestBase {
             conn.setAutoCommit(true);
         }
 
-        ms.setSetAutoCommitError(true);
+        ms.setAutoCommitError(true);
         try {
             try(Connection conn = ds.getConnection()){}
             fail("should throw SQLException");
@@ -163,21 +179,21 @@ public class BorrowTest extends PoolTestBase {
         }
 
         //test abandon old one, creates a new.
-        ms.setSetAutoCommitError(false);
+        ms.setAutoCommitError(false);
         try(Connection conn = ds.getConnection()){
             conn.setAutoCommit(true);
         }
-        ms.setSetAutoCommitError(true);
-        ms.getSetAutoCommitErrorCount().set(1);
+        ms.setAutoCommitError(true);
+        ms.getAutoCommitErrorCount().set(1);
         try(Connection conn = ds.getConnection()){}
 
         //test abandon old one, throw exception.
-        ms.setSetAutoCommitError(false);
+        ms.setAutoCommitError(false);
         try(Connection conn = ds.getConnection()){
             conn.setAutoCommit(true);
         }
-        ms.setSetAutoCommitError(true);
-        ms.getSetAutoCommitErrorCount().set(2);
+        ms.setAutoCommitError(true);
+        ms.getAutoCommitErrorCount().set(2);
         try {
             try(Connection conn = ds.getConnection()){}
             fail("should throw SQLException");
@@ -185,7 +201,49 @@ public class BorrowTest extends PoolTestBase {
             assertContains(e.getMessage(), "Set AutoCommit Error");
         }
 
-        ms.setSetAutoCommitError(false);
+        ms.setAutoCommitError(false);
         try(Connection conn = ds.getConnection()) {}
     }
+
+    @Test
+    public void testBorrowReal() throws SQLException {
+        PoolProperties pp = new PoolProperties();
+        pp.setJdbcUrl("jdbc:h2:mem:test");
+        pp.setIdleTimeoutMs(10);
+        pp.setMinIdle(2);
+
+        try(PooledDataSource ds = new PooledDataSource(pp)) {
+            for(int i=0;i<10;i++) {
+                try(Connection conn = ds.getConnection()) {
+                    Threads.sleep(Randoms.nextInt(10,20));
+                }
+            }
+        }
+    }
+
+    @Test
+    public void testInitSQL() throws SQLException {
+        PoolProperties pp = new PoolProperties();
+        pp.setJdbcUrl("jdbc:h2:mem:test");
+        pp.setInitSQL("create table if not exists t1 (id int identity primary key, c1 varchar(100) null); insert into t1(c1) values('a');");
+
+        final String countSQL = "select count(*) from t1";
+
+        try(PooledDataSource ds = new PooledDataSource(pp)){
+            try(Connection conn1 = ds.getConnection()) {
+                assertEquals(1, count(conn1, countSQL));
+                try(Connection conn2 = ds.getConnection()) {
+                    assertEquals(2, count(conn2, countSQL));
+                }
+            }
+        }
+    }
+
+    private static int count(Connection conn, String sql) throws SQLException {
+        try(ResultSet rs = conn.prepareStatement("select count(*) from t1").executeQuery()){
+            rs.next();
+            return rs.getInt(1);
+        }
+    }
+
 }

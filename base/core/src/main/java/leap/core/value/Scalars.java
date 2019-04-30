@@ -62,7 +62,7 @@ public interface Scalars extends Emptiable {
 	/**
 	 * Returns all the scalar values as an immutable {@link List}.
 	 */
-	List<Object> list();
+	<T> List<T> list();
 	
 	/**
 	 * Returns all the scalar values as an immutable {@link List}.
@@ -92,7 +92,7 @@ public interface Scalars extends Emptiable {
 	 * @throws ConvertException if cannot converts the values to the component type.
 	 */
     @SuppressWarnings("unchecked")
-    default <T> T[] arrray(Class<T> componentType) throws ConvertException {
+    default <T> T[] array(Class<T> componentType) throws ConvertException {
     	return (T[])arrayObject(componentType);
     }
     

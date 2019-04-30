@@ -16,12 +16,15 @@
 package leap.web.security;
 
 import leap.core.RequestContext;
+import leap.core.security.SimpleSecurity;
+import leap.web.Request;
+import leap.web.action.ActionContext;
 import leap.web.route.Route;
 import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.authz.AuthorizationContext;
 import leap.web.security.login.LoginContext;
 import leap.web.security.logout.LogoutContext;
-import leap.web.security.path.SecuredPath;
+import leap.web.security.path.SecuredRoute;
 
 public interface SecurityContextHolder extends AuthenticationContext, AuthorizationContext {
 
@@ -38,9 +41,19 @@ public interface SecurityContextHolder extends AuthenticationContext, Authorizat
 	}
 
     /**
-     * Optional. Returns the path mapping to the request.
+     * Required.
      */
-    SecuredPath getSecuredPath();
+    Request getRequest();
+
+    /**
+     * Optional.
+     */
+    Route getRoute();
+
+    /**
+     * Optional.
+     */
+    ActionContext getActionContext();
 
     /**
      * Required.
@@ -52,4 +65,33 @@ public interface SecurityContextHolder extends AuthenticationContext, Authorizat
      */
     LogoutContext getLogoutContext();
 
+    /**
+     * Optional
+     */
+    <T> T getSecuredObject();
+
+    /**
+     * Sets the secured object.
+     */
+    void setSecuredObject(SecuredObject o);
+
+    /**
+     * Optional. Returns the deny message.
+     */
+    String getDenyMessage();
+
+    /**
+     * Sets the deny message.
+     */
+    void setDenyMessage(String message);
+
+    /**
+     * Optional.
+     */
+    SimpleSecurity[] getSecurities();
+
+    /**
+     * Sets the securities.
+     */
+    void setSecurities(SimpleSecurity[] securities);
 }

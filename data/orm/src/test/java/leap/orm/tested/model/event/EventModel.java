@@ -26,6 +26,7 @@ public class EventModel extends Model {
     protected String id;
     protected String col1;
     protected String col2;
+    protected String col3;
 
     @NonColumn
     protected int testType;
@@ -52,6 +53,14 @@ public class EventModel extends Model {
 
     public void setCol2(String col2) {
         this.col2 = col2;
+    }
+
+    public String getCol3() {
+        return col3;
+    }
+
+    public void setCol3(String col3) {
+        this.col3 = col3;
     }
 
     public int getTestType() {

@@ -78,6 +78,8 @@ public interface DbDialect {
     default boolean useTableAliasAfterUpdate() {
         return false;
     }
+
+	String getStatementDelimiter();
 	
 	/**
 	 * returns <code>true</code> if this db platform supoorts the given on delete {@link DbCascadeAction}.
@@ -393,16 +395,16 @@ public interface DbDialect {
 	 * <p>
 	 * index starts from 1
 	 */
-	void setParameter(PreparedStatement ps,int index,Object value) throws SQLException;
+	int setParameter(PreparedStatement ps,int index,Object value) throws SQLException;
 	
 	/**
 	 * Sets the given parameter value for the given {@link PreparedStatement}.
 	 * 
 	 * @param ps
 	 * @param index starts from 1
-	 * @param type JDBC type of the given parameter, may be {@link JdbcTypes#UNKNOW_TYPE_CODE}.
+	 * @param type JDBC type of the given parameter, may be {@link JdbcTypes#UNKNOWN_TYPE_CODE}.
 	 */
-	void setParameter(PreparedStatement ps,int index,Object value,int type) throws SQLException;
+	int setParameter(PreparedStatement ps,int index,Object value,int type) throws SQLException;
 	
 	/**
 	 * Returns the value of the column in the given {@link ResultSet} of the given index.
@@ -424,7 +426,7 @@ public interface DbDialect {
 	 * Returns the value of the column in the given {@link ResultSet} of the given index.
 	 * 
 	 * <p>
-	 * The given type code may be {@link JdbcTypes#UNKNOW_TYPE_CODE}, the underlying implementation must handle it.
+	 * The given type code may be {@link JdbcTypes#UNKNOWN_TYPE_CODE}, the underlying implementation must handle it.
 	 * 
 	 * <p>
 	 * The given index starts from 1.
@@ -435,7 +437,7 @@ public interface DbDialect {
 	 * Returns the value of the column in the given {@link ResultSet} of the given name.
 	 * 
 	 * <p>
-	 * The given type code may be {@link JdbcTypes#UNKNOW_TYPE_CODE}, the underlying implementation must handle it.
+	 * The given type code may be {@link JdbcTypes#UNKNOWN_TYPE_CODE}, the underlying implementation must handle it.
 	 * 
 	 * <p>
 	 * The given index starts from 1.

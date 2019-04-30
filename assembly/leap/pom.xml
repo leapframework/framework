@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.leapframework</groupId>
 		<artifactId>leap-parent</artifactId>
-		<version>0.6.9b</version>
+		<version>0.7.11b</version>
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
 	<artifactId>leap</artifactId>
@@ -47,7 +47,12 @@
     </reporting>     
     
 	<dependencies>
-		<dependency>
+        <dependency>
+            <groupId>org.leapframework</groupId>
+            <artifactId>leap-annnotations</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
 			<groupId>org.leapframework</groupId>
 			<artifactId>leap-lang</artifactId>
 			<version>${project.version}</version>

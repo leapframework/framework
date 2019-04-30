@@ -17,6 +17,7 @@
 package leap.oauth2.webapp.token;
 
 import leap.core.annotation.Inject;
+import leap.core.security.SimpleUserPrincipal;
 import leap.lang.Strings;
 import leap.lang.codec.Base64;
 import leap.lang.http.ContentTypes;
@@ -29,10 +30,11 @@ import leap.lang.json.JSON;
 import leap.lang.json.JsonValue;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.lang.time.StopWatch;
 import leap.oauth2.webapp.OAuth2InternalServerException;
 import leap.oauth2.webapp.OAuth2Config;
 import leap.oauth2.webapp.OAuth2ResponseException;
-import leap.oauth2.webapp.token.at.SimpleAccessToken;
+import leap.oauth2.webapp.Oauth2InvalidTokenException;
 
 import java.util.Map;
 import java.util.Objects;
@@ -59,6 +61,7 @@ public class DefaultTokenInfoLookup implements TokenInfoLookup {
                     Base64.encode(config.getClientId()+":"+config.getClientSecret()));
         }
 
+        StopWatch sw = StopWatch.startNew();
         HttpResponse response = request.send();
         
         if(ContentTypes.APPLICATION_JSON_TYPE.isCompatible(response.getContentType())){
@@ -74,12 +77,21 @@ public class DefaultTokenInfoLookup implements TokenInfoLookup {
                 Map<String, Object> map = json.asMap();
                 String error = (String)map.get("error");
                 if(Strings.isEmpty(error)) {
+                    log.info("Request token info from oauth2 server use {}ms", sw.getElapsedMilliseconds());
                     return createTokenInfo(map);
                 }else{
-                    if(!response.is2xx()){
-                        throw new OAuth2ResponseException(response.getStatus(),error, Objects.toString(map.get("error_description")));
+                    String desc  = Objects.toString(map.get("error_description"));
+                    if(Strings.isEmpty(desc)) {
+                        log.error("Err get token info from '{}' : {} - {}", config.getTokenUrl(), response.getStatus(), content);
                     }else {
-                        throw new OAuth2InternalServerException("Auth server response error '" + error + "' : " + map.get("error_description"));
+                        log.error("Err get token info from '{}' : {} - {}", config.getTokenUrl(), response.getStatus(), desc);
+                    }
+                    if(response.getStatus() == HTTP.SC_UNAUTHORIZED){
+                        throw new Oauth2InvalidTokenException(response.getStatus(),error, desc);
+                    }else if(!response.is2xx()){
+                        throw new OAuth2ResponseException(response.getStatus(),error, desc);
+                    }else {
+                        throw new OAuth2InternalServerException("Auth server response error '" + error + "' : " + desc);
                     }
                 }
             }
@@ -89,14 +101,32 @@ public class DefaultTokenInfoLookup implements TokenInfoLookup {
     }
 
     protected TokenInfo createTokenInfo(Map<String, Object> map) {
-        SimpleTokenInfo details = new SimpleTokenInfo();
+        SimpleTokenInfo info = new SimpleTokenInfo();
 
-        details.setClientId((String)map.remove("client_id"));
-        details.setUserId((String)map.remove("user_id"));
-        details.setCreated(System.currentTimeMillis());
-        details.setExpiresIn(((Integer)map.remove("expires_in")) * 1000);
-        details.setScope((String)map.remove("scope"));
+        info.setClientId((String)map.get("client_id"));
+        info.setUserId((String)map.get("user_id"));
+        info.setCreated(System.currentTimeMillis());
+        info.setExpiresIn(((Integer)map.get("expires_in")));
+        info.setScope((String)map.get("scope"));
+        info.setClaims(map);
 
-        return details;
+        String username = (String)map.get("username");
+        if(null != username) {
+            SimpleUserPrincipal user = new SimpleUserPrincipal();
+            user.setId(info.getUserId());
+            user.setLoginName(username);
+            user.setName(username);
+
+            String name = (String)map.get("name");
+            if(null != name) {
+                user.setName(name);
+            }else {
+                user.setName(username);
+            }
+
+            info.setUserInfo(user);
+        }
+
+        return info;
     }
 }

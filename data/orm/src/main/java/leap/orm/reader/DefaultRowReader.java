@@ -24,12 +24,15 @@ import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.orm.mapping.FieldMapping;
 import leap.orm.naming.NamingStrategy;
 import leap.orm.sql.Sql;
 import leap.orm.sql.SqlCommand;
 import leap.orm.sql.SqlExecutionContext;
 import leap.orm.sql.ast.AstNode;
+import leap.orm.sql.ast.SqlObjectName;
 import leap.orm.sql.ast.SqlSelect;
+import leap.orm.sql.ast.SqlSelectList;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -149,7 +152,7 @@ public class DefaultRowReader implements RowReader {
 
 			bp = beanType.tryGetProperty(name, true);
 			
-			if(null != bp){
+			if(null != bp && bp.isWritable()){
 				bp.setValue(bean, dialect.getColumnValue(rs, i+1, column.columnType));
 			}
 		}
@@ -182,6 +185,12 @@ public class DefaultRowReader implements RowReader {
 	protected static ResultColumn[] createResultColumns(SqlExecutionContext context, SqlCommand command, ResultSet rs) throws SQLException {
 		ResultSetMetaData rsm = rs.getMetaData();
 		NamingStrategy    ns  = context.getOrmContext().getNamingStrategy();
+
+		SqlSelect select = null;
+		Sql sql = context.sql();
+		if(null != sql && sql.isSelect() && sql.nodes()[0] instanceof SqlSelect){
+			select = (SqlSelect)sql.nodes()[0];
+		}
 		
 		ResultColumn[] columns = new ResultColumn[rsm.getColumnCount()];
 		for(int i=1;i<=columns.length;i++){
@@ -189,28 +198,42 @@ public class DefaultRowReader implements RowReader {
 			c.columnName  = rsm.getColumnName(i);
 			c.columnLabel = rsm.getColumnLabel(i);
 			c.columnType  = rsm.getColumnType(i);
-			boolean isAlias = false;
 
-//            if(command.getClause() instanceof DynamicSqlClause){
-//				DynamicSqlClause sqlClause = (DynamicSqlClause)command.getClause();
-				Sql sql = context.sql();// sqlClause.getSql();
-				if(null != sql && sql.isSelect() && sql.nodes()[0] instanceof SqlSelect){
-					SqlSelect selectCmd = (SqlSelect)sql.nodes()[0];
-					if(selectCmd.isSelectItemAlias(c.columnLabel)){
-						c.fieldName = selectCmd.getSelectItemAlias(c.columnLabel);
-						isAlias = true;
-					}
-				}
-//			}
-			
-			if(!isAlias){
+			if(null != select && select.isSelectItemAlias(c.columnLabel)) {
+				c.isAlias   = true;
+				c.fieldName = select.getSelectItemAlias(c.columnLabel);
+			}else {
 				c.fieldName = ns.columnToFieldName(c.columnLabel);
 			}
-			c.isAlias = isAlias;
 			columns[i-1] = c;
 		}
+
+		if(null != select) {
+		    for(AstNode node : select.getSelectList().getNodes()){
+		        if(node instanceof SqlObjectName) {
+		            SqlObjectName name = (SqlObjectName)node;
+                    FieldMapping fm = name.getFieldMapping();
+                    if(null != fm) {
+                        ResultColumn c = findColumn(columns, fm.getColumnName());
+                        if(null != c && !c.isAlias) {
+                            c.fieldName = fm.getFieldName();
+                        }
+                    }
+                }
+            }
+		}
+
 		return columns;
 	}
+
+	protected static ResultColumn findColumn(ResultColumn[] columns, String name) {
+	    for(ResultColumn c : columns) {
+	        if(c.columnName.equalsIgnoreCase(name)) {
+	            return c;
+            }
+        }
+        return null;
+    }
 	
 	protected static final class ResultColumn {
 		protected String columnName;

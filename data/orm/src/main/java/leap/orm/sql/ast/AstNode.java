@@ -66,8 +66,9 @@ public abstract class AstNode {
         //do nothing.
     }
 
-    public void resolveDynamic(Appendable buf, Params params) {
+    public boolean resolveDynamic(SqlContext context, Sql sql, Appendable buf, Params params) throws IOException {
         toSql(buf);
+        return true;
     }
 	
 	@SuppressWarnings("unchecked")

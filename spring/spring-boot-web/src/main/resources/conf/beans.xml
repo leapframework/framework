@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans">
+
+    <bean type="leap.web.action.ActionStrategySupport"       class="leap.spring.boot.web.LeapActionStrategySupport"/>
+    <bean type="leap.web.action.FormattingResultInterceptor" class="leap.spring.boot.web.LeapFormattingResultInterceptor"/>
+
+</beans>

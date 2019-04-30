@@ -82,5 +82,21 @@ public interface THttpMultipart {
     /**
      * Sends the multipart request.
      */
-    THttpResponse send();
+    default THttpResponse send() {
+        return request().send();
+    }
+
+    /**
+     * Sends the multipart request.
+     */
+    default THttpResponse put() {
+        return request().put();
+    }
+
+    /**
+     * Sends the multipart request.
+     */
+    default THttpResponse post() {
+        return request().post();
+    }
 }

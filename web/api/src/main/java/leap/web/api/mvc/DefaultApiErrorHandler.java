@@ -16,70 +16,9 @@
 
 package leap.web.api.mvc;
 
-import leap.lang.http.HTTP;
 import leap.web.Response;
 
 public class DefaultApiErrorHandler implements ApiErrorHandler {
-
-    @Override
-    public void unauthorized(Response response) {
-        unauthorized(response, "Unauthorized");
-    }
-
-    @Override
-    public void unauthorized(Response response, String message) {
-        responseError(response, HTTP.SC_UNAUTHORIZED,  HTTP.Status.UNAUTHORIZED.name(), message);
-    }
-
-    @Override
-    public void forbidden(Response response) {
-        forbidden(response, "Forbidden");
-    }
-
-    @Override
-    public void forbidden(Response response, String message) {
-        responseError(response, HTTP.SC_FORBIDDEN, HTTP.Status.FORBIDDEN.name(), message);
-    }
-
-    @Override
-    public void notFound(Response response) {
-        notFound(response, "Not found");
-    }
-
-    @Override
-    public void notFound(Response response, String message) {
-        responseError(response, HTTP.SC_NOT_FOUND, HTTP.Status.NOT_FOUND.name(), message);
-    }
-
-    @Override
-    public void badRequest(Response response) {
-        badRequest(response, "Bad request");
-    }
-
-    @Override
-    public void badRequest(Response response, String message) {
-        responseError(response, HTTP.SC_BAD_REQUEST, HTTP.Status.BAD_REQUEST.name(), message);
-    }
-
-    @Override
-    public void internalServerError(Response response, String message) {
-        responseError(response, HTTP.SC_INTERNAL_SERVER_ERROR, HTTP.Status.INTERNAL_SERVER_ERROR.name(), message);
-    }
-
-    @Override
-    public void internalServerError(Response response, Throwable cause) {
-        responseError(response, HTTP.SC_INTERNAL_SERVER_ERROR, HTTP.Status.INTERNAL_SERVER_ERROR.name(), cause.getMessage());
-    }
-
-    @Override
-    public void responseError(Response response, int status, String message) {
-        responseError(response, status, new ApiError(message));
-    }
-
-    @Override
-    public void responseError(Response response, int status, String code, String message) {
-        responseError(response, status, new ApiError(code, message));
-    }
 
     @Override
     public void responseError(Response response, int status, ApiError error) {

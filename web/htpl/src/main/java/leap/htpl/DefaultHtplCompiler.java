@@ -18,12 +18,16 @@ package leap.htpl;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import leap.htpl.escaping.EscapableExpression;
 import leap.htpl.escaping.EscapeType;
 import leap.htpl.escaping.HtplEscaper;
 import leap.lang.Args;
 import leap.lang.Strings;
+import leap.lang.expression.AbstractExpression;
 import leap.lang.expression.Expression;
 
 
@@ -54,6 +58,28 @@ public class DefaultHtplCompiler implements HtplCompiler {
 	}
 
 	@Override
+	public HtplCompiler conditional(Function<HtplContext, Boolean> condition, Consumer<HtplCompiler> compilation) {
+	    final Expression expr = new AbstractExpression() {
+            @Override
+            protected Object eval(Object context, Map<String, Object> vars) {
+                return condition.apply((HtplContext)context);
+            }
+        };
+
+	    return conditional(expr, compilation);
+	}
+
+    @Override
+    public HtplCompiler conditional(Expression expr, Consumer<HtplCompiler> compilation) {
+        HtplCompiler nestedCompiler = newCompiler();
+        compilation.accept(nestedCompiler);
+        final HtplRenderable compiled = nestedCompiler.compile();
+
+        append(new ConditionalRenderable(expr, compiled));
+        return this;
+    }
+
+    @Override
     public HtplCompiler startElement(String prefix, String name) {
 		return append("<" + qname(prefix,name) + "");	
     }

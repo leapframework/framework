@@ -48,6 +48,7 @@ class Pool {
 	private final PoolConfig                  config;
 	private final DataSource                  dataSource;
 	private final PoolUtils                   utils;
+    private final String                      initSQL;
 	private final long                        maxWait;
 	private final int                         defaultTransactionIsolationLevel;
 	private final SyncPool                    syncPool;
@@ -66,6 +67,7 @@ class Pool {
 		this.utils 		= new PoolUtils(this);
 		this.syncPool   = new SyncPool();
 		this.maxWait    = config.getMaxWait();
+        this.initSQL    = Strings.trimToNull(props.getInitSQL());
 		
 		if(config.hasDefaultTransactionIsolation()) {
 			this.defaultTransactionIsolationLevel = config.getDefaultTransactionIsolation().getValue();
@@ -77,10 +79,10 @@ class Pool {
 
         if(config.isHealthCheck()) {
 			this.scheduledExecutor = new ScheduledThreadPoolExecutor(1, 
-																	 new SimpleThreadFactory(getName() + " - Health Worker", true),
+																	 new SimpleThreadFactory(getName() + "_health", true),
 																	 new ThreadPoolExecutor.DiscardPolicy());
 
-			this.scheduledExecutor.scheduleAtFixedRate(new HealthWorker(), 
+			this.scheduledExecutor.scheduleAtFixedRate(new HealthWorker(),
 													   config.getHealthCheckIntervalMs(),
 													   config.getHealthCheckIntervalMs(), TimeUnit.MILLISECONDS);
 		}else{
@@ -94,7 +96,7 @@ class Pool {
 	
 	public String getName() {
 		if(null == name) {
-			name = "CP-" + poolCounter.getAndIncrement();
+			name = "CP" + poolCounter.getAndIncrement();
 		}
 		return name;
 	}
@@ -156,7 +158,13 @@ class Pool {
 		}catch(SQLException e) {
             log.warn("Setup connection error: {}", e.getMessage(), e);
             se = e;
-        }
+        }catch (Throwable e) {
+		    /*MySQL
+                java.lang.IllegalMonitorStateException: null
+                    at com.mysql.jdbc.StatementImpl.executeQuery(StatementImpl.java:1436)
+		     */
+			se = new SQLException("Setup connection error: " + e.getMessage(), e);
+		}
 
         if(null != se) {
             if(null != conn) {
@@ -174,7 +182,7 @@ class Pool {
 
     protected void printConnections() {
         if(log.isInfoEnabled()) {
-            int maxPrint = 5;
+            int maxPrint = 20;
             int count = 0;
             for (PooledConnection conn : syncPool.connections()) {
                 count++;
@@ -182,9 +190,9 @@ class Pool {
                     break;
                 }
                 if (conn.isActive()) {
-                    log.info("connection busy duration {}ms\n{}",
-                            conn.getBusyDurationMs(),
-                            new StackTraceStringBuilder(conn.getStackTraceOnOpen()).toString());
+                    log.info("Connection busy duration {}seconds\n{}",
+                            conn.getBusyDurationMs() / 1000,
+                            new StackTraceStringBuilder(conn.getStackTraceOnOpen()).toString(FRAMEWORK_PACKAGE));
                 }
             }
         }
@@ -264,8 +272,17 @@ class Pool {
 	
 	protected Connection createNewConnectionOnBorrow(PooledConnection conn) throws SQLException {
 		Connection wrapped = factory.getConnection();
-		conn.setWrapped(wrapped);
+
+        conn.setWrapped(wrapped);
 		conn.setNewCreatedConnection(true);
+
+        if(null != initSQL) {
+            log.info("Execute initSQL '{}' on new connection", initSQL);
+            try(Statement stmt = wrapped.createStatement()){
+                stmt.execute(initSQL);
+            }
+        }
+
 		return wrapped;
 	}
 	
@@ -494,15 +511,6 @@ class Pool {
 			return null;
 		}
 
-        /**
-         * Removes the connection from list and release all the underlying resources.
-         */
-        public void abandonConnection(PooledConnection conn) {
-            conn.markAbandon();
-            list.remove(conn);
-            conn.closeReal();
-        }
-		
 		/**
 		 * Returns the connection to pool.
 		 */
@@ -577,6 +585,8 @@ class Pool {
 
 		@Override
         public void run() {
+
+            log.trace("Health check");
 			
 			for(final PooledConnection conn : syncPool.connections()) {
 				
@@ -590,16 +600,14 @@ class Pool {
 				
 				//cleanup leak timeout connection.
 				if(conn.isLeakTimeout() && conn.compareStateAndSet(STATE_BUSY, STATE_CLEANUP)) {
-					log.error("A potential connection leak detected (busy duration {}ms\n{})", 
+					log.error("A potential connection leak detected (busy {}ms)\n{}",
 							  conn.getBusyDurationMs(), 
-							  new StackTraceStringBuilder(conn.getStackTraceOnOpen()).toString());
-
-                    syncPool.abandonConnection(conn);
+							  new StackTraceStringBuilder(conn.getStackTraceOnOpen()).toString(FRAMEWORK_PACKAGE));
+                    conn.markLeak();
 					continue;
 				}
 
                 //todo : test the underlying connection is valid?
-				
 			}
 			
 			//check max idle and decrease the idle connections.

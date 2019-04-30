@@ -60,7 +60,7 @@ public class DbForeignKey extends DbNamedObject implements JsonStringable {
 		writer.startObject();
 		
 		writer.property("name", name)
-			  .property("foreignKeyName", foreignTable);
+			  .property("foreignTable", foreignTable);
 		
 		if(null != onUpdate){
 			writer.property("onUpdate", onUpdate.name());

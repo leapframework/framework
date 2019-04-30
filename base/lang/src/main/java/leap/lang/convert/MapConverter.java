@@ -38,32 +38,56 @@ public class MapConverter extends AbstractConverter<Map> {
 				return true;
 			}
 
-			Class<?>[] actualTypeArguments = Types.getActualTypeArguments(genericType);
-			
-			Class<?> keyType = actualTypeArguments[0];
-			Class<?> valType = actualTypeArguments[1];
-			
-			Map targetMap = createMap(targetType);
-			
-			for(Object o : map.entrySet()){
-				Entry entry = (Entry)o;
-				
-				Object key = Converts.convert(entry.getKey(), keyType, context);
-				Object val = Converts.convert(entry.getValue(), valType, context);
-				
-				targetMap.put(key,val);
-			}
-			
-			out.set(targetMap);
+			out.set(doConvert(context, map, targetType, genericType));
 			return true;
 		}
 		return false;
     }
     
-    protected Map createMap(Class<?> mapType){
+    protected static Map createMap(Class<?> mapType){
     	if(mapType.equals(Map.class)){
     		return new LinkedHashMap();
     	}
     	return (Map)Reflection.newInstance(mapType);
+    }
+
+    protected static Map doConvert(ConvertContext context, Map from, Class<?> targetType, Type genericType) {
+        Type[] typeArguments = Types.getTypeArguments(genericType);
+
+        Class<?> keyType = Types.getActualType(typeArguments[0]);
+        Class<?> valType = Types.getActualType(typeArguments[1]);
+
+        Map to = createMap(targetType);
+
+        for(Object o : from.entrySet()){
+            Entry entry = (Entry)o;
+
+            Object key = Converts.convert(entry.getKey(),   keyType, typeArguments[0], context);
+            Object val = Converts.convert(entry.getValue(), valType, typeArguments[1], context);
+
+            to.put(key,val);
+        }
+
+        return to;
+    }
+
+    public static final class ConcreteMapConverter extends AbstractConverter<Map> {
+        @Override
+        public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable {
+            if(value instanceof Map) {
+                Map from = (Map)value;
+                Map to;
+
+                if(null == genericType) {
+                    to = (Map)Reflection.newInstance(targetType);
+                    to.putAll(from);
+                }else {
+                    to = doConvert(context, from, targetType, genericType);
+                }
+                out.set(to);
+                return true;
+            }
+            return false;
+        }
     }
 }

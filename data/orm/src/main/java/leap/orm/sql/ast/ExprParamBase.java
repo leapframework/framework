@@ -21,6 +21,9 @@ import leap.lang.params.Params;
 import leap.orm.sql.Sql;
 import leap.orm.sql.SqlStatementBuilder;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public abstract class ExprParamBase extends ParamBase {
 	
 	protected final String     text;
@@ -50,6 +53,12 @@ public abstract class ExprParamBase extends ParamBase {
 
     @Override
     protected Object getParameterValue(SqlStatementBuilder stm, Params params) {
-		return expression.getValue(stm.context(),params.map());
+        Map<String, Object> vars = new HashMap<>();
+        vars.put("$params", params);
+        vars.putAll(params.map());
+        if(null != stm.getVars()) {
+            vars.putAll(stm.getVars());
+        }
+		return expression.getValue(stm.context(), vars);
     }
 }

@@ -20,7 +20,6 @@ import java.util.List;
 
 import leap.db.model.DbForeignKeyBuilder;
 import leap.db.model.DbForeignKeyColumn;
-import leap.lang.Exceptions;
 import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
@@ -32,8 +31,16 @@ public class RelationMapper implements Mapper {
 
 	@Override
 	public void completeMappings(MappingConfigContext context) throws MetadataException {
+        for(EntityMappingBuilder emb : context.getEntityMappings()){
+            for(RelationMappingBuilder rmb : emb.getRelationMappings()){
+                preProcessRelationMapping(context, emb, rmb);
+            }
+        }
+
 		for(EntityMappingBuilder emb : context.getEntityMappings()){
-			processRelationMappings(context, emb);
+            for(RelationMappingBuilder rmb : emb.getRelationMappings()){
+                postProcessRelationMapping(context, emb, rmb);
+            }
 		}
 
         for(EntityMappingBuilder emb : context.getEntityMappings()) {
@@ -45,11 +52,24 @@ public class RelationMapper implements Mapper {
         }
 	}
 
-	protected void processRelationMappings(MappingConfigContext context,EntityMappingBuilder emb) {
-		for(RelationMappingBuilder rmb : emb.getRelationMappings()){
-			processRelationMapping(context, emb, rmb);
-		}
-	}
+    protected void preProcessRelationMapping(MappingConfigContext context, EntityMappingBuilder emb, RelationMappingBuilder rmb) {
+        verifyTargetEntity(context, emb, rmb);
+
+        RelationType type = rmb.getType();
+        if(type == RelationType.MANY_TO_ONE){
+            processManyToOneMapping(context, emb, rmb);
+            return;
+        }
+    }
+
+    protected void postProcessRelationMapping(MappingConfigContext context, EntityMappingBuilder emb, RelationMappingBuilder rmb) {
+        RelationType type = rmb.getType();
+
+        if(type == RelationType.MANY_TO_MANY) {
+            processManyToManyMapping(context, emb, rmb);
+            return;
+        }
+    }
 
     protected void processInverseRelations(MappingConfigContext context, EntityMappingBuilder emb) {
         List<RelationMappingBuilder> keyRelations = new ArrayList<>();
@@ -86,8 +106,15 @@ public class RelationMapper implements Mapper {
                 //find one-to-many in target entity.
                 RelationMappingBuilder inverse = findRelation(targetEmb, emb, RelationType.ONE_TO_MANY, rmb.getInverseRelationName());
                 if(null == inverse) {
+                    inverse = createInverseOneToManyRelation(emb, targetEmb, rmb);
+
+                    //is inverse already created?
+                    if(isInverseAlreadyCreated(targetEmb, inverse)) {
+                        continue;
+                    }
+
                     //create the virtual inverse one-to-many relation in target entity.
-                    targetEmb.addRelationMapping(createInverseOneToManyRelation(emb, targetEmb, rmb));
+                    targetEmb.addRelationMapping(inverse);
                 }else{
                     inverse.setInverseRelationName(rmb.getName());
                     rmb.setInverseRelationName(inverse.getName());
@@ -96,11 +123,20 @@ public class RelationMapper implements Mapper {
             }
 
             //create many-to-many for another side.
-            if(RelationType.MANY_TO_MANY.equals(type)) {
+            if(RelationType.MANY_TO_MANY.equals(type) && !rmb.isEmbedded()) {
                 RelationMappingBuilder inverse = findRelation(targetEmb, emb, RelationType.MANY_TO_MANY, rmb.getInverseRelationName());
                 if(null == inverse) {
                     //create the virtual inverse relation in target entity.
-                    targetEmb.addRelationMapping(createInverseManyToManyRelation(emb, targetEmb, rmb));
+                    EntityMappingBuilder joinEmb = context.getEntityMapping(rmb.getJoinEntityName());
+
+                    inverse = createInverseManyToManyRelation(emb, targetEmb, joinEmb, rmb);
+
+                    //is inverse already created?
+                    if(isInverseAlreadyCreated(targetEmb, inverse)) {
+                        continue;
+                    }
+
+                    targetEmb.addRelationMapping(inverse);
                 }else{
                     inverse.setInverseRelationName(rmb.getName());
                     rmb.setInverseRelationName(inverse.getName());
@@ -108,38 +144,15 @@ public class RelationMapper implements Mapper {
                 continue;
             }
         }
+    }
 
-        //create many-to-many by join entity.
-        if(emb.getKeyFieldMappings().size() > 1 && keyRelations.size() == 2) {
-            int keySize = 0;
-            for(RelationMappingBuilder r : keyRelations) {
-                keySize += r.getJoinFields().size();
-            }
-
-            if(emb.getKeyFieldMappings().size() == keySize) {
-                EntityMappingBuilder entity1 = context.getEntityMapping(keyRelations.get(0).getTargetEntityName());
-                EntityMappingBuilder entity2 = context.getEntityMapping(keyRelations.get(1).getTargetEntityName());
-
-                RelationMappingBuilder manyToMany1 =
-                        findManyToManyRelation(entity1, entity2.getEntityName(), emb.getEntityName());
-
-                RelationMappingBuilder manyToMany2 =
-                        findManyToManyRelation(entity2, entity1.getEntityName(), emb.getEntityName());
-
-                if(null == manyToMany1) {
-                    manyToMany1 = createManyToManyRelation(entity1, entity2, emb);
-                    entity1.addRelationMapping(manyToMany1);
-                }
-
-                if(null == manyToMany2) {
-                    manyToMany2 = createManyToManyRelation(entity2, entity1, emb);
-                    entity2.addRelationMapping(manyToMany2);
-                }
-
-                manyToMany1.setInverseRelationName(manyToMany2.getName());
-                manyToMany2.setInverseRelationName(manyToMany1.getName());
-            }
+    protected boolean isInverseAlreadyCreated(EntityMappingBuilder emb, RelationMappingBuilder inverse) {
+        RelationMappingBuilder existence = emb.getRelationMapping(inverse.getName());
+        if(null == existence) {
+            return false;
         }
+        return existence.getTargetEntityName().equalsIgnoreCase(inverse.getTargetEntityName())
+                && existence.getType().equals(inverse.getType());
     }
 
     protected RelationMappingBuilder findManyToManyRelation(EntityMappingBuilder emb, String targetEntityName, String joinEntityName) {
@@ -159,44 +172,26 @@ public class RelationMapper implements Mapper {
         return null;
     }
 
-	protected void processRelationMapping(MappingConfigContext context,EntityMappingBuilder emb,RelationMappingBuilder rmb) {
-		RelationType type = rmb.getType();
-		
-		if(type == RelationType.MANY_TO_ONE){
-			processManyToOneMapping(context, emb, rmb);
-			return;
-		}
-		
-		if(type == RelationType.MANY_TO_MANY) {
-			processManyToManyMapping(context, emb, rmb);
-			return;
-		}
-		
-		throw new MappingConfigException("Relation type '" + type + "' defines at entity '" + emb.getEntityName() + "' does not supports now");
-	}
-	
 	protected void processManyToOneMapping(MappingConfigContext context,EntityMappingBuilder emb,RelationMappingBuilder rmb) {
 		//check target entity exists
-		EntityMappingBuilder targetEmb = verifyTargetEntity(context, emb, rmb);
+		EntityMappingBuilder targetEmb = context.getEntityMapping(rmb.getTargetEntityName());
 
 		//resolve relation's name
-		if(Strings.isEmpty(rmb.getName())){
-			rmb.setName(targetEmb.getEntityName());
-		}
-		
+        autoSetRelationName(emb, targetEmb, rmb);
+
 		//resolve referenced fields
-		List<FieldMappingBuilder> referencedFields = targetEmb.getKeyFieldMappings();
+		List<FieldMappingBuilder> referencedFields = targetEmb.getIdFieldMappings();
 		if(referencedFields.isEmpty()){
-			throw new MetadataException("Cannot create ManyToOne relation on entity '" + emb.getEntityName() + 
+			throw new MetadataException("Cannot create ManyToOne relation on entity '" + emb.getEntityName() +
 										"', target entity '" + targetEmb.getEntityName() + "' must defines key fields");
 		}
-		
+
 		if(!rmb.getJoinFields().isEmpty()){
 			verifyManyToOneJoinFields(context, emb, targetEmb, referencedFields, rmb);
 		}else{
 			createManyToOneJoinFields(context, emb, targetEmb, referencedFields, rmb);
 		}
-		
+
 		//Auto create local fields
 		for(JoinFieldMappingBuilder joinField : rmb.getJoinFields()) {
 
@@ -220,44 +215,143 @@ public class RelationMapper implements Mapper {
 		}
 
 		//create foreign key
-		createManyToOneForeignKey(context, emb, targetEmb, rmb);
+        if(!rmb.isLogical() && !targetEmb.isRemote()) {
+            createManyToOneForeignKey(context, emb, targetEmb, rmb);
+        }
 	}
-	
+
+    protected void autoSetRelationName(EntityMappingBuilder entity, EntityMappingBuilder target, RelationMappingBuilder rmb) {
+        if(Strings.isEmpty(rmb.getName())) {
+            int i = 0;
+            for (; ; ) {
+                String name = i > 0 ? target.getEntityName() + "_" + i : target.getEntityName();
+                if (null == entity.getRelationMapping(name)) {
+                    rmb.setName(name);
+                    break;
+                }
+                i++;
+            }
+        }
+    }
+
 	protected void processManyToManyMapping(MappingConfigContext context,EntityMappingBuilder emb,RelationMappingBuilder rmb) {
 		//check target entity exists
-		EntityMappingBuilder targetEmb = verifyTargetEntity(context, emb, rmb);
-		
+		EntityMappingBuilder targetEmb = context.getEntityMapping(rmb.getTargetEntityName());
+
 		//resolve relation's name
-		if(Strings.isEmpty(rmb.getName())){
-			rmb.setName(targetEmb.getEntityName());
-		}
-		
+        autoSetRelationName(emb, targetEmb, rmb);
+
+        if(rmb.isEmbedded()) {
+            return;
+        }
+
 		EntityMappingBuilder joinEmb = verifyJoinEntity(context, emb, targetEmb, rmb);
 		if(null == joinEmb){
 			//create join entity
-			createManyToManyJoinEntity(context, emb, targetEmb, rmb);
+			joinEmb = createManyToManyJoinEntity(context, emb, targetEmb, rmb);
 		}else{
 			//verify join entity
 			verifyManyToManyJoinEntity(context, emb, targetEmb, joinEmb, rmb);
 		}
+
+		//check and set join fields
+        if(null == rmb.getJoinFields() || rmb.getJoinFields().isEmpty()) {
+            autoCreateManyToManyJoinFields(emb, targetEmb, joinEmb, rmb);
+        }
 	}
-	
+
+    protected void autoCreateManyToManyJoinFields(EntityMappingBuilder entity, EntityMappingBuilder target,
+                                                  EntityMappingBuilder join, RelationMappingBuilder rmb) {
+
+	    List<FieldMappingBuilder> keyFields = join.getIdFieldMappings();
+	    if(null == keyFields || keyFields.isEmpty()) {
+	        throw new MetadataException("Primary key fields must be exists at join entity '" + join.getEntityName() + "'");
+        }
+
+        final int totalFields = entity.getIdFieldMappings().size() + target.getIdFieldMappings().size();
+
+	    //find id join fields.
+        if(keyFields.size() == totalFields) {
+            RelationMappingBuilder rm1 =
+                    join.findIdRelationByTargetFields(entity.getEntityName(), entity.getIdFieldNames());
+
+            RelationMappingBuilder rm2 =
+                    join.findIdRelationByTargetFields(target.getEntityName(), target.getIdFieldNames());
+
+            if(null != rm1 && null != rm2) {
+                addManyToManyJoinFields(entity, target, rmb, rm1, rm2);
+                return;
+            }
+        }
+
+        if(keyFields.size() == 1){
+            //find unique join fields.
+            for(UniqueKeyBuilder key : join.getKeys()) {
+                if(key.getFields().size() == totalFields) {
+                    RelationMappingBuilder rm1 =
+                            join.findUniqueRelationByTargetFields(key.getName(), entity.getEntityName(), entity.getIdFieldNames());
+
+                    RelationMappingBuilder rm2 =
+                            join.findUniqueRelationByTargetFields(key.getName(), target.getEntityName(), target.getIdFieldNames());
+
+                    if(null != rm1 && null != rm2) {
+                        addManyToManyJoinFields(entity, target, rmb, rm1, rm2);
+                        return;
+                    }
+                }
+            }
+        }
+
+        throw new MetadataException("Can't found valid many-to-many join fields at join entity '" + join.getEntityName() + "'");
+    }
+
+    protected void addManyToManyJoinFields(EntityMappingBuilder entity, EntityMappingBuilder target, RelationMappingBuilder rmb,
+                                           RelationMappingBuilder rm1, RelationMappingBuilder rm2) {
+
+        for(JoinFieldMappingBuilder jf : rm1.getJoinFields()) {
+            JoinFieldMappingBuilder m2mJf = new JoinFieldMappingBuilder();
+            m2mJf.setLocalFieldName(jf.getLocalFieldName());
+            m2mJf.setReferencedFieldName(jf.getReferencedFieldName());
+            m2mJf.setLocalPrimaryKey(true);
+            m2mJf.setLocalColumnName(jf.getLocalColumnName());
+            m2mJf.setReferencedEntityName(entity.getEntityName());
+            rmb.getJoinFields().add(m2mJf);
+        }
+
+        for(JoinFieldMappingBuilder jf : rm2.getJoinFields()) {
+            JoinFieldMappingBuilder m2mJf = new JoinFieldMappingBuilder();
+            m2mJf.setLocalFieldName(jf.getLocalFieldName());
+            m2mJf.setReferencedFieldName(jf.getReferencedFieldName());
+            m2mJf.setLocalPrimaryKey(true);
+            m2mJf.setLocalColumnName(jf.getLocalColumnName());
+            m2mJf.setReferencedEntityName(target.getEntityName());
+            rmb.getJoinFields().add(m2mJf);
+        }
+    }
+
 	protected EntityMappingBuilder verifyTargetEntity(MappingConfigContext context,EntityMappingBuilder emb,RelationMappingBuilder rmb) {
 		//check target entity exists
 		EntityMappingBuilder targetEmb = null;
-		
+
 		if(null != rmb.getTargetEntityType()){
 			targetEmb = context.tryGetEntityMapping(rmb.getTargetEntityType());
-			
+
 			if(null == targetEmb){
-				throw new MetadataException("No entity mapping to targetEntityType '" + rmb.getTargetEntityType() + "' defines at entity '" + emb.getEntityName() + "'");
+                if(rmb.getTargetEntityType()!=null) {
+                    targetEmb = context.getMappingStrategy().createRemoteEntityMappingByClass(context, rmb.getTargetEntityType());
+                    context.addEntityMapping(targetEmb);
+                    rmb.setRemote(true);
+                    rmb.setLogical(true);
+                }else {
+                    throw new MetadataException("No entity mapping to targetEntityType '" + rmb.getTargetEntityType() + "' defines at entity '" + emb.getEntityName() + "'");
+                }
 			}
-			
+
 			rmb.setTargetEntityName(targetEmb.getEntityName());
 
 		}else if(!Strings.isEmpty(rmb.getTargetEntityName())){
 			targetEmb = context.tryGetEntityMapping(rmb.getTargetEntityName());
-			
+
 			if(null == targetEmb){
 				throw new MetadataException("No entity mapping to targetEntityName '" + rmb.getTargetEntityName() + "' defines at entity '" + emb.getEntityName() + "'");
 			}
@@ -265,35 +359,35 @@ public class RelationMapper implements Mapper {
 
 		return targetEmb;
 	}
-	
+
 	protected EntityMappingBuilder verifyJoinEntity(MappingConfigContext context,EntityMappingBuilder emb,EntityMappingBuilder targetEmb, RelationMappingBuilder rmb) {
 		//check join entity exists
 		EntityMappingBuilder joinEmb = null;
-		
+
 		if(null != rmb.joinEntityType){
 			joinEmb = context.tryGetEntityMapping(rmb.getJoinEntityType());
-			
+
 			if(null == joinEmb){
 				throw new MetadataException("No entity mapping to joinEntityType '" + rmb.getJoinEntityType() + "' defines at entity '" + emb.getEntityName() + "'");
 			}
-			
+
 			rmb.setJoinEntityName(joinEmb.getEntityName());
 
 		}else if(!Strings.isEmpty(rmb.getJoinEntityName())){
 			joinEmb = context.tryGetEntityMapping(rmb.getJoinEntityName());
 		}
-		
+
 		if(null == joinEmb) {
 			for(RelationMappingBuilder trmb : targetEmb.getRelationMappings()) {
 				if(trmb.getType() == RelationType.MANY_TO_MANY) {
-					if(trmb.getTargetEntityType().equals(emb.getEntityClass()) || 
+					if(trmb.getTargetEntityType().equals(emb.getEntityClass()) ||
 					   trmb.getTargetEntityName().equals(emb.getEntityName())) {
-						
+
 						if(null != trmb.joinEntityType){
 							return context.tryGetEntityMapping(trmb.getJoinEntityType());
 						}else if(!Strings.isEmpty(rmb.getJoinEntityName())){
 							return context.tryGetEntityMapping(rmb.getJoinEntityName());
-						}	
+						}
 
 						return null;
 					}
@@ -303,19 +397,19 @@ public class RelationMapper implements Mapper {
 
 		return joinEmb;
 	}
-	
+
 	protected void verifyManyToOneJoinFields(MappingConfigContext context,
-											 EntityMappingBuilder emb, EntityMappingBuilder targetEmb, 
+											 EntityMappingBuilder emb, EntityMappingBuilder targetEmb,
 											 List<FieldMappingBuilder> referencedFields,  RelationMappingBuilder rmb) {
-		
+
 		List<JoinFieldMappingBuilder> joinFields = rmb.getJoinFields();
-		
+
 		if(joinFields.size() != referencedFields.size()) {
 			throw new MetadataException("The size of 'JoinField' must equals to size of key fields in target entity '" + targetEmb.getEntityName() + "'");
 		}
-		
+
 		for(JoinFieldMappingBuilder jf : joinFields) {
-			
+
 			if(Strings.isEmpty(jf.getReferencedFieldName())){
 				if(referencedFields.size() == 1) {
 					jf.setReferencedFieldName(referencedFields.get(0).getFieldName());
@@ -329,18 +423,18 @@ public class RelationMapper implements Mapper {
 						}
 					}
 					if(null == referencedFieldName){
-						throw new MetadataException("Cannot determinate the referenced field name of join field '" + 
+						throw new MetadataException("Cannot determinate the referenced field name of join field '" +
 												   jf.getLocalFieldName() + "' in entity '" + emb.getEntityName() + "'");
 					}
 					jf.setReferencedFieldName(referencedFieldName);
 				}
 			}
-			
+
 		}
 	}
-	
+
 	protected void createManyToOneJoinFields(MappingConfigContext context,
-											 EntityMappingBuilder emb, EntityMappingBuilder targetEmb, 
+											 EntityMappingBuilder emb, EntityMappingBuilder targetEmb,
 											 List<FieldMappingBuilder> foreignKeyFields, RelationMappingBuilder rmb) {
 
 
@@ -381,92 +475,104 @@ public class RelationMapper implements Mapper {
             rmb.addJoinField(jfmb);
         }
 	}
-	
+
 	protected FieldMappingBuilder createManyToOneLocalField(MappingConfigContext    context,
 											 EntityMappingBuilder    emb,
-											 EntityMappingBuilder    targetEmb, 
-											 RelationMappingBuilder  rmb, 
+											 EntityMappingBuilder    targetEmb,
+											 RelationMappingBuilder  rmb,
 											 JoinFieldMappingBuilder jfmb){
-		
+
 		FieldMappingBuilder local = context.getMappingStrategy()
 										   .createFieldMappingByJoinField(context, emb, targetEmb, rmb, jfmb);
-		
+
 		emb.addFieldMapping(local);
 
         return local;
 	}
-	
-	
+
+
 	protected void updateManyToOneLocalField(MappingConfigContext    context,
 											 EntityMappingBuilder    emb,
-											 EntityMappingBuilder    targetEmb, 
-											 RelationMappingBuilder  rmb, 
+											 EntityMappingBuilder    targetEmb,
+											 RelationMappingBuilder  rmb,
 											 JoinFieldMappingBuilder jfmb,
 											 FieldMappingBuilder     lfmb){
 
 		context.getMappingStrategy().updateFieldMappingByJoinField(context, emb, targetEmb, rmb, jfmb, lfmb);
 	}
-	
+
 	protected void createManyToOneForeignKey(MappingConfigContext   context,
 											 EntityMappingBuilder   emb,
 											 EntityMappingBuilder   targetEmb,
 											 RelationMappingBuilder rmb) {
-		
+
 		DbForeignKeyBuilder fk = new DbForeignKeyBuilder();
-		
-		fk.setName(context.getNamingStrategy().getForeignKeyName(emb.getEntityName(), targetEmb.getEntityName(), rmb.getName()));
+
+        if(!Strings.isEmpty(rmb.getForeignKeyName())) {
+            fk.setName(rmb.getForeignKeyName());
+        }else{
+            fk.setName(context.getNamingStrategy().getForeignKeyName(emb.getEntityName(), targetEmb.getEntityName(), rmb.getName()));
+        }
 		fk.setForeignTable(targetEmb.getTableSchemaObjectName());
-		
+        fk.setOnDelete(rmb.getForeignKeyOnDelete());
+        fk.setOnUpdate(rmb.getForeignKeyOnUpdate());
+
 		for(JoinFieldMappingBuilder jfmb : rmb.getJoinFields()) {
 			FieldMappingBuilder localField   = emb.findFieldMappingByName(jfmb.getLocalFieldName());
 			FieldMappingBuilder foreignField = targetEmb.findFieldMappingByName(jfmb.getReferencedFieldName());
-			
+
 			fk.addColumn(new DbForeignKeyColumn(localField.getColumn().getName(), foreignField.getColumn().getName()));
 		}
-		
-		emb.getTable().addForeignKey(fk);
+
+		if(!emb.getTable().getForeignKeys().stream().anyMatch((fk1) -> fk1.matchColumns(fk))) {
+            emb.getTable().addForeignKey(fk);
+        }
 	}
-	
-	protected void createManyToManyJoinEntity(MappingConfigContext   context,
-											  EntityMappingBuilder   emb,
-											  EntityMappingBuilder   targetEmb,
-											  RelationMappingBuilder rmb) {
-		
+
+	protected EntityMappingBuilder createManyToManyJoinEntity(MappingConfigContext   context,
+                                                              EntityMappingBuilder   emb,
+                                                              EntityMappingBuilder   targetEmb,
+                                                              RelationMappingBuilder rmb) {
+
 		String joinEntityName  = rmb.getJoinEntityName();
 		String joinTableName   = rmb.getJoinTableName();
-		
+
 		if(Strings.isEmpty(joinEntityName)) {
 			joinEntityName = context.getNamingStrategy().getJoinEntityName(emb.getTableName(), targetEmb.getTableName());
 		}
-		
+
 		if(Strings.isEmpty(joinTableName)) {
 			joinTableName = context.getNamingStrategy().entityToTableName(joinEntityName);
 		}
-		
+
 		EntityMappingBuilder joinEmb = new EntityMappingBuilder();
-		
+
 		joinEmb.setEntityName(joinEntityName);
 		joinEmb.setTableCatalog(emb.getTableCatalog());
 		joinEmb.setTableSchema(emb.getTableSchema());
 		joinEmb.setTablePrefix(emb.getTablePrefix());
 		joinEmb.setTableName(joinTableName);
-		
+
 		//create many-to-one relations
 		RelationMappingBuilder rmb1 = createManyToOneRelationMapping(joinEmb, emb);
 		RelationMappingBuilder rmb2 = createManyToOneRelationMapping(joinEmb, targetEmb);
-		
+
 		processManyToOneMapping(context, joinEmb, rmb1);
 		processManyToOneMapping(context, joinEmb, rmb2);
-		
+
+		joinEmb.addRelationMapping(rmb1);
+		joinEmb.addRelationMapping(rmb2);
+
 		for(FieldMappingBuilder fmb : joinEmb.getFieldMappings()) {
 			fmb.getColumn().setPrimaryKey(true);
 		}
-		
+
 		rmb.setJoinEntityName(joinEntityName);
 		context.addEntityMapping(joinEmb);
+		return joinEmb;
 	}
 
-    protected RelationMappingBuilder createManyToManyRelation(EntityMappingBuilder emb, EntityMappingBuilder target, EntityMappingBuilder join) {
+    protected RelationMappingBuilder createManyToManyRelation(EntityMappingBuilder emb, EntityMappingBuilder target, EntityMappingBuilder join, int i) {
         RelationMappingBuilder r = new RelationMappingBuilder();
 
         r.setName(emb.getEntityName() + "_" + join.getEntityName() + "_" + target.getEntityName());
@@ -474,18 +580,23 @@ public class RelationMapper implements Mapper {
         r.setTargetEntity(target);
         r.setJoinEntity(join);
 
+        //The same entities
+        if(emb.getEntityName().equals(target.getEntityName())) {
+            r.setName(r.getName() + "_" + String.valueOf(i));
+        }
+
         return r;
     }
-	
+
 	protected RelationMappingBuilder createManyToOneRelationMapping(EntityMappingBuilder emb,EntityMappingBuilder targetEmb) {
 		RelationMappingBuilder rmb = new RelationMappingBuilder();
-		
+
 		rmb.setType(RelationType.MANY_TO_ONE);
-		
+
 		rmb.setTargetEntityType(targetEmb.getEntityClass());
 		rmb.setTargetEntityName(targetEmb.getEntityName());
 		rmb.setOptional(false);
-		
+
 		return rmb;
 	}
 
@@ -505,37 +616,39 @@ public class RelationMapper implements Mapper {
         oneToMany.setName(name);
         oneToMany.setInverseRelationName(manyToOne.getName());
         oneToMany.setType(RelationType.ONE_TO_MANY);
-        oneToMany.setVirtual(true);
+        oneToMany.setAutoGenerated(true);
         oneToMany.setTargetEntity(local);
-
+        oneToMany.setOptional(Boolean.TRUE);
+        
         return oneToMany;
     }
 
     /**
      * Creates the inverse many-to-many for the target entity.
      */
-    protected RelationMappingBuilder createInverseManyToManyRelation(EntityMappingBuilder local,
-                                                                     EntityMappingBuilder target,
-                                                                     RelationMappingBuilder localManyToMany) {
+    protected RelationMappingBuilder createInverseManyToManyRelation(EntityMappingBuilder   source,
+                                                                     EntityMappingBuilder   target,
+                                                                     EntityMappingBuilder   join,
+                                                                     RelationMappingBuilder relation) {
 
-        String name = "inverse_" + localManyToMany.getName() + "_" + local.getEntityName();
+        String name = "inverse_" + relation.getName() + "_" + source.getEntityName();
 
-        localManyToMany.setInverseRelationName(name);
+        RelationMappingBuilder inverse = new RelationMappingBuilder();
+        inverse.setName(name);
+        inverse.setType(RelationType.MANY_TO_MANY);
+        inverse.setAutoGenerated(true);
+        inverse.setTargetEntity(source);
+        inverse.setJoinEntityName(relation.getJoinEntityName());
+        inverse.setJoinEntityType(relation.getJoinEntityType());
+        inverse.setJoinTableName(relation.getJoinTableName());
+        autoCreateManyToManyJoinFields(target, source, join, inverse);
 
-        RelationMappingBuilder targetManyToMany = new RelationMappingBuilder();
+        inverse.setInverseRelationName(relation.getName());
+        relation.setInverseRelationName(name);
 
-        targetManyToMany.setName(name);
-        targetManyToMany.setInverseRelationName(localManyToMany.getName());
-        targetManyToMany.setType(RelationType.MANY_TO_MANY);
-        targetManyToMany.setVirtual(true);
-        targetManyToMany.setTargetEntity(local);
-        targetManyToMany.setJoinEntityName(localManyToMany.getJoinEntityName());
-        targetManyToMany.setJoinEntityType(localManyToMany.getJoinEntityType());
-        targetManyToMany.setJoinTableName(localManyToMany.getJoinTableName());
-
-        return targetManyToMany;
+        return inverse;
     }
-	
+
 	protected void verifyManyToManyJoinEntity(MappingConfigContext   context,
 											  EntityMappingBuilder   emb,
 											  EntityMappingBuilder   targetEmb,
@@ -546,7 +659,7 @@ public class RelationMapper implements Mapper {
 	}
 
     protected void processRelationProperties(MappingConfigContext context, EntityMappingBuilder emb) {
-        if(null == emb.getEntityClass()) {
+        if(null == emb.getEntityClass() || emb.isRemote()) {
             return;
         }
 
@@ -566,13 +679,12 @@ public class RelationMapper implements Mapper {
                 }else{
                     targetClass = bp.getType();
                 }
-
+                RelationPropertyBuilder rp = new RelationPropertyBuilder(bp);
                 EntityMappingBuilder targetEntity = context.tryGetEntityMapping(targetClass);
                 if(null == targetEntity) {
-                    throw new MappingConfigException("The target class '" + targetClass + "' is not an entity");
+                	throw new MappingConfigException("The target class '" + targetClass + "' is not an entity");
                 }
 
-                RelationPropertyBuilder rp = new RelationPropertyBuilder(bp);
                 rp.setName(bp.getName());
                 rp.setMany(many);
                 rp.setTargetEntityName(targetEntity.getEntityName());
@@ -584,34 +696,93 @@ public class RelationMapper implements Mapper {
                     resolveToOneRelation(context, emb, targetEntity, rp, relation);
                 }
 
+                //check already created?
+                if(isRelationPropertyAlreadyCreated(emb, rp)) {
+                    continue;
+                }
+
                 emb.addRelationProperty(rp);
             }
         }
     }
 
+    protected boolean isRelationPropertyAlreadyCreated(EntityMappingBuilder emb, RelationPropertyBuilder rp) {
+        RelationPropertyBuilder exists = emb.getRelationProperty(rp.getName());
+        if(null == exists) {
+            return false;
+        }
+        if(!exists.getTargetEntityName().equalsIgnoreCase(rp.getTargetEntityName())) {
+            return false;
+        }
+        if(null != exists.getBeanProperty() && null != rp.getBeanProperty() && exists.getBeanProperty() != rp.getBeanProperty()) {
+            return false;
+        }
+        if(!exists.getRelationName().equalsIgnoreCase(rp.getRelationName())){
+            return false;
+        }
+        return true;
+    }
+
     protected void resolveToManyRelation(MappingConfigContext context,
-                                         EntityMappingBuilder emb, EntityMappingBuilder targetEntity,
+                                         EntityMappingBuilder emb, EntityMappingBuilder target,
                                          RelationPropertyBuilder rp, String relation) {
+
+        if(!Strings.isEmpty(relation)) {
+            RelationMappingBuilder rm = emb.getRelationMapping(relation);
+            if(null == rm) {
+                throw new MappingConfigException("No relation '" + relation + "' exists at entity '" + emb.getEntityName());
+            }
+            updateToManyRelationProperty(context, rp, rm);
+            return;
+        }
+
         //find many-to-one relation in local entity
-        RelationMappingBuilder rm = findRelation(emb, targetEntity, RelationType.ONE_TO_MANY, relation);
+        RelationMappingBuilder rm = emb.findSingleOrNullByTargetEntity(RelationType.ONE_TO_MANY, target.getEntityName());
         if(null != rm) {
-            rp.setRelationName(rm.getName());
-            rp.setOptional(rm.isOptional());
+            updateToManyRelationProperty(context, rp, rm);
             return;
         }
 
         //find many-to-many relation in local entity.
-        rm = findRelation(emb, targetEntity, RelationType.MANY_TO_MANY, relation);
+        rm = emb.findSingleOrNullByTargetEntity(RelationType.MANY_TO_MANY, target.getEntityName());
         if(null != rm) {
-            rp.setRelationName(rm.getName());
-            rp.setOptional(rm.isOptional());
-            setManyToManyJoinEntity(rp, context.getEntityMapping(rm.getJoinEntityName()));
+            updateToManyRelationProperty(context, rp, rm);
             return ;
         }
 
+        //auto create many-to-many relation
+        for(EntityMappingBuilder join : context.getEntityMappings()){
+            if(join.mayBeJoinEntityOf(emb, target)) {
+                //create many-to-many by join entity.
+                rm = new RelationMappingBuilder();
+                rm.setName("gen_" + emb.getEntityName() + "_" + join.getEntityName() + "_" + target.getEntityName());
+                rm.setType(RelationType.MANY_TO_MANY);
+                rm.setTargetEntity(target);
+                rm.setJoinEntity(join);
+                autoCreateManyToManyJoinFields(emb, target, join, rm);
+
+                emb.addRelationMapping(rm);
+                target.addRelationMapping(createInverseManyToManyRelation(emb, target, join, rm));
+
+                updateToManyRelationProperty(context, rp, rm);
+                return;
+            }
+        }
+
         throw new MappingConfigException("No unique to-many relation " + relation + " between entity '" +
-                emb.getEntityClass() + "' and target entity '" +
-                targetEntity.getEntityName() + "'");
+                                        emb.getEntityClass() + "' and target entity '" +
+                                        target.getEntityName() + "'");
+    }
+
+    protected void updateToManyRelationProperty(MappingConfigContext context, RelationPropertyBuilder rp, RelationMappingBuilder rm) {
+        if(rm.getType() == RelationType.ONE_TO_MANY) {
+            rp.setRelationName(rm.getName());
+            rp.setOptional(rm.isOptional());
+        }else {
+            rp.setRelationName(rm.getName());
+            rp.setOptional(rm.isOptional());
+            setManyToManyJoinEntity(rp, context.getEntityMapping(rm.getJoinEntityName()));
+        }
     }
 
     protected void setManyToManyJoinEntity(RelationPropertyBuilder rp, EntityMappingBuilder joinEntity) {
@@ -622,15 +793,23 @@ public class RelationMapper implements Mapper {
                                         EntityMappingBuilder emb, EntityMappingBuilder targetEntity,
                                         RelationPropertyBuilder rp, String relation) {
 
-        //find many-to-one in local entity.
-        RelationMappingBuilder rm = findRelation(emb,targetEntity, RelationType.MANY_TO_ONE, relation);
+        if(!Strings.isEmpty(relation)) {
+            RelationMappingBuilder rm = emb.getRelationMapping(relation);
+            if(null == rm) {
+                throw new MappingConfigException("No relation '" + relation + "' exists at entity '" + emb.getEntityName());
+            }
+            rp.setRelationName(rm.getName());
+            rp.setOptional(rm.isOptional());
+            return;
+        }
 
+        //find many-to-one in local entity.
+        RelationMappingBuilder rm = emb.findSingleOrNullByTargetEntity(RelationType.MANY_TO_ONE, targetEntity.getEntityName());
         if(null == rm) {
             throw new MappingConfigException("No unique many-to-one relation " + relation + " in entity '" +
                     emb.getEntityClass() + "' for target entity '" +
                     targetEntity.getEntityName() + "'");
         }
-
         rp.setRelationName(rm.getName());
         rp.setOptional(rm.isOptional());
     }
@@ -649,11 +828,16 @@ public class RelationMapper implements Mapper {
         }
 
         if(Strings.isEmpty(relation)) {
-
-            if(rms.size() == 1) {
-                return rms.get(0);
+            if(rms.size() > 1) {
+                return null;
+            }else {
+                RelationMappingBuilder inverse = rms.get(0);
+                if(Strings.isEmpty(inverse.getInverseRelationName())) {
+                    return inverse;
+                }else {
+                    return null;
+                }
             }
-
         }else{
 
             for(RelationMappingBuilder rm : rms) {

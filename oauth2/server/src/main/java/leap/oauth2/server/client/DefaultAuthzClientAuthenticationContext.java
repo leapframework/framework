@@ -20,6 +20,7 @@ package leap.oauth2.server.client;
 
 import leap.core.validation.Errors;
 import leap.core.validation.SimpleErrors;
+import leap.lang.NamedError;
 import leap.web.Request;
 import leap.web.Response;
 
@@ -44,8 +45,9 @@ public class DefaultAuthzClientAuthenticationContext implements AuthzClientAuthe
     }
 
     @Override
-    public void addError(String name, String message) {
-        errors.add(name,message);
+    public void addError(String name, String code, String message) {
+        NamedError error = new NamedError(name,code,message); 
+        errors.add(error);
     }
 
     @Override

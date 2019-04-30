@@ -16,22 +16,49 @@
 
 package leap.web.api.mvc.params;
 
+import leap.lang.Strings;
+import leap.lang.json.JsonIgnore;
+import leap.lang.text.scel.ScelExpr;
 import leap.lang.value.Page;
-import leap.web.Params;
+import leap.web.annotation.NonParam;
 import leap.web.annotation.ParamsWrapper;
 import leap.web.annotation.QueryParam;
+import leap.web.api.query.*;
+import leap.web.exception.BadRequestException;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @ParamsWrapper
 public class QueryOptions extends QueryOptionsBase {
 
-    protected @QueryParam("page_size")   Integer pageSize;
-    protected @QueryParam("page")        Integer pageIndex;
-    protected @QueryParam("limit")       Integer limit;
-    protected @QueryParam("offset")      Integer offset;  //0-based
-    protected @QueryParam("total")       boolean total;
-    protected @QueryParam("orderby")     String  orderBy;
-    protected @QueryParam("filters")     String  filters;
-    protected @QueryParam("joins")       String  joins;
+    protected @QueryParam("page_size")  Integer pageSize;
+    protected @QueryParam("page")       Integer pageIndex;
+    protected @QueryParam("limit")      Integer limit;
+    protected @QueryParam("offset")     Integer offset;  //0-based
+    protected @QueryParam("total")      boolean total;
+    protected @QueryParam("orderby")    String  orderBy;
+    protected @QueryParam("viewId")     String  viewId;
+    protected @QueryParam("filters")    String  filters;
+    protected @QueryParam("aggregates") String  aggregates;
+    protected @QueryParam("groupby")    String  groupBy;
+    protected @QueryParam("joins")      String  joins;
+
+    @NonParam
+    @JsonIgnore
+    protected ScelExpr resolvedFilters;
+
+    @NonParam
+    @JsonIgnore
+    protected OrderBy resolvedOrderBy;
+
+    @NonParam
+    @JsonIgnore
+    protected Join[] resolvedJoins;
+
+    @NonParam
+    @JsonIgnore
+    protected Map<String, Object> queryParams;
 
     public Integer getPageSize() {
         return pageSize;
@@ -41,12 +68,20 @@ public class QueryOptions extends QueryOptionsBase {
         this.pageSize = pageSize;
     }
 
+    public void setPage_size(Integer pageSize) {
+        this.pageSize = pageSize;
+    }
+
     public Integer getPageIndex() {
         return pageIndex;
     }
 
     public void setPageIndex(Integer pageIndex) {
         this.pageIndex = pageIndex;
+    }
+
+    public void setPage(Integer page) {
+        this.pageIndex = page;
     }
 
     public Integer getLimit() {
@@ -81,12 +116,44 @@ public class QueryOptions extends QueryOptionsBase {
         this.orderBy = orderBy;
     }
 
+    public void setOrderby(String orderBy) {
+        this.orderBy = orderBy;
+    }
+
+    public String getViewId() {
+        return viewId;
+    }
+
+    public void setViewId(String viewId) {
+        this.viewId = viewId;
+    }
+
     public String getFilters() {
         return filters;
     }
 
     public void setFilters(String filters) {
         this.filters = filters;
+    }
+
+    public String getAggregates() {
+        return aggregates;
+    }
+
+    public void setAggregates(String aggregates) {
+        this.aggregates = aggregates;
+    }
+
+    public String getGroupBy() {
+        return groupBy;
+    }
+
+    public void setGroupBy(String groupBy) {
+        this.groupBy = groupBy;
+    }
+
+    public void setGropuby(String gropuby) {
+        this.groupBy = gropuby;
     }
 
     public String getJoins() {
@@ -97,19 +164,34 @@ public class QueryOptions extends QueryOptionsBase {
         this.joins = joins;
     }
 
+    public Map<String, Object> getQueryParams() {
+        return queryParams;
+    }
+
+    public void setQueryParams(Map<String, Object> queryParams) {
+        this.queryParams = queryParams;
+    }
+
+    public void setQueryParam(String name, Object value) {
+        if(null == queryParams) {
+            queryParams = new HashMap<>();
+        }
+        queryParams.put(name, value);
+    }
+
     public Page getPage(int defaultPageSize) {
-        if(null != limit || null != offset) {
-            if(null == limit) {
+        if (null != limit || null != offset) {
+            if (null == limit) {
                 return Page.limit(defaultPageSize, offset);
-            }else{
+            } else {
                 return Page.limit(limit, null == offset ? 0 : offset);
             }
         }
 
-        if(null != pageIndex || null != pageSize) {
-            if(null == pageIndex) {
+        if (null != pageIndex || null != pageSize) {
+            if (null == pageIndex) {
                 return Page.indexOf(1, pageSize);
-            }else{
+            } else {
                 return Page.indexOf(pageIndex, null == pageSize ? defaultPageSize : pageSize);
             }
         }
@@ -117,4 +199,47 @@ public class QueryOptions extends QueryOptionsBase {
         return Page.indexOf(1, defaultPageSize);
     }
 
+    public ScelExpr getResolvedFilters() {
+        if (null == resolvedFilters && !Strings.isEmpty(filters)) {
+            try {
+                resolvedFilters = FiltersParser.parse(filters);
+            } catch (Exception e) {
+                throw new BadRequestException("Invalid filter expr '" + filters + "', " + e.getMessage(), e);
+            }
+        }
+        return resolvedFilters;
+    }
+
+    public void setResolvedFilters(ScelExpr resolvedFilters) {
+        this.resolvedFilters = resolvedFilters;
+    }
+
+    public OrderBy getResolvedOrderBy() {
+        if (null == resolvedOrderBy && !Strings.isEmpty(orderBy)) {
+            resolvedOrderBy = OrderByParser.parse(orderBy);
+        }
+        return resolvedOrderBy;
+    }
+
+    public void setResolvedOrderBy(OrderBy resolvedOrderBy) {
+        this.resolvedOrderBy = resolvedOrderBy;
+    }
+
+    public Join[] getResolvedJoins() {
+        if (null == resolvedJoins && !Strings.isEmpty(joins)) {
+            resolvedJoins = JoinParser.parse(joins);
+        }
+        return resolvedJoins;
+    }
+
+    public void setResolvedJoins(Join[] resolvedJoins) {
+        this.resolvedJoins = resolvedJoins;
+    }
+
+    public void clearResolved() {
+        this.resolvedJoins = null;
+        this.resolvedOrderBy = null;
+        this.resolvedFilters = null;
+        this.resolvedExpands = null;
+    }
 }

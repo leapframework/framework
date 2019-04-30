@@ -30,5 +30,7 @@ public interface AppProperty {
 
     void updateProcessedValue(String value);
 
+    boolean isOverride();
+
     boolean isSystem();
 }

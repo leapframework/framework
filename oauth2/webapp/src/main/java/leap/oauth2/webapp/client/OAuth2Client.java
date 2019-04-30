@@ -16,21 +16,19 @@
 
 package leap.oauth2.webapp.client;
 
-import leap.core.security.ClientPrincipal;
+import leap.web.security.client.SimpleClientPrincipal;
 
-public class OAuth2Client implements ClientPrincipal {
-	
-	private static final long serialVersionUID = -3438856033102626691L;
-	
-	protected String clientId;
+import java.util.Map;
 
-	public OAuth2Client(String clientId) {
-	    this.clientId = clientId;
-	}
+public class OAuth2Client extends SimpleClientPrincipal {
 
-	@Override
-    public Object getId() {
-	    return clientId;
-	}
+    private static final long serialVersionUID = -3438856033102626691L;
 
+    public OAuth2Client(String id) {
+        super(id);
+    }
+
+    public OAuth2Client(String id, Map<String, Object> properties) {
+        super(id, properties);
+    }
 }

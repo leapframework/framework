@@ -17,6 +17,7 @@ package leap.orm.sql.ast;
 
 import leap.core.el.ExpressionLanguage;
 import leap.lang.Strings;
+import leap.lang.Try;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.params.Params;
@@ -26,6 +27,7 @@ import leap.orm.sql.parser.Lexer;
 import leap.orm.sql.parser.SqlParser;
 
 import java.io.IOException;
+import java.util.Map;
 
 public class Tag extends DynamicNode implements SqlTag {
 
@@ -34,9 +36,10 @@ public class Tag extends DynamicNode implements SqlTag {
     protected final String  name;
     protected final String  content;
 
-    protected Object             executionObject;
-    protected ExpressionLanguage el;
-    protected SqlTagProcessor    processor;
+    protected Map<String, Object> vars;
+    protected Object              executionObject;
+    protected ExpressionLanguage  el;
+    protected SqlTagProcessor     processor;
 
     public Tag(String name, String content) {
         this.name = name;
@@ -49,6 +52,16 @@ public class Tag extends DynamicNode implements SqlTag {
 
     public String getContent() {
         return content;
+    }
+
+    @Override
+    public Map<String, Object> getVars() {
+        return vars;
+    }
+
+    @Override
+    public void setVars(Map<String, Object> vars) {
+        this.vars = vars;
     }
 
     @Override
@@ -89,6 +102,19 @@ public class Tag extends DynamicNode implements SqlTag {
                 buildStatement(context, sql, stm, params, expr);
             }
         }
+    }
+
+    @Override
+    public boolean resolveDynamic(SqlContext context, Sql sql, Appendable buf, Params params) throws IOException {
+        if(null != processor && processor.supportsToFragment()) {
+            String s = processor.toFragment(context, sql, this, params);
+            if(Strings.isBlank(s)) {
+                return false;
+            }
+            buf.append(s);
+            return true;
+        }
+        return super.resolveDynamic(context, sql, buf, params);
     }
 
     public String process(SqlContext context, Sql sql, Params params) {

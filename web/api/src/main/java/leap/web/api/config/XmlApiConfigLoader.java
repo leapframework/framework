@@ -19,6 +19,8 @@
 package leap.web.api.config;
 
 import leap.core.AppConfigException;
+import leap.core.BeanFactory;
+import leap.core.annotation.Inject;
 import leap.core.config.AppConfigContext;
 import leap.core.config.AppConfigListener;
 import leap.core.config.AppConfigPaths;
@@ -36,6 +38,7 @@ import leap.web.api.meta.model.MApiPermission;
 import leap.web.api.meta.model.MApiResponseBuilder;
 import leap.web.api.permission.ResourcePermission;
 import leap.web.api.permission.ResourcePermissions;
+import leap.web.api.restd.sql.SqlOperationProvider;
 import leap.web.api.spec.swagger.SwaggerConstants;
 import leap.web.config.DefaultModuleConfig;
 import leap.web.config.ModuleConfigExtension;
@@ -107,6 +110,7 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
     protected static final String DELETE               = "delete";
     protected static final String FIND                 = "find";
     protected static final String QUERY                = "query";
+    protected static final String COUNT                = "count";
     protected static final String OVERRIDE             = "override";
     protected static final String SQL_OPERATION        = "sql-operation";
     protected static final String SQL_KEY              = "sql-key";
@@ -372,6 +376,10 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
             api = new DefaultApiConfig(name, basePath,reader.getSource());
             api.setBasePackage(basePackage);
             extensions.addApi(api);
+        }else{
+            if(!Strings.isEmpty(basePath)) {
+                ((DefaultApiConfig)api).setBasePath(basePath);
+            }
         }
 
         if (null != defaultAnonymous) {
@@ -387,12 +395,15 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
         }
 
         if (null != api.getRestdConfig()) {
-            api.getRestdConfig().setDataSourceName(reader.resolveAttribute(RESTD_DATA_SOURCE));
+            String dataSourceName = reader.resolveAttribute(RESTD_DATA_SOURCE);
+            if(!Strings.isEmpty(dataSourceName)) {
+                api.getRestdConfig().setDataSourceName(dataSourceName);
+            }
         }
 
         readApi(context, reader, api);
 
-        addWebModule(context, api);
+        addOrUpdateWebModule(context, api);
     }
 
     protected void readApi(AppConfigContext context, XmlReader reader, ApiConfigurator api) {
@@ -468,7 +479,7 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
                 }
 
                 if (reader.isStartElement(MODELS)) {
-                    readModels(context, reader, api::addModel);
+                    readModels(context, reader, api::addModelConfig);
                     continue;
                 }
 
@@ -513,16 +524,21 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
         }
     }
 
-    protected void addWebModule(AppConfigContext context, ApiConfigurator api) {
-        ApiConfig apiConf = api.config();
-        String basePackage = apiConf.getBasePackage();
+    protected void addOrUpdateWebModule(AppConfigContext context, ApiConfigurator api) {
+        ApiConfig ac = api.config();
+        String basePackage = ac.getBasePackage();
         if (Strings.isNotEmpty(basePackage)) {
+            context.getAdditionalPackages().add(basePackage);
+
+            String moduleName = ac.getName() + "_api";
+
             DefaultModuleConfig module = new DefaultModuleConfig();
-            module.setName(apiConf.getName());
-            module.setBasePath(apiConf.getBasePath());
-            module.setBasePackage(apiConf.getBasePackage());
+            module.setName(moduleName);
+            module.setBasePath(ac.getBasePath());
+            module.setBasePackage(ac.getBasePackage());
             ModuleConfigExtension extension = context.getOrCreateExtension(ModuleConfigExtension.class);
-            extension.addModule(module);
+
+            extension.setModule(module);
         }
 
     }
@@ -699,7 +715,7 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
 
             //sql-operation
             if (reader.isStartElement(SQL_OPERATION)) {
-                rc.addSqlOperation(readSqlOperation(rc, reader));
+                rc.addOperation(readSqlOperation(rc, reader));
                 return;
             }
         });
@@ -716,6 +732,7 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
         Boolean delete = reader.getBooleanAttribute(DELETE);
         Boolean find = reader.getBooleanAttribute(FIND);
         Boolean query = reader.getBooleanAttribute(QUERY);
+        Boolean count = reader.getBooleanAttribute(COUNT);
 
         Model model = config.getModel(name);
         if (null == model) {
@@ -732,6 +749,7 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
         if (config.isReadonlyModel(name)) {
             model.setFindOperationEnabled(true);
             model.setQueryOperationEnabled(true);
+            model.setCountOperationEnabled(true);
 
             model.setCreateOperationEnabled(false);
             model.setUpdateOperationEnabled(false);
@@ -741,6 +759,7 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
         if (null != read) {
             model.setFindOperationEnabled(read);
             model.setQueryOperationEnabled(read);
+            model.setCountOperationEnabled(read);
         }
 
         if (null != write) {
@@ -769,21 +788,42 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
             model.setQueryOperationEnabled(query);
         }
 
+        if (null != count) {
+            model.setCountOperationEnabled(count);
+        }
+
         final RestdConfig.Model m = model;
 
         reader.loopInsideElement(() -> {
 
             if(reader.isStartElement(SQL_OPERATION)) {
-                m.addSqlOperation(readSqlOperation(config, reader));
+                m.addOperation(readSqlOperation(config, reader));
             }
         });
     }
 
-    private RestdConfig.SqlOperation readSqlOperation(RestdConfig config, XmlReader reader) {
-        RestdConfig.SqlOperation op = new RestdConfig.SqlOperation();
+    private RestdConfig.Operation readSqlOperation(RestdConfig config, XmlReader reader) {
+        RestdConfig.Operation op = new RestdConfig.Operation();
 
         op.setName(reader.getRequiredAttribute(NAME));
-        op.setSqlKey(reader.getRequiredAttribute(SQL_KEY));
+        op.setType(SqlOperationProvider.TYPE);
+
+        String sqlKey    = reader.getAttribute(SQL_KEY);
+        String sqlScript = reader.getElementTextAndEnd();
+
+        if(Strings.isAllEmpty(sqlKey, sqlScript)) {
+            throw new ApiConfigException("One of the key or script must not be empty of sql operation '" +
+                    op.getName() + "', at " + reader.getCurrentLocation());
+        }
+
+        if(!Strings.isEmpty(sqlKey)) {
+            op.putArgument(SqlOperationProvider.ARG_SQL_KEY, sqlKey);
+        }
+
+        if(!Strings.isEmpty(sqlScript)) {
+            op.setScript(sqlScript);
+            op.setScriptPath(sqlKey);
+        }
 
         return op;
     }

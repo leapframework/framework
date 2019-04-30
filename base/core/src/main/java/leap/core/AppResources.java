@@ -16,7 +16,9 @@
 
 package leap.core;
 
-import leap.lang.*;
+import leap.lang.Classes;
+import leap.lang.Strings;
+import leap.lang.Try;
 import leap.lang.annotation.Internal;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -28,7 +30,6 @@ import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
 import leap.lang.resource.Resources;
 import leap.lang.servlet.ServletResource;
-import leap.lang.servlet.Servlets;
 import leap.lang.servlet.SimpleServletResource;
 
 import javax.servlet.ServletContext;
@@ -47,6 +48,8 @@ public class AppResources {
     static final String CP_META_PREFIX      = "META-INF/conf";
     static final String CP_APP_PREFIX       = "conf";
 
+    static final String CP_MODULES_PREFIX_WITHTOU_START   = "META-INF/leap/modules";
+
     private static final String CP_CORE_LOCATION      = Strings.format("classpath*:{0}/**/*", CP_CORE_PREFIX);
     private static final String CP_FRAMEWORK_LOCATION = Strings.format("classpath*:{0}/**/*", CP_FRAMEWORK_PREFIX);
     private static final String CP_MODULES_LOCATION   = Strings.format("classpath*:{0}/**/*", CP_MODULES_PREFIX);
@@ -64,6 +67,10 @@ public class AppResources {
             throw new IllegalStateException("No resources for app config '" + config + "'");
         }
         return inst;
+    }
+
+    public static AppResources tryGet(AppConfig config) {
+        return instances.get(config);
     }
 
     public static Resource[] convertTo(AppResource[] resources) {
@@ -114,6 +121,19 @@ public class AppResources {
         return url.contains(CP_CORE_PREFIX) || url.contains(CP_FRAMEWORK_PREFIX);
     }
 
+    public static AppResource[] scanMetaAndApp(String name) {
+        List<String> patterns = new ArrayList<>();
+        patterns.add("classpath*:" + CP_META_PREFIX + "/" + name + "/**/*.*");
+        patterns.add("classpath*:" + CP_META_PREFIX + "/" + name + ".*");
+        patterns.add("classpath:"  + CP_APP_PREFIX  + "/" + name + "/**/*.*");
+        patterns.add("classpath:"  + CP_APP_PREFIX  + "/" + name + ".*");
+
+        List<Resource> list = Resources.scan(patterns.toArray(new String[0])).toList();
+        List<AppResource> ress = new ArrayList<>();
+        list.forEach(r -> ress.add(new SimpleAppResource(r)));
+        return ress.toArray(new AppResource[0]);
+    }
+
     protected static boolean isCoreResource(String cp) {
         return null != cp && cp.startsWith(CP_CORE_PREFIX);
     }
@@ -123,7 +143,7 @@ public class AppResources {
     }
 
     protected static boolean isModuleResource(String cp) {
-        return null != cp && cp.startsWith(CP_MODULES_PREFIX);
+        return null != cp && cp.startsWith(CP_MODULES_PREFIX_WITHTOU_START);
     }
 
     protected static boolean isMetaResource(String cp) {
@@ -175,10 +195,11 @@ public class AppResources {
         Resources.scan(config.getProfiled(new String[]{CP_PROFILE_LOCATION})).forEach(this::add);
 
         //load local resources(only for development profile).
+        /*
         if(dev) {
             Resources.scan(CP_LOCAL_LOCATION).forEach(this::add);
         }
-
+        */
         if(log.isDebugEnabled()) {
             for(AppResource ar : sortedResources) {
 
@@ -223,7 +244,7 @@ public class AppResources {
         this.defaultSearchPatterns = patterns.toArray(new String[0]);
     }
 
-    protected int resolveSortOrder(Resource resource) {
+    protected float resolveSortOrder(Resource resource) {
         /* sort orders :
                 core         : 0
                 framework    : 1
@@ -243,35 +264,35 @@ public class AppResources {
                 test:conf_*  : 11
          */
 
-        int order = Integer.MAX_VALUE;
+        float order = 99999.0f;
 
         String cp = resource.getClasspath();
         if(null != cp) {
             if(isCoreResource(cp)) {
-                order = 0;
+                order = 0.0f;
             }else if(isFrameworkResource(cp)) {
-                order = 1;
+                order = 1.0f;
             }else if(isModuleResource(cp)) {
-                order = 2;
+                order = 2.0f;
             }else if(isMetaResource(cp)) {
-                order = 3;
+                order = 3.0f;
             }else if(isAppResource(cp)) {
 
                 if(isJarResource(resource)) {
-                    order = 4;
+                    order = 4.0f;
                 }else if(isTestResource(resource)) {
-                    order = 10;
+                    order = 10.0f;
                 }else {
-                    order = 8;
+                    order = 8.0f;
                 }
 
                 if(isAppProfiledResource(cp)) {
-                    order += 1;
+                    order += 1.0f;
                 }
             }
         }else {
             if(resource instanceof ServletResource) {
-                order = 6;
+                order = 6.0f;
             }
         }
 
@@ -316,13 +337,13 @@ public class AppResources {
         }
         */
 
-        int order = resolveSortOrder(resource);
+        float order = resolveSortOrder(resource);
         boolean defaultOverride = resolveDefaultOverride(resource);
 
         doAdd(resource, defaultOverride, order, path);
     }
 
-    private void doAdd(Resource resource, boolean defaultOverride, int order, String path) {
+    private void doAdd(Resource resource, boolean defaultOverride, float order, String path) {
         resourceUrls.add(resource.getURLString());
         sortedResources.add(new SimpleAppResource(resource, defaultOverride, order, path));
     }
@@ -392,11 +413,13 @@ public class AppResources {
         }
 
         // conf-local/{filename}
+        /*
         if(dev) {
             for(String filename : filenames) {
                 patterns.add(CP_APP_PREFIX + PROFILE_SEPARATOR + "local/" + filename);
             }
         }
+        */
     }
 
     private AppResource[] searchResources(String[] patterns, String name, String suffix){

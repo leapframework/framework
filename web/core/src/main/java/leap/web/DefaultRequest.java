@@ -20,6 +20,7 @@ import leap.core.AppException;
 import leap.core.Session;
 import leap.core.i18n.MessageSource;
 import leap.core.security.Authentication;
+import leap.core.security.SecurityContext;
 import leap.core.security.UserPrincipal;
 import leap.core.validation.Validation;
 import leap.lang.Arrays2;
@@ -48,8 +49,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 import java.io.*;
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -65,31 +68,32 @@ public class DefaultRequest extends Request {
     protected final RequestWrapper req;
     protected final Params         params = new SimpleParams();
 
-    private String                     lowercaseRequestPath;
-    private String                     serverUrl;
-    private String                     reverseProxyServerUrl;
-    private String                     contextUrl;
-    private String                     reverseProxyContextUrl;
-    private String                     servicePath;
-    private String                     servicePathWithoutExtension;
-    private String                     pathExtension;
-    private MessageSource              messageSource;
-    private AssetSource                assetSource;
-    private ViewSource                 viewSource;
-    private FormatManager              formatManager;
-    private String                     themeName;
-    private Locale                     locale;
-    private MimeType                   contentType;
-    private MimeType[]                 acceptableMediaTypes;
-    private Map<String, Object>        parameters;
-    private Validation                 validation;
-    private ActionContext              actionContext;
-    private Result                     result;
+    private String                    lowercaseRequestPath;
+    private String                    serverUrl;
+    private String                    reverseProxyServerUrl;
+    private String                    contextUrl;
+    private String                    reverseProxyContextUrl;
+    private String                    servicePath;
+    private String                    servicePathWithoutExtension;
+    private String                    pathExtension;
+    private MessageSource             messageSource;
+    private AssetSource               assetSource;
+    private ViewSource                viewSource;
+    private FormatManager             formatManager;
+    private String                    themeName;
+    private Locale                    locale;
+    private MimeType                  contentType;
+    private MimeType[]                acceptableMediaTypes;
+    private Map<String, Object>       parameters;
+    private Validation                validation;
+    private ActionContext             actionContext;
+    private Result                    result;
     private Boolean                   ajax;
     private Boolean                   pjax;
     private Boolean                   debug;
     private Boolean                   multipart;
     private Boolean                   gzipSupport;
+    private SecurityContext           securityContext;
     private UserPrincipal             user;
     private Authentication            authentication;
     private Session                   session;
@@ -97,286 +101,297 @@ public class DefaultRequest extends Request {
     private Map<String, Object>       queryParamsMap;
     private Boolean                   acceptValidationError;
     private Router                    externalRouter;
-	
-	public DefaultRequest(App app, AppHandler handler, RequestWrapper servletRequest, Response response){
-		this.app    		 = app;
-		this.config			 = app.getWebConfig();
-		this.handler		 = handler;
-		this.response		 = response;
-		this.req             = servletRequest;
-		this.overrideMethod  = req.getHeader(Headers.X_HTTP_METHOD_OVERRIDE);
-		this.method			 = Strings.upperCase(Strings.isEmpty(overrideMethod) ? req.getMethod() : overrideMethod);
-		this.path    		 = extractRequestPath();
-		this.locale          = req.getLocale();
-		this.resolveServicePath(path);
-	}
-	
-	@Override
+
+    public DefaultRequest(App app, AppHandler handler, RequestWrapper servletRequest, Response response) {
+        this.app = app;
+        this.config = app.getWebConfig();
+        this.handler = handler;
+        this.response = response;
+        this.req = servletRequest;
+        this.overrideMethod = req.getHeader(Headers.X_HTTP_METHOD_OVERRIDE);
+        this.method = Strings.upperCase(Strings.isEmpty(overrideMethod) ? req.getMethod() : overrideMethod);
+        this.path = extractRequestPath();
+        this.locale = req.getLocale();
+        this.resolveServicePath(path);
+    }
+
+    @Override
     public void removeAttribute(String name) {
-		req.removeAttribute(name);
+        req.removeAttribute(name);
     }
 
-	@Override
+    @Override
     public void setAttribute(String name, Object value) {
-	    req.setAttribute(name, value);
+        req.setAttribute(name, value);
     }
 
-	@Override
+    @Override
     public Object getAttribute(String name) {
-	    return req.getAttribute(name);
+        return req.getAttribute(name);
     }
 
-	@Override
+    @Override
     public AppContext getAppContext() {
-	    return app.context();
+        return app.context();
     }
 
-	@Override
+    @Override
     public App app() {
-	    return app;
+        return app;
     }
-	
-	@Override
+
+    @Override
     public Response response() {
-	    return response;
+        return response;
     }
 
-	@Override
+    @Override
     public Params params() {
-	    return params;
+        return params;
     }
 
-	@Override
+    @Override
     public Session getSession() {
-		if(null == session){
-			session = new ServletSession(req.getSession());
-		}
-		return session;
+        if (null == session) {
+            session = new ServletSession(req.getSession());
+        }
+        return session;
     }
-	
-	@Override
+
+    @Override
     public Session getSession(boolean create) {
-		HttpSession hs = req.getSession(create);
-		
-		if(null == hs){
-			session = null;
-		}else if(null == session || session.getServletSession() != hs) {
-			session = new ServletSession(hs);
-		}
+        HttpSession hs = req.getSession(create);
 
-		return session;
+        if (null == hs) {
+            session = null;
+        } else if (null == session || session.getServletSession() != hs) {
+            session = new ServletSession(hs);
+        }
+
+        return session;
     }
-	
-	@Override
+
+    @Override
     public MessageSource getMessageSource() {
-		return messageSource;
-	}
+        return messageSource;
+    }
 
-	@Override
+    @Override
     public void setMessageSource(MessageSource messageSource) {
-		this.messageSource = messageSource;
-	}
+        this.messageSource = messageSource;
+    }
 
-	@Override
+    @Override
     public Locale getLocale() {
-	    return locale;
+        return locale;
     }
-	
-	@Override
+
+    @Override
     public void setLocale(Locale locale) {
-		this.locale = locale;
+        this.locale = locale;
     }
-	
-	@Override
+
+    @Override
     public AssetSource getAssetSource() {
-	    return assetSource;
+        return assetSource;
     }
 
-	@Override
+    @Override
     public void setAssetSource(AssetSource assetSource) {
-		this.assetSource = assetSource;
+        this.assetSource = assetSource;
     }
 
-	@Override
+    @Override
     public ViewSource getViewSource() {
-	    return viewSource;
+        return viewSource;
     }
 
-	@Override
+    @Override
     public void setViewSource(ViewSource viewSource) {
-		this.viewSource = viewSource;
+        this.viewSource = viewSource;
     }
 
-	@Override
+    @Override
     public String getThemeName() {
-	    return themeName;
+        return themeName;
     }
 
-	@Override
+    @Override
     public void setThemeName(String themeName) {
-		this.themeName = themeName;
+        this.themeName = themeName;
     }
 
-	@Override
+    @Override
     public boolean isDebug() {
-		if(null == debug){
-			debug = app.config().isDebug();
-		}
-	    return debug;
+        if (null == debug) {
+            debug = app.config().isDebug();
+        }
+        return debug;
     }
 
-	@Override
+    @Override
     public void setDebug(boolean debug) {
-		this.debug = debug;
+        this.debug = debug;
     }
 
-	@Override
+    @Override
     public String getContextPath() {
-	    return req.getContextPath();
+        return req.getContextPath();
     }
 
-	@Override
+    @Override
     public String getUri() {
-	    return req.getRequestURI();
+        return req.getRequestURI();
     }
-	
-	@Override
+
+    @Override
     public String getUriWithQueryString() {
-	    String qs = getQueryString();
-	    if(null == qs || qs.length() == 0) {
-	        return req.getRequestURI();
-	    }else{
-	        return req.getRequestURI() + "?" + getQueryString();    
-	    }
+        String qs = getQueryString();
+        if (null == qs || qs.length() == 0) {
+            return req.getRequestURI();
+        } else {
+            return req.getRequestURI() + "?" + getQueryString();
+        }
     }
 
     @Override
     public String getPath() {
-	    return path;
+        return path;
     }
-	
-	@Override
+
+    @Override
     public String getPath(boolean lowercase) {
-		if(lowercase){
-			if(null == lowercaseRequestPath){
-				lowercaseRequestPath = path.toLowerCase();
-			}
-			return lowercaseRequestPath;
-		}
-		return path;
+        if (lowercase) {
+            if (null == lowercaseRequestPath) {
+                lowercaseRequestPath = path.toLowerCase();
+            }
+            return lowercaseRequestPath;
+        }
+        return path;
     }
-	
-	@Override
+
+    @Override
     public int getContentLength() {
-	    return req.getContentLength();
+        return req.getContentLength();
     }
 
-	@Override
+    @Override
     public MimeType getContentType() {
-		if(null == contentType){
-			String ct = req.getContentType();
-			if(!Strings.isEmpty(ct)){
-				contentType = MimeTypes.parse(ct);
-			}
-		}
-	    return contentType;
+        if (null == contentType) {
+            String ct = req.getContentType();
+            if (!Strings.isEmpty(ct)) {
+                contentType = MimeTypes.parse(ct);
+            }
+        }
+        return contentType;
     }
 
-	@Override
+    @Override
     public String getContentTypeValue() {
-	    return req.getContentType();
+        return req.getContentType();
     }
 
-	@Override
+    @Override
     public MimeType[] getAcceptableMediaTypes() {
-		if(null == acceptableMediaTypes){
-			List<MimeType> mediaTypes = MimeTypes.parseList(getHeader(Headers.ACCEPT));
-			if(mediaTypes.isEmpty()){
-				acceptableMediaTypes = MimeTypes.EMPTY_ARRAY;
-			}else{
-				acceptableMediaTypes = mediaTypes.toArray(new MimeType[mediaTypes.size()]);
-			}
-		}
-	    return acceptableMediaTypes;
+        if (null == acceptableMediaTypes) {
+            List<MimeType> mediaTypes = MimeTypes.parseList(getHeader(Headers.ACCEPT));
+            if (mediaTypes.isEmpty()) {
+                acceptableMediaTypes = MimeTypes.EMPTY_ARRAY;
+            } else {
+                acceptableMediaTypes = mediaTypes.toArray(new MimeType[mediaTypes.size()]);
+            }
+        }
+        return acceptableMediaTypes;
     }
 
-	@Override
+    @Override
     public String getQueryString() {
-	    return req.getQueryString();
+        return req.getQueryString();
     }
 
-	@Override
+    @Override
     public String getBasePath() {
-	    return app.getBasePath();
+        return app.getBasePath();
     }
-	
-	@Override
+
+    @Override
     public String getServerUrl() {
-	    if(null == serverUrl) {
-	        URI uri;
-	        try {
-	            uri = new URI(req.getRequestURL().toString());
+        if (null == serverUrl) {
+            URI uri;
+            try {
+                uri = new URI(req.getRequestURL().toString());
             } catch (URISyntaxException e) {
                 throw new IllegalStateException("Invalid syntax of request url '" + req.getRequestURL() + "' : " + e.getMessage(), e);
             }
-	        
-	        StringBuilder url = new StringBuilder();
-	        
-	        //{scheme}://{host}[:port]
-	        url.append(uri.getScheme()).append("://")
-	           .append(uri.getHost());
-	        
-	        int port = uri.getPort();
-	        if( port != -1 && ( req.isSecure() ? port != 443 : port != 80 )) {
-	            url.append(':').append(port);
-	        }
-	        
-	        serverUrl = url.toString();
-	    }
-	    
+
+            StringBuilder url = new StringBuilder();
+
+            //{scheme}://{host}[:port]
+            url.append(uri.getScheme()).append("://")
+                    .append(uri.getHost());
+
+            int port = uri.getPort();
+            if (port != -1 && (req.isSecure() ? port != 443 : port != 80)) {
+                url.append(':').append(port);
+            }
+
+            serverUrl = url.toString();
+        }
+
         return serverUrl;
     }
+
     /**
      * get the serverUrl, if has reverse proxy，you need set：host and x-forwarded-proto in header，such as:
-     *
+     * <p>
      * host:localhost:8080
      * x-forwarded-proto:https
-     *
+     * <p>
      * otherwise, return <code>serverUrl()</code>
-     *
      */
     @Override
     public String getReverseProxyServerUrl() {
-	    if(null == reverseProxyServerUrl){
-            String schema= getHeader("x-forwarded-proto");
-            String host = getHeader("host");
-
-            if(Strings.isEmpty(schema) || Strings.isEmpty(host)){
-                return getServerUrl();
+        if (null == reverseProxyServerUrl) {
+            String schema = getHeader("x-forwarded-proto");
+            String host   = getHeader("x-forwarded-host");
+            if (Strings.isEmpty(host)) {
+                host = getHeader("host");
             }
-            
-            schema+="://";
-            String url=schema+host;
-            url=regularUrl(url);
+            URI uri;
+            try {
+                uri = new URI(req.getRequestURL().toString());
+                if (Strings.isEmpty(schema)) {
+                    schema = uri.getScheme();
+                }
+                if (Strings.isEmpty(host)) {
+                    host = uri.getHost();
+                }
+            } catch (URISyntaxException e) {
+                throw new IllegalStateException("Invalid syntax of request url '" + req.getRequestURL() + "' : " + e.getMessage(), e);
+            }
+
+            schema += "://";
+            String url = schema + host;
+            url = regularUrl(url);
             reverseProxyServerUrl = url;
         }
         return reverseProxyServerUrl;
     }
-    
-    protected String regularUrl(String url){
+
+    protected String regularUrl(String url) {
         //remove default port
         url += "/";
-        if(url.startsWith("https") || url.startsWith("HTTPS")){
+        if (url.startsWith("https") || url.startsWith("HTTPS")) {
             url = url.replaceFirst(":443/", "/");
-        }else{
+        } else {
             url = url.replaceFirst(":80/", "/");
         }
-        return url.substring(0,url.length()-1);
+        return url.substring(0, url.length() - 1);
     }
-    
+
     @Override
     public String getContextUrl() {
-        if(null == contextUrl) {
+        if (null == contextUrl) {
             contextUrl = getServerUrl() + getContextPath();
         }
         return contextUrl;
@@ -384,91 +399,111 @@ public class DefaultRequest extends Request {
 
     @Override
     public String getReverseProxyContextUrl() {
-	    if(null == reverseProxyContextUrl){
+        if (null == reverseProxyContextUrl) {
             reverseProxyContextUrl = getReverseProxyServerUrl() + getContextPath();
         }
         return reverseProxyContextUrl;
     }
 
     @Override
+    public String getRealRemoteHost() {
+        String ipAddress = getHeader("x-forwarded-for");
+        if (ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = getHeader("Proxy-Client-IP");
+        }
+        if (ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = getHeader("WL-Proxy-Client-IP");
+        }
+        if (ipAddress != null && ipAddress.length() > 15) {
+            if (ipAddress.indexOf(",") > 0) {
+                ipAddress = ipAddress.substring(0, ipAddress.indexOf(","));
+            }
+        }
+        if (null == ipAddress || Strings.isEmpty(ipAddress)) {
+            ipAddress = req.getRemoteHost();
+        }
+        return ipAddress;
+    }
+
+    @Override
     public String getServicePath() {
-	    return servicePath;
+        return servicePath;
     }
-	
-	@Override
+
+    @Override
     public String getServicePathWithoutExtension() {
-	    return servicePathWithoutExtension;
+        return servicePathWithoutExtension;
     }
 
-	@Override
+    @Override
     public String getPathExtension() {
-	    return pathExtension;
+        return pathExtension;
     }
-	
-	@Override
+
+    @Override
     public boolean hasPathExtension() {
-	    return !"".equals(pathExtension);
+        return !"".equals(pathExtension);
     }
 
-	@Override
+    @Override
     public String getMethod() {
-	    return method;
+        return method;
     }
 
-	@Override
+    @Override
     public String getOverrideMethod() {
-	    return overrideMethod;
+        return overrideMethod;
     }
 
-	@Override
+    @Override
     public String getRawMethod() {
-	    return req.getMethod();
-    }
-	
-	@Override
-    public String getParameter(String name) {
-		if(config.isAutoTrimParameters()){
-			//Auto trim request parameters
-			String s = req.getParameter(name);
-			return null == s ? null : s.trim();
-		}else{
-			return req.getParameter(name);
-		}
+        return req.getMethod();
     }
 
-	@Override
+    @Override
+    public String getParameter(String name) {
+        if (config.isAutoTrimParameters()) {
+            //Auto trim request parameters
+            String s = req.getParameter(name);
+            return null == s ? null : s.trim();
+        } else {
+            return req.getParameter(name);
+        }
+    }
+
+    @Override
     public String[] getParameterValues(String name) {
-	    String[] values = req.getParameterValues(name);
-	    
-	    //Auto trim request parameters
-	    if(null != values && config.isAutoTrimParameters()){
-	    	for(int i=0;i<values.length;i++){
-	    		values[i] = Strings.trim(values[i]);
-	    	}
-	    }
-	    
-	    return values;
+        String[] values = req.getParameterValues(name);
+
+        //Auto trim request parameters
+        if (null != values && config.isAutoTrimParameters()) {
+            for (int i = 0; i < values.length; i++) {
+                values[i] = Strings.trim(values[i]);
+            }
+        }
+
+        return values;
     }
-	
-	@Override
+
+    @Override
     public boolean hasParameter(String name) {
-	    return req.getParameterMap().containsKey(name);
+        return req.getParameterMap().containsKey(name);
     }
-	
+
     @Override
     public Map<String, Object> getParameters() {
-		if(null == parameters){
-			parameters = initRequestParameters();
-		}
-		return parameters;
-	}
-    
+        if (null == parameters) {
+            parameters = initRequestParameters();
+        }
+        return parameters;
+    }
+
     @Override
     public String getQueryParameter(String name) {
         List<String> values = queryParams().get(name);
-        if(null == values) {
+        if (null == values) {
             return null;
-        }else{
+        } else {
             return values.get(0);
         }
     }
@@ -476,12 +511,12 @@ public class DefaultRequest extends Request {
     @Override
     public String[] getQueryParameterValues(String name) {
         Object v = getQueryParameters().get(name);
-        if(null == v){
+        if (null == v) {
             return null;
-        }else if(v instanceof String) {
-            return new String[]{(String)v};
-        }else{
-            return (String[])v;
+        } else if (v instanceof String) {
+            return new String[]{(String) v};
+        } else {
+            return (String[]) v;
         }
     }
 
@@ -489,94 +524,94 @@ public class DefaultRequest extends Request {
     public boolean hasQueryParameter(String name) {
         return queryParams().containsKey(name);
     }
-    
+
     @Override
     public Map<String, Object> getQueryParameters() {
-        if(null == queryParamsMap) {
-            
+        if (null == queryParamsMap) {
+
             queryParamsMap = new LinkedHashMap<String, Object>(queryParams().size());
-            for(Entry<String, List<String>> entry : queryParams().entrySet()) {
+            for (Entry<String, List<String>> entry : queryParams().entrySet()) {
                 List<String> values = entry.getValue();
-                if(values.size() == 1){
+                if (values.size() == 1) {
                     queryParamsMap.put(entry.getKey(), values.get(0));
-                }else{
+                } else {
                     queryParamsMap.put(entry.getKey(), values.toArray(new String[values.size()]));
                 }
             }
         }
-        
+
         return queryParamsMap;
     }
 
     protected Map<String, List<String>> queryParams() {
-        if(null == queryParams) {
+        if (null == queryParams) {
             queryParams = QueryStringParser.parseMap(getQueryString());
         }
         return queryParams;
     }
-	
-	@Override
+
+    @Override
     public Part getPart(String name) {
-	    try {
-	        return req.getPart(name);
+        try {
+            return req.getPart(name);
         } catch (IOException e) {
-        	throw new NestedIOException("Error getting part '" + name + "', " + e.getMessage(), e);
+            throw new NestedIOException("Error getting part '" + name + "', " + e.getMessage(), e);
         } catch (ServletException e) {
-        	throw new NestedServletException("Error getting part '" + name + "', " + e.getMessage(), e);
+            throw new NestedServletException("Error getting part '" + name + "', " + e.getMessage(), e);
         }
     }
 
-	@Override
+    @Override
     public Collection<Part> getParts() {
-	    try {
-	        return req.getParts();
+        try {
+            return req.getParts();
         } catch (IOException e) {
-        	throw new NestedIOException("Error getting parts, " + e.getMessage(), e);
+            throw new NestedIOException("Error getting parts, " + e.getMessage(), e);
         } catch (ServletException e) {
-        	throw new NestedServletException("Error getting parts, " + e.getMessage(), e);
+            throw new NestedServletException("Error getting parts, " + e.getMessage(), e);
         }
     }
-	
-	@Override
+
+    @Override
     public boolean hasHeader(String name) {
-		Enumeration<String> names = req.getHeaderNames();
-		while(names.hasMoreElements()) {
-			if(names.nextElement().equalsIgnoreCase(name)) {
-				return true;
-			}
-		}
-		return false;
+        Enumeration<String> names = req.getHeaderNames();
+        while (names.hasMoreElements()) {
+            if (names.nextElement().equalsIgnoreCase(name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
-	@Override
+    @Override
     public String getHeader(String name) {
-	    return req.getHeader(name);
+        return req.getHeader(name);
     }
-	
-	@Override
+
+    @Override
     public long getDateHeader(String name) {
-	    return req.getDateHeader(name);
+        return req.getDateHeader(name);
     }
-	
-	@Override
+
+    @Override
     public Cookie getCookie(String name) {
-		Cookie[] cookies = req.getCookies();
-		if(null == cookies || cookies.length == 0){
-			return null;
-		}
-		
-		for(Cookie cookie : cookies){
-			if(cookie.getName().equals(name)){
-				return cookie;
-			}
-		}
-		
-		return null;
+        Cookie[] cookies = req.getCookies();
+        if (null == cookies || cookies.length == 0) {
+            return null;
+        }
+
+        for (Cookie cookie : cookies) {
+            if (cookie.getName().equals(name)) {
+                return cookie;
+            }
+        }
+
+        return null;
     }
-	
-	@Override
+
+    @Override
     public Cookie[] getCookies() {
-	    return req.getCookies();
+        return req.getCookies();
     }
 
     @Override
@@ -591,171 +626,181 @@ public class DefaultRequest extends Request {
 
     @Override
     public InputStream getInputStream() {
-	    try {
-	        return req.getInputStream();
+        try {
+            return req.getInputStream();
         } catch (IOException e) {
-        	throw Exceptions.wrap(e);
+            throw Exceptions.wrap(e);
         }
     }
-	
-	@Override
+
+    @Override
     public BufferedReader getReader() throws NestedIOException {
-	    try {
-	        return req.getReader();
+        try {
+            return req.getReader();
         } catch (IOException e) {
-        	throw Exceptions.wrap(e);
+            throw Exceptions.wrap(e);
         }
     }
 
-	@Override
+    @Override
     public ServletContext getServletContext() {
-	    return app.getServletContext();
+        return app.getServletContext();
     }
 
-	@Override
+    @Override
     public HttpServletRequest getServletRequest() {
-	    return req;
+        return req;
     }
-	
-	@Override
+
+    @Override
     public boolean isSecure() {
-	    return req.isSecure();
+        return req.isSecure();
     }
 
-	@Override
+    @Override
     public String getCharacterEncoding() {
-	    return req.getCharacterEncoding();
+        return req.getCharacterEncoding();
     }
 
-	@Override
+    @Override
     public void setCharacterEncoding(String charset) {
-		try {
-	        req.setCharacterEncoding(charset);
+        try {
+            req.setCharacterEncoding(charset);
         } catch (UnsupportedEncodingException e) {
-        	Exceptions.wrapAndThrow("Unsupported charset '" + charset + "'", e);
+            Exceptions.wrapAndThrow("Unsupported charset '" + charset + "'", e);
         }
-	}
-	
-	@Override
+    }
+
+    @Override
     public boolean isAjax() {
-		if(null == ajax) {
-			ajax = config.getAjaxDetector().detectAjaxRequest(this);
-		}
-	    return ajax;
+        if (null == ajax) {
+            ajax = config.getAjaxDetector().detectAjaxRequest(this);
+        }
+        return ajax;
     }
-	
-	@Override
-	public void setAjax(boolean ajax) {
-		this.ajax = ajax;
-	}
-	
-	@Override
+
+    @Override
+    public void setAjax(boolean ajax) {
+        this.ajax = ajax;
+    }
+
+    @Override
     public boolean isPjax() {
-		if(null == pjax) {
-			pjax = config.getPjaxDetector().detectPjaxRequest(this);
-		}
-	    return pjax;
+        if (null == pjax) {
+            pjax = config.getPjaxDetector().detectPjaxRequest(this);
+        }
+        return pjax;
     }
 
-	@Override
+    @Override
     public void setPjax(boolean pjax) {
-		this.pjax = pjax;
+        this.pjax = pjax;
     }
 
-	@Override
+    @Override
     public boolean isMultipart() {
-		if(null == multipart) {
-			MimeType contentType = getContentType();
-			if(null == contentType){
-				return false;
-			}
-			//multipart/form-data
-			multipart = contentType.getType().equals("multipart") && contentType.getSubtype().equals("form-data");
-		}
-		return multipart;
-	}
-	
-	@Override
+        if (null == multipart) {
+            MimeType contentType = getContentType();
+            if (null == contentType) {
+                return false;
+            }
+            //multipart/form-data
+            multipart = contentType.getType().equals("multipart") && contentType.getSubtype().equals("form-data");
+        }
+        return multipart;
+    }
+
+    @Override
     public boolean isGzipSupport() {
-		if( null == gzipSupport) {
-			String encoding = req.getHeader(Headers.ACCEPT_ENCODING);
-			if(null != encoding && encoding.contains("gzip")) {
-				gzipSupport = true;
-			}else{
-				gzipSupport = false;
-			}
-		}
-		
-	    return gzipSupport;
+        if (null == gzipSupport) {
+            String encoding = req.getHeader(Headers.ACCEPT_ENCODING);
+            if (null != encoding && encoding.contains("gzip")) {
+                gzipSupport = true;
+            } else {
+                gzipSupport = false;
+            }
+        }
+
+        return gzipSupport;
     }
 
-	@Override
+    @Override
     public boolean isMethod(Method httpMethod) {
-	    return null == httpMethod ? false : getMethod().equalsIgnoreCase(httpMethod.name());
+        return null == httpMethod ? false : getMethod().equalsIgnoreCase(httpMethod.name());
     }
-	
-	@Override
-    public void forward(String path) throws ServletException,IOException {
+
+    @Override
+    public void forward(String path) throws ServletException, IOException {
         req.getRequestDispatcher(path).forward(req, response.getServletResponse());
-	}
-	
-	@Override
+    }
+
+    @Override
     public void forwardToView(String viewName) throws ServletException, IOException {
-		try {
-			View view = viewSource.getView(viewName, locale);
-			if(null == view) {
-				response.sendError(404,"View '" + viewName + "' not found");
-				return;
-			}
-	        view.render(this, response);
-		} catch (RuntimeException e){
-			throw e;
+        try {
+            View view = viewSource.getView(viewName, locale);
+            if (null == view) {
+                response.sendError(404, "View '" + viewName + "' not found");
+                return;
+            }
+            view.render(this, response);
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Throwable e) {
-        	throw new ServletException("Error forwarding to view '" + viewName + ", " + e.getMessage(), e);
+            throw new ServletException("Error forwarding to view '" + viewName + ", " + e.getMessage(), e);
         }
     }
-	
-	public void forwardToAction(String actionPath) throws ServletException, IOException {
-		try {
-	        if(!handler.handleAction(this, response, actionPath) ){
-	        	throw new AppException("Cannot forward to action '" + actionPath + "', not found");
-	        }
-		} catch (RuntimeException e){
-			throw e;
+
+    public void forwardToAction(String actionPath) throws ServletException, IOException {
+        try {
+            if (!handler.handleAction(this, response, actionPath)) {
+                throw new AppException("Cannot forward to action '" + actionPath + "', not found");
+            }
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Throwable e) {
-        	throw new ServletException("Error forwarding to action path '" + actionPath + ", " + e.getMessage(), e);
+            throw new ServletException("Error forwarding to action path '" + actionPath + ", " + e.getMessage(), e);
         }
-	}
+    }
 
-	@Override
-	public ActionContext getActionContext() {
-		return actionContext;
-	}
+    @Override
+    public ActionContext getActionContext() {
+        return actionContext;
+    }
 
-	@Override
-	public void setActionContext(ActionContext actionContext) {
-		this.actionContext = actionContext;
-	}
+    @Override
+    public void setActionContext(ActionContext actionContext) {
+        this.actionContext = actionContext;
+    }
 
-	@Override
+    @Override
     public Result getResult() {
-	    return result;
+        return result;
     }
 
-	@Override
+    @Override
     public void setResult(Result result) {
-		Assert.notNull(result,"The 'result' argument must not be null");
-		this.result = result;
-	}
-	
-	@Override
-    public UserPrincipal getUser() {
-	    return user;
+        Assert.notNull(result, "The 'result' argument must not be null");
+        this.result = result;
     }
 
-	@Override
+    @Override
+    public void setSecurityContext(SecurityContext context) {
+        this.securityContext = context;
+    }
+
+    @Override
+    public SecurityContext getSecurityContext() {
+        return securityContext;
+    }
+
+    @Override
+    public UserPrincipal getUser() {
+        return user;
+    }
+
+    @Override
     public void setUser(UserPrincipal user) {
-		this.user = user;
+        this.user = user;
     }
 
     @Override
@@ -770,26 +815,26 @@ public class DefaultRequest extends Request {
 
     @Override
     public FormatManager getFormatManager() {
-	    return formatManager;
+        return formatManager;
     }
 
-	@Override
+    @Override
     public void setFormatManager(FormatManager formatManager) {
-		this.formatManager = formatManager;
+        this.formatManager = formatManager;
     }
 
-	@Override
+    @Override
     public Validation getValidation() {
-		return validation;
+        return validation;
     }
-	
-	@Override
-	public void setValidation(Validation validation) {
-		Assert.notNull(validation);
-		this.validation = validation;
-	}
-	
-	@Override
+
+    @Override
+    public void setValidation(Validation validation) {
+        Assert.notNull(validation);
+        this.validation = validation;
+    }
+
+    @Override
     public Boolean getAcceptValidationError() {
         return acceptValidationError;
     }
@@ -808,134 +853,134 @@ public class DefaultRequest extends Request {
         this.externalRouter = router;
     }
 
-    protected String extractRequestPath(){
-		String path;
-		if(Strings.isEmpty(req.getContextPath())){
-			path = req.getRequestURI();
-		}else{
-			path = req.getRequestURI().substring(req.getContextPath().length());
-		}
-		
-		//removes jsessionid
-		int index;
-		if(req.isRequestedSessionIdFromURL()){
-			index = path.lastIndexOf(';');
-			if( index > 0){
-				path = path.substring(0,index);
-			}
-		}else if((index = path.lastIndexOf(app.getWebConfig().getJsessionidPrefix())) > 0) {
-			path = path.substring(0,index);
-		}
-		
-		//removes '/' if the path ends with '/'
-		if(path.length() > 1){
-			int lastIndex = path.length() - 1;
-			if(path.charAt(lastIndex) == '/'){
-				path = path.substring(0,lastIndex);
-			}
-		}
+    protected String extractRequestPath() {
+        String path;
+        if (Strings.isEmpty(req.getContextPath())) {
+            path = req.getRequestURI();
+        } else {
+            path = req.getRequestURI().substring(req.getContextPath().length());
+        }
 
-		// replace two or more slash with only one slash.
+        //removes jsessionid
+        int index;
+        if (req.isRequestedSessionIdFromURL()) {
+            index = path.lastIndexOf(';');
+            if (index > 0) {
+                path = path.substring(0, index);
+            }
+        } else if ((index = path.lastIndexOf(app.getWebConfig().getJsessionidPrefix())) > 0) {
+            path = path.substring(0, index);
+        }
+
+        //removes '/' if the path ends with '/'
+        if (path.length() > 1) {
+            int lastIndex = path.length() - 1;
+            if (path.charAt(lastIndex) == '/') {
+                path = path.substring(0, lastIndex);
+            }
+        }
+
+        // replace two or more slash with only one slash.
         path = path.replaceAll("\\/+", "/");
-		
-		return path;	
-	}
-	
-	protected void resolveServicePath(String path){
-		this.servicePath = extractServicePath(path);
-		int lastDotIndex = this.servicePath.lastIndexOf('.');
-		if(lastDotIndex >= 0 && lastDotIndex < servicePath.length() - 1){
-			servicePathWithoutExtension = servicePath.substring(0,lastDotIndex);
-			pathExtension        = servicePath.substring(lastDotIndex + 1);
-		}else{
-			servicePathWithoutExtension = servicePath;
-			pathExtension        = "";
-		}
-	}
-	
-	protected String extractServicePath(String path){
-		if(Strings.isEmpty(getBasePath())){
-			return path;
-		}else if(Strings.startsWith(path, getBasePath())){
-			return path.substring(getBasePath().length());
-		}else{
-			return path;
-		}
-	}
-	
-	protected Map<String, Object> initRequestParameters(){
-		Map<String, Object> map = new LinkedHashMap<String, Object>();
 
-		boolean trim = config.isAutoTrimParameters();
-		
-		for(Entry<String, String[]> entry : req.getParameterMap().entrySet()){
-			String   name  = entry.getKey();
-			String[] value = entry.getValue();
-			
-			if(null == value || value.length == 0){
-				map.put(name, Strings.EMPTY);
-			}else if(value.length == 1) {
-				map.put(name, trim ? Strings.trim(value[0]) : value[0]);
-			}else{
-				for(int i=0;i<value.length;i++){
-					value[i] = trim ? Strings.trim(value[i]) : value[i];
-				}
-				map.put(name, value);
-			}
-		}
-		
-		return Collections.unmodifiableMap(map);
-	}
-	
-	@Override
+        return path;
+    }
+
+    protected void resolveServicePath(String path) {
+        this.servicePath = extractServicePath(path);
+        int lastDotIndex = this.servicePath.lastIndexOf('.');
+        if (lastDotIndex >= 0 && lastDotIndex < servicePath.length() - 1) {
+            servicePathWithoutExtension = servicePath.substring(0, lastDotIndex);
+            pathExtension = servicePath.substring(lastDotIndex + 1);
+        } else {
+            servicePathWithoutExtension = servicePath;
+            pathExtension = "";
+        }
+    }
+
+    protected String extractServicePath(String path) {
+        if (Strings.isEmpty(getBasePath())) {
+            return path;
+        } else if (Strings.startsWith(path, getBasePath())) {
+            return path.substring(getBasePath().length());
+        } else {
+            return path;
+        }
+    }
+
+    protected Map<String, Object> initRequestParameters() {
+        Map<String, Object> map = new LinkedHashMap<String, Object>();
+
+        boolean trim = config.isAutoTrimParameters();
+
+        for (Entry<String, String[]> entry : req.getParameterMap().entrySet()) {
+            String   name  = entry.getKey();
+            String[] value = entry.getValue();
+
+            if (null == value || value.length == 0) {
+                map.put(name, Strings.EMPTY);
+            } else if (value.length == 1) {
+                map.put(name, trim ? Strings.trim(value[0]) : value[0]);
+            } else {
+                for (int i = 0; i < value.length; i++) {
+                    value[i] = trim ? Strings.trim(value[i]) : value[i];
+                }
+                map.put(name, value);
+            }
+        }
+
+        return Collections.unmodifiableMap(map);
+    }
+
+    @Override
     public String toString() {
-		return new ToStringBuilder(this).append("method", getMethod()).append("uri", req.getRequestURI()).toString();
-	}
+        return new ToStringBuilder(this).append("method", getMethod()).append("uri", req.getRequestURI()).toString();
+    }
 
-	protected final class ServletSession implements Session {
-		
-		protected final HttpSession hs;
+    protected final class ServletSession implements Session {
 
-		private boolean valid = true;
-		
-		public ServletSession(HttpSession session) {
-			this.hs = session;
-		}
+        protected final HttpSession hs;
 
-		@Override
+        private boolean valid = true;
+
+        public ServletSession(HttpSession session) {
+            this.hs = session;
+        }
+
+        @Override
         public Object getAttribute(String name) {
-	        return hs.getAttribute(name);
+            return hs.getAttribute(name);
         }
 
-		@Override
+        @Override
         public void removeAttribute(String name) {
-			hs.removeAttribute(name);
+            hs.removeAttribute(name);
         }
 
-		@Override
+        @Override
         public void setAttribute(String name, Object value) {
-	        hs.setAttribute(name, value);
+            hs.setAttribute(name, value);
         }
 
-		@Override
+        @Override
         public void invalidate() {
-			valid   = false;
-			session = null;
-			hs.invalidate();
+            valid = false;
+            session = null;
+            hs.invalidate();
         }
 
-		@Override
+        @Override
         public boolean valid() {
-	        return valid;
+            return valid;
         }
 
-		@Override
+        @Override
         public HttpSession getServletSession() throws IllegalStateException {
-	        return hs;
+            return hs;
         }
-	}
-	
-	protected final class SimpleParams implements Params {
+    }
+
+    protected final class SimpleParams implements Params {
 
         @Override
         public Iterable<String> names() {
@@ -955,18 +1000,18 @@ public class DefaultRequest extends Request {
 
         @Override
         public String get(String name) {
-	        return req.getParameter(name);
+            return req.getParameter(name);
         }
 
-		@Override
+        @Override
         public String[] getArray(String name) {
-			String[] v = req.getParameterValues(name);
-			if(null == v){
-				return Arrays2.EMPTY_STRING_ARRAY;
-			}else{
-				return v;
-			}
+            String[] v = req.getParameterValues(name);
+            if (null == v) {
+                return Arrays2.EMPTY_STRING_ARRAY;
+            } else {
+                return v;
+            }
         }
-		
-	}
+
+    }
 }

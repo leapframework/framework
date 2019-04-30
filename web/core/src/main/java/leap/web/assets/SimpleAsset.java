@@ -89,8 +89,8 @@ public class SimpleAsset extends AbstractAsset implements Asset {
 		try {
             Resource sr = ((SimpleAssetResource)current).getResource();
             if(!sr.exists()) {
-            	//TODO : expire it
             	log.warn("Resource '{}' not exist, cannot reload it", sr.getFilepath());
+            	current.expire();
             	return null;
             }
             

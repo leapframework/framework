@@ -16,29 +16,38 @@
 package leap.oauth2.server;
 
 import leap.core.i18n.MessageKey;
+import leap.core.i18n.MessageSource;
+import leap.lang.Strings;
 
 public class SimpleOAuth2Error implements OAuth2Error {
 
     protected int status;
     protected String error;
+    protected String errorCode;
+    protected String referral;
     protected String errorDescription;
-    private MessageKey key;
-
-    public SimpleOAuth2Error() {
-        super();
-    }
+    protected MessageKey key;
+    protected MessageSource messageSource;
 
     public SimpleOAuth2Error(int status, String error, String errorDescription) {
-        this.status = status;
-        this.error = error;
-        this.errorDescription = errorDescription;
+        this(status,error,errorDescription,null);
     }
 
     public SimpleOAuth2Error(int status, String error, String errorDescription,MessageKey key) {
+        this(status, error, null,errorDescription,key);
+    }
+    
+    public SimpleOAuth2Error(int status, String error, String referral, String errorDescription,MessageKey key) {
+        this(status, error, error,referral, errorDescription, key);
+    }
+    
+    public SimpleOAuth2Error(int status, String error, String errorCode, String referral, String errorDescription, MessageKey key) {
         this.status = status;
         this.error = error;
+        this.errorCode = errorCode;
+        this.referral = referral;
         this.errorDescription = errorDescription;
-        this.key=key;
+        this.key = key;
     }
 
     public String getError() {
@@ -48,13 +57,27 @@ public class SimpleOAuth2Error implements OAuth2Error {
     public void setError(String error) {
         this.error = error;
     }
-
+    @Override
     public String getErrorDescription() {
-        return errorDescription;
+        if(null == key || null == messageSource){
+            return errorDescription;
+        }
+        String description = messageSource.tryGetMessage(key);
+        return Strings.isEmpty(description)?errorDescription:description;
     }
 
     public void setErrorDescription(String errorDescription) {
         this.errorDescription = errorDescription;
+    }
+
+    @Override
+    public String getErrorCode() {
+        return errorCode;
+    }
+
+    @Override
+    public String getReferral() {
+        return referral;
     }
 
     @Override
@@ -73,4 +96,20 @@ public class SimpleOAuth2Error implements OAuth2Error {
 	public void setKey(MessageKey key) {
 		this.key = key;
 	}
+
+    public void setErrorCode(String errorCode) {
+        this.errorCode = errorCode;
+    }
+
+    public void setReferral(String referral) {
+        this.referral = referral;
+    }
+
+    public MessageSource getMessageSource() {
+        return messageSource;
+    }
+
+    public void setMessageSource(MessageSource messageSource) {
+        this.messageSource = messageSource;
+    }
 }

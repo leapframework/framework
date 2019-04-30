@@ -19,41 +19,85 @@ import leap.lang.exception.ObjectExistsException;
 import leap.lang.exception.ObjectNotFoundException;
 import leap.orm.annotation.ADomain;
 
+import java.util.regex.Pattern;
+
 public interface Domains {
-	
-	String qualifyName(String entityDomainName,String fieldDomainName);
-	
-	EntityDomain getEntityDomain(String name) throws ObjectNotFoundException;
-	
-	FieldDomain getFieldDomain(String qualifiedName) throws ObjectNotFoundException;
-	
-	EntityDomain tryGetEntityDomain(String name);
-	
-	EntityDomain tryGetEntityDomainByAlias(String alias);
-	
-	EntityDomain tryGetEntityDomainByNameOrAlias(String nameOrAlias);
-	
-	/**
-	 * Returns the {@link FieldDomain} of the given qualified name.
-	 * 
-	 * <p>
-	 * Returns <code>null</code> if domain not exists of the given qualified name.
-	 * 
-	 * @see FieldDomain#getQualifiedName()
-	 */
-	FieldDomain tryGetFieldDomain(String qualifiedName);
-	
-	FieldDomain tryGetFieldDomain(Class<?> annotationType);
-	
-	FieldDomain tryGetFieldDomainByAlias(String qualifiedName);
-	
-	FieldDomain tryGetFieldDomainByNameOrAlias(String quanlifedName);
-	
-	FieldDomain tryGetFieldDomain(EntityDomain entityDomainName,String fieldDomainName);
-	
-	FieldDomain tryGetFieldDomain(String entityDomainName,String fieldDomainName);
-	
-	FieldDomain getOrCreateFieldDomain(Class<?> annotationType, ADomain domain);
-	
-	void addFieldDomain(Class<?> annotationType, FieldDomain domain) throws ObjectExistsException;
+
+    /**
+     * Returns the auto mapping domain or null if not exists.
+     */
+    Domain autoMapping(String entityName, String fieldName);
+
+    /**
+     *
+     */
+    void addFieldMapping(String entityName, Domain field);
+
+    /**
+     *
+     */
+    void addFieldMappingAlias(String entityName, String field, String alias);
+
+    /**
+     *
+     */
+    void addFieldMapping(Pattern entityPattern, Domain field);
+
+    /**
+     *
+     */
+    void addFieldMappingAlias(Pattern entityPattern, String field, String alias);
+
+    /**
+     *
+     */
+    void addFieldMapping(Domain field);
+
+    /**
+     *
+     */
+    void addFieldMappingAlias(String field, String alias);
+
+    /**
+     *
+     */
+    Domain getDomain(String name) throws ObjectNotFoundException;
+
+    /**
+     * Returns the {@link Domain} with the name or null if not exists.
+     */
+    Domain tryGetDomain(String name);
+
+    /**
+     * Returns the {@link Domain} associated with the annotation type or null if not exists.
+     */
+    Domain tryGetDomain(Class<?> annotationType);
+
+    /**
+     * Adds a new {@link Domain}
+     */
+    default void addDomain(Domain domain) throws ObjectExistsException {
+        addDomain(domain, false);
+    }
+
+    /**
+     * Adds a new {@link Domain}
+     */
+    void addDomain(Domain domain, boolean override) throws ObjectExistsException;
+
+    /**
+     * Adds a alias domain.
+     */
+    void addDomainAlias(String domain, String alias);
+
+    /**
+     * Adds a new annotation type associate with a domain.
+     */
+    void addAnnotationType(Class<?> annotationType, Domain domain) throws ObjectExistsException;
+
+    /**
+     *
+     */
+    Domain getOrCreateDomain(Class<?> annotationType, ADomain domain);
+
 }

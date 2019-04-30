@@ -15,6 +15,7 @@
  */
 package leap.web.route;
 
+import leap.core.security.SimpleSecurity;
 import leap.core.web.path.PathTemplate;
 import leap.lang.Args;
 import leap.lang.ExtensibleBase;
@@ -29,11 +30,10 @@ import java.util.Collections;
 import java.util.Map;
 
 class DefaultRoute extends ExtensibleBase implements Sourced, Route {
-	
+
 	protected final Object		 		source;
 	protected final String 		 		method;
 	protected final PathTemplate 		pathTemplate;
-	protected final Action		 		action;
 	protected final RequestFormat		requestFormat;
 	protected final ResponseFormat		responseFormat;
 	protected final View		 		defaultView;
@@ -43,17 +43,21 @@ class DefaultRoute extends ExtensibleBase implements Sourced, Route {
 	protected final FailureHandler[]	failureHandlers;
 	protected final Map<String, String> requiredParameters;
 
-    protected Integer  successStatus;
-    protected Boolean  corsEnabled;
-    protected Boolean  csrfEnabled;
-    protected Boolean  supportsMultipart;
-    protected boolean  acceptValidationError;
-    protected boolean  httpsOnly;
-    protected Boolean  allowAnonymous;
-    protected Boolean  allowRememberMe;
-    protected Boolean  allowClientOnly;
-    protected String[] permissions;
-    protected String[] roles;
+    protected boolean          enabled;
+    protected boolean          executable;
+    protected Action           action;
+    protected Integer          successStatus;
+    protected Boolean          corsEnabled;
+    protected Boolean          csrfEnabled;
+    protected Boolean          supportsMultipart;
+    protected boolean          acceptValidationError;
+    protected boolean          httpsOnly;
+    protected Boolean          allowAnonymous;
+    protected Boolean          allowRememberMe;
+    protected Boolean          allowClientOnly;
+    protected String[]         permissions;
+    protected String[]         roles;
+    protected SimpleSecurity[] securities;
 
 	public DefaultRoute(Object 	    source,
 						String 	    method,
@@ -77,7 +81,9 @@ class DefaultRoute extends ExtensibleBase implements Sourced, Route {
 		Args.notEmpty(method,"http method");
 		Args.notNull(pathTemplate,"path template");
 		Args.notNull(action,"action");
-		
+
+        this.enabled             = true;
+        this.executable          = true;
 		this.source              = source;
 		this.method              = method;
 	    this.pathTemplate        = pathTemplate;
@@ -98,7 +104,25 @@ class DefaultRoute extends ExtensibleBase implements Sourced, Route {
 	    this.requiredParameters  = null == requiredParameters ? Collections.emptyMap() : Collections.unmodifiableMap(requiredParameters);
     }
 
-	/**
+    @Override
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    @Override
+    public boolean isExecutable() {
+        return executable;
+    }
+
+    public void setExecutable(boolean executable) {
+        this.executable = executable;
+    }
+
+    /**
 	 * Returns a object indicates the source location defined this route.
 	 */
     @Override
@@ -135,8 +159,14 @@ class DefaultRoute extends ExtensibleBase implements Sourced, Route {
     public Action getAction() {
 		return action;
 	}
-	
-	@Override
+
+    @Override
+    public void setAction(Action action) {
+        Args.notNull(action);
+        this.action = action;
+    }
+
+    @Override
     public FailureHandler[] getFailureHandlers() {
 	    return failureHandlers;
     }
@@ -310,6 +340,16 @@ class DefaultRoute extends ExtensibleBase implements Sourced, Route {
     @Override
     public void setRoles(String[] roles) {
         this.roles = roles;
+    }
+
+    @Override
+    public SimpleSecurity[] getSecurities() {
+        return securities;
+    }
+
+    @Override
+    public void setSecurities(SimpleSecurity[] securities) {
+        this.securities = securities;
     }
 
     @Override

@@ -169,8 +169,8 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 			rs = getTables(connection, dm, params);
 			if(null != rs){
                 while ( rs.next() ) {
-                	String tableCatalog = getTableCatalog(rs);
-                    String tableSchema  = getTableSchema(rs);
+                	String tableCatalog = getTableCatalog(params, rs);
+                    String tableSchema  = getTableSchema(params, rs);
                     String tableName    = rs.getString(TABLE_NAME);
                     
                     if(Strings.isEmpty(params.schema) || params.schema.equalsIgnoreCase(tableSchema)){
@@ -197,8 +197,8 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 			rs = getSequences(connection, dm, params);
 			if(rs != null){
 				while(rs.next()){
-					String sequenceCatalog = rs.getString(SEQUENCE_CATALOG);
-					String sequenceSchema  = rs.getString(SEQUENCE_SCHEMA);
+					String sequenceCatalog = getSeqCatalog(params, rs);
+					String sequenceSchema  = getSeqSchema(params, rs);
 					String sequenceName    = rs.getString(SEQUENCE_NAME);
 
 					if(Strings.isEmpty(params.schema) || params.schema.equalsIgnoreCase(sequenceSchema)){
@@ -269,7 +269,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 				while(rs.next()){
 					counter.incrementAndGet();
 					
-					String schemaName = getColumnSchema(rs);
+					String schemaName = getColumnSchema(params, rs);
 					String tableName  = rs.getString(TABLE_NAME);
 					
 					if(Strings.equalsIgnoreCase(params.schema, schemaName)){
@@ -385,7 +385,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 					while(rs.next()){
 						counter.incrementAndGet();
 						
-						String schemaName = getPrimaryKeySchema(rs);
+						String schemaName = getPrimaryKeySchema(params, rs);
 						String tableName  = rs.getString(TABLE_NAME);
 						
 						if(Strings.equalsIgnoreCase(params.schema, schemaName)){
@@ -409,7 +409,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 						while(rs.next()){
                             counter.incrementAndGet();
 
-							String schemaName = getPrimaryKeySchema(rs);
+							String schemaName = getPrimaryKeySchema(params, rs);
 							String tableName  = rs.getString(TABLE_NAME);
 							
 							if(Strings.equals(params.schema, schemaName) && Strings.equalsIgnoreCase(tableName, t.getName())){
@@ -450,7 +450,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 				if(null != rs){
 					while(rs.next()){
 						counter.incrementAndGet();
-						String schemaName = getForeignKeySchema(rs);
+						String schemaName = getForeignKeySchema(params, rs);
 						String tableName  = rs.getString(FKTABLE_NAME);
 						
 						if(Strings.equalsIgnoreCase(params.schema, schemaName)){
@@ -491,7 +491,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 						while(rs.next()) {
                             counter.incrementAndGet();
 
-							String schemaName = getForeignKeySchema(rs);
+							String schemaName = getForeignKeySchema(params, rs);
 							
 							if(Strings.equalsIgnoreCase(params.schema, schemaName)){
 								String fkName = rs.getString(FK_NAME);
@@ -534,9 +534,14 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 	}
 	
 	protected boolean readForeignKeyProperties(DbTableBuilder table,DbForeignKeyBuilder fk,ResultSet rs) throws SQLException {
+        String pkTableName = rs.getString(PKTABLE_NAME);
+        if(Strings.isEmpty(pkTableName)) {
+            log.info("Invalid fk {}, no PK_TABLE_NAME", fk.getName());
+            return false;
+        }
 		
 		DbSchemaObjectName foreignTable = 
-				new DbSchemaObjectName(rs.getString(PKTABLE_CATALOG), rs.getString(PKTABLE_SCHEMA),rs.getString(PKTABLE_NAME));
+				new DbSchemaObjectName(rs.getString(PKTABLE_CATALOG), rs.getString(PKTABLE_SCHEMA), pkTableName);
 		
         fk.setForeignTable(foreignTable);
 
@@ -558,7 +563,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 					while(rs.next()){
 						counter.incrementAndGet();
 						
-						String schemaName = getIndexSchema(rs);
+						String schemaName = getIndexSchema(params, rs);
 						String tableName  = rs.getString(TABLE_NAME);
 						
 						if(Strings.equalsIgnoreCase(params.schema, schemaName)){
@@ -584,7 +589,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 						while(rs.next()) {
                             counter.incrementAndGet();
 
-							String schemaName = getIndexSchema(rs);
+							String schemaName = getIndexSchema(params, rs);
 							String tableName  = rs.getString(TABLE_NAME);
 							
 							if(Strings.equalsIgnoreCase(params.schema, schemaName)){
@@ -734,29 +739,45 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 		return Strings.trimToNull(rs.getString(SCHEMA_NAME));
 	}
 	
-	protected String getTableCatalog(ResultSet rs) throws SQLException {
-		return Strings.trimToNull(rs.getString(TABlE_CATALOG));
+	protected String getTableCatalog(MetadataParameters params, ResultSet rs) throws SQLException {
+		String s = Strings.trimToNull(rs.getString(TABlE_CATALOG));
+		return Strings.isEmpty(s) ? params.catalog : s;
 	}
 	
-    protected String getTableSchema(ResultSet rs) throws SQLException {
-    	return Strings.trimToNull(rs.getString(TABLE_SCHEMA));
+    protected String getTableSchema(MetadataParameters params, ResultSet rs) throws SQLException {
+    	String s = Strings.trimToNull(rs.getString(TABLE_SCHEMA));
+    	return Strings.isEmpty(s) ? params.schema : s;
     }
     
-    protected String getColumnSchema(ResultSet rs) throws SQLException {
-    	return Strings.trimToNull(rs.getString(TABLE_SCHEMA));
+    protected String getColumnSchema(MetadataParameters params, ResultSet rs) throws SQLException {
+    	String s = Strings.trimToNull(rs.getString(TABLE_SCHEMA));
+		return Strings.isEmpty(s) ? params.schema : s;
     }
     
-    protected String getPrimaryKeySchema(ResultSet rs) throws SQLException {
-    	return Strings.trimToNull(rs.getString(TABLE_SCHEMA));
+    protected String getPrimaryKeySchema(MetadataParameters params, ResultSet rs) throws SQLException {
+		String s = Strings.trimToNull(rs.getString(TABLE_SCHEMA));
+		return Strings.isEmpty(s) ? params.schema : s;
     }
     
-    protected String getForeignKeySchema(ResultSet rs) throws SQLException {
-    	return Strings.trimToNull(rs.getString(FKTABLE_SCHEMA));
+    protected String getForeignKeySchema(MetadataParameters params, ResultSet rs) throws SQLException {
+    	String s = Strings.trimToNull(rs.getString(FKTABLE_SCHEMA));
+		return Strings.isEmpty(s) ? params.schema : s;
     }
     
-    protected String getIndexSchema(ResultSet rs) throws SQLException {
-    	return Strings.trimToNull(rs.getString(TABLE_SCHEMA));
+    protected String getIndexSchema(MetadataParameters params, ResultSet rs) throws SQLException {
+		String s = Strings.trimToNull(rs.getString(TABLE_SCHEMA));
+		return Strings.isEmpty(s) ? params.schema : s;
     }
+
+	protected String getSeqCatalog(MetadataParameters params, ResultSet rs) throws SQLException {
+		String s = Strings.trimToNull(rs.getString(SEQUENCE_CATALOG));
+		return Strings.isEmpty(s) ? params.catalog : s;
+	}
+
+	protected String getSeqSchema(MetadataParameters params, ResultSet rs) throws SQLException {
+		String s = Strings.trimToNull(rs.getString(SEQUENCE_SCHEMA));
+		return Strings.isEmpty(s) ? params.schema : s;
+	}
 	
 	public String getDefaultCatalogPattern() {
 		return defaultCatalogPattern;
@@ -795,11 +816,22 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
         return index;
 	}
 
+	protected ResultSet executeQuery(Connection connection, MetadataParameters params, String sql) throws SQLException {
+		PreparedStatement ps = connection.prepareStatement(sql);
+		return new CloseStatementResultSet(ps, ps.executeQuery());
+	}
+
     protected ResultSet executeSchemaQuery(Connection connection, MetadataParameters params, String sql) throws SQLException {
         PreparedStatement ps = connection.prepareStatement(sql);
         ps.setString(1, params.schema);
         return new CloseStatementResultSet(ps, ps.executeQuery());
     }
+
+	protected ResultSet executeCatalogQuery(Connection connection, MetadataParameters params, String sql) throws SQLException {
+		PreparedStatement ps = connection.prepareStatement(sql);
+		ps.setString(1, params.catalog);
+		return new CloseStatementResultSet(ps, ps.executeQuery());
+	}
 
     protected ResultSet executeCatalogAndSchemaQuery(Connection connection, MetadataParameters params, String sql) throws SQLException {
         PreparedStatement ps = connection.prepareStatement(sql);
@@ -807,6 +839,12 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
         ps.setString(2, params.schema);
         return new CloseStatementResultSet(ps, ps.executeQuery());
     }
+
+	protected ResultSet executeTablePatternQuery(Connection connection, MetadataParameters params, String sql) throws SQLException {
+		PreparedStatement ps = connection.prepareStatement(sql);
+		ps.setString(1, params.tablePattern);
+		return new CloseStatementResultSet(ps, ps.executeQuery());
+	}
 
     protected ResultSet executeSchemaAndTablePatternQuery(Connection connection, MetadataParameters params, String sql) throws SQLException {
         PreparedStatement ps = connection.prepareStatement(sql);

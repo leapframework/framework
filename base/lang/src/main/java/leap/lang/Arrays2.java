@@ -211,6 +211,21 @@ public class Arrays2 {
 	public static boolean contains(Object[] array, Object objectToFind) {
 		return indexOf(array, objectToFind) != INDEX_NOT_FOUND;
 	}
+
+	public static boolean containsIgnoreCase(String[] array, String toFind) {
+		if(null == array || array.length == 0) {
+			return false;
+		}
+		if(null == toFind || toFind.length() == 0) {
+			return  false;
+		}
+		for(String item : array) {
+			if(toFind.equalsIgnoreCase(item)) {
+				return true;
+			}
+		}
+		return false;
+	}
 	
 	public static boolean containsInObjectArray(Object array, Object objectToFind) {
 		return indexOfObjectArray(array, objectToFind) != INDEX_NOT_FOUND;
@@ -818,6 +833,21 @@ public class Arrays2 {
 		
 		return filtered;
 	}
+
+    public static <T extends Named> Map<String, T> toMap(T[] a) {
+        Map map = new LinkedHashMap();
+        if(null != a) {
+            for(T item : a) {
+                map.put(item.getName(), item);
+            }
+        }
+        return map;
+    }
+
+    public static <T extends Named> T[] sort(T[] a) {
+        Arrays.sort(a, Comparators.NAMED_COMPARATOR);
+        return a;
+    }
 	
 	protected Arrays2() {
 

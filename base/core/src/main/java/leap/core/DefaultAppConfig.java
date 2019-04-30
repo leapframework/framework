@@ -35,6 +35,7 @@ import leap.lang.text.DefaultPlaceholderResolver;
 import leap.lang.text.PlaceholderResolver;
 
 import java.io.File;
+import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -58,6 +59,8 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 		INIT_PROPERTIES.add(INIT_PROPERTY_DEFAULT_LOCALE);
 	}
 
+    protected AppConfigSupport[]            preSupports         = new AppConfigSupport[0];
+    protected AppConfigSupport[]            postSupports        = new AppConfigSupport[0];
     protected PropertyProvider              propertyProvider    = null;
     protected String                        profile             = null;
     protected Boolean                       debug               = null;
@@ -66,7 +69,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     protected Set<String>                   additionalPackages  = new LinkedHashSet<>();
     protected Locale                        defaultLocale       = null;
     protected Charset                       defaultCharset      = null;
-    protected boolean                       reloadEnabled       = false;
+    protected Boolean                       reloadEnabled       = null;
     protected String                        secret              = null;
     protected PrivateKey                    privateKey          = null;
     protected PublicKey                     publicKey           = null;
@@ -76,13 +79,23 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     protected Map<String, String>           propertiesReadonly  = Collections.unmodifiableMap(properties);
     protected Map<String, List<String>>     arrayProperties     = new ConcurrentHashMap<>();
     protected List<SysPermissionDef>        permissions         = new ArrayList<>();
-    protected List<SysPermissionDef>        permissionsReadonly = Collections.unmodifiableList(permissions);
-    protected ResourceSet                   resources           = null;
-    protected DefaultPlaceholderResolver    placeholderResolver = new DefaultPlaceholderResolver(this);
+    protected List<SysPermissionDef>     permissionsReadonly = Collections.unmodifiableList(permissions);
+    protected ResourceSet                resources           = null;
+    protected DefaultPlaceholderResolver placeholderResolver = new DefaultPlaceholderResolver(this);
 
     public DefaultAppConfig(String profile) {
         this.profile = profile;
         this.properties.put(INIT_PROPERTY_PROFILE, profile);
+    }
+
+    @Override
+    public void setPreSupports(AppConfigSupport... supports) {
+        this.preSupports = supports;
+    }
+
+    @Override
+    public void setPostSupports(AppConfigSupport... supports) {
+        this.postSupports = supports;
     }
 
     public void setPropertyProvider(PropertyProvider p)  {
@@ -212,6 +225,29 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     }
 
     @Override
+    public Set<String> getPropertyNames() {
+        Set<String> set = new LinkedHashSet<>();
+
+        for(AppConfigSupport support : preSupports) {
+            Set<String> names = support.getPropertyNames();
+            if(null != names) {
+                set.addAll(names);
+            }
+        }
+
+        set.addAll(properties.keySet());
+
+        for(AppConfigSupport support : postSupports) {
+            Set<String> names = support.getPropertyNames();
+            if(null != names) {
+                set.addAll(names);
+            }
+        }
+
+        return set;
+    }
+
+    @Override
     public List<SysPermissionDef> getPermissions() {
 	    return permissionsReadonly;
     }
@@ -236,13 +272,24 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 	@Override
     public String getProperty(String name) {
         String v;
-        try {
-            v = null == propertyProvider ? null : propertyProvider.getRawProperty(name);
-            return null == v ? properties.get(name) : v;
-        } catch (UnsupportedRawPropertyException e) {
-            log.info("property {0} unsupported by {1}, use local config",name,propertyProvider.getClass());
+
+        for(AppConfigSupport support : preSupports) {
+            if((v = support.getProperty(name)) != null) {
+                return v;
+            }
         }
-        return properties.get(name);
+
+        v = properties.get(name);
+
+        if(null == v) {
+            for(AppConfigSupport support : postSupports) {
+                if((v = support.getProperty(name)) != null) {
+                    return v;
+                }
+            }
+        }
+
+        return v;
     }
 	
 	@Override
@@ -275,22 +322,24 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
         if(null != propertyProvider) {
             try {
                 StringProperty p = propertyProvider.getDynaProperty(name);
+                log.info("property {} provide by {}",name,propertyProvider.getClass());
                 return p;
             } catch (UnsupportedDynaPropertyException e) {
-                log.info("property {0} unsupported by {1}, use local config",name,propertyProvider.getClass());
+                log.debug("property {} provide by local config",name);
             }
         }
         return new SimpleStringProperty(properties.get(name));
     }
 
     @Override
-    public <T> Property<T> getDynaProperty(String name, Class<T> type) {
+    public <T> Property<T> getDynaProperty(String name, Type type, Class<T> cls) {
         if(null != propertyProvider) {
             try {
-                Property<T> p = propertyProvider.getDynaProperty(name, type);
+                Property<T> p = propertyProvider.getDynaProperty(name, type, cls);
+                log.info("property {} provide by {}",name,propertyProvider.getClass());
                 return p;
             } catch (UnsupportedDynaPropertyException e) {
-                log.info("property {0} unsupported by {1}, use local config",name,propertyProvider.getClass());
+                log.debug("property {} provide by local config",name);
             }
         }
         String v = properties.get(name);
@@ -298,11 +347,11 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
             return new NullProperty<>();
         }
 
-        TypeInfo ti = Types.getTypeInfo(type,null);
+        TypeInfo ti = Types.getTypeInfo(cls,null);
         if(ti.isComplexType()) {
-            return new SimpleProperty<>(type, JSON.decode(v, type));
+            return new SimpleProperty<>(cls, JSON.decode(v, cls));
         }else{
-            return new SimpleProperty<>(type, Converts.convert(v, type));
+            return new SimpleProperty<>(cls, Converts.convert(v, cls));
         }
     }
 
@@ -310,9 +359,11 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     public IntegerProperty getDynaIntegerProperty(String name) {
         if(null != propertyProvider) {
             try {
-                return propertyProvider.getDynaIntegerProperty(name);
+                IntegerProperty property = propertyProvider.getDynaIntegerProperty(name);
+                log.info("property {} provide by {}",name,propertyProvider.getClass());
+                return property;
             } catch (UnsupportedDynaPropertyException e) {
-                log.info("property {0} unsupported by {1}, use local config",name,propertyProvider.getClass());
+                log.debug("property {} provide by local config",name);
             }
         }
         return new SimpleIntegerProperty(Converts.convert(properties.get(name), Integer.class));
@@ -322,9 +373,11 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     public LongProperty getDynaLongProperty(String name) {
         if(null != propertyProvider) {
             try {
-                return propertyProvider.getDynaLongProperty(name);
+                LongProperty property = propertyProvider.getDynaLongProperty(name);
+                log.info("property {} provide by {}",name,propertyProvider.getClass());
+                return property;
             } catch (UnsupportedDynaPropertyException e) {
-                log.info("property {0} unsupported by {1}, use local config",name,propertyProvider.getClass());
+                log.debug("property {} provide by local config",name);
             }
         }
         return new SimpleLongProperty(Converts.convert(properties.get(name), Long.class));
@@ -334,9 +387,11 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     public BooleanProperty getDynaBooleanProperty(String name) {
         if(null != propertyProvider) {
             try {
-                return propertyProvider.getDynaBooleanProperty(name);
+                BooleanProperty property = propertyProvider.getDynaBooleanProperty(name);
+                log.info("property {} provide by {}",name,propertyProvider.getClass());
+                return property;
             } catch (UnsupportedDynaPropertyException e) {
-                log.info("property {0} unsupported by {1}, use local config",name,propertyProvider.getClass());
+                log.debug("property {} provide by local config",name);
             }
         }
         return new SimpleBooleanProperty(Converts.convert(properties.get(name), Boolean.class));
@@ -346,9 +401,11 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     public DoubleProperty getDynaDoubleProperty(String name) {
         if(null != propertyProvider) {
             try {
-                return propertyProvider.getDynaDoubleProperty(name);
+                DoubleProperty property = propertyProvider.getDynaDoubleProperty(name);
+                log.info("property {} provide by {}",name,propertyProvider.getClass());
+                return property;
             } catch (UnsupportedDynaPropertyException e) {
-                log.info("property {0} unsupported by {1}, use local config",name,propertyProvider.getClass());
+                log.debug("property {} provide by local config",name);
             }
         }
         return new SimpleDoubleProperty(Converts.convert(properties.get(name), Double.class));
@@ -362,8 +419,9 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
         if(null != propertyProvider) {
             try {
                 propertyProvider.bindDynaProperty(name, type, p);
+                log.info("property {} bind by {}",name,propertyProvider.getClass());
             } catch (UnsupportedBindDynaPropertyException e) {
-                log.info("property {0} unsupported by {1}, use local config",name,propertyProvider.getClass());
+                log.info("property {} bind by local config",name,propertyProvider.getClass());
                 p.convert(getProperty(name));
             }
         }else if(properties.containsKey(name)){
@@ -382,12 +440,14 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     }
 
 	protected void postLoad(){
-		Boolean reloadEnabled = getProperty(PROPERTY_RELOAD_ENABLED, Boolean.class);
-		if(null == reloadEnabled){
-			this.reloadEnabled = isDebug() ? true : false;
-		}else{
-			this.reloadEnabled = reloadEnabled;
-		}
+        if(null == this.reloadEnabled) {
+            Boolean reloadEnabled = getProperty(PROPERTY_RELOAD_ENABLED, Boolean.class);
+            if (null == reloadEnabled) {
+                this.reloadEnabled = isDebug() ? true : false;
+            } else {
+                this.reloadEnabled = reloadEnabled;
+            }
+        }
 
 		if(Strings.isEmpty(secret)) {
 			this.secret = getProperty(PROPERTY_SECRET);
@@ -425,7 +485,11 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 		}
 		
 		String secret = Randoms.nextString(32);
-		IO.writeString(secretFile, secret, Charsets.UTF_8);
+
+		if(getBooleanProperty("app.config.save-generated-secret", true)) {
+            IO.writeString(secretFile, secret, Charsets.UTF_8);
+        }
+
 		return secret;
 	}
 	

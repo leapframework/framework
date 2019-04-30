@@ -28,8 +28,8 @@ import leap.lang.Confirm.ConfirmException;
  * 
  * <p>
  * The annotated object may ask for confirm of the danger.
- * 
- * If so, the method {@link Confirm#run(leap.lang.Action)} must be used to run this action.
+ *
+ * If so, the method {@link Confirm#execute(Runnable)} must be used to run this action.
  */
 @Documented
 public @interface Dangerous {
@@ -40,7 +40,7 @@ public @interface Dangerous {
 	 * will throw {@link ConfirmException} if not confirm to perform the dangerous action.
 	 * 
 	 * <p>
-	 * Can invoke {@link Confirm#run(leap.lang.Action)} to confirm the danger.
+	 * Can invoke {@link Confirm#execute(Runnable)} to confirm the danger.
 	 */
 	boolean askForConfirm() default false;
 

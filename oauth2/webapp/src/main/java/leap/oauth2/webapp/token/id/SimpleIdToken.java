@@ -19,12 +19,15 @@ package leap.oauth2.webapp.token.id;
 import leap.core.security.Credentials;
 import leap.core.security.UserPrincipal;
 
+import java.util.Map;
+
 public class SimpleIdToken implements Credentials, IdToken {
 
-    protected String        token;
-    protected String        clientId;
-    protected String        userId;
-    protected UserPrincipal userInfo;
+    protected String              token;
+    protected String              clientId;
+    protected String              userId;
+    protected UserPrincipal       userInfo;
+    protected Map<String, Object> claims;
 
     public SimpleIdToken(String token) {
         this.token = token;
@@ -60,5 +63,14 @@ public class SimpleIdToken implements Credentials, IdToken {
 
     public void setUserInfo(UserPrincipal userInfo) {
         this.userInfo = userInfo;
+    }
+
+    @Override
+    public Map<String, Object> getClaims() {
+        return claims;
+    }
+
+    public void setClaims(Map<String, Object> claims) {
+        this.claims = claims;
     }
 }

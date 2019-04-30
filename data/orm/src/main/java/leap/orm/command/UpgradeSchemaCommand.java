@@ -16,6 +16,10 @@
 package leap.orm.command;
 
 
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.util.List;
+
 public interface UpgradeSchemaCommand extends DmoCommand {
 	
 	/**
@@ -117,4 +121,20 @@ public interface UpgradeSchemaCommand extends DmoCommand {
 	 * Returns <code>true</code> if altering column's definition is enabled.
 	 */
 	boolean isAlterColumnEnabled();
+
+    /**
+     * Returns the upgrade scripts.
+     */
+    List<String> getUpgradeScripts();
+
+    /**
+     * Prints the upgrade scripts.
+     */
+    void printUpgradeScripts(PrintWriter out);
+
+    /**
+     * Prints the upgrade scripts.
+     */
+    void printUpgradeScripts(PrintStream out);
+
 }

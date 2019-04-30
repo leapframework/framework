@@ -15,12 +15,30 @@
  */
 package leap.core.security;
 
+import java.util.Map;
+
 public interface Authentication {
+
+    /**
+     * Returns true if this authentication can be cached.
+     */
+    default boolean isCacheable() {
+        return false;
+    }
+
+    /**
+     * Returns the cache attributes if cacheable.
+     */
+    default Map<String, Object> getCacheAttributes() {
+        return null;
+    }
 
 	/**
 	 * Returns <code>true</code> if the authentication is authenticated.
      */
-	boolean isAuthenticated();
+	default boolean isAuthenticated() {
+        return isUserAuthenticated() || isClientAuthenticated();
+    }
 	
 	/**
 	 * Returns <code>true</code> if the authentication is authenticated from remember-me store.
@@ -69,6 +87,20 @@ public interface Authentication {
     void setPermissions(String... permissions);
 
     /**
+     * Same as {@link #getPermissions()}
+     */
+    default String[] getScopes(){
+        return getPermissions();
+    }
+
+    /**
+     * Same as {@link #setPermissions(String...)}
+     */
+    default void setScopes(String... scopes) {
+        setPermissions(scopes);
+    }
+
+    /**
      * Returns the granted roles.
      */
     String[] getRoles();
@@ -79,10 +111,52 @@ public interface Authentication {
     void setRoles(String... roles);
 
     /**
+     * Returns the granted security rules.
+     */
+    default String[] getRules(){
+       return null;
+    }
+
+    /**
+     * Sets the granted security rules.
+     */
+    default void setRules(String... rules) {
+
+    }
+
+    /**
+     * Returns current access mode.
+     */
+    default String getAccessMode() {
+        return null;
+    }
+
+    /**
+     * Sets current access mode.
+     */
+    default void setAccessMode(String accessMode) {
+
+    }
+
+    /**
      * Returns true if the client is not null.
      */
     default boolean hasClient() {
         return null != getClient();
+    }
+
+    /**
+     * Returns true if the user is not null and not anonymous.
+     */
+    default boolean isUserAuthenticated() {
+        return null != getUser() && !getUser().isAnonymous();
+    }
+
+    /**
+     * Returns true if client is not null and not anonymous.
+     */
+    default boolean isClientAuthenticated() {
+        return null != getClient() && !getClient().isAnonymous();
     }
 
 	/**

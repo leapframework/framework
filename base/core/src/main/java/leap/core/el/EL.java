@@ -294,34 +294,52 @@ public class EL {
 	 * Once evaluated, the resulting String is then coerced to the expected type.
 	 */
 	public static CompositeExpression createCompositeExpression(String s) {
-		return parseCompositeExpression(getAppDefaultExpressionLanguage(), s);
+		return createCompositeExpression(getAppDefaultExpressionLanguage(), s);
 	}
 
+    /**
+     * Parses a composite expression to an {@link Expression} object using the default {@link ElParseContext}.
+     */
+	public static CompositeExpression createCompositeExpression(ExpressionLanguage language, String str){
+        return createCompositeExpression(language, str, PREFIX, SUFFIX);
+	}
 
-	private static CompositeExpression parseCompositeExpression(ExpressionLanguage language, String str){
+    /**
+     * Parses a composite expression to an {@link Expression} object using the default {@link ElParseContext}.
+     *
+     * <p>
+     *
+     * For example, the composite expression “${firstName} ${lastName}”
+     * is composed of three EL expressions: eval-expression “${firstName}”,
+     * literal- expression “ “, and eval-expression “${lastName}”.
+     *
+     * <p>
+     * Once evaluated, the resulting String is then coerced to the expected type.
+     */
+	public static CompositeExpression createCompositeExpression(ExpressionLanguage language, String str, String prefix, String suffix){
 		if(null == str){
 			return CompositeExpression.NULL;
 		}
 		if(Strings.EMPTY.equals(str)){
 			return CompositeExpression.EMPTY;
 		}
-		if(str.indexOf(PREFIX) >= 0){
-			return new CompositeExpression(str,parseNodes(language,str));
+		if(str.indexOf(prefix) >= 0){
+			return new CompositeExpression(str,parseNodes(language,str, prefix, suffix));
 		}else{
 			return new CompositeExpression(str);
 		}
 	}
 
-	private static Object[] parseNodes(ExpressionLanguage language,String s){
+	private static Object[] parseNodes(ExpressionLanguage language,String s, String prefix, String suffix){
 		StringBuilder buf = new StringBuilder(s);
 
 		List<Object> nodes = new ArrayList<Object>();
 
-		int startIndex = nextEvalPrefix(buf,0);
+		int startIndex = nextEvalPrefix(buf,0, prefix);
 
 		int mark=0;
 		while(startIndex >= 0){
-			int endIndex = buf.indexOf(SUFFIX, startIndex + 2);
+			int endIndex = buf.indexOf(suffix, startIndex + 2);
 			if(endIndex > 0){
 				if(mark < startIndex){
 					nodes.add(buf.substring(mark,startIndex));
@@ -335,7 +353,7 @@ public class EL {
 					mark = endIndex + 1;
 				}
 
-				startIndex = nextEvalPrefix(buf,endIndex + 1);
+				startIndex = nextEvalPrefix(buf,endIndex + 1, prefix);
 			}else{
 				throw new ExpressionException("Unclosed expression starts from " + startIndex + ", expected suffix '}'");
 			}
@@ -348,13 +366,13 @@ public class EL {
 		return nodes.toArray(new Object[nodes.size()]);
 	}
 
-	private static int nextEvalPrefix(StringBuilder str,int from){
-		int i = str.indexOf(PREFIX,from);
+	private static int nextEvalPrefix(StringBuilder str, int from, String prefix){
+		int i = str.indexOf(prefix,from);
 
 		//escape
 		if( i > 0 && str.charAt(i-1) == '\\'){
 			str.deleteCharAt(i-1);
-			return nextEvalPrefix(str, i+1);
+			return nextEvalPrefix(str, i+1, prefix);
 		}
 
 		return i;

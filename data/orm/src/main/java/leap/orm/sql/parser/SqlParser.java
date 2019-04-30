@@ -569,13 +569,13 @@ public class SqlParser extends SqlParserBase {
 				name.setScope(scope());
 				name.setFirstName(firstName);
 
-				nextToken().expectIdentifier();
+				nextToken().expectKeywordOrIdentifier();
 				
 				if(lexer.ch == '.'){
 					name.setSecondaryName(lexer.tokenText());
 					
 					lexer.nextChar();
-					nextToken().expect(Token.IDENTIFIER);
+					nextToken().expectKeywordOrIdentifier();
 					name.setLastName(lexer.tokenText());
 				}else{
 					name.setLastName(lexer.tokenText());

@@ -164,16 +164,16 @@ class JdkHttpRequest implements HttpRequest {
 
     @Override
     public HttpResponse send() {
-        return doSend(method, initConnUrl(), true);
+        return doSend(initConnUrl(), true);
     }
 
     @Override
-    public void send(HttpHandler handler) {
+    public void sendAsync(HttpHandler handler) {
         String connUrl = initConnUrl();
 
         handler.beforeRequest(this);
         try {
-            handler.afterResponse(this, doSend(method, connUrl, false));
+            handler.afterResponse(this, doSend(connUrl, false));
         } catch (Exception e) {
             if(aborted) {
                 handler.afterAborted(this);
@@ -202,6 +202,12 @@ class JdkHttpRequest implements HttpRequest {
             }
         }
 
+        //JDK Http Connection does not supports PATCH method.
+        if(method == HTTP.Method.PATCH) {
+            method = HTTP.Method.POST;
+            addHeader(Headers.X_HTTP_METHOD_OVERRIDE, HTTP.Method.PATCH.name());
+        }
+
         return connUrl;
     }
 
@@ -209,8 +215,10 @@ class JdkHttpRequest implements HttpRequest {
         return headers.exists(name);
     }
 
-    protected JdkHttpResponse doSend(HTTP.Method m, String connUrl, boolean immediately) {
+    protected JdkHttpResponse doSend(String connUrl, boolean immediately) {
         try {
+            HTTP.Method m = method;
+
             log.debug("Sending '{}' request to url : {}", m, connUrl);
             
             StopWatch sw = StopWatch.startNew();

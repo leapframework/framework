@@ -36,15 +36,15 @@ public class WrappedCaseInsensitiveMap<V> implements Map<String, V>,CaseInsensit
 		return map;
 	}
 	
-	public static <V> WrappedCaseInsensitiveMap<V> wrap(Map<CaseInsensitiveKey,V> map){
-		return new WrappedCaseInsensitiveMap<V>(map);
-	}
-	
-	public static <V> WrappedCaseInsensitiveMap<V> wrap(Map<CaseInsensitiveKey,V> map,Map<? extends String, ? extends V> m){
-		WrappedCaseInsensitiveMap<V> wrapped = new WrappedCaseInsensitiveMap<V>(map);
-		wrapped.putAll(m);
-		return wrapped;
-	}
+//	public static <V> WrappedCaseInsensitiveMap<V> wrap(Map<CaseInsensitiveKey,V> map){
+//		return new WrappedCaseInsensitiveMap<V>(map);
+//	}
+//
+//	public static <V> WrappedCaseInsensitiveMap<V> wrap(Map<CaseInsensitiveKey,V> map,Map<? extends String, ? extends V> m){
+//		WrappedCaseInsensitiveMap<V> wrapped = new WrappedCaseInsensitiveMap<V>(map);
+//		wrapped.putAll(m);
+//		return wrapped;
+//	}
 	
 	private final Map<CaseInsensitiveKey, V> map;
 	
@@ -52,21 +52,21 @@ public class WrappedCaseInsensitiveMap<V> implements Map<String, V>,CaseInsensit
 	 * Creates a new {@link WrappedCaseInsensitiveMap} instance wrapped {@link HashMap}.
 	 */
 	public WrappedCaseInsensitiveMap() {
-	    this.map = new HashMap<CaseInsensitiveKey,V>();
+	    this.map = new LinkedHashMap<CaseInsensitiveKey, V>();
     }
 	
 	/**
 	 * @see HashMap#HashMap(int)
 	 */
     public WrappedCaseInsensitiveMap(int initialCapacity) {
-        this.map = new HashMap<CaseInsensitiveKey, V>(initialCapacity);
+        this.map = new LinkedHashMap<CaseInsensitiveKey, V>(initialCapacity);
     }
     
 	/**
 	 * @see HashMap#HashMap(int, float)
 	 */
     public WrappedCaseInsensitiveMap(int initialCapacity, float loadFactor) {
-    	this.map = new HashMap<CaseInsensitiveKey, V>(initialCapacity,loadFactor);
+    	this.map = new LinkedHashMap<CaseInsensitiveKey, V>(initialCapacity,loadFactor);
     }
     
 	public WrappedCaseInsensitiveMap(Map<CaseInsensitiveKey, V> map) {

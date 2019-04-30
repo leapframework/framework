@@ -24,7 +24,7 @@ import leap.lang.annotation.Nullable;
 import leap.lang.beans.BeanProperty;
 import leap.lang.expression.Expression;
 import leap.lang.meta.MType;
-import leap.orm.domain.FieldDomain;
+import leap.orm.domain.Domain;
 import leap.orm.serialize.FieldSerializer;
 import leap.orm.validation.FieldValidator;
 
@@ -37,6 +37,7 @@ public class FieldMapping extends ExtensibleBase {
 	protected final String           metaFieldName;
 	protected final Class<?>         javaType;
 	protected final BeanProperty     beanProperty;
+    protected final boolean          secondary;
 	protected final DbColumn         column;
 	protected final String           sequenceName;
 	protected final boolean          nullable;
@@ -45,42 +46,48 @@ public class FieldMapping extends ExtensibleBase {
 	protected final Integer          scale;
 	protected final boolean          insert;
 	protected final boolean          update;
-    protected final boolean          filter;
+    protected final boolean          filtered;
+    protected final Expression       filteredIf;
 	protected final Expression       defaultValue;
 	protected final Expression       insertValue;
 	protected final Expression       updateValue;
-    protected final Expression       filterValue;
-	protected final FieldDomain      domain;
+    protected final Expression       filteredValue;
+	protected final Domain           domain;
 	protected final boolean          optimisticLock;
 	protected final String           newOptimisticLockFieldName;
 	protected final FieldValidator[] validators;
-    protected final boolean          sharding;
     protected final FieldSerializer  serializer;
+
+    protected final boolean 		 filterable;
+    protected final boolean 		 sortable;
 
 	protected final ReservedMetaFieldName reservedMetaFieldName;
 	
 	public FieldMapping(String fieldName,
-                        MType dataType,
-                        String metaFieldName,
-                        Class<?> javaType,
-                        BeanProperty beanProperty,
-                        DbColumn column,
-                        String sequenceName,
-                        boolean nullable,
-                        Integer maxLength, Integer precision, Integer scale,
-                        boolean insert, boolean update,
-                        boolean filter,
-                        Expression defaultValue,
-                        Expression insertValue,
-                        Expression updateValue,
-                        Expression filterValue,
-                        boolean optimisticLock,
-                        String newOptimisticLockFieldName,
-                        FieldDomain domain,
-                        List<FieldValidator> validators,
-                        ReservedMetaFieldName reservedMetaFieldName,
-                        boolean sharding, FieldSerializer serializer) {
-		
+						MType dataType,
+						String metaFieldName,
+						Class<?> javaType,
+						BeanProperty beanProperty,
+						boolean secondary,
+						DbColumn column,
+						String sequenceName,
+						boolean nullable,
+						Integer maxLength, Integer precision, Integer scale,
+						boolean insert, boolean update,
+						boolean filtered, Expression filteredIf,
+						Expression defaultValue,
+						Expression insertValue,
+						Expression updateValue,
+						Expression filteredValue,
+						boolean optimisticLock,
+						String newOptimisticLockFieldName,
+						Domain domain,
+						List<FieldValidator> validators,
+						ReservedMetaFieldName reservedMetaFieldName,
+						FieldSerializer serializer,
+						boolean filterable,
+						boolean sortable) {
+
 		Args.notEmpty(fieldName,"field name");
 		Args.notNull(javaType,"java type");
 		Args.notNull(column,"column");
@@ -90,6 +97,7 @@ public class FieldMapping extends ExtensibleBase {
 		this.metaFieldName  = metaFieldName;
 		this.javaType       = javaType;
 	    this.beanProperty   = beanProperty;
+        this.secondary      = secondary;
 	    this.column         = column;
 	    this.sequenceName   = sequenceName;
 	    this.nullable		= nullable;
@@ -98,17 +106,19 @@ public class FieldMapping extends ExtensibleBase {
 	    this.scale		    = scale;
 	    this.insert         = insert;
 	    this.update         = update;
-        this.filter         = filter;
+        this.filtered       = filtered;
+        this.filteredIf = filteredIf;
 	    this.defaultValue   = defaultValue;
 	    this.insertValue    = insertValue;
 	    this.updateValue    = updateValue;
-        this.filterValue    = filterValue;
+        this.filteredValue  = filteredValue;
 	    this.optimisticLock = optimisticLock;
 	    this.newOptimisticLockFieldName = newOptimisticLockFieldName;
 	    this.domain         = domain;
 	    this.validators     = null == validators ? new FieldValidator[]{} : validators.toArray(new FieldValidator[validators.size()]);
-        this.sharding       = sharding;
         this.serializer     = serializer;
+		this.filterable 	= filterable;
+		this.sortable = sortable;
 	    
 	    if(optimisticLock){
 	    	Args.notEmpty(newOptimisticLockFieldName);
@@ -147,8 +157,19 @@ public class FieldMapping extends ExtensibleBase {
 	public BeanProperty getBeanProperty() {
 		return beanProperty;
 	}
-	
-	public String getColumnName(){
+
+    /**
+     * Returns <code>true</code> if the field's column is at secondary table.
+     */
+    public boolean isSecondary() {
+        return secondary;
+    }
+
+    public boolean matchSecondary(boolean secondary) {
+        return this.secondary == secondary;
+    }
+
+    public String getColumnName(){
 		return column.getName();
 	}
 	
@@ -169,8 +190,8 @@ public class FieldMapping extends ExtensibleBase {
 		return updateValue;
 	}
 
-    public Expression getFilterValue() {
-        return filterValue;
+    public Expression getFilteredValue() {
+        return filteredValue;
     }
 
     public boolean isAutoGenerateValue(){
@@ -189,8 +210,12 @@ public class FieldMapping extends ExtensibleBase {
 		return update;
 	}
 
-    public boolean isFilter() {
-        return filter;
+    public boolean isFiltered() {
+        return filtered;
+    }
+
+    public Expression getFilteredIf() {
+        return filteredIf;
     }
 
     public boolean isPrimaryKey() {
@@ -222,7 +247,7 @@ public class FieldMapping extends ExtensibleBase {
 	}
 
 	@Nullable
-	public FieldDomain getDomain() {
+	public Domain getDomain() {
 		return domain;
 	}
 
@@ -234,11 +259,15 @@ public class FieldMapping extends ExtensibleBase {
         return serializer;
     }
 
-    public boolean isSharding() {
-        return sharding;
-    }
+	public boolean isFilterable() {
+		return filterable;
+	}
 
-    @Override
+	public boolean isSortable() {
+		return sortable;
+	}
+
+	@Override
     public String toString() {
 	    return "FieldMapping[name=" + getFieldName() + ",column=" + getColumnName() + ",dataType=" + dataType + "]";
     }

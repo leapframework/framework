@@ -18,6 +18,7 @@ package leap.orm.mapping;
 import leap.core.AppConfig;
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
+import leap.core.annotation.Transactional;
 import leap.core.ioc.PostCreateBean;
 import leap.core.metamodel.ReservedMetaFieldName;
 import leap.core.validation.annotations.NotEmpty;
@@ -30,6 +31,8 @@ import leap.lang.Classes;
 import leap.lang.Ordered;
 import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
+import leap.lang.meta.annotation.Filterable;
+import leap.lang.meta.annotation.Sortable;
 import leap.lang.reflect.ReflectClass;
 import leap.lang.reflect.ReflectMethod;
 import leap.orm.annotation.*;
@@ -38,9 +41,8 @@ import leap.orm.annotation.meta.MetaName;
 import leap.orm.config.OrmModelClassConfig;
 import leap.orm.config.OrmModelsConfig;
 import leap.orm.config.OrmModelsConfigs;
+import leap.orm.domain.Domain;
 import leap.orm.domain.Domains;
-import leap.orm.domain.EntityDomain;
-import leap.orm.domain.FieldDomain;
 import leap.orm.event.*;
 import leap.orm.event.reflect.ReflectCreateEntityListener;
 import leap.orm.event.reflect.ReflectDeleteEntityListener;
@@ -71,7 +73,7 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 			mappingEntityByAnnotation(context, emb, sourceClass.getAnnotation(Entity.class));
 			mappingEntityByAnnotation(context, emb, sourceClass.getAnnotation(Table.class));
             mappingEntityByAnnotation(context, emb, sourceClass.getAnnotation(AutoCreateTable.class));
-			mappingEntityByDomain(context, emb, sourceClass.getAnnotation(Domain.class));
+            mappingEntityByAnnotation(context, emb, sourceClass.getAnnotation(AutoGenerateColumns.class));
             mappingListenerByAnnotations(context, emb, sourceClass.getDeclaredAnnotationsByType(Entity.Listener.class));
 			mappingManyToOneByClassAnnotation(context, emb, sourceClass.getDeclaredAnnotationsByType(ManyToOne.class));
 			mappingManyToManyByClassAnnotation(context, emb, sourceClass.getDeclaredAnnotationsByType(ManyToMany.class));
@@ -80,6 +82,8 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 
     @Override
     public void postMappingEntity(MetadataContext context, EntityMappingBuilder emb) throws MetadataException {
+        mappingEntityKeys(context, emb);
+
         Index[] indexes = emb.getEntityClass().getAnnotationsByType(Index.class);
         for(Index index : indexes) {
             mappingTableIndex(context, emb, index);
@@ -94,23 +98,24 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
             mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,Unique.class));
 			mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,Id.class));
             mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,GeneratedValue.class));
-			mappingFieldColumnByDomain(context, emb, fmb, Classes.getAnnotation(annotations,Domain.class));
+			mappingFieldColumnByDomain(context, emb, fmb, Classes.getAnnotation(annotations, leap.orm.annotation.Domain.class));
 			mappingFieldColumnByMetaName(context, emb, fmb, Classes.getAnnotation(annotations,MetaName.class));
 			mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,NotEmpty.class));
 			mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,NotNull.class));
 			mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,Required.class));
+            mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,Filterable.class));
+            mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,Sortable.class));
 		}
     }
-	
+
 	@Override
     public void postMappingField(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder fmb) throws MetadataException {
 		Annotation[] annotations = fmb.getAnnotations();
 		if(null != annotations && annotations.length > 0){
-			mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,Id.class));
             mappingFieldColumnIndex(context, emb, fmb, Classes.getAnnotation(annotations,Index.class));
 		}
     }
-	
+
 	@Override
     public void preMappingRelation(MetadataContext context, EntityMappingBuilder emb, RelationMappingBuilder rmb) throws MetadataException {
 		BeanProperty bp = rmb.getBeanProperty();
@@ -118,7 +123,7 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 			if(mappingManyToOneByPropertyAnnotation(context, emb, rmb, bp, bp.getAnnotation(ManyToOne.class))){
 				return;
 			}
-			
+
 			if(mappingManyToManyByPropertyAnnotation(context, emb, rmb, bp, bp.getAnnotation(ManyToMany.class))){
 				return;
 			}
@@ -132,6 +137,10 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 			emb.setTableName(a.table());
 			emb.setTableNameDeclared(true);
 
+            if(!Strings.isEmpty(a.secondaryTable())) {
+                emb.setSecondaryTable(new DbTableBuilder(a.secondaryTable()));
+            }
+
             mappingListenerByAnnotations(context, emb, a.listeners());
 		}
 	}
@@ -143,11 +152,11 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
     }
 
     protected void mappingListenerByAnnotation(MetadataContext context, EntityMappingBuilder emb, Entity.Listener a) {
-        EntityListenersBuilder listeners = emb.listeners;
+        EntityListenersBuilder listeners = emb.listeners();
 
         Class<?> type  = a.type();
         Object   inst  = factory.getOrCreateBean(type);
-        boolean  trans = a.transactional();
+        boolean  trans = a.transactional() || type.isAnnotationPresent(Transactional.class);
 
         //create
         if(PreCreateListener.class.isAssignableFrom(type)) {
@@ -178,7 +187,7 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 
         //load
         if(PostLoadListener.class.isAssignableFrom(type)) {
-            listeners.addPostLoadListener((PostLoadListener)inst, trans);
+            listeners.addPostLoadListener((PostLoadListener)inst);
         }
 
         ReflectClass c = ReflectClass.of(type);
@@ -226,7 +235,7 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 
             if(m.isAnnotationPresent(PostLoad.class)) {
                 ReflectLoadEntityListener listener = new ReflectLoadEntityListener(inst, m);
-                listeners.addPostLoadListener(listener, listener.isTransactional());
+                listeners.addPostLoadListener(listener);
                 continue;
             }
         }
@@ -235,7 +244,7 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 	protected void mappingEntityByAnnotation(MetadataContext context, EntityMappingBuilder emb, Table a){
 		if(null != a){
             String name = null;
-            
+
             /* todo: config table name of model?
             String configName = a.configName();
             if(!Strings.isEmpty(configName)) {
@@ -244,7 +253,7 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
             */
             if(null != ormModelsConfigs){
                 String className = emb.getEntityClass().getName();
-                OrmModelsConfig model = ormModelsConfigs.getModelsConfig(context.getDb().getName());
+                OrmModelsConfig model = ormModelsConfigs.getModelsConfig(context.getName());
                 if(null != model){
                     OrmModelClassConfig classConfig = model.getClasses().get(className);
                     if(null != classConfig){
@@ -272,24 +281,13 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
             emb.setAutoCreateTable(a.value());
         }
     }
-	
-	protected void mappingEntityByDomain(MetadataContext context, EntityMappingBuilder emb, Domain annotation){
-		Domains domains = context.getMetadata().domains();
-		if(null != annotation){
-			emb.setDomain(domains.getEntityDomain(annotation.value()));
-		}else{
-			Annotation domainAnnotation = Classes.getAnnotationByMetaType(emb.getSourceClass().getAnnotations(),Domain.class);
-			if(null != domainAnnotation){
-				Domain metaDomain = domainAnnotation.annotationType().getAnnotation(Domain.class);
-				if(!Strings.isEmpty(metaDomain.value())){
-					emb.setDomain(domains.getEntityDomain(metaDomain.value()));
-				}else{
-					emb.setDomain(domains.getEntityDomain(domainAnnotation.annotationType().getSimpleName()));
-				}
-			}
-		}
-	}
-	
+
+    protected void mappingEntityByAnnotation(MetadataContext context, EntityMappingBuilder emb, AutoGenerateColumns a){
+        if(null != a){
+            emb.setAutoGenerateColumns(a.value());
+        }
+    }
+
 	protected boolean mappingFieldColumnByAnnotation(MetadataContext context,EntityMappingBuilder emb,FieldMappingBuilder f,Column a) {
         if (null != a) {
             DbColumnBuilder c = f.getColumn();
@@ -361,6 +359,10 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
                 f.setSortOrder(a.order());
             }
 
+            if(a.secondary()) {
+                f.setSecondary(true);
+            }
+
             return true;
         }
 
@@ -368,7 +370,7 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
     }
 
     protected boolean mappingFieldColumnByAnnotation(MetadataContext context,EntityMappingBuilder emb,FieldMappingBuilder f,Unique a){
-        if(null != a) {
+        if(null != a && Strings.isEmpty(a.value())) {
             f.getColumn().setUnique(true);
             return true;
         }
@@ -377,6 +379,8 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 
     protected boolean mappingFieldColumnIndex(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder f, Index a){
         if(null != a) {
+            //todo: supports @Index at field?
+            /*
             DbTableBuilder table = emb.getTable();
 
             String localName = Strings.firstNotEmpty(a.name(), a.value());
@@ -403,32 +407,48 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 
             ix.addColumnName(f.getColumnName());
             return true;
+            */
         }
         return false;
     }
 
+    protected void mappingEntityKeys(MetadataContext context, EntityMappingBuilder emb) {
+        for(FieldMappingBuilder fm : emb.getFieldMappings()) {
+            Annotation[] annotations = fm.getAnnotations();
+            if(null != annotations) {
+                Unique unique = Classes.getAnnotation(annotations, Unique.class);
+                if(null != unique && !Strings.isEmpty(unique.value())) {
+                    String name = unique.value();
+                    UniqueKeyBuilder key = emb.getKey(name);
+                    if(null == key) {
+                        key = new UniqueKeyBuilder(name);
+                        emb.addKey(key);
+                    }
+                    key.addField(fm.getFieldName());
+                }
+            }
+        }
+    }
+
     protected boolean mappingTableIndex(MetadataContext context, EntityMappingBuilder emb, Index a){
-        String localName = Strings.firstNotEmpty(a.name(), a.value());
-        if(Strings.isEmpty(localName)) {
+        String indexName = a.name();
+        if(Strings.isEmpty(indexName)) {
             throw new MappingConfigException("The name must not be empty in @Index, check : " + emb.getEntityClass());
         }
 
-        String[] columns = a.columns();
-        if(columns.length == 0) {
-            throw new MappingConfigException("The columns must not be empty in @Index, check : " + emb.getEntityClass());
+        String[] fields = a.fields();
+        if(fields.length == 0) {
+            throw new MappingConfigException("The fields must not be empty in @Index, check : " + emb.getEntityClass());
         }
 
         DbIndexBuilder index = new DbIndexBuilder();
-        index.setName(context.getNamingStrategy().getIndexName(emb.getEntityName(), localName));
+        index.setName(indexName);
         index.setUnique(a.unique());
 
-        for(String columnName : columns) {
-            FieldMappingBuilder fmb = emb.findFieldMappingByColumn(columnName);
+        for(String fieldName : fields) {
+            FieldMappingBuilder fmb = emb.findFieldMappingByName(fieldName);
             if(null == fmb) {
-               fmb = emb.findFieldMappingByName(columnName);
-            }
-            if(null == fmb) {
-                throw new MappingConfigException("No field or column named '" + columnName +
+                throw new MappingConfigException("No field named '" + fieldName +
                                                  "' in entity '" + emb.getEntityName() + "', check the @Index");
             }
             index.addColumnName(fmb.getColumnName());
@@ -438,18 +458,18 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
         return true;
     }
 
-	protected boolean mappingFieldColumnByDomain(MetadataContext context,EntityMappingBuilder emb,FieldMappingBuilder fmb,Domain a){
+	protected boolean mappingFieldColumnByDomain(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder fmb, leap.orm.annotation.Domain a){
 		String domainName = null;
-		
+
 		Annotation domainAnnotation = null;
 		ADomain adomain = null;
-		
+
 		if(null != a){
 			domainName = a.value();
 		}else{
-			domainAnnotation = Classes.getAnnotationByMetaType(fmb.getBeanProperty().getAnnotations(),Domain.class);
+			domainAnnotation = Classes.getAnnotationByMetaType(fmb.getBeanProperty().getAnnotations(), leap.orm.annotation.Domain.class);
 			if(null != domainAnnotation){
-				Domain metaDomain = domainAnnotation.annotationType().getAnnotation(Domain.class);
+				leap.orm.annotation.Domain metaDomain = domainAnnotation.annotationType().getAnnotation(leap.orm.annotation.Domain.class);
 				if(!Strings.isEmpty(metaDomain.value())){
 					domainName = metaDomain.value();
 				}else{
@@ -463,41 +483,30 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 				}
 			}
 		}
-		
+
 		Domains domains = context.getMetadata().domains();
-		
+
 		if(!Strings.isEmpty(domainName)) {
-			FieldDomain domain = null;
-			
-			EntityDomain entityDomain = domains.tryGetEntityDomain(emb.getEntityName());
-			
-			if(null != entityDomain){
-				domain = domains.tryGetFieldDomain(domains.qualifyName(entityDomain.getName(), domainName));
-			}
-			
+			Domain domain = domains.tryGetDomain(domainName);
 			if(null == domain){
-				domain = domains.tryGetFieldDomain(domainName);
-			}
-			
-			if(null == domain){
-				throw new MappingConfigException("The domain '" + domainName + "' not found, please check the annotation in field '" + 
+				throw new MappingConfigException("The domain '" + domainName + "' not found, please check the annotation in field '" +
 												 fmb.getBeanProperty().getName() + "' of class '" + emb.getEntityClass().getName() + "'");
 			}
-			
+
 			context.getMappingStrategy().configFieldMappingByDomain(emb, fmb, domain);
-			
+
 			return true;
 		}else if(null != domainAnnotation) {
-		    FieldDomain domain = domains.getOrCreateFieldDomain(domainAnnotation.annotationType(), adomain);
+		    Domain domain = domains.getOrCreateDomain(domainAnnotation.annotationType(), adomain);
 		    context.getMappingStrategy().configFieldMappingByDomain(emb, fmb, domain);
 		    return true;
 		}
 		return false;
 	}
-	
+
 	protected boolean mappingFieldColumnByMetaName(MetadataContext context,EntityMappingBuilder emb,FieldMappingBuilder fmb,MetaName a){
 		String metaFieldName = null;
-		
+
 		if(null != a){
 			metaFieldName = Strings.firstNotEmpty(a.value(),a.reserved().getFieldName());
 		}else{
@@ -507,29 +516,30 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 				metaFieldName = Strings.firstNotEmpty(metaDomain.value(),metaDomain.reserved().getFieldName());
 			}
 		}
-		
+
 		if(!Strings.isEmpty(metaFieldName)) {
 			fmb.setMetaFieldName(metaFieldName);
 			fmb.setReservedMetaFieldName(ReservedMetaFieldName.tryForName(metaFieldName));
 			return true;
 		}
-		
+
 		return false;
 	}
-	
+
 	protected void mappingFieldColumnByAnnotation(MetadataContext context,EntityMappingBuilder emb,FieldMappingBuilder fmb,Id a){
 		if(null != a){
 			emb.setIdDeclared(true);
-			
+
 			fmb.getColumn().setPrimaryKey(true);
-			
+			fmb.setFilterable(true);
+
 			if(a.generate()) {
 				String generatorName = a.generator();
 				if(!Strings.isEmpty(generatorName)){
 					fmb.setIdGenerator(factory.getBean(IdGenerator.class,generatorName));
 				}
 			}
-			
+
 		}
 	}
 
@@ -543,47 +553,59 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
             fmb.setInsertValue(generator);
         }
     }
-	
+
 	protected void mappingFieldColumnByAnnotation(MetadataContext context,EntityMappingBuilder emb,FieldMappingBuilder fmb,NotEmpty a){
 		if(null != a && null == fmb.getNullable()){
 			fmb.setNullable(false);
 		}
 	}
-	
+
 	protected void mappingFieldColumnByAnnotation(MetadataContext context,EntityMappingBuilder emb,FieldMappingBuilder fmb,NotNull a){
 		if(null != a && null == fmb.getNullable()){
 			fmb.setNullable(false);
 		}
 	}
-	
+
 	protected void mappingFieldColumnByAnnotation(MetadataContext context,EntityMappingBuilder emb,FieldMappingBuilder fmb,Required a){
 		if(null != a && null == fmb.getNullable()){
 			fmb.setNullable(false);
 		}
 	}
-	
+
+    protected void mappingFieldColumnByAnnotation(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder fmb, Filterable a){
+        if(null != a){
+            fmb.setFilterable(a.value());
+        }
+    }
+
+    protected void mappingFieldColumnByAnnotation(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder fmb, Sortable a){
+        if(null != a){
+            fmb.setSortable(a.value());
+        }
+    }
+
 	protected void mappingManyToOneByClassAnnotation(MetadataContext context,EntityMappingBuilder emb,ManyToOne[] annotations) {
 		for(ManyToOne a : annotations){
             Class<?> targetEntityType = Classes.firstNonVoid(a.target(),a.value());
 			if(null == targetEntityType){
 				throw new MappingConfigException("The 'ManyToOne' annotation at class '" + emb.getEntityClass() + "' must defines 'targetEntityType'");
 			}
-			
+
 			RelationMappingBuilder rmb = new RelationMappingBuilder();
-			
+
 			rmb.setType(RelationType.MANY_TO_ONE);
 			rmb.setName(a.name());
 			rmb.setOptional(a.optional().getValue());
             rmb.setOnCascadeDelete(a.onCascadeDelete());
 			rmb.setTargetEntityType(targetEntityType);
-			
+
 			//join fields
 			createManyToOneJoinFields(emb, rmb, a.fields());
-			
-			emb.addRelationMapping(rmb);
+
+            emb.addRelationMapping(rmb);
 		}
 	}
-	
+
 	protected void mappingManyToManyByClassAnnotation(MetadataContext context,EntityMappingBuilder emb,ManyToMany[] annotations) {
 		for(ManyToMany a : annotations) {
             Class<?> targetEntityType = Classes.firstNonVoid(a.target(),a.value());
@@ -594,28 +616,29 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 			if(null == targetEntityType){
 				throw new MappingConfigException("The 'ManyToMany' annotation at class '" + emb.getEntityClass() + "' must defines 'targetEntityType'");
 			}
-			
+
 			RelationMappingBuilder rmb = new RelationMappingBuilder();
-			
+
 			rmb.setType(RelationType.MANY_TO_MANY);
 			rmb.setName(a.name());
 			rmb.setTargetEntityType(targetEntityType);
+            rmb.setOptional(Boolean.TRUE);
 			
 			if(!a.joinEntityType().equals(void.class)){
 				rmb.setJoinEntityType(a.joinEntityType());
 			}
-			
+
 			rmb.setJoinTableName(a.joinTableName());
-			
+
 			emb.addRelationMapping(rmb);
 		}
 	}
-	
+
 	protected boolean mappingManyToOneByPropertyAnnotation(MetadataContext context,EntityMappingBuilder emb,RelationMappingBuilder rmb, BeanProperty bp, ManyToOne a) {
 		if(null == a){
 			return false;
 		}
-		
+
 		rmb.setName(a.name());
 		rmb.setType(RelationType.MANY_TO_ONE);
 		rmb.setOptional(a.optional().getValue());
@@ -631,40 +654,40 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 
 		JoinField[] jfs = bp.getField().getDeclaredAnnotationsByType(JoinField.class);
 		createManyToOneJoinFields(emb, rmb, jfs);
-		
+
 		return true;
 	}
-	
+
 	protected boolean mappingManyToManyByPropertyAnnotation(MetadataContext context,EntityMappingBuilder emb,RelationMappingBuilder rmb, BeanProperty bp, ManyToMany a) {
 		if(null == a){
 			return false;
 		}
-		
+
 		rmb.setName(a.name());
 		rmb.setType(RelationType.MANY_TO_MANY);
 
         Class<?> targetEntityType = Classes.firstNonVoid(a.target(),a.value());
-		
+
 		if(null == targetEntityType){
-			rmb.setTargetEntityType(bp.getType());	
+			rmb.setTargetEntityType(bp.getType());
 		}else{
 			rmb.setTargetEntityType(targetEntityType);
 		}
-		
+
 		if(!a.joinEntityType().equals(void.class)){
 			rmb.setJoinEntityType(a.joinEntityType());
 		}
-		
+
 		rmb.setJoinTableName(a.joinTableName());
-		
+
 		return true;
 	}
-	
+
 	protected void createManyToOneJoinFields(EntityMappingBuilder emb,RelationMappingBuilder rmb, JoinField[] jfs) {
 		if(jfs.length > 0){
 			for(JoinField jf : jfs){
 				JoinFieldMappingBuilder jfmb = new JoinFieldMappingBuilder();
-				
+
 				jfmb.setLocalFieldName(jf.name());
 				jfmb.setLocalColumnName(jf.column());
 				jfmb.setReferencedFieldName(jf.referencedFieldName());

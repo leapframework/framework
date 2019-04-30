@@ -62,6 +62,32 @@ public class Enums {
         
         throw new IllegalStateException("Invalid enum value '" + value + "' of type '" + enumType.getName() + "'");
 	}
+
+    public static <E extends Enum<?>> E valueOrNameOf(Class<E> enumType,Object valueOrName) throws IllegalStateException{
+        if(Objects2.isEmpty(valueOrName)){
+            return null;
+        }
+
+        String stringValue = valueOrName.toString();
+
+        ReflectEnum reflectEnum = ReflectEnum.of(enumType);
+
+        if(reflectEnum.isValued()){
+            for(E e : enumType.getEnumConstants()){
+                if(reflectEnum.getValue(e).toString().equals(stringValue)){
+                    return e;
+                }
+            }
+        }
+
+        for(E e : enumType.getEnumConstants()){
+            if(e.toString().equals(stringValue)){
+                return e;
+            }
+        }
+
+        throw new IllegalStateException("Invalid enum value '" + valueOrName + "' of type '" + enumType.getName() + "'");
+    }
 	
 	public static <E extends Enum<?>> E nameOf(Class<E> enumType,String name) throws IllegalStateException{
 		return nameOf(enumType,name,true);

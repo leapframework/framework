@@ -25,6 +25,38 @@ public class Threads {
         Try.throwUnchecked(() -> Thread.sleep(ms));
     }
 
+    public static void wait(Supplier<Boolean> func) throws TimeoutException {
+        wait(func, 1000L);
+    }
+
+    public static void wait(Supplier<Boolean> func, long maxWait) throws TimeoutException {
+        long timeout = maxWait;
+        final long start = System.currentTimeMillis();
+
+        do{
+            Boolean b = func.get();
+            if(null != b && b) {
+                return;
+            }
+
+            //decrease the timeout
+            timeout = maxWait - (System.currentTimeMillis() - start);
+            if(timeout <= 0L) {
+                //time out.
+                break;
+            }
+
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException e) {
+
+            }
+
+        }while(timeout > 0);
+
+        throw new TimeoutException("timeout");
+    }
+
     public static <T> T waitAndGet(Supplier<T> func) throws TimeoutException {
         return waitAndGet(func, 1000L);
     }

@@ -15,10 +15,14 @@
  */
 package leap.oauth2.server.client;
 
+import leap.core.security.ClientPrincipal;
+
 public interface AuthzClientManager {
 
     AuthzClient authenticate(AuthzClientAuthenticationContext context, AuthzClientCredentials credentials) throws Throwable;
     
 	AuthzClient loadClientById(String clientId);
+	
+	AuthzClient loadClientByPrincipal(ClientPrincipal principal);
 	
 }

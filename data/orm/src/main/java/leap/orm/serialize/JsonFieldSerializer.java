@@ -16,6 +16,7 @@
 package leap.orm.serialize;
 
 import leap.lang.Initializable;
+import leap.lang.convert.Converts;
 import leap.lang.json.JSON;
 import leap.lang.json.JsonSettings;
 import leap.orm.mapping.FieldMapping;
@@ -43,12 +44,16 @@ public class JsonFieldSerializer implements FieldSerializer,Initializable {
 
     @Override
     public Object deserialize(FieldMapping fm, Object encoded) {
-        return JSON.decode((String)encoded);
+        return JSON.decode(toString(encoded));
     }
 
     @Override
     public Object deserialize(FieldMapping fm, Object encoded, Class<?> type, Type genericType) {
-        return JSON.decode((String)encoded, type, genericType);
+        return JSON.decode(toString(encoded), type, genericType);
+    }
+
+    protected String toString(Object encoded) {
+        return Converts.toString(encoded);
     }
 
 }

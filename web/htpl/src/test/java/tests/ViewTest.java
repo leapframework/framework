@@ -52,6 +52,14 @@ public class ViewTest extends HtplTestCase {
 		Element option2 = select.child(1);
 		assertFalse(option2.attributes().hasKey("selected"));
 	}
+
+	@Test
+	public void testConfigProperty() {
+        Document html = get("/test/config_prop").getDocument();
+        Element p = html.getElementsByTag("p").first();
+
+        assertEquals("hello world", p.text().trim());
+    }
 	
     @Test
     public void testViewResolver() {
@@ -64,9 +72,14 @@ public class ViewTest extends HtplTestCase {
     }
 
     @Test
-    public void testInteceptor() {
+    public void testInterceptor() {
         String html = get("/html?__view_name__=1").getContent();
 
         assertTrue(html.startsWith("<!--view name:/html-->"));
+    }
+
+    @Test
+    public void testVarMessage() {
+	    get("/test/var_msg").assertContentContains("Hello vars");
     }
 }

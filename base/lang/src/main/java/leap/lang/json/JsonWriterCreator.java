@@ -16,7 +16,10 @@
 package leap.lang.json;
 
 import leap.lang.Creatable;
+import leap.lang.beans.BeanProperty;
 import leap.lang.naming.NamingStyle;
+
+import java.util.function.Predicate;
 
 public interface JsonWriterCreator extends Creatable<JsonWriter>{
 
@@ -47,4 +50,7 @@ public interface JsonWriterCreator extends Creatable<JsonWriter>{
 
     JsonWriterCreator setSettings(JsonSettings settings);
 
+    JsonWriterCreator setBeanFilter(Predicate<Object> filter);
+
+    JsonWriterCreator setPropertyFilter(Predicate<BeanProperty> filter);
 }

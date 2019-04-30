@@ -62,7 +62,7 @@ public class SimpleErrors extends AbstractErrors implements Errors {
             if(Strings.isEmpty(e.getName())) {
                 return e.getMessage();
             }else{
-                return "'" + e.getName() + "' " + e.getMessage();
+                return "Invalid '" + e.getName() + "' : " + e.getMessage();
             }
         }
     }

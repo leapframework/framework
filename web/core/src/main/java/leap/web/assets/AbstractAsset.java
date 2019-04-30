@@ -45,6 +45,9 @@ public abstract class AbstractAsset implements Asset {
 
     @Override
     public boolean isExpired() {
+		if(null == resource) {
+			return true;
+		}
         return (null != resource && resource.isExpired()) || (null != debugResource && debugResource.isExpired());
     }
 

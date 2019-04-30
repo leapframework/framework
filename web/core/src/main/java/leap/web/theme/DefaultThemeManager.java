@@ -28,12 +28,14 @@ import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.path.Paths;
+import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
 import leap.lang.resource.Resources;
 import leap.lang.servlet.ServletResource;
 import leap.lang.servlet.Servlets;
 import leap.web.App;
 import leap.web.Request;
+import leap.web.Utils;
 import leap.web.assets.Asset;
 import leap.web.assets.AssetSource;
 import leap.web.assets.ServletAssetResolver;
@@ -110,23 +112,37 @@ public class DefaultThemeManager implements ThemeManager,PostCreateBean {
 	}
 	
 	protected void loadThemes() throws Throwable {
-		ServletResource themesDir = Servlets.getResource(app.getServletContext(), webConfig.getThemesLocation());
+		Resource themesDir = Utils.getResource(app.getServletContext(), webConfig.getThemesLocation());
 		if(themesDir.exists()){
-			Set<String> themePaths = app.getServletContext().getResourcePaths(webConfig.getThemesLocation());
-			for(String themePath : themePaths){
-				if(themePath.endsWith("/")){
-					loadTheme(themePath);
-				}
-			}
+		    if(themesDir instanceof ServletResource) {
+                Set<String> themePaths = app.getServletContext().getResourcePaths(webConfig.getThemesLocation());
+                for(String themePath : themePaths){
+                    if(themePath.endsWith("/")){
+                        loadTheme(themePath);
+                    }
+                }
+            }else {
+                for(Resource resource : Resources.scan(themesDir, "*") ){
+                    String themePath = Strings.removeStart(resource.getURLString(), themesDir.getURLString());
+                    if(themePath.endsWith("/")){
+                        loadTheme(themePath);
+                    }
+                }
+            }
 		}
 	}
 	
 	protected void loadTheme(String path) throws Throwable {
-		String themeName = path.substring(webConfig.getThemesLocation().length() + 1,path.length() - 1);
+        String themeName;
+	    if(path.startsWith(webConfig.getThemesLocation() + "/")) {
+            themeName = Paths.suffixWithoutSlash(Strings.removeStart(path, webConfig.getThemesLocation() + "/"));
+        }else {
+	        themeName = Paths.prefixAndSuffixWithoutSlash(path);
+        }
 		log.debug("Found theme '" + themeName + "' in path '" + path + "'");
 		
-		ServletResource dir = Servlets.getResource(app.getServletContext(), path);
-		
+		Resource dir = Utils.getResource(app.getServletContext(), path);
+
 		SimpleTheme.Builder theme = new SimpleTheme.Builder();
 		
 		theme.setName(themeName)
@@ -137,9 +153,9 @@ public class DefaultThemeManager implements ThemeManager,PostCreateBean {
 		themes.put(themeName, theme.build());
 	}
 	
-	protected MessageSource getThemeBasedMessageSource(String themeName,ServletResource themeDir) throws Throwable {
+	protected MessageSource getThemeBasedMessageSource(String themeName, Resource themeDir) throws Throwable {
 		//TODO : config theme based messages directory
-		ServletResource messagesDir = themeDir.createRelative("messages");
+		Resource messagesDir = themeDir.createRelative("messages");
 		if(null != messagesDir && messagesDir.exists()){
 			ResourceSet rs = Resources.scan(messagesDir, "**/*.*");
 			if(!rs.isEmpty()){
@@ -153,11 +169,11 @@ public class DefaultThemeManager implements ThemeManager,PostCreateBean {
 		return null;
 	}
 	
-	protected AssetSource getThemeBasedAssetSource(String themeName, ServletResource themeDir) throws Throwable {
+	protected AssetSource getThemeBasedAssetSource(String themeName, Resource themeDir) throws Throwable {
 		//TODO: config theme based assets directory
-		ServletResource assetsDir = themeDir.createRelative("static");
+		Resource assetsDir = themeDir.createRelative("static");
 		if(null != assetsDir && assetsDir.exists()){
-			String location = assetsDir.getPathWithinContext();
+			String location = assetsDir.getPath();
 			
 			ServletAssetResolver resolver = app.factory().createBean(ServletAssetResolver.class);
 			resolver.setPrefix(Paths.prefixAndSuffixWithSlash(location));
@@ -173,11 +189,11 @@ public class DefaultThemeManager implements ThemeManager,PostCreateBean {
 		return null;
 	}
 	
-	protected ViewSource getThemeBasedViewSource(String themeName,ServletResource themeDir) throws Throwable {
+	protected ViewSource getThemeBasedViewSource(String themeName,Resource themeDir) throws Throwable {
 		//TODO : config theme based views directory
-		ServletResource viewsDir = themeDir.createRelative("views");
+		Resource viewsDir = themeDir.createRelative("views");
 		if(null != viewsDir && viewsDir.exists()){
-			String location = viewsDir.getPathWithinContext();
+			String location = viewsDir.getPath();
 			
 			ServletResourceViewSource themeViewSource = new ServletResourceViewSource();
 			themeViewSource.setLocation(location);

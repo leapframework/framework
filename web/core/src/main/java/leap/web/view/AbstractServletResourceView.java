@@ -15,30 +15,13 @@
  */
 package leap.web.view;
 
-import leap.lang.servlet.ServletResource;
+import leap.lang.resource.Resource;
 import leap.web.App;
-import leap.web.Request;
 
-public abstract class AbstractServletResourceView extends AbstractView {
+public abstract class AbstractServletResourceView extends AbstractResourceView<Resource> {
 	
-	public static final String VIEW_RESOURCE_ATTRIBUTE = AbstractServletResourceView.class.getName() + "$view_resource";
-	
-	protected final ServletResource resource;
-	protected final String			resourcePath;
-
-	public AbstractServletResourceView(App app,String path, ServletResource resource){
-		super(app, path);
-		this.resource     = resource;
-		this.resourcePath = resource.getPathWithinContext();
+	public AbstractServletResourceView(App app,String path, Resource resource){
+		super(app, path, resource);
 	}
 	
-	@Override
-    protected void exposeHelpers(Request request) throws Exception {
-		request.setAttribute(VIEW_RESOURCE_ATTRIBUTE, resource);
-	}
-
-	@Override
-    public String toString() {
-	    return resourcePath;
-    }
 }

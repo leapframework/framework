@@ -20,6 +20,7 @@ import leap.lang.convert.Converts;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.params.Params;
+import leap.orm.metadata.MetadataContext;
 import leap.orm.sql.Sql;
 import leap.orm.sql.SqlContext;
 import leap.orm.sql.SqlStatementBuilder;
@@ -77,12 +78,29 @@ public class DynamicClause extends DynamicNode implements AstNodeContainer {
     public <T extends AstNode> T findLastNode(Class<T> type) {
         return AstUtils.findLastNode(bodyNodes, type);
     }
-	
+
     @Override
-    public void resolveDynamic(Appendable buf, Params params) {
-        if(test(params)) {
-            super.resolveDynamic(buf, params);
+    public void prepare(MetadataContext context, Sql sql) {
+        for(AstNode node : bodyNodes) {
+            node.prepare(context, sql);
         }
+    }
+
+    @Override
+    public boolean resolveDynamic(SqlContext context, Sql sql, Appendable buf, Params params) throws IOException {
+        if(test(params)) {
+            StringBuilder s = new StringBuilder();
+
+            for(AstNode n : bodyNodes) {
+                if(!n.resolveDynamic(context, sql, s, params)) {
+                    return false;
+                }
+            }
+
+            buf.append(s);
+            return true;
+        }
+        return false;
     }
 
     @Override

@@ -24,13 +24,13 @@ import leap.core.i18n.MessageSource;
 public interface ErrorCodes {
 	
 	ErrorCodes addErrorCode(Class<?> exceptionClass, String code);
-	
+
 	ErrorCodes addErrorCodes(Map<Class<?>, String> m);
 
 	String getErrorCode(Class<?> exceptionClass);
-	
+
 	String getErrorMessage(String errorCode, Throwable exception, MessageSource ms, Locale locale);
-	
+
 	Map<Class<?>, String> getExceptionCodeMappings();
-	
+
 }

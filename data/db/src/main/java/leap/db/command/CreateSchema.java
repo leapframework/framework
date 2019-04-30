@@ -21,5 +21,7 @@ import leap.db.DbCommand;
 
 
 public interface CreateSchema extends DbCommand {
-	
+
+    String[] getScripts();
+
 }

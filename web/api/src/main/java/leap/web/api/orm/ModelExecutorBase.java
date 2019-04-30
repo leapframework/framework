@@ -18,24 +18,37 @@
 
 package leap.web.api.orm;
 
+import leap.lang.Strings;
+import leap.lang.codec.Base64;
+import leap.lang.convert.Converts;
+import leap.lang.jdbc.JdbcTypeKind;
+import leap.lang.meta.MSimpleType;
+import leap.lang.meta.MSimpleTypeKind;
 import leap.orm.OrmMetadata;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
+import leap.web.api.meta.model.MApiProperty;
+import leap.web.api.remote.RestResourceFactory;
 
-public abstract class ModelExecutorBase {
+import java.util.Date;
+import java.util.Map;
 
-    protected final ModelExecutorContext context;
-    protected final ApiConfig           ac;
-    protected final ApiMetadata         amd;
-    protected final MApiModel           am;
-    protected final Dao                 dao;
-    protected final EntityMapping       em;
-    protected final OrmMetadata         md;
+public abstract class ModelExecutorBase<C extends ModelExecutorContext> {
 
-    public ModelExecutorBase(ModelExecutorContext context) {
+    protected final C                    context;
+    protected final ApiConfig            ac;
+    protected final ApiMetadata          amd;
+    protected final MApiModel            am;
+    protected final Dao                  dao;
+    protected final EntityMapping        em;
+    protected final OrmMetadata          md;
+    protected final boolean              remoteRest;
+    protected final RestResourceFactory  restResourceFactory;
+
+    public ModelExecutorBase(C context) {
         this.context = context;
         this.ac  = context.getApiConfig();
         this.amd = context.getApiMetadata();
@@ -43,6 +56,43 @@ public abstract class ModelExecutorBase {
         this.dao = context.getDao();
         this.em  = context.getEntityMapping();
         this.md  = dao.getOrmContext().getMetadata();
+        this.remoteRest = em.isRemoteRest();
+        this.restResourceFactory = context.getRestResourceFactory();
     }
 
+    protected void tryHandleSpecialValue(Map.Entry<String, Object> entry, MApiProperty p) {
+        Object value = entry.getValue();
+        if(null == value) {
+            return;
+        }
+
+        if(value instanceof String) {
+            String string = (String) value;
+            if(Strings.isBlank(string)) {
+                return;
+            }
+
+            if(!p.getType().isSimpleType()){
+                return;
+            }
+
+            MSimpleType type = p.getType().asSimpleType();
+
+            if(type.getJdbcType().getKind().equals(JdbcTypeKind.Temporal)) {
+                Date date = Converts.convert(string, Date.class);
+                entry.setValue(date);
+                return;
+            }
+
+            if(type.getSimpleTypeKind().equals(MSimpleTypeKind.BINARY)) {
+                try {
+                    byte[] data = Base64.decodeToBytes(string);
+                    entry.setValue(data);
+                    return;
+                }catch (Exception e) {
+
+                }
+            }
+        }
+    }
 }

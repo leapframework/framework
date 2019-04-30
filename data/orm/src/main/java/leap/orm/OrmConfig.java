@@ -40,6 +40,14 @@ public interface OrmConfig {
      */
     boolean isAutoMappingTables();
 
+    /**
+     * Returns true if read db schema at startup.
+     *
+     * <p/>
+     * Default is true.
+     */
+    boolean isReadDbSchema();
+
 	/**
 	 * Returns true if auto generate fields for {@link leap.orm.model.Model}.
      *
@@ -70,6 +78,27 @@ public interface OrmConfig {
 	 * Default is false
 	 */
 	boolean isModelCrossContext();
+
+    /**
+     * Returns true if allow mapping class's simple name as entity name
+     *
+     * <p/>
+     * Default is false.
+     */
+    boolean isMappingClassSimpleName();
+
+    /**
+     * Returns true if the field at class must be declared explicitly.
+     *
+     * <p/>
+     * Default is false.
+     */
+    boolean isMappingFieldExplicitly();
+
+    /**
+     * Returns true if the dao events is enabled by default.
+     */
+    boolean isEventsDefaultEnabled();
 
     /**
      * Returns true if enables filter column(s).
@@ -118,6 +147,11 @@ public interface OrmConfig {
 	 * @see NamingStyles
 	 */
 	String getColumnNamingStyle();
+
+    /**
+     * Returns true if should convert to bean property's type at read map.
+     */
+	boolean isConvertPropertyForReadMap();
 
     /**
      * Returns the format name of default serializer.
@@ -186,7 +220,7 @@ public interface OrmConfig {
         /**
          * Optional.
          */
-        Expression getFilterIf();
+        Expression getFilteredIf();
 
     }
 }

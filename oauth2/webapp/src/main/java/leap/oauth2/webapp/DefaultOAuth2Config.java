@@ -19,9 +19,12 @@ package leap.oauth2.webapp;
 import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
 import leap.core.annotation.Inject;
+import leap.core.web.RequestIgnore;
 import leap.lang.Strings;
 import leap.lang.net.Urls;
+import leap.lang.path.AntPathPattern;
 import leap.lang.path.Paths;
+import leap.oauth2.webapp.token.at.AccessToken;
 import leap.oauth2.webapp.user.UserDetailsLookup;
 import leap.web.App;
 import leap.web.AppInitializable;
@@ -30,6 +33,8 @@ import leap.web.ServerInfo;
 import leap.web.security.SecurityConfigurator;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 @Configurable(prefix="oauth2")
 public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, AppInitializable, AppListener {
@@ -40,8 +45,10 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Ap
     protected boolean login;
     protected boolean logout;
     protected boolean loginWithAccessToken;
+    protected boolean forceLookupUserInfo;
     protected String  authorizeUrl;
     protected String  tokenUrl;
+    protected String  indirectTokenUrl;
     protected String  tokenInfoUrl;
     protected String  userInfoUrl;
     protected String  publicKeyUrl;
@@ -51,6 +58,9 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Ap
     protected String  redirectUri;
     protected String  errorView;
     protected String  logoutView;
+
+    private List<RequestIgnore> ignoresList = new ArrayList<>();
+    private RequestIgnore[] ignoresArray = new RequestIgnore[] {};
 
     protected @Inject UserDetailsLookup userDetailsLookup;
 
@@ -102,6 +112,16 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Ap
     }
 
     @Override
+    public boolean isForceLookupUserInfo() {
+        return forceLookupUserInfo;
+    }
+
+    @ConfigProperty
+    public void setForceLookupUserInfo(boolean forceLookupUserInfo) {
+        this.forceLookupUserInfo = forceLookupUserInfo;
+    }
+
+    @Override
     @ConfigProperty
     public OAuth2Configurator setServerUrl(String serverUrl) {//don't change the parameter name (used by config property)
         serverUrl = Paths.suffixWithoutSlash(serverUrl);
@@ -119,9 +139,9 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Ap
     @ConfigProperty
     public void setIndirectServerUrl(String indirectServerUrl) {//don't change the parameter name (used by config property)
         indirectServerUrl = Paths.suffixWithoutSlash(indirectServerUrl);
-
-        this.authorizeUrl = indirectServerUrl + "/oauth2/authorize";
-        this.logoutUrl    = indirectServerUrl + "/oauth2/logout";
+        this.authorizeUrl     = indirectServerUrl + "/oauth2/authorize";
+        this.logoutUrl        = indirectServerUrl + "/oauth2/logout";
+        this.indirectTokenUrl = indirectServerUrl + "/oauth2/token";
     }
 
     @ConfigProperty
@@ -184,6 +204,18 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Ap
     }
 
     @Override
+    public String getIndirectTokenUrl() {
+        return indirectTokenUrl;
+    }
+
+    @Override
+    @ConfigProperty
+    public OAuth2Configurator setIndirectTokenUrl(String indirectTokenUrl) {
+        this.indirectTokenUrl = indirectTokenUrl;
+        return this;
+    }
+
+    @Override
     @ConfigProperty
     public OAuth2Configurator setTokenUrl(String url) {
         this.tokenUrl = url;
@@ -241,7 +273,20 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Ap
 		return clientId;
 	}
 
-	@Override
+    @Override
+    public OAuth2Configurator ignorePath(String path) {
+        AntPathPattern pattern = new AntPathPattern(path);
+        ignoresList.add((req) -> pattern.matches(req.getPath()));
+        ignoresArray = ignoresList.toArray(new RequestIgnore[ignoresList.size()]);
+        return this;
+    }
+
+    @Override
+    public RequestIgnore[] getIgnores() {
+        return ignoresArray;
+    }
+
+    @Override
     @ConfigProperty
 	public OAuth2Configurator setClientId(String clientId) {
 		this.clientId = clientId;
@@ -298,7 +343,7 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Ap
             }
 
             //Auto enable login access token if user details lookup exists.
-            if(null != userDetailsLookup) {
+            if(null != userDetailsLookup && userDetailsLookup.isEnabled()) {
                 loginWithAccessToken = true;
             }
         }

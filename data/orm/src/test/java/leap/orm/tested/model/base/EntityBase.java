@@ -15,13 +15,15 @@
  */
 package leap.orm.tested.model.base;
 
+import leap.orm.annotation.Id;
 import leap.orm.model.Model;
 
 /**
  * Simple JavaBean domain object with an id property. Used as a base class for objects needing this property.
  */
 public abstract class EntityBase extends Model {
-	
+
+    @Id
 	protected Integer id;
 
 	public Integer getId() {

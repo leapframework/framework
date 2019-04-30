@@ -251,7 +251,8 @@ public class XmlSqlReader implements SqlReader {
 		}
 		
 		log.trace("SQL(s) : \n\n  {}\n",content);
-		DefaultSqlCommand command = new DefaultSqlCommand(reader.getSource(), key, dbType, language, content, datasource);
+        SqlInfo info = new SqlInfo.Builder(reader.getSource(), key, dbType, language, content, datasource).build();
+		DefaultSqlCommand command = new DefaultSqlCommand(info);
         command.setFilterColumnEnabled(whereFields);
         command.setQueryFilterEnabled(queryFilter);
 

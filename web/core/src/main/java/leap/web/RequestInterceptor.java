@@ -20,23 +20,27 @@ import leap.web.action.ActionContext;
 import leap.web.route.Route;
 
 public interface RequestInterceptor {
+	/**
+	 * Called after {@link AppHandler#prepareRequest(Request, Response)}
+	 */
+	default void onPrepareRequest(Request request, Response response){}
 	
 	/**
 	 * Called before handling request.
 	 */
-	default State preHandleRequest(Request request, Response response) throws Throwable {
+	default State preHandleRequest(Request request, Response response,ActionContext ac) throws Throwable {
 	    return State.CONTINUE;
 	}
 
     /**
-     * Called after {@link #preHandleRequest(Request, Response)} and before handling the route.
+     * Called after {@link #preHandleRequest(Request, Response,ActionContext)} and before handling the route.
      */
     default State handleRoute(Request request, Response response, Route route, ActionContext ac) throws Throwable {
         return State.CONTINUE;
     }
 
     /**
-     * Called after {@link #preHandleRequest(Request, Response)} and before handling the request no route matched.
+     * Called after {@link #preHandleRequest(Request, Response,ActionContext)} and before handling the request no route matched.
      */
     default State handleNoRoute(Request request, Response response) throws Throwable {
         return State.CONTINUE;

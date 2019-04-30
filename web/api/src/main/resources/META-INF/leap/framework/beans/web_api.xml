@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.leapframework.org/schema/beans">
-
+<beans xmlns="http://www.leapframework.org/schema/beans" if-servlet-environment="true">
     <bean type="leap.web.api.Apis"
           class="leap.web.api.DefaultApis" primary="true"/>
 
@@ -53,13 +52,30 @@
         <additional-type-def type="leap.web.api.meta.ApiMetadataProcessor"/>
     </bean>
 
-    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.QueryOperation"/>
-    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.FindOperation"/>
-    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.CreateOperation"/>
-    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.UpdateOperation"/>
-    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.DeleteOperation"/>
-    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.sql.SqlOperationProcessor"/>
+    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.CrudOperationProcessor"/>
+    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.ProviderOperationProcessor"/>
+
+    <!--crud -->
+    <bean name="create" type="leap.web.api.restd.CrudOperation" class="leap.web.api.restd.crud.CreateOperation"/>
+    <bean name="update" type="leap.web.api.restd.CrudOperation" class="leap.web.api.restd.crud.UpdateOperation"/>
+    <bean name="delete" type="leap.web.api.restd.CrudOperation" class="leap.web.api.restd.crud.DeleteOperation"/>
+    <bean name="find"   type="leap.web.api.restd.CrudOperation" class="leap.web.api.restd.crud.FindOperation"/>
+    <bean name="query"  type="leap.web.api.restd.CrudOperation" class="leap.web.api.restd.crud.QueryOperation"/>
+    <bean name="count"  type="leap.web.api.restd.CrudOperation" class="leap.web.api.restd.crud.CountOperation"/>
+    <bean name="replace" type="leap.web.api.restd.CrudOperation" class="leap.web.api.restd.crud.ReplaceOperation"/>
+
+    <bean name="sql"
+          type="leap.web.api.restd.RestdOperationProvider"
+          class="leap.web.api.restd.sql.SqlOperationProvider"/>
 
     <!-- dyna -->
     <bean type="leap.web.api.dyna.DynaApiFactory" class="leap.web.api.dyna.DefaultDynaApiFactory" primary="true"/>
+
+	<!-- remote rest entity -->
+	<bean type="leap.web.api.remote.ds.RestDatasourceManager"
+		class="leap.web.api.remote.ds.DefaultRestDataSourceManager" primary="true"/>
+	<bean class="leap.web.api.remote.TokenFetcher" />
+    <bean type="leap.web.api.remote.RestResourceFactory"
+          class="leap.web.api.remote.DefaultRestResourceFactory" primary="true"/>
+
 </beans>

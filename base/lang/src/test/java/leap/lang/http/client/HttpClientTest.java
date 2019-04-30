@@ -79,7 +79,7 @@ public class HttpClientTest extends TestBase {
         assertTrue(response.isOk());
         assertEquals("Hello", response.getString());
 
-        client.request(url("/simple_get")).send((req,resp) -> {
+        client.request(url("/simple_get")).sendAsync((req, resp) -> {
             assertTrue(resp.isOk());
             assertEquals("Hello", IO.readStringAndClose(resp.getInputStream(), Charsets.UTF_8));
         });

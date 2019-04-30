@@ -35,6 +35,10 @@ import javax.sql.DataSource;
 import java.sql.*;
 
 public class GenericDb extends DbBase {
+
+    private static final ThreadLocal<DataSource> CONTEXT_DATA_SOURCE = new ThreadLocal<>();
+
+    private boolean useContextDataSource;
 	
 	public GenericDb(String name, DataSource dataSource, DatabaseMetaData md,
                      DbPlatform platform,  DbMetadata metadata, GenericDbDialect dialect, DbComparator comparator) {
@@ -153,20 +157,38 @@ public class GenericDb extends DbBase {
     public DbExecution createExecution() {
 	    return new GenericDbExecution(this);
     }
-	
+
+	@Override
+	public void withDataSource(DataSource dataSource, Runnable func) {
+        try {
+            useContextDataSource = true;
+            CONTEXT_DATA_SOURCE.set(dataSource);
+            func.run();
+        }finally {
+            useContextDataSource = false;
+            CONTEXT_DATA_SOURCE.remove();
+        }
+	}
+
+	protected DataSource getContextDataSource() {
+        return useContextDataSource ? CONTEXT_DATA_SOURCE.get() : null;
+    }
+
 	@Override
     public void execute(ConnectionCallback callback) throws NestedSQLException {
 		try {
-			if(null != tp) {
+		    DataSource contextDataSource = getContextDataSource();
+
+			if(null == contextDataSource && null != tp) {
                 tp.execute(callback);
             }else{
                 Connection conn = null;
                 try {
-                    conn = dataSource.getConnection();
+                    conn = null != contextDataSource ? contextDataSource.getConnection() : dataSource.getConnection();
 
                     callback.execute(conn);
                 }catch(SQLException e) {
-                    throw Exceptions.wrap(e);
+                    throw new NestedSQLException(e, metadata.getProductName());
                 }finally{
                     JDBC.closeConnection(conn);
                 }
@@ -179,16 +201,18 @@ public class GenericDb extends DbBase {
 	@Override
     public <T> T executeWithResult(ConnectionCallbackWithResult<T> callback) throws NestedSQLException {
 		try {
-			if(null != tp) {
+            DataSource contextDataSource = getContextDataSource();
+
+			if(null == contextDataSource && null != tp) {
                 return tp.executeWithResult(callback);
             }else{
                 Connection conn = null;
                 try {
-                    conn = dataSource.getConnection();
+                    conn = null != contextDataSource ? contextDataSource.getConnection() : dataSource.getConnection();
 
                     return callback.execute(conn);
                 }catch(SQLException e) {
-                    throw Exceptions.wrap(e);
+                    throw new NestedSQLException(e, metadata.getProductName());
                 }finally{
                     JDBC.closeConnection(conn);
                 }
@@ -386,7 +410,7 @@ public class GenericDb extends DbBase {
 			
 			return result;
 		}catch(SQLException e){
-			throw new NestedSQLException(e);
+			throw new NestedSQLException(e, metadata.getProductName());
 		}finally{
 			JDBC.closeStatementOnly(ps);
 		}
@@ -422,7 +446,7 @@ public class GenericDb extends DbBase {
 			
 			return reader.read(rs);
 		}catch(SQLException e){
-			throw new NestedSQLException(e);
+			throw new NestedSQLException(e, metadata.getProductName());
 		}finally{
 			JDBC.closeResultSetOnly(rs);
 			JDBC.closeStatementOnly(ps);
@@ -446,7 +470,7 @@ public class GenericDb extends DbBase {
 			if(null == ps){
 				ps = dialect.createPreparedStatement(connection, sql);
 			}
-			
+
 			for(int j=0;j<batchArgs.length;j++){
 				Object[] args  = batchArgs[j];
 				
@@ -456,8 +480,9 @@ public class GenericDb extends DbBase {
 							dialect.setParameter(ps, i+1, args[i],types[i]);
 						}
 					}else{
+						types = new int[args.length];
 						for(int i=0;i<args.length;i++){
-							dialect.setParameter(ps, i+1, args[i]);
+							types[i] = dialect.setParameter(ps, i+1, args[i]);
 						}
 					}
 				}
@@ -479,7 +504,7 @@ public class GenericDb extends DbBase {
 			
 			return result;
 		}catch(SQLException e){
-			throw new NestedSQLException(e);
+			throw new NestedSQLException(e, metadata.getProductName());
 		}finally{
 			JDBC.closeStatementOnly(ps);
 		}
@@ -500,7 +525,7 @@ public class GenericDb extends DbBase {
 			if(i > 0){
 				sb.append(',');
 			}
-			sb.append(dialect.toDisplayString(types != null && types.length > 0 ? types[i] : JdbcTypes.UNKNOW_TYPE_CODE, args[i]));
+			sb.append(dialect.toDisplayString(types != null && types.length > 0 ? types[i] : JdbcTypes.UNKNOWN_TYPE_CODE, args[i]));
 		}
 		
 		sb.append(']');
@@ -513,11 +538,19 @@ public class GenericDb extends DbBase {
 		}
 		
 		StringBuilder sb = new StringBuilder();
-		
-		for(Object[] args : batchArgs){
-			sb.append(getDisplayString(args, types)).append("\n        ");
-		}
-		
+
+        for(int i=0;i<batchArgs.length;i++) {
+            Object[] args = batchArgs[i];
+
+            if(i == 10) {
+                sb.append("[... " + (batchArgs.length - i) + " more]");
+                break;
+            }else{
+                sb.append(getDisplayString(args, types)).append("\n        ");
+            }
+
+        }
+
 		return sb.toString();
 	}
 }

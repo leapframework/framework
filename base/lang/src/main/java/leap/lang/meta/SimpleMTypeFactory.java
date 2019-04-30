@@ -36,6 +36,7 @@ public class SimpleMTypeFactory extends AbstractMTypeFactory implements MTypeFac
     private MTypeContext context;
 
     public SimpleMTypeFactory() {
+        this(MTypeContext.DEFAULT);
     }
 
     public SimpleMTypeFactory(MTypeContext context) {
@@ -109,6 +110,16 @@ public class SimpleMTypeFactory extends AbstractMTypeFactory implements MTypeFac
             if(Object.class.equals(type)) {
                 return MObjectType.TYPE;
             }
+        }
+
+        MComplexType ct = context.getCreatedComplexType(type);
+        if(null != ct) {
+            return ct;
+        }
+
+        String creating = context.getCreatingComplexType(type);
+        if(null != creating) {
+            return new MComplexTypeRef(creating);
         }
 
 		return createComplexType(context, type, root);
@@ -192,7 +203,7 @@ public class SimpleMTypeFactory extends AbstractMTypeFactory implements MTypeFac
 
             configureProperty(bp, mp);
 
-			ct.addProperty(mp.build());
+			ct.addProperty(mp);
 		}
 
         MComplexType ret = ct.build();

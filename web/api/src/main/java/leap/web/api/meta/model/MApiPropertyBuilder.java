@@ -15,18 +15,30 @@
  */
 package leap.web.api.meta.model;
 
+import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
+import leap.lang.enums.Bool;
 import leap.lang.meta.MProperty;
+import leap.lang.meta.MPropertyBuilder;
+import leap.web.api.annotation.ApiProperty;
 
 public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> {
 
     protected MProperty    metaProperty;
     protected BeanProperty beanProperty;
+    protected boolean      identity;
+    protected boolean      unique;
     protected boolean      discriminator;
+    protected boolean      reference;
+    protected Boolean      readOnly;
+    protected Boolean      selectable;
+    protected Boolean      aggregatable;
+    protected Boolean      groupable;
     protected Boolean      creatable;
     protected Boolean      updatable;
     protected Boolean      sortable;
     protected Boolean      filterable;
+    protected Boolean      expandable;
 
     public MApiPropertyBuilder() {
 	    super();
@@ -49,12 +61,74 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
 		this.defaultValue = mp.getDefaultValue();
         this.enumValues = mp.getEnumValues();
 		this.required =  mp.getRequired();
+        this.identity = mp.isIdentity();
+        this.unique = mp.isUnique();
+        this.reference = mp.isReference();
         this.discriminator = mp.isDiscriminator();
+        this.selectable = mp.getSelectable();
+        this.aggregatable = mp.getAggregatable();
+        this.groupable = mp.getGroupable();
         this.creatable = mp.getCreatable();
         this.updatable = mp.getUpdatable();
         this.sortable = mp.getSortable();
         this.filterable = mp.getFilterable();
+
+        if(null != beanProperty) {
+            ApiProperty a = beanProperty.getAnnotation(ApiProperty.class);
+            if(null != a) {
+                this.name = Strings.firstNotEmpty(a.name(), a.value(), this.name);
+
+                this.description = Strings.firstNotEmpty(a.desc(), this.description);
+
+                if(null == this.required) {
+                    this.required = a.required();
+                }
+
+                if(a.readOnly()) {
+                    this.readOnly = true;
+                }
+            }
+        }
 	}
+
+	public MPropertyBuilder toMProperty() {
+        MPropertyBuilder p = new MPropertyBuilder();
+
+        p.setName(name);
+        p.setTitle(title);
+        p.setSummary(summary);
+        p.setDescription(description);
+        p.setBeanProperty(beanProperty);
+        p.setType(type);
+        if(null != defaultValue) {
+            p.setDefaultValue(String.valueOf(defaultValue));
+        }
+        p.setEnumValues(enumValues);
+        p.setRequired(required);
+        p.setIdentity(identity);
+        p.setUnique(unique);
+        p.setReference(reference);
+        p.setDiscriminator(discriminator);
+        p.setSelectable(selectable);
+        p.setAggregatable(aggregatable);
+        p.setGroupable(groupable);
+        p.setCreatable(creatable);
+        p.setUpdatable(updatable);
+        p.setSortable(sortable);
+        p.setFilterable(filterable);
+
+        return p;
+    }
+
+    @Override
+    public void setDescription(String description) {
+        super.setDescription(description);
+    }
+
+    @Override
+    public void trySetDescription(String description) {
+        super.trySetDescription(description);
+    }
 
     public MProperty getMetaProperty() {
         return metaProperty;
@@ -72,12 +146,64 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
         this.beanProperty = beanProperty;
     }
 
+    public void setIdentity(boolean identity) {
+        this.identity = identity;
+    }
+
+    public void setUnique(boolean unique) {
+        this.unique = unique;
+    }
+
+    public boolean isReference() {
+        return reference;
+    }
+
+    public void setReference(boolean reference) {
+        this.reference = reference;
+    }
+
     public boolean isDiscriminator() {
         return discriminator;
     }
 
     public void setDiscriminator(boolean discriminator) {
         this.discriminator = discriminator;
+    }
+
+    public boolean isReadOnly() {
+        return (null != readOnly && readOnly) || ((null != creatable && !creatable) && (null != updatable && !updatable));
+    }
+
+    public Boolean getReadOnly() {
+        return readOnly;
+    }
+
+    public void setReadOnly(Boolean readOnly) {
+        this.readOnly = readOnly;
+    }
+
+    public Boolean getSelectable() {
+        return selectable;
+    }
+
+    public void setSelectable(Boolean selectable) {
+        this.selectable = selectable;
+    }
+
+    public Boolean getAggregatable() {
+        return aggregatable;
+    }
+
+    public void setAggregatable(Boolean aggregatable) {
+        this.aggregatable = aggregatable;
+    }
+
+    public Boolean getGroupable() {
+        return groupable;
+    }
+
+    public void setGroupable(Boolean groupable) {
+        this.groupable = groupable;
     }
 
     public Boolean getCreatable() {
@@ -112,12 +238,25 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
         this.filterable = filterable;
     }
 
+    /**
+     * For reference property.
+     */
+    public Boolean getExpandable() {
+        return expandable;
+    }
+
+    public void setExpandable(Boolean expandable) {
+        this.expandable = expandable;
+    }
+
     @Override
     public MApiProperty build() {
 	    return new MApiProperty(name, title, summary, description, metaProperty, beanProperty,
-                                type, format, discriminator, password, required,
+                                type, format, identity, unique, reference, discriminator, password, required,
                                 defaultValue, enumValues,
 	    					    null == validation ? null : validation.build(), attrs,
-                                creatable, updatable, sortable, filterable);
+                                readOnly, selectable, aggregatable, groupable,
+                                creatable, updatable, sortable, filterable, expandable,
+                                extension);
     }
 }

@@ -15,18 +15,30 @@
  */
 package leap.web.api.meta.model;
 
+import leap.lang.Arrays2;
 import leap.lang.Builders;
+import leap.lang.Extensible;
+import leap.lang.Strings;
+import leap.lang.beans.BeanProperty;
 import leap.lang.meta.MComplexType;
+import leap.lang.meta.MComplexTypeBuilder;
 import leap.lang.meta.MProperty;
+import leap.web.api.annotation.ApiModel;
+import leap.web.api.annotation.ApiProperty;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> {
+public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> implements Extensible {
+
+    protected final Map<Class<?>, Object> extensions = new HashMap<>();
 
     protected String       baseName;
     protected MComplexType type;
-    protected Class<?>     javaType;
+    protected boolean      entity;
+    protected MApiExtension extension;
+
+    protected Set<Class<?>>                    javaTypes  = new LinkedHashSet<>();
     protected Map<String, MApiPropertyBuilder> properties = new LinkedHashMap<>();
 
     public MApiModelBuilder() {
@@ -34,16 +46,62 @@ public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> {
     }
 
     public MApiModelBuilder(MComplexType type) {
+        this(type, null);
+    }
+
+    public MApiModelBuilder(MComplexType type, String name) {
         this.type = type;
-        this.name = type.getName();
+        this.name = Strings.isEmpty(name) ? type.getName() : name;
         this.title = type.getTitle();
         this.summary = type.getSummary();
         this.description = type.getDescription();
-        this.javaType = type.getJavaType();
+        this.entity = type.isEntity();
+
+        boolean annotatedOnly = false;
+
+        if(null != type.getJavaType()) {
+            this.javaTypes.add(type.getJavaType());
+
+            ApiModel a = type.getJavaType().getAnnotation(ApiModel.class);
+            if(null != a) {
+                this.name = Strings.firstNotEmpty(a.name(), a.value(), this.name);
+                this.description = Strings.firstNotEmpty(a.desc(), this.description);
+                annotatedOnly = a.explicitProperties();
+            }
+        }
 
         for (MProperty mp : type.getProperties()) {
+            if(annotatedOnly) {
+                BeanProperty bp = mp.getBeanProperty();
+                if(null != bp && !bp.isAnnotationPresent(ApiProperty.class)) {
+                    continue;
+                }
+            }
             addProperty(new MApiPropertyBuilder(mp));
         }
+    }
+
+    public MComplexTypeBuilder toMComplexType() {
+        MComplexTypeBuilder ct = new MComplexTypeBuilder();
+        ct.setName(name);
+        ct.setTitle(title);
+        ct.setSummary(summary);
+        ct.setDescription(description);
+        ct.setEntity(entity);
+
+        for(MApiPropertyBuilder p : properties.values()) {
+            ct.addProperty(p.toMProperty());
+        }
+
+        return ct;
+    }
+
+    public boolean isEntity() {
+        return entity;
+    }
+
+    public void setEntity(boolean entity) {
+        this.entity = entity;
     }
 
     /**
@@ -57,16 +115,39 @@ public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> {
         this.baseName = baseName;
     }
 
-    public Class<?> getJavaType() {
-        return javaType;
+    public Set<Class<?>> getJavaTypes() {
+        return javaTypes;
     }
 
-    public void setJavaType(Class<?> javaType) {
-        this.javaType = javaType;
+    public void addJavaType(Class<?> c) {
+        javaTypes.add(c);
+
+        if(javaTypes.size() > 1) {
+            Class<?>[] types = javaTypes.toArray(new Class<?>[0]);
+            if (types.length == 2) {
+                Class<?> c1 = types[0];
+                Class<?> c2 = types[1];
+                if (c1.isAssignableFrom(c2) || c2.isAssignableFrom(c1)) {
+                    return;
+                }
+            }
+            StringBuilder s = new StringBuilder();
+            for (int i = 0; i < types.length; i++) {
+                if (i > 0) {
+                    s.append(", ");
+                }
+                s.append(types[i].getName());
+            }
+            throw new IllegalStateException("Duplicated api model '" + name + "' at [" + s.toString() + "]");
+        }
     }
 
     public Map<String, MApiPropertyBuilder> getProperties() {
         return properties;
+    }
+
+    public MApiPropertyBuilder getProperty(String name) {
+        return properties.get(name);
     }
 
     public void addProperty(MApiPropertyBuilder p) {
@@ -77,10 +158,43 @@ public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> {
         return properties.remove(name);
     }
 
+    public MApiExtension getExtension() {
+        return extension;
+    }
+
+    public void setExtension(MApiExtension extension) {
+        this.extension = extension;
+    }
+
+    @Override
+    public Map<Class<?>, Object> getExtensions() {
+        return extensions;
+    }
+
+    @Override
+    public final <T> T getExtension(Class<?> type) {
+        return (T)extensions.get(type);
+    }
+
+    @Override
+    public final <T> void setExtension(Class<T> type, Object extension) {
+        extensions.put(type, extension);
+    }
+
+    @Override
+    public <T> T removeExtension(Class<?> type) {
+        return (T)extensions.remove(type);
+    }
+
     @Override
     public MApiModel build() {
-        return new MApiModel(baseName, name, title, summary, description, javaType,
-                Builders.buildArray(properties.values(), new MApiProperty[properties.size()]), attrs);
+        MApiModel m =
+                new MApiModel(entity, baseName, name, title, summary, description, javaTypes.toArray(Arrays2.EMPTY_CLASS_ARRAY),
+                              Builders.buildArray(properties.values(), new MApiProperty[properties.size()]), attrs, extension);
+
+        m.getExtensions().putAll(this.extensions);
+
+        return m;
     }
 
 }

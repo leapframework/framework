@@ -38,11 +38,11 @@ public class MApiParameter extends MApiParameterBase implements MNamed {
 	public MApiParameter(String name, String title, String summary, String description,
                          MType type, String format, boolean file, boolean password,
                          Location location, Boolean required,
-                         String defaultValue, String[] enumValues,
-                         MApiValidation validation,
+                         Object defaultValue, String[] enumValues,
+                         MApiValidation validation, MApiExtension extension,
                          Map<String, Object> attrs) {
 		
-		super(name, title, summary, description, type, format, file, password, required, defaultValue, enumValues, validation, attrs);
+		super(name, title, summary, description, type, format, file, password, required, defaultValue, enumValues, validation, extension, attrs);
 
 		this.location = location;
 	}

@@ -15,8 +15,6 @@
  */
 package leap.web.config;
 
-import java.util.Set;
-
 import leap.core.AppConfig;
 import leap.core.BeanFactory;
 import leap.core.annotation.*;
@@ -41,121 +39,165 @@ import leap.web.pjax.PjaxDetector;
 import leap.web.route.Routes;
 import leap.web.theme.ThemeManager;
 
-@Configurable(prefix="webmvc")
-public class DefaultWebConfig implements WebConfig,WebConfigurator,PostCreateBean {
+import java.util.Set;
+
+@Configurable(prefix = "webmvc")
+public class DefaultWebConfig implements WebConfig, WebConfigurator, PostCreateBean {
 
     private static final Log log = LogFactory.get(DefaultWebConfig.class);
-	
-	protected @R String  viewsLocation          = DEFAULT_VIEWS_LOCATION;
-	protected @R String  themesLocation         = DEFAULT_THEMES_LOCATION;
-	protected @R String  defaultThemeName       = DEFAULT_THEME_NAME;
-	protected @R String  defaultFormatName      = DEFAULT_FORMAT_NAME;
-	protected @R String  formatParameterName    = DEFAULT_FORMAT_PARAMETER_NAME;
-	protected @R String  jsessionidPrefix       = DEFAULT_JSESSIONID_PREFIX;
-    protected @R String  homeControllerName     = DEFAULT_HOME_CONTROLLER_NAME;
-    protected @R String  indexActionName        = DEFAULT_INDEX_ACTION_NAME;
-	protected @R boolean autoTrimParameters     = true;
-	protected @R boolean formatExtensionEnabled = true;
-	protected @R boolean formatParameterEnabled = true;
-	protected @R boolean actionExtensionEnabled = true;
-	protected @R boolean corsEnabled            = false;
-	protected @N String  cookieDomain           = null;
 
-    protected @Inject @M AppConfig       config;
-	protected @Inject @M Routes          routes;
-	protected @Inject @M FilterMappings  filters;
-	protected @Inject @M ErrorViews      errorViews;
-	protected @Inject @M ErrorCodes      errorCodes;
-	protected @Inject @M ThemeManager    themeManager;
-	protected @Inject @M FormatManager   formatManager;
-	protected @Inject @M AjaxHandler     ajaxHandler;
-	protected @Inject @M AjaxDetector    ajaxDetector;
-	protected @Inject @M PjaxDetector    pjaxDetector;
-	protected @Inject @M CorsHandler     corsHandler;
-	protected @Inject @M WebInterceptors interceptors;
+    protected @R String  viewsLocation                = DEFAULT_VIEWS_LOCATION;
+    protected @R String  themesLocation               = DEFAULT_THEMES_LOCATION;
+    protected @R String  defaultThemeName             = DEFAULT_THEME_NAME;
+    protected @R String  defaultFormatName            = DEFAULT_FORMAT_NAME;
+    protected @R String  formatParameterName          = DEFAULT_FORMAT_PARAMETER_NAME;
+    protected @R String  jsessionidPrefix             = DEFAULT_JSESSIONID_PREFIX;
+    protected @R String  homeControllerName           = DEFAULT_HOME_CONTROLLER_NAME;
+    protected @R String  indexActionName              = DEFAULT_INDEX_ACTION_NAME;
+    protected @R boolean autoTrimParameters           = true;
+    protected @R boolean formatExtensionEnabled       = true;
+    protected @R boolean formatParameterEnabled       = true;
+    protected @R boolean handleExternalResponseErrors = true;
+    protected @R boolean actionExtensionEnabled       = true;
+    protected @R boolean corsEnabled                  = false;
+    protected @R boolean allowViewAction              = true;
+    protected @R boolean viewEnabled                  = true;
+    protected @N String  cookieDomain                 = null;
+
+    protected @Inject
+    @M
+    AppConfig       config;
+    protected @Inject
+    @M
+    Routes          routes;
+    protected @Inject
+    @M
+    FilterMappings  filters;
+    protected @Inject
+    @M
+    ErrorViews      errorViews;
+    protected @Inject
+    @M
+    ErrorCodes      errorCodes;
+    protected @Inject
+    @M
+    ThemeManager    themeManager;
+    protected @Inject
+    @M
+    FormatManager   formatManager;
+    protected @Inject
+    @M
+    AjaxHandler     ajaxHandler;
+    protected @Inject
+    @M
+    AjaxDetector    ajaxDetector;
+    protected @Inject
+    @M
+    PjaxDetector    pjaxDetector;
+    protected @Inject
+    @M
+    CorsHandler     corsHandler;
+    protected @Inject
+    @M
+    WebInterceptors interceptors;
 
     protected final Set<ModuleConfig> modules          = new ImvCopyOnWriteArraySet<>();
     protected final Set<String>       actionExtensions = new ImvCopyOnWriteArraySet<>();
 
-	@Override
+    @Override
     public WebConfig config() {
-	    return this;
+        return this;
     }
-	
-	@Override
+
+    @Override
     public Routes routes() {
-	    return routes;
+        return routes;
     }
 
-	@Override
+    @Override
     public ErrorViews errorViews() {
-	    return errorViews;
+        return errorViews;
     }
-	
-	@Override
+
+    @Override
     public ErrorCodes errorCodes() {
-	    return errorCodes;
+        return errorCodes;
     }
 
-	@Override
+    @Override
     public FilterMappings filters() {
-	    return filters;
+        return filters;
     }
 
-	@Override
+    @Override
     public WebInterceptors interceptors() {
-	    return interceptors;
+        return interceptors;
     }
 
-	public String getThemesLocation() {
-		return themesLocation;
-	}
+    public String getThemesLocation() {
+        return themesLocation;
+    }
 
-	public String getDefaultThemeName() {
-		return defaultThemeName;
-	}
-	
-	public String getDefaultFormatName() {
-		return defaultFormatName;
-	}
+    public String getDefaultThemeName() {
+        return defaultThemeName;
+    }
 
-	public String getFormatParameterName() {
-		return formatParameterName;
-	}
+    public String getDefaultFormatName() {
+        return defaultFormatName;
+    }
 
-	@Override
+    public String getFormatParameterName() {
+        return formatParameterName;
+    }
+
+    @Override
     public String getJsessionidPrefix() {
-	    return jsessionidPrefix;
+        return jsessionidPrefix;
     }
 
-	@Override
+    @Override
     public String getCookieDomain() {
-	    return cookieDomain;
+        return cookieDomain;
     }
 
-	public boolean isFormatExtensionEnabled() {
-		return formatExtensionEnabled;
-	}
-	
-	public boolean isFormatParameterEnabled() {
-		return formatParameterEnabled;
-	}
-	
-	public boolean isActionExtensionEnabled() {
-		return actionExtensionEnabled;
-	}
-	
-	public boolean isCorsEnabled() {
-		return corsEnabled;
-	}
-	
-	public String getViewsLocation() {
-		return viewsLocation;
-	}
+    public boolean isFormatExtensionEnabled() {
+        return formatExtensionEnabled;
+    }
 
-	public boolean isAutoTrimParameters() {
-		return autoTrimParameters;
-	}
+    public boolean isFormatParameterEnabled() {
+        return formatParameterEnabled;
+    }
+
+    @Override
+    public boolean isHandleExternalResponseErrors() {
+        return handleExternalResponseErrors;
+    }
+
+    public boolean isActionExtensionEnabled() {
+        return actionExtensionEnabled;
+    }
+
+    public boolean isCorsEnabled() {
+        return corsEnabled;
+    }
+
+    public String getViewsLocation() {
+        return viewsLocation;
+    }
+
+    public boolean isAutoTrimParameters() {
+        return autoTrimParameters;
+    }
+
+    @Override
+    public boolean isViewEnabled() {
+        return viewEnabled;
+    }
+
+    @Override
+    public boolean isAllowViewAction() {
+        return allowViewAction;
+    }
 
     @Override
     public String getHomeControllerName() {
@@ -169,166 +211,184 @@ public class DefaultWebConfig implements WebConfig,WebConfigurator,PostCreateBea
 
     @Override
     public Set<String> getActionExtensions() {
-	    return ((ImvSet)actionExtensions).getImmutableView();
+        return ((ImvSet) actionExtensions).getImmutableView();
     }
-	
-	@Override
+
+    @Override
     public ThemeManager getThemeManager() {
-	    return themeManager;
+        return themeManager;
     }
-	
-	@Override
+
+    @Override
     public FormatManager getFormatManager() {
-	    return formatManager;
+        return formatManager;
     }
 
-	@Override
+    @Override
     public AjaxHandler getAjaxHandler() {
-	    return ajaxHandler;
+        return ajaxHandler;
     }
 
-	@Override
+    @Override
     public AjaxDetector getAjaxDetector() {
-	    return ajaxDetector;
+        return ajaxDetector;
     }
 
-	@Override
+    @Override
     public PjaxDetector getPjaxDetector() {
-	    return pjaxDetector;
+        return pjaxDetector;
     }
 
-	@Override
+    @Override
     public CorsHandler getCorsHandler() {
-	    return corsHandler;
+        return corsHandler;
     }
 
-	@ConfigProperty
-	public WebConfigurator setViewsLocation(String path) {
+    @ConfigProperty
+    public WebConfigurator setViewsLocation(String path) {
         Args.notEmpty(path, "views location");
-		this.viewsLocation = path;
-		return this;
-	}
+        this.viewsLocation = path;
+        return this;
+    }
 
     @ConfigProperty
     public WebConfigurator setThemesLocation(String path) {
-        Args.notEmpty(path,"themes location");
+        Args.notEmpty(path, "themes location");
         this.themesLocation = Paths.prefixWithAndSuffixWithoutSlash(path);
         return this;
     }
 
     @ConfigProperty
-	public WebConfigurator setDefaultFormatName(String defaultFormatName) {
-		this.defaultFormatName = defaultFormatName;
-		return this;
-	}
-	
-	@ConfigProperty
-	public WebConfigurator setDefaultThemeName(String defaultThemeName) {
-		this.defaultThemeName = defaultThemeName;
-		return this;
-	}
-
-	@ConfigProperty
-	public WebConfigurator setFormatParameterName(String formatParameter) {
-		this.formatParameterName = formatParameter;
-		return this;
-	}
-
-	@ConfigProperty
-	public WebConfigurator setJsessionidPrefix(String p) {
-		this.jsessionidPrefix = p;
-		return this;
-	}
-
-	@ConfigProperty
-	public WebConfigurator setFormatExtensionEnabled(boolean enabled) {
-		this.formatExtensionEnabled = enabled;
-		return this;
-	}
-
-	@ConfigProperty
-	public WebConfigurator setFormatParameterEnabled(boolean enabled) {
-		this.formatParameterEnabled = enabled;
-		return this;
-	}
-
-	@ConfigProperty
-	public WebConfigurator setActionExtensionEnabled(boolean enabled) {
-		this.actionExtensionEnabled = enabled;
-		return this;
-	}
-
-	@ConfigProperty
-	public WebConfigurator setCorsEnabled(boolean enabled) {
-		this.corsEnabled = enabled;
-		return this;
-	}
-
-	@ConfigProperty
-	public WebConfigurator setAutoTrimParameters(boolean eanbled) {
-		this.autoTrimParameters = eanbled;
-		return this;
-	}
-	
-	@ConfigProperty
-	public WebConfigurator setCookieDomain(String cookieDomain) {
-		this.cookieDomain = cookieDomain;
-		return this;
-	}
+    public WebConfigurator setDefaultFormatName(String defaultFormatName) {
+        this.defaultFormatName = defaultFormatName;
+        return this;
+    }
 
     @ConfigProperty
-	public WebConfigurator setActionExtensions(Set<String> extensions) {
-		this.actionExtensions.clear();
-		if(null != extensions) {
-			for(String s : extensions) {
-				addActionExtension(s);
-			}
-		}
-		return this;
-	}
+    public WebConfigurator setDefaultThemeName(String defaultThemeName) {
+        this.defaultThemeName = defaultThemeName;
+        return this;
+    }
+
+    @ConfigProperty
+    public WebConfigurator setFormatParameterName(String formatParameter) {
+        this.formatParameterName = formatParameter;
+        return this;
+    }
+
+    @ConfigProperty
+    public WebConfigurator setJsessionidPrefix(String p) {
+        this.jsessionidPrefix = p;
+        return this;
+    }
+
+    @ConfigProperty
+    public WebConfigurator setFormatExtensionEnabled(boolean enabled) {
+        this.formatExtensionEnabled = enabled;
+        return this;
+    }
+
+    @ConfigProperty
+    public WebConfigurator setFormatParameterEnabled(boolean enabled) {
+        this.formatParameterEnabled = enabled;
+        return this;
+    }
+
+    @ConfigProperty
+    public WebConfigurator setHandleExternalResponseErrors(boolean handleExternalResponseErrors) {
+        this.handleExternalResponseErrors = handleExternalResponseErrors;
+        return this;
+    }
+
+    @ConfigProperty
+    public WebConfigurator setActionExtensionEnabled(boolean enabled) {
+        this.actionExtensionEnabled = enabled;
+        return this;
+    }
+
+    @ConfigProperty
+    public WebConfigurator setCorsEnabled(boolean enabled) {
+        this.corsEnabled = enabled;
+        return this;
+    }
+
+    @ConfigProperty
+    public WebConfigurator setAutoTrimParameters(boolean eanbled) {
+        this.autoTrimParameters = eanbled;
+        return this;
+    }
+
+    @ConfigProperty
+    public WebConfigurator setViewEnabled(boolean viewEnabled) {
+        this.viewEnabled = viewEnabled;
+        return this;
+    }
+
+    @ConfigProperty
+    public WebConfigurator setAllowViewAction(boolean allowViewAction) {
+        this.allowViewAction = allowViewAction;
+        return this;
+    }
+
+    @ConfigProperty
+    public WebConfigurator setCookieDomain(String cookieDomain) {
+        this.cookieDomain = cookieDomain;
+        return this;
+    }
+
+    @ConfigProperty
+    public WebConfigurator setActionExtensions(Set<String> extensions) {
+        this.actionExtensions.clear();
+        if (null != extensions) {
+            for (String s : extensions) {
+                addActionExtension(s);
+            }
+        }
+        return this;
+    }
 
     public WebConfigurator setActionExtensions(String... extensions) {
-		this.actionExtensions.clear();
-		if(null != extensions) {
-			for(String extension : extensions){
-				addActionExtension(extension);
-			}
-		}
-		return this;
+        this.actionExtensions.clear();
+        if (null != extensions) {
+            for (String extension : extensions) {
+                addActionExtension(extension);
+            }
+        }
+        return this;
     }
-	
-	public WebConfigurator addActionExtension(String extension){
-		Args.notEmpty(extension,"action extension");
-		if(extension.startsWith(".")){
-			extension = extension.substring(1);
-		}
-		actionExtensions.add(extension);
-		return this;
-	}
+
+    public WebConfigurator addActionExtension(String extension) {
+        Args.notEmpty(extension, "action extension");
+        if (extension.startsWith(".")) {
+            extension = extension.substring(1);
+        }
+        actionExtensions.add(extension);
+        return this;
+    }
 
     public Set<ModuleConfig> getModules() {
-        return ((ImvSet)modules).getImmutableView();
+        return ((ImvSet) modules).getImmutableView();
     }
 
-	@Override
-	public WebConfigurator addModule(ModuleConfig module) {
-		modules.forEach((config)->{
-			if (Strings.equals(config.getName(),module.getName())){
-				throw new ObjectExistsException("The web module '" + module.getName() + "' already exists!");
-			}
-		});
-		modules.add(module);
-		return this;
-	}
+    @Override
+    public WebConfigurator addModule(ModuleConfig module) {
+        modules.forEach((config) -> {
+            if (Strings.equals(config.getName(), module.getName())) {
+                throw new ObjectExistsException("The web module '" + module.getName() + "' already exists!");
+            }
+        });
+        modules.add(module);
+        return this;
+    }
 
-	@Override
+    @Override
     public void postCreate(BeanFactory factory) throws Throwable {
         //filters.
         this.filters.addAll(factory.getBeans(FilterMapping.class));
 
         //modules.
         ModuleConfigExtension moduleConfigExtension = config.getExtension(ModuleConfigExtension.class);
-        if(null != moduleConfigExtension) {
+        if (null != moduleConfigExtension) {
             modules.addAll(moduleConfigExtension.getModules().values());
             log.info("Load {} web module configurations", modules.size());
         }

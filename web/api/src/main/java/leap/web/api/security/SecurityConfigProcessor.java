@@ -17,9 +17,11 @@
 package leap.web.api.security;
 
 import leap.core.annotation.Inject;
+import leap.lang.Strings;
 import leap.lang.path.Paths;
 import leap.web.Request;
 import leap.web.Response;
+import leap.web.api.Api;
 import leap.web.api.config.ApiConfigProcessor;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.mvc.ApiErrorHandler;
@@ -35,8 +37,8 @@ public class SecurityConfigProcessor implements ApiConfigProcessor {
     protected @Inject SecurityConfigurator sc;
 
     @Override
-    public void preProcess(ApiConfigurator c) {
-        final String prefix = Paths.suffixWithSlash(c.config().getBasePath());
+    public void preProcess(Api api) {
+        final String prefix = Paths.suffixWithSlash(api.getBasePath());
 
         //security failure handler.
         final ApiSecurityFailureHandler failureHandler = new ApiSecurityFailureHandler();
@@ -46,13 +48,21 @@ public class SecurityConfigProcessor implements ApiConfigProcessor {
     protected final class ApiSecurityFailureHandler implements SecurityFailureHandler{
         @Override
         public boolean handleAuthenticationDenied(Request request, Response response, SecurityContextHolder context) throws Throwable {
-            eh.unauthorized(response);
+            if(Strings.isEmpty(context.getDenyMessage())) {
+                eh.unauthorized(response);
+            }else {
+                eh.unauthorized(response, context.getDenyMessage());
+            }
             return true;
         }
 
         @Override
-        public boolean handleAuthorizationDenied(Request request, Response response, AuthorizationContext context) throws Throwable {
-            eh.forbidden(response);
+        public boolean handleAuthorizationDenied(Request request, Response response, SecurityContextHolder context) throws Throwable {
+            if(Strings.isEmpty(context.getDenyMessage())) {
+                eh.forbidden(response);
+            }else {
+                eh.forbidden(response, context.getDenyMessage());
+            }
             return true;
         }
     }

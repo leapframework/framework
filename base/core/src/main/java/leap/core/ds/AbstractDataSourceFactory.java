@@ -21,22 +21,22 @@ import leap.lang.exception.NestedClassNotFoundException;
 
 public abstract class AbstractDataSourceFactory implements DataSourceFactory {
 
-	protected Class<?> tryGetDriverClass(DataSourceConfig conf) throws NestedClassNotFoundException {
+	protected Class<?> tryGetDriverClass(DataSourceProps conf) throws NestedClassNotFoundException {
 		if(!Strings.isEmpty(conf.getDriverClassName())){
 			return Classes.forName(conf.getDriverClassName());
 		}
 		return null;
 	}
 	
-	protected Class<?> ensureGetDriverClass(DataSourceConfig conf) throws NestedClassNotFoundException,IllegalArgumentException {
+	protected Class<?> ensureGetDriverClass(DataSourceProps conf) throws NestedClassNotFoundException,IllegalArgumentException {
 		Class<?> c = tryGetDriverClass(conf);
 		if(null == c){
-			throw new IllegalArgumentException("DataSource property '" + DataSourceConfig.DRIVER_CLASS_NAME + "' must not be empty");
+			throw new IllegalArgumentException("DataSource property '" + DataSourceProps.DRIVER_CLASS_NAME + "' must not be empty");
 		}
 		return c;
 	}
 	
-	protected String ensureGetProperty(DataSourceConfig conf,String name) throws IllegalArgumentException {
+	protected String ensureGetProperty(DataSourceProps conf, String name) throws IllegalArgumentException {
 		String v = conf.getProperty(name);
 		if(Strings.isEmpty(v)){
 			throw new IllegalArgumentException("DataSource property '" + name + "' must not be empty");

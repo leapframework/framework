@@ -43,7 +43,6 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
     private static final String MODELS_ELEMENT             = "models";
     private static final String IMPORT_ELEMENT             = "import";
     private static final String GLOBAL_FIELD_ELEMENT       = "global-field";
-    private static final String SHARDING_ELEMENT           = "sharding";
     private static final String INCLUDED_ENTITIES_ELEMENT  = "included-entities";
     private static final String EXCLUDED_ENTITIES_ELEMENT  = "excluded-entities";
     private static final String DEFAULT_OVERRIDE_ATTRIBUTE = "default-override";
@@ -51,7 +50,6 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
     private static final String MAPPING_STRATEGY_ATTRIBUTE = "mapping-strategy";
     private static final String RESOURCE_ATTRIBUTE         = "resource";
     private static final String ENTITY_ATTRIBUTE           = "entity";
-    private static final String SHARDING_FIELD_ATTRIBUTE   = "sharding-field";
     private static final String AUTO_CREATE_TABLE          = "auto-create-table";
     private static final String NAME_ATTRIBUTE             = "name";
     private static final String COLUMN_ATTRIBUTE           = "column";
@@ -63,16 +61,16 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
     private static final String DEFAULT_VALUE_ATTRIBUTE    = "default-value";
     private static final String INSERT_ATTRIBUTE           = "insert";
     private static final String UPDATE_ATTRIBUTE           = "update";
-    private static final String FILTER                     = "filter";
+    private static final String FILTERED                   = "filtered";
     private static final String INSERT_VALUE_ATTRIBUTE     = "insert-value";
     private static final String UPDATE_VALUE_ATTRIBUTE     = "update-value";
-    private static final String FILTER_VALUE               = "filter-value";
+    private static final String FILTERED_VALUE             = "filtered-value";
     private static final String OVERRIDE_ATTRIBUTE         = "override";
+    private static final String FILTERED_IF                = "filtered-if";
 
     protected @Inject AppConfig appConfig;
 
     private final Set<GlobalFieldMappingConfig> globalFields = new LinkedHashSet<>();
-    private final Set<ShardingConfig>           shardings    = new LinkedHashSet<>();
 
     private boolean loaded = false;
 
@@ -82,16 +80,13 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
     }
 
     @Override
-    public Set<ShardingConfig> getShardings() {
-        return shardings;
-    }
-
-    @Override
     public MappingConfig load(OrmContext context) {
         if(!loaded) {
-            AppResources resources = AppResources.get(appConfig);
-            load(context, resources.search("models"));
-            loaded = true;
+            AppResources resources = AppResources.tryGet(appConfig);
+            if(null != resources) {
+                load(context, resources.search("models"));
+                loaded = true;
+            }
         }
         return this;
     }
@@ -171,11 +166,6 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
                         continue;
                     }
 
-                    if(reader.isStartElement(SHARDING_ELEMENT)) {
-                        loadSharding(context, resource, reader);
-                        continue;
-                    }
-
                     if(reader.isStartElement()) {
                         throw new MappingConfigException("Unsupported element '" + reader.getElementLocalName() + "' in file : " + resource.getClasspath());
                     }
@@ -212,15 +202,6 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
         globalFields.add(gf);
     }
 
-    private void loadSharding(LoadContext context, Resource resource, XmlReader reader) {
-
-        String entity           = reader.resolveRequiredAttribute(ENTITY_ATTRIBUTE);
-        String shardingField    = reader.resolveRequiredAttribute(SHARDING_FIELD_ATTRIBUTE);
-        boolean autoCreateTable = reader.resolveBooleanAttribute(AUTO_CREATE_TABLE, false);
-
-        shardings.add(new ShardingConfig(entity, shardingField, autoCreateTable));
-    }
-
     protected FieldMappingBuilder readFieldMapping(XmlReader reader, boolean defaultOverride) {
         FieldMappingBuilder field  = new FieldMappingBuilder();
         DbColumnBuilder     column = new DbColumnBuilder();
@@ -235,10 +216,11 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
         String  defaultValue   = reader.resolveAttribute(DEFAULT_VALUE_ATTRIBUTE);
         Boolean insert         = reader.resolveBooleanAttribute(INSERT_ATTRIBUTE);
         Boolean update         = reader.resolveBooleanAttribute(UPDATE_ATTRIBUTE);
-        Boolean filter         = reader.resolveBooleanAttribute(FILTER);
+        Boolean filter         = reader.resolveBooleanAttribute(FILTERED);
         String  insertValue    = reader.getAttribute(INSERT_VALUE_ATTRIBUTE);
         String  updateValue    = reader.getAttribute(UPDATE_VALUE_ATTRIBUTE);
-        String  filterValue    = reader.getAttribute(FILTER_VALUE);
+        String filteredValue   = reader.getAttribute(FILTERED_VALUE);
+        String  filteredIf     = reader.getAttribute(FILTERED_IF);
         boolean override       = reader.resolveBooleanAttribute(OVERRIDE_ATTRIBUTE, defaultOverride);
 
         //field-name
@@ -260,9 +242,10 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
             column.setTypeCode(type.getCode());
         }
 
-        Expression insertValueExpression = null;
-        Expression updateValueExpression = null;
-        Expression filterValueExpression = null;
+        Expression insertValueExpression   = null;
+        Expression updateValueExpression   = null;
+        Expression filteredValueExpression = null;
+        Expression filteredIfExpression    = null;
 
         if(!Strings.isEmpty(insertValue)){
             insertValueExpression = EL.tryCreateValueExpression(insertValue);
@@ -272,8 +255,12 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
             updateValueExpression = EL.tryCreateValueExpression(updateValue);
         }
 
-        if(!Strings.isEmpty(filterValue)){
-            filterValueExpression = EL.tryCreateValueExpression(filterValue);
+        if(!Strings.isEmpty(filteredValue)){
+            filteredValueExpression = EL.tryCreateValueExpression(filteredValue);
+        }
+
+        if(!Strings.isEmpty(filteredIf)) {
+            filteredIfExpression = EL.tryCreateValueExpression(filteredIf);
         }
 
         field.setJavaType(type.getDefaultReadType());
@@ -284,10 +271,11 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
         field.setDefaultValue(defaultValue);
         field.setInsert(insert);
         field.setUpdate(update);
-        field.setFilter(filter);
+        field.setFiltered(filter);
         field.setInsertValue(insertValueExpression);
         field.setUpdateValue(updateValueExpression);
-        field.setFilterValue(filterValueExpression);
+        field.setFilteredValue(filteredValueExpression);
+        field.setFilteredIf(filteredIfExpression);
 
         return field;
     }

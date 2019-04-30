@@ -27,7 +27,7 @@ import leap.web.Response;
  */
 public interface AuthzClientAuthenticationContext {
     Errors errors();
-    void addError(String name, String message);
+    void addError(String name, String code, String message);
     Request request();
     Response response();
 }

@@ -15,20 +15,18 @@
  */
 package leap.web.security;
 
-import leap.core.security.Authentication;
-import leap.core.security.Authorization;
-import leap.core.security.Credentials;
-import leap.core.security.SecurityContext;
-import leap.core.security.UserPrincipal;
+import leap.core.security.*;
 import leap.core.validation.Validation;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.web.Request;
+import leap.web.action.ActionContext;
 import leap.web.route.Route;
 import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.login.LoginContext;
 import leap.web.security.logout.LogoutContext;
 import leap.web.security.path.SecuredPath;
+import leap.web.security.path.SecuredRoute;
 import leap.web.security.permission.PermissionManager;
 
 public class DefaultSecurityContextHolder extends SecurityContext implements SecurityContextHolder {
@@ -46,31 +44,57 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 	protected final SecurityConfig    config;
 	protected final PermissionManager permissionManager;
 	protected final Request           request;
+    protected final ActionContext     actionContext;
+    protected final Route             route;
 
-	protected SecuredPath   securedPath;
-    protected LoginContext  loginContext;
-    protected LogoutContext logoutContext;
-	protected String        authenticationToken;
-	protected boolean       error;
-	protected Object        errorObj;
-	protected String        identity;
+    protected SecuredPath      securedPath;
+    protected LoginContext     loginContext;
+    protected LogoutContext    logoutContext;
+    protected String           authenticationToken;
+    protected boolean          error;
+    protected Object           errorObj;
+    protected String           identity;
+    protected SecuredObject    securedObject;
+    protected SimpleSecurity[] securities;
+    protected String           denyMessage;
 
     private boolean handled;
 
 	public DefaultSecurityContextHolder(SecurityConfig config, PermissionManager permissionManager, Request request){
-		this.config            = config;
+        this(config, permissionManager, request, null);
+    }
+
+    public DefaultSecurityContextHolder(SecurityConfig config, PermissionManager permissionManager, Request request, ActionContext actionContext){
+        this.config            = config;
         this.permissionManager = permissionManager;
-		this.request           = request;
+        this.request           = request;
+        this.actionContext     = actionContext;
+        this.route             = null == actionContext ? null : actionContext.getRoute();
         request.setAttribute(CONTEXT_ATTRIBUTE_NAME, this);
         request.setAttribute(CONTEXT_HOLDER_ATTRIBUTE_NAME, this);
     }
 
-	@Override
+    @Override
+    public Request getRequest() {
+        return request;
+    }
+
+    @Override
+    public Route getRoute() {
+        return route;
+    }
+
+    @Override
     public Validation validation() {
 	    return request.getValidation();
     }
 
-	@Override
+    @Override
+    public ActionContext getActionContext() {
+        return actionContext;
+    }
+
+    @Override
     public SecurityConfig getSecurityConfig() {
 	    return config;
     }
@@ -93,6 +117,36 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 	public void setSecuredPath(SecuredPath path) {
 		this.securedPath = path;
 	}
+
+    @Override
+    public <T> T getSecuredObject() {
+        return (T)securedObject;
+    }
+
+    @Override
+    public void setSecuredObject(SecuredObject o) {
+        this.securedObject = o;
+    }
+
+    @Override
+    public SimpleSecurity[] getSecurities() {
+        return securities;
+    }
+
+    @Override
+    public void setSecurities(SimpleSecurity[] securities) {
+        this.securities = securities;
+    }
+
+    @Override
+    public String getDenyMessage() {
+        return denyMessage;
+    }
+
+    @Override
+    public void setDenyMessage(String message) {
+        this.denyMessage = message;
+    }
 
     @Override
 	public String getAuthenticationToken() {
@@ -254,6 +308,10 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 			this.user = user;
         }
 
+		@Override
+		public SecuredPath getSecuredPath() {
+			return securedPath;
+		}
 	}
 	
 	protected final class DefaultLogoutContext extends AbstractContext implements LogoutContext {
@@ -286,7 +344,10 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 		public void setReturnUrl(String returnUrl) {
 			this.returnUrl = returnUrl;
 		}
-
+		@Override
+		public SecuredPath getSecuredPath() {
+			return securedPath;
+		}
 	}
 
 	@Override

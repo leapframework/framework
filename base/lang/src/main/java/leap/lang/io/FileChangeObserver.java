@@ -169,6 +169,11 @@ public class FileChangeObserver implements Serializable {
         this(directory, (FileFilter)null);
     }
 
+    public FileChangeObserver(File directory, FileChangeListener listener) {
+        this(directory, (FileFilter)null);
+        this.addListener(listener);
+    }
+
     /**
      * Construct an observer for the specified directory and file filter.
      *

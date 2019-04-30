@@ -25,6 +25,7 @@ import leap.lang.http.HTTP;
 import leap.lang.io.IO;
 import leap.lang.json.JSON;
 import leap.lang.json.JsonObject;
+import leap.lang.json.JsonValue;
 import leap.lang.meta.*;
 import leap.lang.yaml.YAML;
 import leap.web.api.meta.ApiMetadataBuilder;
@@ -42,6 +43,16 @@ import static leap.web.api.spec.swagger.SwaggerConstants.*;
 public class SwaggerSpecReader implements ApiSpecReader {
 
     private final List<String> HTTP_METHODS_LOWER_CASE = Arrays.asList("get", "put", "post", "delete", "options", "head", "patch");
+
+    protected boolean validate = true;
+
+    public boolean isValidate() {
+        return validate;
+    }
+
+    public void setValidate(boolean validate) {
+        this.validate = validate;
+    }
 
     @Override
     public ApiMetadataBuilder read(Reader reader) throws IOException {
@@ -202,7 +213,7 @@ public class SwaggerSpecReader implements ApiSpecReader {
         if(null != security) {
             security.forEach(sc->{
                 for(Map.Entry<String, Object> entry:sc.entrySet()){
-                    MApiSecurity sec = new MApiSecurity(entry.getKey());
+                    MApiSecurityReq sec = new MApiSecurityReq(entry.getKey());
                     sec.addScopes(Collections2.toStringArray((Collection<String>)entry.getValue()));
                     mo.getSecurity().put(sec.getName(),sec);
                     break;
@@ -241,14 +252,8 @@ public class SwaggerSpecReader implements ApiSpecReader {
 
         JsonObject p = JsonObject.of(map);
 
-        mp.setName(p.getString(NAME));
-        mp.setSummary(p.getString(SUMMARY));
-        mp.setDescription(p.getString(DESCRIPTION));
-        mp.setRequired(p.get(REQUIRED, Boolean.class));
+        readParameterBase(null, p, mp);
         mp.setLocation(readParameterIn(mp.getName(), p.getString(IN)));
-        mp.setType(readParameterType(p));
-
-        readFormat(p, mp);
 
         return mp;
     }
@@ -257,9 +262,12 @@ public class SwaggerSpecReader implements ApiSpecReader {
         List<MApiResponseBuilder> responses = new ArrayList<>();
 
         if(null != map) {
-
-            map.forEach((name, resp) ->  responses.add(readResponse(name, (Map<String,Object>)resp)));
-
+            //The key may be integer.
+            for (Object key : map.keySet()) {
+                String              name = key.toString();
+                Map<String, Object> resp = (Map) map.get(key);
+                responses.add(readResponse(name, resp));
+            }
         }
 
         return responses;
@@ -345,10 +353,14 @@ public class SwaggerSpecReader implements ApiSpecReader {
             MOAuth2ApiSecurityDef def = new MOAuth2ApiSecurityDef(name, name, authzUrl,tokenUrl,flow,map);
             return def;
         }
-        throw new IllegalStateException("No supported security def : " + type);
+        return null;
     }
 
     public MApiModelBuilder readModel(String name, Map<String,Object> map) {
+        return readModel(name, map, SwaggerExtension.NOP);
+    }
+
+    public MApiModelBuilder readModel(String name, Map<String,Object> map, SwaggerExtension ex) {
         MApiModelBuilder mm = new MApiModelBuilder();
 
         JsonObject model = JsonObject.of(map);
@@ -359,10 +371,11 @@ public class SwaggerSpecReader implements ApiSpecReader {
         mm.setTitle(model.getString(TITLE));
         mm.setSummary(model.getString(SUMMARY));
         mm.setDescription(model.getString(DESCRIPTION));
+        mm.setEntity(model.getBoolean(X_ENTITY, false));
 
         Map<String,Object> properties = model.getMap(PROPERTIES);
         if(null != properties) {
-            List<MApiPropertyBuilder> list = readProperties(properties, requiredProperties);
+            List<MApiPropertyBuilder> list = readProperties(properties, requiredProperties, ex);
             list.forEach(mm::addProperty);
         }
 
@@ -374,9 +387,13 @@ public class SwaggerSpecReader implements ApiSpecReader {
     }
 
     public List<MApiPropertyBuilder> readProperties(Map<String,Object> properties, List<String> requiredProperties) {
+        return readProperties(properties, requiredProperties, SwaggerExtension.NOP);
+    }
+
+    public List<MApiPropertyBuilder> readProperties(Map<String,Object> properties, List<String> requiredProperties, SwaggerExtension ex) {
         List<MApiPropertyBuilder> list = new ArrayList<>();
         properties.forEach((propName, propMap) -> {
-            MApiPropertyBuilder p = readProperty(propName, (Map<String,Object>)propMap);
+            MApiPropertyBuilder p = readProperty(propName, (Map<String,Object>)propMap, ex);
 
             if(null != requiredProperties && requiredProperties.contains(p.getName())) {
                 p.setRequired(true);
@@ -388,30 +405,58 @@ public class SwaggerSpecReader implements ApiSpecReader {
         return list;
     }
 
-    public MApiPropertyBuilder readProperty(String name, Map<String,Object> map) {
-        MApiPropertyBuilder mp = new MApiPropertyBuilder();
+    protected void readParameterBase(String name, JsonObject p, MApiParameterBaseBuilder mp) {
+        readParameterBase(name, p, mp, SwaggerExtension.NOP);
+    }
 
-        JsonObject p = JsonObject.of(map);
-
-        mp.setName(name);
+    protected void readParameterBase(String name, JsonObject p, MApiParameterBaseBuilder mp, SwaggerExtension ex) {
+        mp.setName(p.getString(NAME));
         mp.setTitle(p.getString(TITLE));
         mp.setSummary(p.getString(SUMMARY));
         mp.setDescription(p.getString(DESCRIPTION));
-        mp.setType(readType(p));
         mp.setRequired(p.get(REQUIRED, Boolean.class));
+        mp.setType(readParameterType(name, p, ex));
+        mp.setDefaultValue(p.get(DEFAULT));
+
+        MApiValidationBuilder v = new MApiValidationBuilder();
+        v.setPattern(p.getString(PATTERN));
+        v.setMaxLength(p.getInteger(MAX_LENGTH));
+        v.setMinLength(p.getInteger(MIN_LENGTH));
+        v.setMaximum(p.get(MAXIMUM));
+        v.setExclusiveMaximum(p.getBoolean(EXCLUSIVE_MAXIMUM, v.isExclusiveMaximum()));
+        v.setMinimum(p.get(MINIMUM));
+        v.setExclusiveMinimum(p.getBoolean(EXCLUSIVE_MINIMUM, v.isExclusiveMinimum()));
 
         List<String> enumValues = p.getList(ENUM);
         if(null != enumValues) {
             mp.setEnumValues(enumValues.toArray(Arrays2.EMPTY_STRING_ARRAY));
         }
 
+        mp.setValidation(v);
+
+        readFormat(p, mp);
+    }
+
+    public MApiPropertyBuilder readProperty(String name, Map<String,Object> map) {
+        return readProperty(name, map, SwaggerExtension.NOP);
+    }
+
+    public MApiPropertyBuilder readProperty(String name, Map<String,Object> map, SwaggerExtension ex) {
+        MApiPropertyBuilder mp = new MApiPropertyBuilder();
+
+        JsonObject p = JsonObject.of(map);
+
+        readParameterBase(name, p, mp, ex);
+        mp.setName(name);
+
         //yaml read all values to string.
+        mp.setIdentity(p.getBoolean(X_IDENTITY, false));
+        mp.setUnique(p.getBoolean(X_UNIQUE, false));
         mp.setSortable(p.get(X_SORTABLE, Boolean.class));
         mp.setFilterable(p.get(X_FILTERABLE, Boolean.class));
         mp.setCreatable(p.get(X_CREATABLE, Boolean.class));
         mp.setUpdatable(p.get(X_UPDATABLE, Boolean.class));
-
-        readFormat(p, mp);
+        mp.setExpandable(p.get(X_EXPANDABLE, Boolean.class));
 
         return mp;
     }
@@ -452,12 +497,16 @@ public class SwaggerSpecReader implements ApiSpecReader {
         }
     }
 
-    protected MType readParameterType(JsonObject p) {
+    protected MType readParameterType(String name, JsonObject p) {
+        return readParameterType(name, p, SwaggerExtension.NOP);
+    }
+
+    protected MType readParameterType(String name, JsonObject p, SwaggerExtension ex) {
         JsonObject schema = p.getObject(SCHEMA);
         if(null != schema) {
-            return readType(schema);
+            return readType(schema, ex);
         }else{
-            return readType(p);
+            return readType(name, p, ex);
         }
     }
 
@@ -466,11 +515,19 @@ public class SwaggerSpecReader implements ApiSpecReader {
         return new MComplexTypeRef(ref);
     }
 
-    protected MCollectionType readCollectionType(JsonObject items) {
-        return new MCollectionType(readType(items));
+    protected MCollectionType readCollectionType(JsonObject items, SwaggerExtension ex) {
+        return new MCollectionType(readType(items, ex));
     }
 
     protected MType readType(JsonObject property) {
+        return readType(property, SwaggerExtension.NOP);
+    }
+
+    protected MType readType(JsonObject property, SwaggerExtension ex) {
+        return readType(null, property, ex);
+    }
+
+    protected MType readType(String name, JsonObject property, SwaggerExtension ex) {
         String ref = property.getString(REF);
         if(!Strings.isEmpty(ref)) {
             return readRefType(ref);
@@ -478,29 +535,51 @@ public class SwaggerSpecReader implements ApiSpecReader {
 
         String type = property.getString(TYPE);
         if(Strings.isEmpty(type)) {
+            if(!validate) {
+                return null;
+            }
             throw new InvalidSpecException("Invalid type in property : " + JSON.stringify(property.raw()));
         }
 
+        MType mtype = null != ex ? ex.readType(type) : null;
+        if(null != mtype) {
+            return mtype;
+        }
+
         if(type.equals(OBJECT)) {
-            return readObjectType(property);
+            return readObjectType(name, property);
         }
 
         if(type.equals(ARRAY)) {
-            return readCollectionType(property.getObject(ITEMS));
+            return readCollectionType(property.getObject(ITEMS), ex);
         }
 
         String format = property.getString(FORMAT);
         return readSimpleType(type, format);
     }
 
-    protected MType readObjectType(JsonObject o) {
+    protected MType readObjectType(String name, JsonObject o) {
         JsonObject additionalProperties = o.getObject(ADDITIONAL_PROPERTIES);
 
-        if(null == additionalProperties || additionalProperties.asMap().isEmpty()) {
-            return MObjectType.TYPE;
+        if(null == additionalProperties) {
+            //check is nested model
+            Object property = o.get(PROPERTIES);
+            if(null != property && property instanceof Map) {
+                if(null == name) {
+                    name = "Embedded";
+                }
+                MApiModelBuilder model = readModel(name, o.asMap());
+                return model.toMComplexType().build();
+            }else {
+                return MObjectType.TYPE;
+            }
         }else{
-            MType valueType = readType(additionalProperties);
-            return new MDictionaryType(MSimpleTypes.STRING, valueType);
+            if(additionalProperties.asMap().isEmpty()) {
+                return MObjectType.TYPE;
+            }else {
+                MType valueType = readType(additionalProperties);
+                return new MDictionaryType(MSimpleTypes.STRING, valueType);
+            }
         }
     }
 
@@ -530,7 +609,11 @@ public class SwaggerSpecReader implements ApiSpecReader {
         return mp.build();
     }
 
-    protected MSimpleType readSimpleType(String type, String format) {
+    public MSimpleType readSimpleType(String type) {
+        return readSimpleType(type, "");
+    }
+
+    public MSimpleType readSimpleType(String type, String format) {
         switch (type) {
 
             case "integer" :
@@ -544,6 +627,27 @@ public class SwaggerSpecReader implements ApiSpecReader {
                 }
 
                 throw new InvalidSpecException("Invalid format '" + format + "' of type '" + type + "'");
+
+            case "long":
+                return MSimpleTypes.BIGINT;
+
+            case "double":
+                return MSimpleTypes.DOUBLE;
+
+            case "float" :
+                return MSimpleTypes.SINGLE;
+
+            case "byte" :
+                return MSimpleTypes.BYTE;
+
+            case "binary":
+                return MSimpleTypes.BINARY;
+
+            case "date" :
+                return MSimpleTypes.DATE;
+
+            case "dateTime" :
+                return MSimpleTypes.DATETIME;
 
             case "number" :
 

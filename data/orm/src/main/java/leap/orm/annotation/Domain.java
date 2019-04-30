@@ -20,13 +20,17 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.FIELD,ElementType.TYPE,ElementType.ANNOTATION_TYPE})
+@Target({ElementType.FIELD,ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Domain {
 	
 	/**
-	 * Indicates the name of {@link leap.orm.domain.FieldDomain}.
+	 * Indicates the name of {@link leap.orm.domain.Domain}.
 	 */
-	String value();
+	String value() default "";
 
+    /**
+     * Enables or Disables auto mapping.
+     */
+    boolean autoMapping() default true;
 }

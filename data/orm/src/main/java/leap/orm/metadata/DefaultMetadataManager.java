@@ -24,6 +24,7 @@ import leap.db.model.DbSchemaBuilder;
 import leap.lang.Args;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.lang.resource.Resources;
 import leap.lang.time.StopWatch;
 import leap.orm.DefaultOrmMetadata;
 import leap.orm.OrmConfig;
@@ -39,6 +40,7 @@ import leap.orm.sql.SqlSource;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 public class DefaultMetadataManager implements OrmMetadataManager {
 	
@@ -50,6 +52,7 @@ public class DefaultMetadataManager implements OrmMetadataManager {
     protected @Inject @M SqlFactory  sqlFactory;
     protected @Inject @M Domains     domains;
     protected @Inject @M SqlRegistry sqlRegistry;
+    protected @Inject @M OrmConfig   config;
     
 	@Override
     public OrmMetadata createMetadata() {
@@ -57,6 +60,7 @@ public class DefaultMetadataManager implements OrmMetadataManager {
 
         md.setDomains(domains);
         md.setSqlRegistry(sqlRegistry);
+        md.setConfig(config);
 
         return md;
     }
@@ -74,46 +78,62 @@ public class DefaultMetadataManager implements OrmMetadataManager {
 
     @Override
     public void loadMetadata(final OrmContext context) throws MetadataException {
+        doLoad(context, null);
+    }
+
+    @Override
+    public void loadSqls(OrmContext context) throws MetadataException {
+        doLoadSqls(new LoadingContext(context));
+    }
+
+    @Override
+    public void loadPackage(OrmContext context, String basePackage) throws MetadataException {
+        Class[] classes = Resources.scanPackage(basePackage).searchClasses();
+        loadClasses(context, classes);
+    }
+
+    @Override
+    public void loadClasses(OrmContext context, Class<?>... classes) throws MetadataException {
+        doLoad(context, (lc) -> {
+            beanFactory.inject(new ClassMapper()).loadMappings(lc, classes);
+        });
+    }
+
+    protected void doLoad(OrmContext context, Consumer<LoadingContext> preMapping) throws MetadataException {
         log.debug("Loading metadata for orm context '{}'...", context.getName());
 
-		LoadingContext loadingContext = new LoadingContext(context);
-		
-		StopWatch sw = StopWatch.startNew();
-		
-		//pre loading entity mappings
-		for(Mapper loader : mappers){
-			loader.loadMappings(loadingContext);
-		}
-		
-		//post loading entity mappings
-		for(Mapper loader : mappers){
-			loader.postMappings(loadingContext);
-		}
+        LoadingContext loadingContext = new LoadingContext(context);
 
-        //complete loading entity mappings
-        for(Mapper loader : mappers){
-            loader.completeMappings(loadingContext);
+        StopWatch sw = StopWatch.startNew();
+
+        if(null != preMapping) {
+            preMapping.accept(loadingContext);
         }
-		
-		loadingContext.buildMappings();
-		
-		log.debug("Load {} entities used {}ms",context.getMetadata().getEntityMappingSize(),sw.getElapsedMilliseconds());
-		
-		sw.restart();
-		
-		//init sql commands
-		for(SqlSource ss : sqlSources){
-			ss.loadSqlCommands(loadingContext);
-		}
 
-		log.debug("Load {} sqls used {}ms",context.getMetadata().getSqlCommandSize(),sw.getElapsedMilliseconds());
+        //loading entity mappings
+        for(Mapper loader : mappers){
+            loader.loadMappings(loadingContext);
+        }
 
-		//create default sql commands for all entities.
+        //processing entity mappings.
+        processMappings(loadingContext);
+
+        //create mappings.
+        loadingContext.buildMappings();
+        log.debug("Load {} entities used {}ms",context.getMetadata().getEntityMappingSize(),sw.getElapsedMilliseconds());
+
+        //load sqls
+        doLoadSqls(loadingContext);
+
+        //create default sql commands for all entities.
         DbSchemaBuilder schema = new DbSchemaBuilder(context.getName());
-		for(EntityMapping em : context.getMetadata().getEntityMappingSnapshotList()){
-		    tryCreateDefaultSqlCommands(loadingContext, em);
+        for(EntityMapping em : context.getMetadata().getEntityMappingSnapshotList()){
+        	if(em.isRemote()){
+        		continue;
+        	}
+            tryCreateDefaultSqlCommands(loadingContext, em);
             tryCreateTable(loadingContext, em, schema);
-		}
+        }
 
         if(!schema.getTables().isEmpty()) {
             context.getDb().cmdCreateSchema(schema.build()).execute();
@@ -124,7 +144,31 @@ public class DefaultMetadataManager implements OrmMetadataManager {
             command.prepare(context);
         }
     }
-    
+
+    protected void doLoadSqls(LoadingContext context) {
+        StopWatch sw = StopWatch.startNew();
+
+        //init sql commands
+        for(SqlSource ss : sqlSources){
+            ss.loadSqlCommands(context);
+        }
+
+        log.debug("Load {} sqls used {}ms",context.getMetadata().getSqlCommandSize(),sw.getElapsedMilliseconds());
+    }
+
+    @Override
+    public void processMappings(MappingConfigContext context) {
+        //post loading entity mappings
+        for(Mapper loader : mappers){
+            loader.postMappings(context);
+        }
+
+        //complete loading entity mappings
+        for(Mapper loader : mappers){
+            loader.completeMappings(context);
+        }
+    }
+
     protected void tryCreateDefaultSqlCommands(MetadataContext context, EntityMapping em) {
         tryCreateInsertCommand(context, em);
         tryCreateUpdateCommand(context, em);
@@ -142,6 +186,13 @@ public class DefaultMetadataManager implements OrmMetadataManager {
             if(!context.getDb().checkTableExists(em.getTable())){
                 log.info("Will auto create table '{}' of entity '{}", em.getTableName(), em.getEntityName());
                 schema.addTable(em.getTable());
+            }
+
+            if(em.hasSecondaryTable()) {
+                if(!context.getDb().checkTableExists(em.getSecondaryTable())) {
+                    log.info("Will auto create secondary table '{}' of entity '{}", em.getSecondaryTableName(), em.getEntityName());
+                    schema.addTable(em.getSecondaryTable());
+                }
             }
         }
     }
@@ -276,7 +327,19 @@ public class DefaultMetadataManager implements OrmMetadataManager {
 	        }
         }
 
-		@Override
+        @Override
+        public void removeEntityMapping(String name) {
+            EntityMappingBuilder emb = nameToEntityMappings.remove(name.toLowerCase());
+            if(null == emb) {
+                return;
+            }
+
+            if(null != emb.getEntityClass()) {
+                classToEntityMappings.remove(emb.getEntityClass());
+            }
+        }
+
+        @Override
         public EntityMappingBuilder getEntityMapping(String entityName) throws MappingNotFoundException {
 			EntityMappingBuilder emb = tryGetEntityMapping(entityName);
 			

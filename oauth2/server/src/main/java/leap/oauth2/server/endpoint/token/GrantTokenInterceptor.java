@@ -30,12 +30,23 @@ import leap.web.Response;
  */
 public interface GrantTokenInterceptor {
     /**
-     * Returns <code>true</code> if handle.
+     * Returns {@link State#INTERCEPTED} if handle, otherwise return {@link State#CONTINUE}.
+     * return {@link State#CONTINUE} by default.
      */
-    State beforeGrantTypeHandle(Request request, Response response, OAuth2Params params, GrantTypeHandler handler,Out<AuthzAccessToken> at);
+    default State beforeGrantTypeHandle(Request request, Response response, OAuth2Params params, GrantTypeHandler handler,Out<AuthzAccessToken> at){
+        return State.CONTINUE;
+    }
 
     /**
-     * Returns <code>true</code> if handle.
+     * Returns {@link State#INTERCEPTED} if handle, otherwise return {@link State#CONTINUE}.
+     * return {@link State#CONTINUE} by default.
      */
-    State afterGrantTypeHandle(Request request, Response response, OAuth2Params params, GrantTypeHandler handler,Out<AuthzAccessToken> at);
+    default State afterGrantTypeHandle(Request request, Response response, OAuth2Params params, GrantTypeHandler handler,Out<AuthzAccessToken> at){
+        return State.CONTINUE;
+    }
+
+    /**
+     * Complete grant access token
+     */
+    default void grantTypeHandleComplete(Request request, Response response, OAuth2Params params, GrantTypeHandler handler,Out<AuthzAccessToken> at){}
 }

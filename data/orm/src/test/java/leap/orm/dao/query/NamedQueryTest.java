@@ -16,6 +16,7 @@
 package leap.orm.dao.query;
 
 import leap.core.annotation.Inject;
+import leap.core.value.Record;
 import leap.junit.contexual.Contextual;
 import leap.orm.OrmTestCase;
 import leap.orm.dao.DaoCommand;
@@ -23,6 +24,7 @@ import leap.orm.query.PageResult;
 import leap.orm.tested.model.file.Directory;
 import leap.orm.tested.model.file.File;
 import leap.orm.tested.model.petclinic.Owner;
+import leap.orm.tested.model.petclinic.Owner1;
 import leap.orm.tested.model.product.Product;
 import org.junit.Test;
 
@@ -49,6 +51,17 @@ public class NamedQueryTest extends OrmTestCase {
 
 		compareFields(older, newer.fields());
 	}
+
+	@Test
+	public void testFindOwner1WithNotMatchedColumnName() {
+	    deleteAll(Owner1.class);
+
+	    Owner1 owner = dmo.getDataFactory().generate(Owner1.class);
+	    dao.insert(owner);
+
+	    Record record = dao.createNamedQuery("findOwner1ByName").param("name", owner.getName()).first();
+	    assertNotEmpty(record.getString("id"));
+    }
 
     @Test
     public void testFindOwnerByLastNameWithAlias() {
@@ -146,10 +159,12 @@ public class NamedQueryTest extends OrmTestCase {
     public void testBug() {
         Owner.query("testBug").list();
     }
+
     @Test
     public void testQueryWithSlash(){
 		Owner.query("testQueryWithSlash").list();
 	}
+
 	@Test
 	@Contextual("mysql")
 	public void testGetTotalCountWithUnion(){

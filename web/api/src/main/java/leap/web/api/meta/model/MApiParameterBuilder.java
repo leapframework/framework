@@ -17,12 +17,17 @@ package leap.web.api.meta.model;
 
 
 import leap.web.action.Argument;
+import leap.web.action.ArgumentValidator;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MApiParameterBuilder extends MApiParameterBaseBuilder<MApiParameter> {
 
-    protected Argument               argument;
-    protected Argument               wrapperArgument;
-	protected MApiParameter.Location location;
+    protected Argument                argument;
+    protected Argument                wrapperArgument;
+    protected List<ArgumentValidator> validators = new ArrayList<>();
+    protected MApiParameter.Location  location;
 
     public Argument getWrapperArgument() {
         return wrapperArgument;
@@ -48,12 +53,24 @@ public class MApiParameterBuilder extends MApiParameterBaseBuilder<MApiParameter
 		this.location = location;
 	}
 
+    public List<ArgumentValidator> getValidators() {
+        return validators;
+    }
+
+    public void setValidators(List<ArgumentValidator> validators) {
+        this.validators = validators;
+    }
+
+    public void addValidator(ArgumentValidator v) {
+        validators.add(v);
+    }
+
     @Override
     public MApiParameter build() {
 	    return new MApiParameter(name, title, summary, description, type, format,
                                  file, password, location, required,
                                  defaultValue, enumValues,
-                                 null == validation ? null : validation.build(), attrs);
+                                 null == validation ? null : validation.build(), extension, attrs);
     }
 
 }

@@ -15,6 +15,8 @@
  */
 package leap.web.security.permission;
 
+import leap.lang.Arrays2;
+
 import java.security.Permission;
 
 public interface PermissionChecker {
@@ -23,7 +25,22 @@ public interface PermissionChecker {
      * Checks if the specified permission are "implied by" the "impliedBy" permission.
      *
      * see {@link java.security.Permission#implies(Permission)}.
+     *
+     * @deprecated use {@link #checkPermissionImplies(String, String[])} instead.
      */
+    @Deprecated
     boolean checkPermissionImplies(String[] checkingPermission,String impliedByPermission);
 
+    /**
+     * Checks if the expected permission are "implied by" the actual permissions.
+     */
+    default boolean checkPermissionImplies(String expected, String[] actual) {
+        if(null == expected) {
+            return true;
+        }
+        if(null == actual) {
+            return false;
+        }
+        return Arrays2.contains(actual, expected);
+    }
 }

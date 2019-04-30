@@ -43,7 +43,8 @@ public class DbTable extends DbSchemaObjectName implements JsonStringable {
 	public DbTable(String         catalog, 
 				   String         schema,
 				   String         name, 
-				   String         type, 
+				   String         type,
+                   boolean        quoted,
 				   String         comment, 
 				   String		  primaryKeyName,
 				   String[]       primaryKeyColumnNames, 
@@ -51,7 +52,7 @@ public class DbTable extends DbSchemaObjectName implements JsonStringable {
 				   DbForeignKey[] foreignKeys,
 				   DbIndex[]      indexes) {
 		
-	    super(catalog, schema, name);
+	    super(catalog, schema, name, quoted);
 	    
 	    Args.notEmpty(type,"table type");
 	    Args.notEmpty(columns,"columns' of table '" + name + "");
@@ -74,8 +75,8 @@ public class DbTable extends DbSchemaObjectName implements JsonStringable {
 	public String getType() {
 		return type;
 	}
-	
-	/**
+
+    /**
 	 * returns the comment of this table.
 	 */
 	public String getComment() {
@@ -263,14 +264,13 @@ public class DbTable extends DbSchemaObjectName implements JsonStringable {
 		
 		writeName(writer);
 		
-		writer.property("type", type)
-			  .propertyOptional("comment", comment)
+		writer.property("type", type);
+		writer.propertyOptional("comment", comment)
 			  .propertyOptional("primaryKeyName", primaryKey == null ? null : primaryKey.getName());
 		
 		writer.propertyJsonable("columns",columns);
 
 		if(foreignKeys.length > 0){
-			writer.separator();
 			writer.propertyJsonable("foreignKeys",foreignKeys);
 		}
 		

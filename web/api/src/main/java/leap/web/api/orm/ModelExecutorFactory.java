@@ -21,21 +21,60 @@ public interface ModelExecutorFactory {
     /**
      * Returns a new {@link ModelCreateExecutor}.
      */
-    ModelCreateExecutor newCreateExecutor(ModelExecutorContext context);
+    default ModelCreateExecutor newCreateExecutor(ModelExecutorContext context) {
+        return newCreateExecutor(context, (ModelCreateInterceptor[])null);
+    }
+
+    /**
+     * Returns a new {@link ModelCreateExecutor}.
+     */
+    ModelCreateExecutor newCreateExecutor(ModelExecutorContext context, ModelCreateInterceptor... interceptors);
 
     /**
      * Returns a new {@link ModelUpdateExecutor}.
      */
-    ModelUpdateExecutor newUpdateExecutor(ModelExecutorContext context);
+    default ModelUpdateExecutor newUpdateExecutor(ModelExecutorContext context) {
+        return newUpdateExecutor(context, (ModelUpdateInterceptor[])null);
+    }
+
+    /**
+     * Returns a new {@link ModelUpdateExecutor}.
+     */
+    ModelUpdateExecutor newUpdateExecutor(ModelExecutorContext context, ModelUpdateInterceptor... interceptors);
 
     /**
      * Returns a new {@link ModelDeleteExecutor}.
      */
-    ModelDeleteExecutor newDeleteExecutor(ModelExecutorContext context);
+    default ModelDeleteExecutor newDeleteExecutor(ModelExecutorContext context) {
+        return newDeleteExecutor(context, (ModelDeleteInterceptor[])null);
+    }
+
+    /**
+     * Returns a new {@link ModelDeleteExecutor}.
+     */
+    ModelDeleteExecutor newDeleteExecutor(ModelExecutorContext context, ModelDeleteInterceptor... interceptors);
 
     /**
      * Returns a new {@link ModelQueryExecutor}.
      */
-    ModelQueryExecutor newQueryExecutor(ModelExecutorContext context);
+    default ModelQueryExecutor newQueryExecutor(ModelExecutorContext context) {
+        return newQueryExecutor(context, (ModelQueryInterceptor[])null);
+    }
 
+    /**
+     * Returns a new {@link ModelQueryExecutor}.
+     */
+    ModelQueryExecutor newQueryExecutor(ModelExecutorContext context, ModelQueryInterceptor... interceptors);
+
+    /**
+     * Returns a new {@link RelationQueryExecutor}.
+     */
+    default RelationQueryExecutor newRelationQueryExecutor(RelationExecutorContext context) {
+        return newRelationQueryExecutor(context, (RelationQueryInterceptor[])null);
+    }
+
+    /**
+     * Returns a new {@link RelationQueryExecutor}.
+     */
+    RelationQueryExecutor newRelationQueryExecutor(RelationExecutorContext context, RelationQueryInterceptor... interceptors);
 }

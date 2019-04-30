@@ -15,10 +15,21 @@
  */
 package leap.orm.validation;
 
+import leap.core.validation.Errors;
 import leap.core.validation.Validation;
 import leap.orm.value.EntityWrapper;
 
 public interface EntityValidator {
+
+    /**
+     * Validates all the fields defined in {@link leap.orm.mapping.EntityMapping}.
+     */
+    Errors validate(EntityWrapper entity);
+
+    /**
+     * Validates the given fields only.
+     */
+    Errors validate(EntityWrapper entity, Iterable<String> fields);
 
 	boolean validate(EntityWrapper entity,Validation validation,int maxErrors);
 

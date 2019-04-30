@@ -16,6 +16,7 @@
 package leap.core.ioc;
 
 import leap.core.annotation.Configurable;
+import leap.lang.Classes;
 import leap.lang.Strings;
 import leap.lang.beans.BeanType;
 import leap.lang.tostring.ToStringBuilder;
@@ -33,6 +34,7 @@ class BeanDefinitionBase implements BeanDefinition,TypeDefinition,BeanDefinition
     protected boolean override        = true;
     protected boolean defaultOverride = false;
 
+    protected String            namespace;
     protected String            id;
     protected String            name;
     protected Class<?>          type;
@@ -94,7 +96,15 @@ class BeanDefinitionBase implements BeanDefinition,TypeDefinition,BeanDefinition
 		this.sortOrder = sortOrder;
 	}
 
-	@Override
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
+    }
+
+    @Override
     public String getId() {
 		return id;
 	}
@@ -341,7 +351,7 @@ class BeanDefinitionBase implements BeanDefinition,TypeDefinition,BeanDefinition
 
     public boolean isConfigurable() {
 		if(null == configurable) {
-			configurable = beanClass.isAnnotationPresent(Configurable.class); 
+			configurable = Classes.isAnnotationPresent(beanClass,Configurable.class);
 		}
 		return configurable;
 	}

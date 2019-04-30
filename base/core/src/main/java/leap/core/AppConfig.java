@@ -25,6 +25,7 @@ import leap.lang.accessor.PropertyGetter;
 import leap.lang.resource.ResourceSet;
 import leap.lang.text.PlaceholderResolver;
 
+import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -38,6 +39,7 @@ public interface AppConfig extends PropertyGetter {
     String SYS_PROPERTY_PROFILE          = "app.profile";
     String INIT_PROPERTY_PROFILE         = "profile";
     String INIT_PROPERTY_DEBUG           = "debug";
+    String INIT_PROPERTY_RELOAD          = "reload";
 	String INIT_PROPERTY_LAZY_TEMPLATE	 = "lazy-template";
     String INIT_PROPERTY_BASE_PACKAGE    = "base-package";
     String INIT_PROPERTY_DEFAULT_CHARSET = "default-charset";
@@ -263,30 +265,30 @@ public interface AppConfig extends PropertyGetter {
      * <p/>
      * Never returns null.
      */
-    <T> Property<T> getDynaProperty(String name, Class<T> type);
+    <T> Property<T> getDynaProperty(String name, Type type,  Class<T> cls);
 
     /**
-     * @see {@link #getDynaProperty(String, Class)}
+     * @see {@link #getDynaProperty(String, Type, Class)}
      */
     StringProperty getDynaProperty(String name);
 
     /**
-     * @see {@link #getDynaProperty(String, Class)}.
+     * @see {@link #getDynaProperty(String, Type, Class)}.
      */
     IntegerProperty getDynaIntegerProperty(String name);
 
     /**
-     * @see {@link #getDynaProperty(String, Class)}.
+     * @see {@link #getDynaProperty(String, Type, Class)}.
      */
     LongProperty getDynaLongProperty(String name);
 
     /**
-     * @see {@link #getDynaProperty(String, Class)}.
+     * @see {@link #getDynaProperty(String, Type, Class)}.
      */
     BooleanProperty getDynaBooleanProperty(String name);
 
     /**
-     * @see {@link #getDynaProperty(String, Class)}.
+     * @see {@link #getDynaProperty(String, Type, Class)}.
      */
     DoubleProperty getDynaDoubleProperty(String name);
 
@@ -297,8 +299,16 @@ public interface AppConfig extends PropertyGetter {
 
 	/**
 	 * Returns an immutable map contains all the configured properties.
+     *
+     * @deprecated use {@link #getPropertyNames()} instead, will be removed in 1.0
 	 */
+    @Deprecated
 	Map<String,String> getProperties();
+
+    /**
+     * Returns all the property names.
+     */
+    Set<String> getPropertyNames();
 	
 	/**
 	 * Returns all the resources configured in app configs.

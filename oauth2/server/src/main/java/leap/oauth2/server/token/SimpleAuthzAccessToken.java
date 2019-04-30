@@ -20,12 +20,14 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 
 import leap.lang.expirable.TimeExpirableSeconds;
+import leap.oauth2.server.OAuth2Constants;
 
 public class SimpleAuthzAccessToken extends TimeExpirableSeconds implements AuthzAccessToken {
 	
     private static final long serialVersionUID = -4427485425591978410L;
     
     protected String              token;
+    protected String			  tokenType = OAuth2Constants.BEARER_TYPE;
     protected String			  refreshToken;
     protected String              clientId;
     protected String              userId;
@@ -88,6 +90,15 @@ public class SimpleAuthzAccessToken extends TimeExpirableSeconds implements Auth
 		if(hasExtendedParameters()){
 			extendedParameters.forEach(consumer);
 		}
+	}
+
+	public void setTokenType(String tokenType) {
+		this.tokenType = tokenType;
+	}
+
+	@Override
+	public String getTokenType() {
+		return tokenType;
 	}
 
 	@Override

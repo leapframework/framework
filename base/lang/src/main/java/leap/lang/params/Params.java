@@ -28,7 +28,7 @@ import java.util.Map;
  * <p>
  * Note : the implementation must guarantee case insensitive.
  */
-public interface Params extends Emptiable,NamedGetter {
+public interface Params extends Emptiable, NamedGetter {
 	
 	/**
 	 * Returns an readonly empty params.
@@ -142,7 +142,14 @@ public interface Params extends Emptiable,NamedGetter {
 	default boolean isIndexed() {
         return false;
     }
-	
+
+	/**
+	 * Returns true if this params is an array.
+	 */
+	default boolean isArray() {
+		return false;
+	}
+
 	/**
 	 * Returns the max index if this params is indexed.
 	 * 

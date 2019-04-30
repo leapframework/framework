@@ -20,6 +20,10 @@ import leap.core.config.dyna.PropertyProvider;
 
 public abstract class AppConfigBase implements AppConfig {
 
+    public abstract void setPreSupports(AppConfigSupport... supports);
+
+    public abstract void setPostSupports(AppConfigSupport... supports);
+
     public abstract void setPropertyProvider(PropertyProvider pp);
 
 }

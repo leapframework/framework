@@ -117,7 +117,7 @@ public class ModelQueryTest extends OrmTestCase {
 		
 		assertEquals(1, Owner.query("select * from owner").count());
 		assertEquals(1, Owner.query("select * from owner order by id desc").count());
-		assertEquals(1, Owner.query("select id,name from owner order by id desc").count());
+		assertEquals(1, Owner.query("select id,firstName from owner order by id desc").count());
 	}
 	
 	@Test

@@ -18,6 +18,7 @@ package leap.orm.sql;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import leap.lang.Arrays2;
 import leap.lang.Strings;
@@ -29,6 +30,8 @@ public class DefaultSqlStatementBuilder implements SqlStatementBuilder {
 	private final boolean		query;
 	private final StringBuilder buf  = new StringBuilder(150);
 	private final List<Object>  args = new ArrayList<Object>();
+
+    private Map<String, Object> vars;
 	
 	private int pi = -1;
 
@@ -55,6 +58,16 @@ public class DefaultSqlStatementBuilder implements SqlStatementBuilder {
 	@Override
     public int currentParameterIndex() {
 	    return pi;
+    }
+
+    @Override
+    public Map<String, Object> getVars() {
+        return vars;
+    }
+
+    @Override
+    public void setVars(Map<String, Object> vars) {
+        this.vars = vars;
     }
 
     @Override
@@ -121,7 +134,7 @@ public class DefaultSqlStatementBuilder implements SqlStatementBuilder {
 		return this;
 	}
 	
-	public boolean removeLastEqualsOperator(){
+	public int removeLastEqualsOperator(){
 		int len = buf.length();
 		
 		for(int i=len-1;i > 0;i--){
@@ -129,15 +142,20 @@ public class DefaultSqlStatementBuilder implements SqlStatementBuilder {
 			
 			if(c == '=' && i > 1 && Character.isWhitespace(buf.charAt(i-1))){
 				buf.delete(i-1,len);
-				return true;
-			}			
-			
+				return 1;
+			}
+
+			if(c == '=' && i > 1 && '!' == buf.charAt(i-1)){
+				buf.delete(i-2,len);
+				return 2;
+			}
+
 			if(!Character.isWhitespace(c)){
-				return false;
+				return 0;
 			}
 		}
 		
-		return false;
+		return 0;
 	}
 	
 	public boolean isLastInOperator(){

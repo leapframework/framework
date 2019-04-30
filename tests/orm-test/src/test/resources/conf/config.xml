@@ -29,7 +29,7 @@
     </additional-packages>
     <properties>
         <property name="h2.driverClassName">org.h2.Driver</property>
-        <property name="h2.url">jdbc:h2:./target/leap;DB_CLOSE_ON_EXIT=FALSE</property>
+        <property name="h2.url">jdbc:h2:mem:leap;DB_CLOSE_ON_EXIT=FALSE</property>
         <property name="h2.username">sa</property>
     </properties>
     

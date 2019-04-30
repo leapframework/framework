@@ -24,6 +24,8 @@ import org.junit.Test;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 public class JsonDataTypeTest extends TestBase {
 
@@ -59,5 +61,22 @@ public class JsonDataTypeTest extends TestBase {
 
         dt = JSON.decode(s, LocalDateTime.class);
         assertEquals(s, dt.toString());
+    }
+
+    @Test
+    public void testConcreteMap() {
+        String s = "{'k':'v'}";
+
+        ConcreteMap map = JSON.decode(s, ConcreteMap.class);
+        assertEquals("v", map.get("k"));
+
+        s = "[" + s + "]";
+        List<ConcreteMap> list = JSON.decodeList(s, ConcreteMap.class);
+        map = list.get(0);
+        assertEquals("v", map.get("k"));
+    }
+
+    public static final class ConcreteMap extends LinkedHashMap{
+
     }
 }

@@ -19,7 +19,6 @@ import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.db.DbDialect;
 import leap.db.model.DbColumn;
-import leap.db.model.DbTable;
 import leap.lang.Args;
 import leap.lang.Strings;
 import leap.lang.annotation.Nullable;
@@ -41,40 +40,43 @@ public class DefaultSqlFactory implements SqlFactory {
     }
 
 	@Override
-    public SqlCommand createSqlCommand(MetadataContext context,String source, String sql) {
-	    return createCommand(context,null,source,sql);
-    }
-
-	@Override
-    public SqlCommand createInsertCommand(MetadataContext context,EntityMapping em) {
-		String sql = getInsertSql(context, em);
+    public SqlCommand createInsertCommand(MetadataContext context,EntityMapping em, boolean secondary) {
+		String sql = getInsertSql(context, em, secondary);
 	    return null == sql ? null : createCommand(context,em,null,sql);
     }
 	
 	@Override
-    public SqlCommand createInsertCommand(MetadataContext context, EntityMapping em, String[] fields) {
-	    return createCommand(context,em,null,getInsertSql(context, em, fields));
+    public SqlCommand createInsertCommand(MetadataContext context, EntityMapping em, String[] fields, boolean secondary) {
+        if(null == fields || fields.length == 0) {
+            return createInsertCommand(context, em, secondary);
+        }else{
+            return createCommand(context,em,null,getInsertSql(context, em, fields, secondary));
+        }
     }
 
-	@Override
-    public SqlCommand createUpdateCommand(MetadataContext context,EntityMapping em) {
-		String sql = getUpdateSql(context, em);
+    public SqlCommand createUpdateCommand(MetadataContext context,EntityMapping em, boolean secondary) {
+		String sql = getUpdateSql(context, em, secondary);
 	    return null == sql ? null : createCommand(context,em,null,sql);
     }
 	
 	@Override
-    public SqlCommand createUpdateCommand(MetadataContext context, EntityMapping em, String[] fields) {
-	    return createCommand(context,em,null,getUpdateSql(context, em, fields));
+    public SqlCommand createUpdateCommand(MetadataContext context, EntityMapping em, String[] fields, boolean secondary) {
+        if(null == fields || fields.length == 0) {
+            return createUpdateCommand(context, em, secondary);
+        }
+
+        String sql = getUpdateSql(context, em, fields, secondary);
+	    return null == sql ? null : createCommand(context, em, null, sql);
     }
 
 	@Override
-    public SqlCommand createDeleteCommand(MetadataContext context,EntityMapping em) {
-	    return createCommand(context,em,null,getDeleteSql(context,em));
+    public SqlCommand createDeleteCommand(MetadataContext context,EntityMapping em, boolean secondary) {
+	    return createCommand(context,em,null,getDeleteSql(context,em, secondary));
     }
 	
 	@Override
-    public SqlCommand createDeleteAllCommand(MetadataContext context, EntityMapping em) {
-	    return createCommand(context, em, null, getDeleteAllSql(context, em));
+    public SqlCommand createDeleteAllCommand(MetadataContext context, EntityMapping em, boolean secondary) {
+	    return createCommand(context, em, null, getDeleteAllSql(context, em, secondary));
     }
 	
 	@Override
@@ -104,22 +106,29 @@ public class DefaultSqlFactory implements SqlFactory {
 	
 	protected SqlCommand createCommand(MetadataContext context,@Nullable EntityMapping em,String source,String sql){
 		Args.notEmpty(sql,"sql");
-		return new DefaultSqlCommand(source, source, null, defaultSqlLanguage, sql,null);
+		return new DefaultSqlCommand(new SqlInfo.Builder(source, source, null, defaultSqlLanguage, sql,null).build());
 	}
 	
-	protected String getInsertSql(MetadataContext context,EntityMapping em){
-		DbDialect dialect = context.getDb().getDialect();
-		DbTable   table   = em.getTable();
-		
+	protected String getInsertSql(MetadataContext context, EntityMapping em, boolean secondary){
+        checkSecondary(em, secondary);
+
         StringBuilder sql    = new StringBuilder();
         StringBuilder values = new StringBuilder();
         
-        sql.append("insert into ").append(em.getEntityName()).append("(");
+        sql.append("insert into ").append(secondary ? em.getSecondaryTableName() : em.getEntityName()).append("(");
         
         int index = 0;
-        
         for(FieldMapping fm : em.getFieldMappings()){
         	if(fm.isInsert()){
+
+                if(!secondary && fm.isSecondary()) {
+                    continue;
+                }
+
+                if(secondary && !(fm.isPrimaryKey() || fm.isSecondary())) {
+                    continue;
+                }
+
             	if(index > 0){
             		sql.append(",");
             		values.append(",");
@@ -138,15 +147,22 @@ public class DefaultSqlFactory implements SqlFactory {
         
 		return sql.toString();
 	}
-	
-	protected String getInsertSql(MetadataContext context,EntityMapping em,String[] fields){
-		DbDialect dialect = context.getDb().getDialect();
-		DbTable   table   = em.getTable();
-		
+
+    protected void checkSecondary(EntityMapping em, boolean secondary) {
+        if(secondary && !em.hasSecondaryTable()) {
+            throw new IllegalStateException("Entity '" + em + "' has no secondary table");
+        }
+    }
+
+	protected String getInsertSql(MetadataContext context,EntityMapping em,String[] fields, boolean secondary){
+        checkSecondary(em, secondary);
+
         StringBuilder sql    = new StringBuilder();
         StringBuilder values = new StringBuilder();
 
-        sql.append("insert into ").append(em.getEntityName()).append("(");
+        String tableName = secondary ? em.getSecondaryTableName() : em.getEntityName();
+
+        sql.append("insert into ").append(tableName).append("(");
         
         int index = 0;
 
@@ -154,6 +170,16 @@ public class DefaultSqlFactory implements SqlFactory {
         	if(!fm.isInsert()){
         		continue;
         	}
+
+            if(!fm.isPrimaryKey()) {
+                if (!secondary && fm.isSecondary()) {
+                    continue;
+                }
+
+                if (secondary && !fm.isSecondary()) {
+                    continue;
+                }
+            }
         	
         	boolean contains = false;
         	for(String field : fields){
@@ -192,19 +218,28 @@ public class DefaultSqlFactory implements SqlFactory {
 		}
 	}
 	
-	protected String getUpdateSql(MetadataContext context,EntityMapping em){
+	protected String getUpdateSql(MetadataContext context,EntityMapping em, boolean secondary){
+        checkSecondary(em, secondary);
+
 		DbDialect dialect = context.getDb().getDialect();
-		DbTable   table   = em.getTable();
-		
+
 		StringBuilder sql = new StringBuilder();
 		
-		sql.append("update ").append(em.getEntityName()).append(" set ");
+		sql.append("update ").append(secondary ? em.getSecondaryTableName() :  em.getEntityName()).append(" set ");
 		
 		int index = 0;
 		
 		for(FieldMapping fm : em.getFieldMappings()){
 			if(fm.isUpdate() && !fm.isPrimaryKey()){
-				
+
+                if (!secondary && fm.isSecondary()) {
+                    continue;
+                }
+
+                if (secondary && !fm.isSecondary()) {
+                    continue;
+                }
+
 				if(index > 0){
 					sql.append(",");
 				}
@@ -221,16 +256,10 @@ public class DefaultSqlFactory implements SqlFactory {
 		}
 		
 		sql.append(" where ");
-		index = 0;
-		
-		for(FieldMapping key : em.getKeyFieldMappings()){
-			if(index > 0){
-				sql.append(" and ");
-			}
-			sql.append(dialect.quoteIdentifier(key.getColumnName())).append("=#").append(key.getFieldName()).append("#");
-			index++;
-		}
-		
+
+        appendPrimaryKey(context, em, sql);
+
+        index = 0;
 		FieldMapping lp = em.getOptimisticLockField();
 		if(null != lp){
 			if(index > 0){
@@ -239,24 +268,17 @@ public class DefaultSqlFactory implements SqlFactory {
 			sql.append(" ").append(dialect.quoteIdentifier(lp.getColumnName())).append("=#").append(lp.getFieldName()).append("#");
 		}
 
-        if(em.isSharding()) {
-            FieldMapping fm = em.getShardingField();
-            if(index > 0){
-                sql.append(" and");
-            }
-            sql.append(" ").append(dialect.quoteIdentifier(fm.getColumnName())).append("=#").append(fm.getFieldName()).append("#");
-        }
-		
 		return sql.toString();
 	}
 	
-	protected String getUpdateSql(MetadataContext context,EntityMapping em,String[] fields){
+	protected String getUpdateSql(MetadataContext context,EntityMapping em,String[] fields, boolean secondary){
+        checkSecondary(em, secondary);
+
 		DbDialect dialect = context.getDb().getDialect();
-		DbTable   table   = em.getTable();
-		
+
 		StringBuilder sql = new StringBuilder();
 		
-		sql.append("update ").append(em.getEntityName()).append(" set ");
+		sql.append("update ").append(secondary ? em.getSecondaryTableName() : em.getEntityName()).append(" set ");
 		
 		int index = 0;
 		
@@ -265,6 +287,14 @@ public class DefaultSqlFactory implements SqlFactory {
 			if(fm.isPrimaryKey() || !fm.isUpdate()){
 				continue;
 			}
+
+            if (!secondary && fm.isSecondary()) {
+                continue;
+            }
+
+            if (secondary && !fm.isSecondary()) {
+                continue;
+            }
 			
         	boolean contains = false;
         	for(String field : fields){
@@ -284,34 +314,25 @@ public class DefaultSqlFactory implements SqlFactory {
 				index++;
 			}
 		}
+
+        if(index == 0) {
+            return null;
+        }
 		
 		sql.append(" where ");
-		index = 0;
-		
-		for(FieldMapping key : em.getKeyFieldMappings()){
-			if(index > 0){
-				sql.append(" and ");
-			}
-			sql.append(dialect.quoteIdentifier(key.getColumnName())).append("=#").append(key.getFieldName()).append("#");
-			index++;
-		}
-		
+
+        appendPrimaryKey(context, em, sql);
+
+        index = 0;
 		FieldMapping lp = em.getOptimisticLockField();
 		if(null != lp){
 			if(index > 0){
 				sql.append(" and");
 			}
 			sql.append(" ").append(dialect.quoteIdentifier(lp.getColumnName())).append("=#").append(lp.getFieldName()).append("#");
+            index++;
 		}
 
-        if(em.isSharding()) {
-            FieldMapping fm = em.getShardingField();
-            if(index > 0){
-                sql.append(" and");
-            }
-            sql.append(" ").append(dialect.quoteIdentifier(fm.getColumnName())).append("=#").append(fm.getFieldName()).append("#");
-        }
-		
 		return sql.toString();
 	}
 	
@@ -329,72 +350,41 @@ public class DefaultSqlFactory implements SqlFactory {
 		sql.append("#");
 	}
 	
-	protected String getDeleteSql(MetadataContext context,EntityMapping em){
+	protected String getDeleteSql(MetadataContext context,EntityMapping em, boolean secondary){
+        checkSecondary(em, secondary);
+
 		DbDialect dialect = context.getDb().getDialect();
-		DbTable   table   = em.getTable();
-		
+
 		StringBuilder sql = new StringBuilder();
 		
-		sql.append("delete from ").append(em.getEntityName()).append(" where ");
-		
-		int index = 0;
-		
-		for(FieldMapping key : em.getKeyFieldMappings()){
-			if(index > 0){
-				sql.append(" and ");
-			}
-			
-			sql.append(dialect.quoteIdentifier(key.getColumnName())).append("=#").append(key.getFieldName()).append("#");
-			index++;
-		}
+		sql.append("delete from ").append(secondary ? em.getSecondaryTableName() : em.getEntityName()).append(" where ");
 
-        if(em.isSharding()) {
-            FieldMapping fm = em.getShardingField();
-            if(index > 0){
-                sql.append(" and");
-            }
-            sql.append(" ").append(dialect.quoteIdentifier(fm.getColumnName())).append("=#").append(fm.getFieldName()).append("#");
-        }
-		
+        appendPrimaryKey(context, em, sql);
+
 		return sql.toString();
 	}
 	
-	protected String getDeleteAllSql(MetadataContext context,EntityMapping em){
-		DbDialect dialect = context.getDb().getDialect();
-		DbTable   table   = em.getTable();
-		
+	protected String getDeleteAllSql(MetadataContext context,EntityMapping em, boolean secondary){
+        checkSecondary(em, secondary);
+
 		StringBuilder sql = new StringBuilder();
 		
-		sql.append("delete from ").append(em.getEntityName());
+		sql.append("delete from ").append(secondary ? em.getSecondaryTableName() : em.getEntityName());
 		
 		return sql.toString();
 	}
 	
 	protected String getExistsSql(MetadataContext context,EntityMapping em){
-		DbDialect dialect = context.getDb().getDialect();
-		DbTable   table   = em.getTable();
-		
 		StringBuilder sql = new StringBuilder();
 		
 		sql.append("select 1 from ").append(em.getEntityName()).append(" where ");
-		
-		int index = 0;
-		for(FieldMapping key : em.getKeyFieldMappings()){
-			if(index > 0){
-				sql.append(" and ");
-			}
-			
-			sql.append(dialect.quoteIdentifier(key.getColumnName())).append("=#").append(key.getFieldName()).append("#");
-			index++;
-		}
-		
+
+        appendPrimaryKey(context, em, sql);
+
 		return sql.toString();
 	}
 	
 	protected String getCountSql(MetadataContext context,EntityMapping em){
-		DbDialect dialect = context.getDb().getDialect();
-		DbTable   table   = em.getTable();
-		
 		StringBuilder sql = new StringBuilder();
 		
 		sql.append("select count(*) from ").append(em.getEntityName());
@@ -403,30 +393,40 @@ public class DefaultSqlFactory implements SqlFactory {
 	}
 	
 	protected String getFindSql(MetadataContext context,EntityMapping em){
-		DbDialect dialect = context.getDb().getDialect();
-		DbTable   table   = em.getTable();
-		
 		StringBuilder sql = new StringBuilder();
 
-        sql.append("select ")
-            .append(createSelectColumns(context, em, null))
-            .append(" from ")
-            .append(em.getEntityName())
-			.append(" t ")
-			.append(" where ");
-		
-		int index = 0;
-		for(FieldMapping key : em.getKeyFieldMappings()){
-			if(index > 0){
-				sql.append(" and ");
-			}
-			
-			sql.append(dialect.quoteIdentifier(key.getColumnName())).append("=#").append(key.getFieldName()).append("#");
-			index++;
-		}
-		
+        sql.append("select ");
+            sql.append(createSelectColumns(context, em, null))
+                .append(" from ")
+                .append(em.getEntityName())
+                .append(" t ");
+        sql.append(" where ");
+
+        appendPrimaryKey(context, em, sql);
+
 		return sql.toString();
 	}
+
+    protected void appendPrimaryKey(MetadataContext context, EntityMapping em, StringBuilder sql) {
+        appendPrimaryKey(context, em, sql, null);
+    }
+
+    protected void appendPrimaryKey(MetadataContext context, EntityMapping em, StringBuilder sql, String alias) {
+        DbDialect dialect = context.getDb().getDialect();
+
+        int index = 0;
+        for(FieldMapping key : em.getKeyFieldMappings()){
+            if(index > 0){
+                sql.append(" and ");
+            }
+
+            if(null != alias) {
+                sql.append(alias).append('.');
+            }
+            sql.append(dialect.quoteIdentifier(key.getColumnName())).append("=#").append(key.getFieldName()).append("#");
+            index++;
+        }
+    }
 	
 	protected String getFindListSql(MetadataContext context,EntityMapping em){
 		if(em.isCompositeKey()) {
@@ -434,8 +434,7 @@ public class DefaultSqlFactory implements SqlFactory {
 		}
 		
 		DbDialect dialect = context.getDb().getDialect();
-		DbTable   table   = em.getTable();
-		
+
 		StringBuilder sql = new StringBuilder();
 
         sql.append("select ")
@@ -458,9 +457,6 @@ public class DefaultSqlFactory implements SqlFactory {
 	}	
 	
 	protected String getFindAllSql(MetadataContext context,EntityMapping em){
-		DbDialect dialect = context.getDb().getDialect();
-		DbTable   table   = em.getTable();
-		
 		StringBuilder sql = new StringBuilder();
 		
 		sql.append("select ")
@@ -473,22 +469,23 @@ public class DefaultSqlFactory implements SqlFactory {
 	}
 
     @Override
-    public String createSelectColumns(MetadataContext context, EntityMapping em, String tableAlias) {
+    public String createSelectColumns(MetadataContext context, EntityMapping em, String alias) {
         StringBuilder s = new StringBuilder();
+
+        DbDialect dialect = context.getDb().getDialect();
 
         int index = 0;
 
         for(FieldMapping fm : em.getFieldMappings()){
-
             if(index > 0) {
                 s.append(',');
             }
 
-            if(!Strings.isEmpty(tableAlias)) {
-                s.append(tableAlias).append('.');
+            if(!Strings.isEmpty(alias)) {
+                s.append(alias).append('.');
             }
 
-            s.append(fm.getColumnName());
+            s.append(dialect.quoteIdentifier(fm.getColumnName()));
 
             index++;
         }

@@ -17,15 +17,19 @@
 package leap.web.api.restd;
 
 import leap.lang.Buildable;
+import leap.lang.accessor.MapAttributeAccessor;
 import leap.lang.path.Paths;
 import leap.orm.mapping.EntityMapping;
 
-public class RestdModel {
+import java.util.Map;
+
+public class RestdModel extends MapAttributeAccessor {
 
     protected final EntityMapping entityMapping;
     protected final String        path;
 
-    public RestdModel(EntityMapping entityMapping, String path) {
+    public RestdModel(EntityMapping entityMapping, String path, Map<String,Object> attrs) {
+        super(attrs);
         this.entityMapping = entityMapping;
         this.path          = Paths.prefixWithAndSuffixWithoutSlash(path);
     }
@@ -47,6 +51,7 @@ public class RestdModel {
 
     public static final class Builder implements Buildable<RestdModel>{
 
+        protected Map<String,Object> attrs;
         protected EntityMapping entityMapping;
         protected String        path;
 
@@ -66,9 +71,17 @@ public class RestdModel {
             this.path = path;
         }
 
+        public Map<String, Object> getAttrs() {
+            return attrs;
+        }
+
+        public void setAttrs(Map<String, Object> attrs) {
+            this.attrs = attrs;
+        }
+
         @Override
         public RestdModel build() {
-            return new RestdModel(entityMapping, path);
+            return new RestdModel(entityMapping, path, attrs);
         }
     }
 }

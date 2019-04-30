@@ -19,115 +19,134 @@ import leap.lang.Named;
 import leap.lang.TypeInfo;
 import leap.lang.accessor.AnnotationsGetter;
 import leap.lang.accessor.TypeInfoGetter;
+import leap.lang.convert.ConvertContext;
 import leap.lang.convert.ConvertUnsupportedException;
 import leap.lang.convert.Converts;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.reflect.ReflectField;
 import leap.lang.reflect.ReflectMethod;
+import leap.lang.reflect.ReflectParameter;
 import leap.lang.reflect.ReflectValued;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-public class BeanProperty implements Named,TypeInfoGetter,AnnotationsGetter,ReflectValued {
-	private static final Log log = LogFactory.get(BeanProperty.class);
-	
-	private String   	  name;
-	private Class<?> 	  type;
-	private Type          genericType;
-	private TypeInfo	  typeInfo;
-	private ReflectField  field;
-	private ReflectMethod getter;
-	private ReflectMethod setter;
-	private BeanType      beanType;
-	private boolean	   	  readable;
-	private boolean       writable;
-	private boolean       _transient;
-	private Annotation[]  annotations = new Annotation[]{};
-	
-	protected BeanProperty(BeanType beanType,String name){
-		this.name     = name;
-		this.beanType = beanType;
-	}
+public class BeanProperty implements Named, TypeInfoGetter, AnnotationsGetter, ReflectValued {
+    private static final Log log = LogFactory.get(BeanProperty.class);
 
-	public String getName() {
-	    return name;
+    private String                       name;
+    private Class<?>                     type;
+    private Type                         genericType;
+    private TypeInfo                     typeInfo;
+    private Class<?>                     declaringClass;
+    private ReflectField                 field;
+    private ReflectMethod                getter;
+    private ReflectMethod                setter;
+    private BeanType                     beanType;
+    private boolean                      readable;
+    private boolean                      writable;
+    private boolean                      _transient;
+    private Annotation[]                 annotations = new Annotation[]{};
+    private Map<Class<?>, ReflectMethod> extraSetters;
+
+    protected BeanProperty(BeanType beanType, String name) {
+        this.name = name;
+        this.beanType = beanType;
     }
 
-	public Class<?> getType(){
-		return type;
-	}
-	
-	public Type getGenericType(){
-		return genericType;
-	}
-	
-	public Class<?> getElementType() {
-	    return typeInfo.getElementType();
-	}
-	
-	public TypeInfo getTypeInfo() {
-		return typeInfo;
-	}
-	
-	public BeanType getBeanType(){
-		return beanType;
-	}
-	
-	public Annotation[] getAnnotations(){
-		return annotations;
-	}
-	
-	public boolean isReadable(){
-		return readable;
-	}
-	
-	public boolean isWritable(){
-		return writable;
-	}
-	
-	public boolean isTransient(){
-		return _transient;
-	}
-	
-	public boolean isSimpleType() {
-		return typeInfo.isSimpleType();
-	}
+    public String getName() {
+        return name;
+    }
 
-	public boolean isComplexType() {
-		return typeInfo.isComplexType();
-	}
+    public Class<?> getType() {
+        return type;
+    }
 
-	public boolean isField(){
-		return null != field;
-	}
-	
-	public boolean hasGetter(){
-		return null != getter;
-	}
-	
-	public boolean hasSetter(){
-		return null != setter;
-	}
-	
-	public Field getField(){
-		return null != field ? field.getReflectedField() : null;
-	}
-	
-	public ReflectField getReflectField(){
-		return field;
-	}
-	
-	public Method getSetter(){
-		return null != setter ? setter.getReflectedMethod() : null;
-	}
-	
-	public Method getGetter(){
-		return null != getter ? getter.getReflectedMethod() : null;
-	}
+    public Type getGenericType() {
+        return genericType;
+    }
+
+    public Class<?> getElementType() {
+        return typeInfo.getElementType();
+    }
+
+    public TypeInfo getTypeInfo() {
+        return typeInfo;
+    }
+
+    public Class<?> getDeclaringClass() {
+        return declaringClass;
+    }
+
+    protected void setDeclaringClass(Class<?> declaringClass) {
+        this.declaringClass = declaringClass;
+    }
+
+    public BeanType getBeanType() {
+        return beanType;
+    }
+
+    public Annotation[] getAnnotations() {
+        return annotations;
+    }
+
+    public boolean isReadable() {
+        return readable;
+    }
+
+    public boolean isWritable() {
+        return writable;
+    }
+
+    public boolean isTransient() {
+        return _transient;
+    }
+
+    public boolean isSimpleType() {
+        return typeInfo.isSimpleType();
+    }
+
+    public boolean isComplexType() {
+        return typeInfo.isComplexType();
+    }
+
+    public boolean isField() {
+        return null != field;
+    }
+
+    public boolean hasGetter() {
+        return null != getter;
+    }
+
+    public boolean hasSetter() {
+        return null != setter;
+    }
+
+    public Field getField() {
+        return null != field ? field.getReflectedField() : null;
+    }
+
+    public ReflectField getReflectField() {
+        return field;
+    }
+
+    public Method getSetter() {
+        return null != setter ? setter.getReflectedMethod() : null;
+    }
+
+    public Method getGetter() {
+        return null != getter ? getter.getReflectedMethod() : null;
+    }
+
+    public Map<Class<?>, ReflectMethod> getExtraSetters() {
+        return extraSetters;
+    }
 
     @Override
     public Object getRawValue(Object bean) {
@@ -135,88 +154,99 @@ public class BeanProperty implements Named,TypeInfoGetter,AnnotationsGetter,Refl
     }
 
     public Object getValue(Object bean) {
-		if(!readable){
-			throw new IllegalStateException("Property '" + name + "' of '" + beanType.getBeanClass().getName() + "' not readable");
-		}
-		
-		return null != getter ? getter.invoke(bean) : field.getValue(bean,true);
-	}
-	
-	public void setValue(Object bean,Object value){
-		if(null != value && !type.isAssignableFrom(value.getClass())){
-			value = Converts.convert(value, type,genericType);
-		}
-		
-		if(null != setter){
-			setter.invoke(bean,value);
-		}else{
-			field.setValue(bean, value, true);
-		}
-	}
-	
-	public boolean trySetValue(Object bean,Object value) {
-		if(writable){
-			try {
-	            if(null != value && !type.isAssignableFrom(value.getClass())){
-	            	value = Converts.convert(value, type,genericType);
-	            }
-	            
-	    		if(null != setter){
-	    			setter.invoke(bean,value);
-	    		}else{
-	    			field.setValue(bean, value, true);
-	    		}
-	    		
-	    		return true;
-            } catch (ConvertUnsupportedException e) {
-            	log.debug("cannot set property '{}' of bean '{}' -> {}",name,beanType.getBeanClass().getSimpleName(),e.getMessage());
-            }
-		}
-		return false;
-	}
-	
-	protected void setType(Class<?> type){
-		this.type = type;
-	}
-	
-	protected void setGenericType(Type genericType){
-		this.genericType = genericType;
-	}
-	
-	protected void setTypeInfo(TypeInfo typeInfo){
-		this.typeInfo = typeInfo;
-	}
-	
-	protected void setField(ReflectField field){
-		this.field = field;
-	}
-	
-	protected void setSetter(ReflectMethod setter){
-		this.setter = setter;
-	}
-	
-	protected void setGetter(ReflectMethod getter){
-		this.getter = getter;
-	}
-	
-	protected void setReadable(boolean readable){
-		this.readable = readable;
-	}
-	
-	protected void setWritable(boolean writable){
-		this.writable = writable;
-	}
-	
-	protected void setTransient(boolean isTransient){
-		this._transient = isTransient;
-	}
-	
-	protected void setAnnotations(Annotation[] annotations){
-		this.annotations = annotations;
-	}
+        if (!readable) {
+            throw new IllegalStateException("Property '" + name + "' of '" + beanType.getBeanClass().getName() + "' not readable");
+        }
 
-	@Override
+        return null != getter ? getter.invoke(bean) : field.getValue(bean, true);
+    }
+
+    public void setValue(Object bean,Object value){
+        if(!writable) {
+            throw new IllegalStateException("Property '" + name + "' is not writable at '" + beanType.getBeanClass().getName() + "'");
+        }
+
+        if(null != value && !type.isAssignableFrom(value.getClass())){
+            value = Converts.convert(value, type,genericType);
+        }
+
+        if(null != setter){
+            setter.invoke(bean,value);
+        }else{
+            field.setValue(bean, value, true);
+        }
+    }
+
+    public boolean trySetValue(Object bean,Object value) {
+        if(writable){
+            try {
+                if(null != value && !type.isAssignableFrom(value.getClass())){
+                    value = Converts.convert(value, type,genericType);
+                }
+
+                if(null != setter){
+                    setter.invoke(bean,value);
+                }else{
+                    field.setValue(bean, value, true);
+                }
+
+                return true;
+            } catch (ConvertUnsupportedException e) {
+                log.debug("cannot set property '{}' of bean '{}' -> {}",name,beanType.getBeanClass().getSimpleName(),e.getMessage());
+            }
+        }
+        return false;
+    }
+
+    protected void setType(Class<?> type) {
+        this.type = type;
+    }
+
+    protected void setGenericType(Type genericType) {
+        this.genericType = genericType;
+    }
+
+    protected void setTypeInfo(TypeInfo typeInfo) {
+        this.typeInfo = typeInfo;
+    }
+
+    protected void setField(ReflectField field) {
+        this.field = field;
+    }
+
+    protected void setSetter(ReflectMethod setter) {
+        this.setter = setter;
+    }
+
+    protected void setGetter(ReflectMethod getter) {
+        this.getter = getter;
+    }
+
+    protected void setReadable(boolean readable) {
+        this.readable = readable;
+    }
+
+    protected void setWritable(boolean writable) {
+        this.writable = writable;
+    }
+
+    protected void setTransient(boolean isTransient) {
+        this._transient = isTransient;
+    }
+
+    protected void setAnnotations(Annotation[] annotations) {
+        this.annotations = annotations;
+    }
+
+    protected void addExtraSetter(ReflectMethod setter) {
+        if (null == extraSetters) {
+            extraSetters = new LinkedHashMap<>(1);
+        }
+        extraSetters.put(setter.getParameters()[0].getType(), setter);
+    }
+
+    @Override
     public String toString() {
-		return "BeanProperty:" + beanType.getBeanClass().getName() + "#" + name;
+        return "BeanProperty:" + beanType.getBeanClass().getName() + "#" + name;
     }
 }

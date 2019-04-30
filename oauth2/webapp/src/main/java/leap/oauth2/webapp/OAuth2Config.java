@@ -15,6 +15,8 @@
  */
 package leap.oauth2.webapp;
 
+import leap.core.web.RequestIgnore;
+
 /**
  * The configuration of oauth2 web app.
  *
@@ -52,6 +54,14 @@ public interface OAuth2Config {
     boolean isLoginWithAccessToken();
 
     /**
+     * Returns true if force to lookup user info from remote server.
+     *
+     * <p/>
+     * Default is false.
+     */
+    boolean isForceLookupUserInfo();
+
+    /**
      * todo : doc
      */
     String getAuthorizeUrl();
@@ -60,6 +70,11 @@ public interface OAuth2Config {
      * todo : doc
      */
     String getTokenUrl();
+
+    /**
+     * Optional.
+     */
+    String getIndirectTokenUrl();
 
 	/**
 	 * Returns the url of token info endpoint in oauth2 authorization server.
@@ -106,4 +121,8 @@ public interface OAuth2Config {
      */
     String getLogoutView();
 
+    /**
+     * Returns the request of ignore access token resolved. 
+     */
+    RequestIgnore[] getIgnores();
 }

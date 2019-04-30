@@ -16,22 +16,69 @@
 
 package leap.orm.event;
 
+import leap.core.annotation.Transactional;
 import leap.lang.Buildable;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-public class EntityListenersBuilder implements Buildable<EntityListeners> {
+public class EntityListenersBuilder implements Buildable<EntityListenersImpl> {
 
-    protected final Map<PreCreateListener,  Boolean> preCreateListeners = new LinkedHashMap<>();
+    protected final Map<PreCreateListener,  Boolean> preCreateListeners  = new LinkedHashMap<>();
     protected final Map<PostCreateListener, Boolean> postCreateListeners = new LinkedHashMap<>();
-    protected final Map<PreUpdateListener,  Boolean> preUpdateListeners = new LinkedHashMap<>();
+    protected final Map<PreUpdateListener,  Boolean> preUpdateListeners  = new LinkedHashMap<>();
     protected final Map<PostUpdateListener, Boolean> postUpdateListeners = new LinkedHashMap<>();
-    protected final Map<PreDeleteListener,  Boolean> preDeleteListeners = new LinkedHashMap<>();
+    protected final Map<PreDeleteListener,  Boolean> preDeleteListeners  = new LinkedHashMap<>();
     protected final Map<PostDeleteListener, Boolean> postDeleteListeners = new LinkedHashMap<>();
-    protected final Map<PostLoadListener, Boolean>   postLoadListeners = new LinkedHashMap<>();
+    protected final Set<PostLoadListener>            postLoadListeners   = new LinkedHashSet<>();
+
+    public EntityListenersBuilder addPreCreateListeners(PreCreateListener... listeners) {
+        for(PreCreateListener listener : listeners) {
+            addPreCreateListener(listener, listener.getClass().isAnnotationPresent(Transactional.class));
+        }
+        return this;
+    }
+
+    public EntityListenersBuilder addPostCreateListeners(PostCreateListener... listeners) {
+        for(PostCreateListener listener : listeners) {
+            addPostCreateListener(listener, listener.getClass().isAnnotationPresent(Transactional.class));
+        }
+        return this;
+    }
+
+    public EntityListenersBuilder addPreUpdateListeners(PreUpdateListener... listeners) {
+        for(PreUpdateListener listener : listeners) {
+            addPreUpdateListener(listener, listener.getClass().isAnnotationPresent(Transactional.class));
+        }
+        return this;
+    }
+
+    public EntityListenersBuilder addPostUpdateListeners(PostUpdateListener... listeners) {
+        for(PostUpdateListener listener : listeners) {
+            addPostUpdateListener(listener, listener.getClass().isAnnotationPresent(Transactional.class));
+        }
+        return this;
+    }
+
+    public EntityListenersBuilder addPreDeleteListeners(PreDeleteListener... listeners) {
+        for(PreDeleteListener listener : listeners) {
+            addPreDeleteListener(listener, listener.getClass().isAnnotationPresent(Transactional.class));
+        }
+        return this;
+    }
+
+    public EntityListenersBuilder addPostDeleteListeners(PostDeleteListener... listeners) {
+        for(PostDeleteListener listener : listeners) {
+            addPostDeleteListener(listener, listener.getClass().isAnnotationPresent(Transactional.class));
+        }
+        return this;
+    }
+
+    public EntityListenersBuilder addPostLoadListeners(PostLoadListener... listeners) {
+        for(PostLoadListener listener : listeners) {
+            addPostLoadListener(listener);
+        }
+        return this;
+    }
 
     public EntityListenersBuilder addPreCreateListener(PreCreateListener listener, boolean transactional) {
         preCreateListeners.put(listener, transactional);
@@ -63,13 +110,13 @@ public class EntityListenersBuilder implements Buildable<EntityListeners> {
         return this;
     }
 
-    public EntityListenersBuilder addPostLoadListener(PostLoadListener listener, boolean transactional) {
-        postLoadListeners.put(listener, transactional);
+    public EntityListenersBuilder addPostLoadListener(PostLoadListener listener) {
+        postLoadListeners.add(listener);
         return this;
     }
 
     @Override
-    public EntityListeners build() {
+    public EntityListenersImpl build() {
 
         List<PreCreateListener> noTransPreCreateListeners   = new ArrayList<>();
         List<PreCreateListener> inTransPreCreateListeners   = new ArrayList<>();
@@ -129,17 +176,7 @@ public class EntityListenersBuilder implements Buildable<EntityListeners> {
             }
         });
 
-        List<PostLoadListener> noTransPostLoadListeners = new ArrayList<>();
-        List<PostLoadListener> inTransPostLoadListeners = new ArrayList<>();
-        postLoadListeners.forEach((listener, trans) -> {
-            if(trans) {
-                inTransPostLoadListeners.add(listener);
-            } else {
-                noTransPostLoadListeners.add(listener);
-            }
-        });
-
-        return new EntityListeners(noTransPreCreateListeners.toArray(new PreCreateListener[0]),
+        return new EntityListenersImpl(noTransPreCreateListeners.toArray(new PreCreateListener[0]),
                                    inTransPreCreateListeners.toArray(new PreCreateListener[0]),
                                    noTransPostCreateListeners.toArray(new PostCreateListener[0]),
                                    inTransPostCreateListeners.toArray(new PostCreateListener[0]),
@@ -154,8 +191,7 @@ public class EntityListenersBuilder implements Buildable<EntityListeners> {
                                     noTransPostDeleteListeners.toArray(new PostDeleteListener[0]),
                                     inTransPostDeleteListeners.toArray(new PostDeleteListener[0]),
 
-                                    noTransPostLoadListeners.toArray(new PostLoadListener[0]),
-                                    inTransPostLoadListeners.toArray(new PostLoadListener[0]));
+                                    postLoadListeners.toArray(new PostLoadListener[0]));
     }
 
 }

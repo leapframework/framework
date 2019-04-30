@@ -18,6 +18,7 @@ package leap.web.view;
 import java.util.Map;
 
 import leap.core.validation.Errors;
+import leap.core.validation.annotations.Required;
 import leap.lang.Args;
 import leap.lang.Strings;
 import leap.lang.http.ContentTypes;
@@ -141,9 +142,21 @@ public abstract class AbstractView implements View {
 		request.setAttribute("app", 	 request.app());
 		request.setAttribute("request",  request);
 		request.setAttribute("response", request.response());
-		request.setAttribute("session", request.getSession());
-		request.setAttribute("params",  request.getParameters());
+		request.setAttribute("session",  request.getSession());
+
+        tryExposeBuiltInAttribute(request, "config",  request.app().config());
+        tryExposeBuiltInAttribute(request, "params",  request.getParameters());
+        tryExposeBuiltInAttribute(request, "$config", request.app().config());
+        tryExposeBuiltInAttribute(request, "$params", request.getParameters());
 	}
+
+	protected void tryExposeBuiltInAttribute(Request request, String name, Object value) {
+	    if(request.getAttribute(name) != null) {
+	        log.warn("Can't expose built-in attr '{}', it already exposed at request", name);
+	        return;
+        }
+        request.setAttribute(name, value);
+    }
 
 	/**
 	 * Expose the given view data as request attributes. Names will be taken from the model Map. 

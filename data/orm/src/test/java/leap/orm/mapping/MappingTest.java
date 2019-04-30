@@ -16,13 +16,15 @@
 package leap.orm.mapping;
 
 import leap.core.metamodel.ReservedMetaFieldName;
+import leap.junit.contexual.Contextual;
 import leap.lang.beans.BeanType;
 import leap.lang.jdbc.JdbcTypes;
 import leap.orm.OrmTestCase;
-import leap.orm.domain.FieldDomain;
+import leap.orm.domain.Domain;
 import leap.orm.tested.DomainEntity;
 import leap.orm.tested.TestedEntity;
 import leap.orm.tested.TestedTableName;
+import leap.orm.tested.ViewEntity;
 import leap.orm.tested.model.DateMappingEntity;
 import leap.orm.tested.model.ECodeModel;
 import leap.orm.tested.model.ModelConfigTable;
@@ -71,8 +73,8 @@ public class MappingTest extends OrmTestCase {
 		EntityMapping em = metadata.getEntityMapping(DomainEntity.class);
 		FieldMapping createdAt = em.getFieldMapping("createdAt");
 		FieldMapping updatedAt = em.getFieldMapping("updatedAt");
-		FieldDomain createdAtDomain = metadata.domains().getFieldDomain("createdAt");
-		FieldDomain updatedAtDomain = metadata.domains().getFieldDomain("updatedAt");
+		Domain createdAtDomain = metadata.domains().getDomain("createdAt");
+		Domain updatedAtDomain = metadata.domains().getDomain("updatedAt");
 		assertNotEquals(createdAt.getInsertValue(),createdAtDomain.getInsertValue());
 		assertEquals(updatedAt.getInsertValue(),updatedAtDomain.getInsertValue());
 	}
@@ -114,7 +116,7 @@ public class MappingTest extends OrmTestCase {
 
         FieldMapping ecode = em.getFieldMapping("ecode");
         assertNotNull(ecode);
-        assertTrue(ecode.isFilter());
+        assertTrue(ecode.isFiltered());
     }
 
     @Test
@@ -122,6 +124,13 @@ public class MappingTest extends OrmTestCase {
         EntityMapping em = metadata.getEntityMapping(ModelNotDefaultTable.class);
         assertEquals("m_not_default_table", em.getTableName());
     }
+
+    @Test
+    @Contextual("h2")
+    public void testViewEntity() {
+        dao.findOrNull(ViewEntity.class, "1");
+    }
+
 	@Ignore
     @Test
     public void testModelConfigTable() {

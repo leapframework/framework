@@ -34,6 +34,11 @@ public abstract class ExtensibleBase implements Extensible {
     }
 
     @Override
+    public Map<Class<?>, Object> getExtensions() {
+        return extensions;
+    }
+
+    @Override
     public final <T> T getExtension(Class<?> type) {
         return (T)extensions.get(type);
     }

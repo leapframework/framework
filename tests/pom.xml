@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.leapframework</groupId>
 		<artifactId>leap-parent</artifactId>
-        <version>0.6.9b</version>
+        <version>0.7.11b</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>tests</artifactId>
@@ -33,7 +33,9 @@
 
         <module>orm-test</module>
         <module>orm-test-dyna</module>
+        <module>orm-test-remote</module>
         <module>orm-test-resources</module>
+        <module>orm-test-pgsql</module>
 
         <module>webunit-test1</module>
         <module>webunit-test2</module>
@@ -48,7 +50,6 @@
 
         <module>oauth2-test-server</module>
         <module>oauth2-test-webapp</module>
-        <module>orm-test-pgsql</module>
     </modules>
 
 </project>

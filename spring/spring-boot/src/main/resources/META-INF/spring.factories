@@ -1,0 +1,3 @@
+org.springframework.boot.env.EnvironmentPostProcessor=leap.spring.boot.SpringEnvPostProcessor
+org.springframework.boot.SpringApplicationRunListener=leap.spring.boot.SpringRunListener
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=leap.spring.boot.SpringConfiguration

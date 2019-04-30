@@ -16,6 +16,7 @@
 
 package leap.orm.sql;
 
+import leap.lang.Try;
 import leap.lang.params.Params;
 import leap.orm.metadata.MetadataContext;
 
@@ -52,13 +53,16 @@ public class DynamicSql {
         }
     }
     
-    public ExecutionSqls resolveExecutionSqls(Params params) {
+    public ExecutionSqls resolveExecutionSqls(SqlContext sc, Params params) {
         if(null != sqls) {
             return sqls;
         }
 
-        String text = sql.resolveDynamicSql(params);
-        return lang.parseExecutionSqls(context, text, options);
+        return Try.throwUncheckedWithResult(() -> {
+            String text = sql.resolveDynamicSql(sc, params);
+
+            return lang.parseExecutionSqls(context, text, options);
+        });
     }
 
     @Override

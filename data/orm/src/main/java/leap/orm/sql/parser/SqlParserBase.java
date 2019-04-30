@@ -119,6 +119,13 @@ public abstract class SqlParserBase {
         }
         return this;
     }
+
+    protected final SqlParserBase expectKeywordOrIdentifier() {
+        if (!lexer.token().isKeywordOrIdentifier()) {
+            throw new SqlParserException("Syntax error, expect KEYWORD or IDENTIFIER , actual " + lexer.token() + " : " + lexer.describePosition());
+        }
+        return this;
+    }
     
     protected final SqlParserBase expectNextToken(Token token) {
     	lexer.nextToken();

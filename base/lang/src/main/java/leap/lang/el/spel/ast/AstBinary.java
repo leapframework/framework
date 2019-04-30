@@ -254,8 +254,38 @@ public class AstBinary extends AstExpr {
 			throw new IllegalStateException("'instanceof' operator not supported now");
 		}
 	};
-	
-	public static final BOperator BIT_AND = new SimpleOperator("&",90) {
+
+    public static final BOperator CONTAINS = new SimpleOperator("contains",110) {
+        @Override
+        protected Object apply(ElEvalContext context, int ltype, Object left, int rtype, Object right) {
+            if(null == left || null == right) {
+                return false;
+            }
+            return left.toString().contains(right.toString());
+        }
+    };
+
+    public static final BOperator STARTS_WITH = new SimpleOperator("startsWith",110) {
+        @Override
+        protected Object apply(ElEvalContext context, int ltype, Object left, int rtype, Object right) {
+            if(null == left || null == right) {
+                return false;
+            }
+            return left.toString().startsWith(right.toString());
+        }
+    };
+
+    public static final BOperator ENDS_WITH = new SimpleOperator("endsWith",110) {
+        @Override
+        protected Object apply(ElEvalContext context, int ltype, Object left, int rtype, Object right) {
+            if(null == left || null == right) {
+                return false;
+            }
+            return left.toString().endsWith(right.toString());
+        }
+    };
+
+    public static final BOperator BIT_AND = new SimpleOperator("&",90) {
 		@Override
 		protected Object apply(ElEvalContext context, int ltype, Object left, int rtype, Object right) {
 			throw new IllegalStateException("'&' operator not supported now");

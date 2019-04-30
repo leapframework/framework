@@ -15,22 +15,110 @@
  */
 package leap.orm.mapping;
 
+import leap.core.AppContext;
+import leap.db.Db;
+import leap.orm.OrmConfig;
 import leap.orm.OrmContext;
+import leap.orm.OrmMetadata;
 import leap.orm.metadata.MetadataContext;
+import leap.orm.metadata.OrmMetadataManager;
+import leap.orm.naming.NamingStrategy;
 
 public interface MappingConfigContext extends MetadataContext {
-	
+
+    /**
+     * Returns the {@link OrmContext}.
+     */
 	OrmContext getOrmContext();
-	
-	void addEntityMapping(EntityMappingBuilder emb) throws MappingExistsException;
-	
+
+    @Override
+    default String getName() {
+        return getOrmContext().getName();
+    }
+
+    @Override
+    default Db getDb() {
+        return getOrmContext().getDb();
+    }
+
+    @Override
+    default OrmConfig getConfig() {
+        return getOrmContext().getConfig();
+    }
+
+    @Override
+    default AppContext getAppContext() {
+        return getOrmContext().getAppContext();
+    }
+
+    @Override
+    default OrmMetadata getMetadata() {
+        return getOrmContext().getMetadata();
+    }
+
+    @Override
+    default MappingStrategy getMappingStrategy() {
+        return getOrmContext().getMappingStrategy();
+    }
+
+    @Override
+    default NamingStrategy getNamingStrategy() {
+        return getOrmContext().getNamingStrategy();
+    }
+
+    @Override
+    default OrmMetadataManager getMetadataManager() {
+        return getOrmContext().getMetadataManager();
+    }
+
+    /**
+     * Returns all the {@link EntityMappingBuilder} in this context.
+     */
 	Iterable<EntityMappingBuilder> getEntityMappings();
-	
-	EntityMappingBuilder getEntityMapping(String entityName) throws MappingNotFoundException;
-	
-	EntityMappingBuilder getEntityMapping(Class<?> entityClass) throws MappingNotFoundException;
-	
+
+    /**
+     * Returns the {@link EntityMappingBuilder} in this context.
+     *
+     * @throws MappingNotFoundException if entity mapping not exists.
+     */
+	default EntityMappingBuilder getEntityMapping(String entityName) throws MappingNotFoundException {
+        EntityMappingBuilder emb = tryGetEntityMapping(entityName);
+        if(null == emb) {
+            throw new MappingNotFoundException("Entity mapping '" + entityName + "' not found");
+        }
+        return emb;
+    }
+
+    /**
+     * Returns the {@link EntityMappingBuilder} in this context.
+     *
+     * @throws MappingNotFoundException if entity mapping not exists.
+     */
+	default EntityMappingBuilder getEntityMapping(Class<?> entityClass) throws MappingNotFoundException {
+        EntityMappingBuilder emb = tryGetEntityMapping(entityClass);
+        if(null == emb) {
+            throw new MappingNotFoundException("Entity mapping '" + entityClass + "' not found");
+        }
+        return emb;
+    }
+
+    /**
+     * Returns the {@link EntityMappingBuilder} in this context of <code>null</code> if not exists.
+     */
 	EntityMappingBuilder tryGetEntityMapping(String entityName);
-	
-	EntityMappingBuilder tryGetEntityMapping(Class<?> entityClass);
+
+    /**
+     * Returns the {@link EntityMappingBuilder} in this context of <code>null</code> if not exists.
+     */
+    EntityMappingBuilder tryGetEntityMapping(Class<?> entityClass);
+
+    /**
+     * Adds a new {@link EntityMappingBuilder} to this context.
+     */
+    void addEntityMapping(EntityMappingBuilder emb) throws MappingExistsException;
+
+    /**
+     * Removes a entity mapping.
+     */
+    void removeEntityMapping(String name);
 }

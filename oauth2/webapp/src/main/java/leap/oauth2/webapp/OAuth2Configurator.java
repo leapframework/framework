@@ -60,10 +60,20 @@ public interface OAuth2Configurator {
      */
     OAuth2Configurator setUserInfoUrl(String url);
 
+	/**
+	 * Add path to ignore access token resolve.
+	 */
+	OAuth2Configurator ignorePath(String path);
+    
     /**
      * todo : doc
      */
     OAuth2Configurator setTokenUrl(String url);
+
+	/**
+	 * todo : doc
+	 */
+	OAuth2Configurator setIndirectTokenUrl(String url);
 
     /**
      * todo: doc

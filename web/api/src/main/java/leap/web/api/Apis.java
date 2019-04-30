@@ -24,40 +24,49 @@ import leap.web.api.meta.ApiMetadata;
 import java.util.Set;
 
 /**
- * Contains all the api configurators.
+ * Manages all the registered api(s).
  */
 public interface Apis {
 
     /**
-     * Returns an immutable {@link Set} contains all the {@link ApiConfigurator}.
-     */
-    Set<ApiConfigurator> getConfigurators();
-
-    /**
-     * Returns an immutable {@link Set} contains all the api configurations.
-     */
-    Set<ApiConfig> getConfigurations();
-
-    /**
-     * Returns the configurator of the api.
+     * Returns the registered {@link Api}.
      *
-     * @param name the name of the api.
-     * @throws ObjectNotFoundException if no api configuration exists for the given name.
+     * @throws ObjectNotFoundException if the api not exists.
      */
-    ApiConfigurator getConfigurator(String name) throws ObjectNotFoundException;
+    Api get(String name) throws ObjectNotFoundException;
 
     /**
-     * Returns the {@link ApiConfigurator} of the api or null if not exists.
+     * Returns the registered {@link Api} or null if not exists.
      */
-    ApiConfigurator tryGetConfigurator(String name);
+    Api tryGet(String name);
 
     /**
      * Returns the {@link ApiMetadata} of the api or null if not exists.
+     *
+     * @throws IllegalStateException if the api has not been created.
      */
-    ApiMetadata tryGetMetadata(String name);
+    default ApiMetadata tryGetMetadata(String name) throws IllegalStateException{
+        Api api = tryGet(name);
+        return null == api ? null : api.getMetadata();
+    }
 
     /**
-     * Creates an api configuration and returns the configurator.
+     * Removes the {@link Api}.
+     */
+    boolean remove(Api api);
+
+    /**
+     * Removes the api.
+     */
+    boolean remove(String name);
+
+    /**
+     * Register a {@link Api}.
+     */
+    void add(Api api) throws ObjectExistsException;
+
+    /**
+     * Creates a new api configurator and register it.
      *
      * @param name     the name of api.
      * @param basePath the base path of api, must starts with a slash '/'.
@@ -66,14 +75,9 @@ public interface Apis {
     ApiConfigurator add(String name, String basePath) throws ObjectExistsException;
 
     /**
-     * Removes the api.
+     * Returns a new dynamic {@link Api} (not register).
      */
-    boolean remove(String name);
-
-    /**
-     * Creates the api.
-     */
-    void create(ApiConfigurator c);
+    Api newDynamic(String name, String basePath);
 
     /**
      * Returns <code>true</code> if default enabled.

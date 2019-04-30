@@ -111,6 +111,21 @@ public interface WebConfig {
     boolean isAutoTrimParameters();
 
     /**
+     * Returns true if view feature is enabled. (disable for web api only).
+     *
+     * <p/>
+     * Default is <code>true</code>
+     */
+    boolean isViewEnabled();
+
+    /**
+     * Is allows access the view from browser directly.
+     *
+     * Defaults is <code>true</code>.
+     */
+    boolean isAllowViewAction();
+
+    /**
      * Returns <code>true</code> if allow action extension(s) in request path, such as <code>.do</code>.
      *
      * <p/>
@@ -133,6 +148,11 @@ public interface WebConfig {
      * Default is <code>true</code>.
      */
     boolean isFormatParameterEnabled();
+
+    /**
+     * Returns <code>true</code> if handles the external(non managed by leap framework) response errors.
+     */
+    boolean isHandleExternalResponseErrors();
 
     /**
      * Required.

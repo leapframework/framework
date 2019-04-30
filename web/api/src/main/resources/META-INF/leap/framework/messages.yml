@@ -1,0 +1,3 @@
+webapi:
+  errors:
+    query_expand_error: 部分数据远程查询出错

@@ -27,7 +27,12 @@ public class MObjectType extends MType {
 	    super(summary, description);
     }
 
-	@Override
+    @Override
+    public String getName() {
+        return "object";
+    }
+
+    @Override
 	public MTypeKind getTypeKind() {
 		return MTypeKind.OBJECT;
 	}

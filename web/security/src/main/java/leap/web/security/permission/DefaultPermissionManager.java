@@ -36,7 +36,29 @@ public class DefaultPermissionManager implements PermissionManager {
     }
 
     @Override
+    public boolean checkPermissionImplies(String expected, String[] actual) {
+        if(null == expected) {
+            return true;
+        }
+        if(null == actual) {
+            return false;
+        }
+        for(PermissionChecker checker : checkers) {
+            if(checker.checkPermissionImplies(expected, actual)) {
+                return true;
+            }
+        }
+        return Arrays2.contains(actual, expected);
+    }
+
+    @Override
     public boolean checkPermissionImpliesAll(String[] checkingPermissions, String[] impliedByPermissions) {
+        if(null == checkingPermissions || checkingPermissions.length == 0) {
+            return true;
+        }
+        if(null == impliedByPermissions || impliedByPermissions.length == 0) {
+            return false;
+        }
         for(String by : impliedByPermissions) {
             if(!checkPermissionImplies(checkingPermissions,by)){
                 return false;
@@ -45,4 +67,21 @@ public class DefaultPermissionManager implements PermissionManager {
         return true;
     }
 
+    @Override
+    public boolean checkPermissionImplies(String[] expected, String[] actual) {
+        if(null == expected || expected.length == 0) {
+            return true;
+        }
+        if(null == actual || actual.length == 0) {
+            return false;
+        }
+
+        for(String expectedOne : expected) {
+            if(!checkPermissionImplies(expectedOne, actual)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }

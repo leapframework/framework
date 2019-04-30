@@ -17,7 +17,7 @@ package leap.orm.command;
 
 import java.util.Map;
 
-public interface UpdateCommand {
+public interface UpdateCommand extends Executable {
 
     /**
      * Sets the id of record.
@@ -38,6 +38,11 @@ public interface UpdateCommand {
      * Sets the field's value for update.
      */
 	UpdateCommand set(String name,Object value);
+
+    /**
+     * Sets all the fields for update.
+     */
+    UpdateCommand setAll(Map<String,Object> fields);
 
     /**
      * Executes update and returns the affected rows.

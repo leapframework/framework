@@ -37,6 +37,7 @@ public class AutoIdGenerator implements IdGenerator {
 	protected @NotNull ValueGenerator uuidGenerator;
 	
 	protected int uuidLength = 38;
+	protected int minUuidLength = 36;
 	
 	@Inject(name="uuid")
 	public void setUuidGenerator(ValueGenerator uuidGenerator) {
@@ -55,6 +56,9 @@ public class AutoIdGenerator implements IdGenerator {
     @Override
     public void mapping(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder fmb) {
 		Db db = context.getDb();
+		if(null == db) {
+			return;
+		}
 		
 		//smallint, integer or big integer type for sequence , identity or table generator 
 		if(isIntegerType(fmb)){
@@ -77,10 +81,9 @@ public class AutoIdGenerator implements IdGenerator {
 		}
     }
 	
-	protected void mappingAutoIncrement(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder fmb){
+	public void mappingAutoIncrement(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder fmb){
 		fmb.getColumn().setAutoIncrement(true);
-		fmb.setInsert(false);  //remove auto increment from insert columns
-		
+
 		emb.setInsertInterceptor(context1 -> {
             if(!context1.isReturnGeneratedId()){
                 return null;
@@ -90,7 +93,7 @@ public class AutoIdGenerator implements IdGenerator {
         });
 	}
 	
-	protected void mappingSequence(MetadataContext context, EntityMappingBuilder emb,final FieldMappingBuilder fmb){
+	public void mappingSequence(MetadataContext context, EntityMappingBuilder emb,final FieldMappingBuilder fmb){
 		SequenceMappingBuilder seq = new SequenceMappingBuilder();
 		
 		setSequenceProperties(context, emb, fmb, seq);
@@ -114,10 +117,10 @@ public class AutoIdGenerator implements IdGenerator {
 	}
 	
 	protected void mappingUUID(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder fmb){
-		fmb.setValueGenerator(uuidGenerator);
-		int length = fmb.getColumn().getLength() == null?uuidLength:fmb.getColumn().getLength();
-		if(length < uuidLength){
-			String warnInfo = "the column of field `"+fmb.getFieldName()+"` in "+emb.getEntityName()+" is an uuid field, it's length must longer than " + uuidLength;
+		fmb.setInsertValue(uuidGenerator);
+		int length = fmb.getColumn().getLength() == null? uuidLength : fmb.getColumn().getLength();
+		if(length < minUuidLength){
+			String warnInfo = "the column of field `"+fmb.getFieldName()+"` in "+emb.getEntityName()+" is an uuid field, it's length must >= " + minUuidLength;
 			log.warn(warnInfo);
 		}
 		fmb.getColumn().setLength(length);

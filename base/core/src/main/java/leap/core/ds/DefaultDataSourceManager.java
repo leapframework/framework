@@ -27,6 +27,7 @@ import leap.core.ds.management.MDataSourceConfig;
 import leap.core.ds.management.MDataSourceProxy;
 import leap.core.ioc.BeanList;
 import leap.core.ioc.PostCreateBean;
+import leap.lang.Strings;
 import leap.lang.exception.ObjectExistsException;
 import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.jmx.MBeanExporter;
@@ -44,11 +45,12 @@ import java.util.concurrent.ConcurrentHashMap;
 @Configurable(prefix = "dsm")
 public class DefaultDataSourceManager implements DataSourceManager,PostCreateBean,MDataSourceConfig {
 
-    protected @Inject @M AppContext                   context;
-    protected @Inject @M AppConfig                    config;
-    protected @Inject @M DataSourceFactory[]          dataSourceFactories;
-    protected @Inject @M BeanList<DataSourceListener> listeners;
-    protected @Inject @M MBeanExporter                mbeanExporter;
+    protected @Inject @M AppContext                    context;
+    protected @Inject @M AppConfig                     config;
+    protected @Inject    DataSourceFactory             defaultDataSourceFactory;
+    protected @Inject @M Map<String,DataSourceFactory> dataSourceFactories;
+    protected @Inject @M BeanList<DataSourceListener>  listeners;
+    protected @Inject @M MBeanExporter                 mbeanExporter;
 
 	protected String 						 defaultDataSourceBeanName;
     protected DataSource                     defaultDataSource;
@@ -197,7 +199,7 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
     }
 
     @Override
-    public DataSource createDefaultDataSource(DataSourceConfig conf) throws ObjectExistsException,SQLException {
+    public DataSource createDefaultDataSource(DataSourceProps conf) throws ObjectExistsException,SQLException {
 		synchronized (this) {
 			if(null != defaultDataSource){
 				throw new ObjectExistsException("Default dataSource already exists");
@@ -215,7 +217,7 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
     }
 
 	@Override
-    public DataSource createDataSource(String name, DataSourceConfig props) throws ObjectExistsException,SQLException {
+    public DataSource createDataSource(String name, DataSourceProps props) throws ObjectExistsException,SQLException {
 		synchronized (this) {
 			if(allDataSources.containsKey(name)){
 				throw new ObjectExistsException("DataSource '" + name + "' already exists");
@@ -239,7 +241,7 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
         }
     }
 	
-	public DataSource createDataSource(DataSourceConfig conf) throws UnsupportedOperationException, SQLException {
+	public DataSource createDataSource(DataSourceProps conf) throws UnsupportedOperationException, SQLException {
 		DataSource ds = tryCreateDataSource(conf);
 		if(null == ds){
 			throw new UnsupportedOperationException("The given datasource properties does not supported");
@@ -247,14 +249,20 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
 		return ds;
 	}
 	
-	public DataSource tryCreateDataSource(DataSourceConfig conf) throws SQLException {
+	public DataSource tryCreateDataSource(DataSourceProps conf) throws SQLException {
 		DataSource ds = null;
-		for(DataSourceFactory f : dataSourceFactories){
-			if((ds = f.tryCreateDataSource(conf)) != null){
-				break;
-			}
-		}
-		
+
+        String name = conf.getDataSourceType();
+        if(!Strings.isEmpty(name)) {
+            DataSourceFactory dsf = dataSourceFactories.get(name);
+            if(null == dsf) {
+                throw new IllegalStateException("DataSource Type '" + name + "' not found");
+            }
+            ds = dsf.tryCreateDataSource(conf);
+        }else if(null != defaultDataSourceFactory){
+            ds = defaultDataSourceFactory.tryCreateDataSource(conf);
+        }
+
 		if(null == ds && config.isDebug()){
 			ds = unpooledDataSourceFactory.tryCreateDataSource(conf);
 		}
@@ -287,7 +295,7 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
                 ((MDataSourceProxy) ds).destroy();
             }
 
-            for (DataSourceFactory f : dataSourceFactories) {
+            for (DataSourceFactory f : dataSourceFactories.values()) {
                 if (f.tryDestroyDataSource(real)) {
                     return true;
                 }

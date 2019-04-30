@@ -117,8 +117,7 @@ public class ConventionalDocProcessor implements ApiMetadataProcessor {
     }
 
     protected void processModel(ApiMetadataContext context, Map<Class<?>,ClassDoc> docs, MApiModelBuilder model) {
-        Class<?> c = model.getJavaType();
-        if(null != c) {
+        for(Class<?> c : model.getJavaTypes()) {
             ClassDoc doc = resolveClassDoc(docs, c, true);
 
             if(!Strings.isEmpty(doc.description)) {
@@ -129,7 +128,6 @@ public class ConventionalDocProcessor implements ApiMetadataProcessor {
                 processProperty(context, doc, p);
             });
         }
-
     }
 
     protected void processProperty(ApiMetadataContext context, ClassDoc doc, MApiPropertyBuilder p) {

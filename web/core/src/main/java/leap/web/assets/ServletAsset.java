@@ -22,117 +22,122 @@ import leap.lang.http.MimeTypes;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.path.Paths;
-import leap.lang.servlet.ServletResource;
+import leap.lang.resource.Resource;
 import leap.lang.servlet.Servlets;
+import leap.web.Utils;
+
+import javax.servlet.ServletContext;
 
 public class ServletAsset extends AbstractAsset implements Asset {
-	
-	private static final Log log = LogFactory.get(ServletAsset.class);
 
-	private final AssetManager manager;
-	private final boolean      reloadable;
-	private final boolean      text;
-	
-	private String mimeType;
-	
-	public ServletAsset(AssetManager manager, String assetPath, ServletResource sr) {
-		super(assetPath);
-		this.manager    = manager;
-		this.reloadable = sr.isFile();
-		
-		this.mimeType    = Servlets.getMimeType(sr.getServletContext(), sr.getFilename());
-		this.text		 = MimeTypes.isText(mimeType);
-		this.contentType = text ? ContentTypes.create(mimeType, manager.getConfig().getCharset().name()) : mimeType;
-		this.createAssetResources(assetPath, sr);
-	}
-	
-	@Override
+    private static final Log log = LogFactory.get(ServletAsset.class);
+
+    private final AssetManager   manager;
+    private final ServletContext servletContext;
+    private final boolean        reloadable;
+    private final boolean        text;
+
+    private String mimeType;
+
+    public ServletAsset(AssetManager manager, String assetPath, Resource resource) {
+        super(assetPath);
+        this.manager = manager;
+        this.servletContext = manager.getServletContext();
+        this.reloadable = resource.isFile();
+
+        this.mimeType = Servlets.getMimeType(servletContext, resource.getFilename());
+        this.text = MimeTypes.isText(mimeType);
+        this.contentType = text ? ContentTypes.create(mimeType, manager.getConfig().getCharset().name()) : mimeType;
+        this.createAssetResources(assetPath, resource);
+    }
+
+    @Override
     public boolean isText() {
-	    return text;
+        return text;
     }
 
-	@Override
+    @Override
     public boolean reloadable() {
-	    return reloadable;
+        return reloadable;
     }
 
-	@Override
+    @Override
     public boolean reload() {
-		if(reloadable){
-			boolean reload = false;
-			AssetResource reloaded = reload((ServletAssetResource)resource);
-			if(null != reloaded){
-				this.resource.expire();
-				this.resource = reloaded;
-				reload = true;
-			}
-			
-			reloaded = reload((ServletAssetResource)debugResource);
-			if(null != reloaded){
-				this.debugResource.expire();
-				this.debugResource = reloaded;
-				reload = true;
-			}
-			
-			if(reload) {
-			    this.loadedAt = System.currentTimeMillis();
-			}
-			
-			return reload;
-		}
-		return false;
-    }
-	
-	protected AssetResource reload(ServletAssetResource current){
-		try {
-            ServletResource sr = ((ServletAssetResource)current).getServletResource();
-            if(!sr.exists()) {
-            	//TODO : expire it
-            	log.warn("Resource '{}' not exist, cannot reload it", current.getServerPath());
-            	return null;
+        if (reloadable) {
+            boolean       reload   = false;
+            AssetResource reloaded = reload((ServletAssetResource) resource);
+            if (null != reloaded) {
+                this.resource.expire();
+                this.resource = reloaded;
+                reload = true;
             }
-            
-            if(sr.lastModified() != current.getLastModified()) {
-            	return new ServletAssetResource(manager, this, sr, current.isDebug());
+
+            reloaded = reload((ServletAssetResource) debugResource);
+            if (null != reloaded) {
+                this.debugResource.expire();
+                this.debugResource = reloaded;
+                reload = true;
+            }
+
+            if (reload) {
+                this.loadedAt = System.currentTimeMillis();
+            }
+
+            return reload;
+        }
+        return false;
+    }
+
+    protected AssetResource reload(ServletAssetResource current) {
+        try {
+            Resource sr = current.getResource();
+            if (!sr.exists()) {
+                //TODO : expire it
+                log.warn("Resource '{}' not exist, cannot reload it", current.getServerPath());
+                return null;
+            }
+
+            if (sr.lastModified() != current.getLastModified()) {
+                return new ServletAssetResource(manager, this, sr, current.isDebug());
             }
         } catch (Exception e) {
-        	log.error("Error reloading asset resource '{}'",current.getServerPath(),e);
+            log.error("Error reloading asset resource '{}'", current.getServerPath(), e);
         }
-		return null;
-	}
+        return null;
+    }
 
-	protected void createAssetResources(String assetPath, ServletResource sr) {
-		//Find minified resource, filename.js -> filename.min.js
-	
-		String filepath = sr.getPathWithinContext();
-		
-		String minifiedFilepath = getMinifiedFilepath(filepath);
-		
-		ServletResource minifiedResoruce = Servlets.getResource(sr.getServletContext(), minifiedFilepath);
-		try {
-	        if(null != minifiedResoruce && minifiedResoruce.exists()){
-				this.path = getMinifiedFilepath(assetPath);
-	        	this.resource      = new ServletAssetResource(manager, this, minifiedResoruce, false);
-	        	this.debugResource = new ServletAssetResource(manager, this, sr, true);
-	        }else{
-	        	this.resource      = new ServletAssetResource(manager, this, sr, false);
-	        	this.debugResource = new ServletAssetResource(manager, this, sr, true, resource.getFingerprint());
-	        }
+    protected void createAssetResources(String assetPath, Resource resource) {
+        //Find minified resource, filename.js -> filename.min.js
+
+        String filepath = resource.getPath();
+
+        String minifiedFilepath = getMinifiedFilepath(filepath);
+
+        Resource minifiedResoruce = Utils.getResource(servletContext, minifiedFilepath);
+        try {
+            if (null != minifiedResoruce && minifiedResoruce.exists()) {
+                this.path = getMinifiedFilepath(assetPath);
+                this.resource = new ServletAssetResource(manager, this, minifiedResoruce, false);
+                this.debugResource = new ServletAssetResource(manager, this, resource, true);
+            } else {
+                this.resource = new ServletAssetResource(manager, this, resource, false);
+                this.debugResource = new ServletAssetResource(manager, this, resource, true, this.resource.getFingerprint());
+            }
         } catch (IOException e) {
-        	throw new AssetException("Error creating asset resources, " + e.getMessage(), e);
+            throw new AssetException("Error creating asset resources, " + e.getMessage(), e);
         }
-	}
-	
-	protected String getMinifiedFilepath(String filepath){
-		String filedir  = Paths.getDirPath(filepath);
-		String filename = Paths.getFileName(filepath);
-		
-		int lastDotIndex = filename.lastIndexOf('.');
-		
-		if(lastDotIndex > 0){
-			return filedir + filename.substring(0,lastDotIndex) + ".min" + filename.substring(lastDotIndex);
-		}else{
-			return filedir + filename + ".min";
-		}
-	}
+    }
+
+    protected String getMinifiedFilepath(String filepath) {
+        String filedir  = Paths.getDirPath(filepath);
+        String filename = Paths.getFileName(filepath);
+
+        int lastDotIndex = filename.lastIndexOf('.');
+
+        if (lastDotIndex > 0) {
+            return filedir + filename.substring(0, lastDotIndex) + ".min" + filename.substring(lastDotIndex);
+        } else {
+            return filedir + filename + ".min";
+        }
+    }
 }

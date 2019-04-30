@@ -20,6 +20,7 @@ import leap.lang.beans.BeanType;
 import leap.lang.beans.DynaBean;
 import leap.lang.convert.Converts;
 import leap.lang.exception.ObjectNotFoundException;
+import leap.lang.reflect.Reflection;
 
 import java.lang.reflect.Array;
 import java.util.*;
@@ -90,6 +91,15 @@ public class Beans {
 		}else{
 			return BeanType.of(bean.getClass()).toMap(bean);
 		}
+	}
+
+	public static <T> T copyNew(T from) {
+		if(null == from) {
+			return null;
+		}
+		T to = (T)Reflection.newInstance(from.getClass());
+		copyProperties(from, to);
+		return to;
 	}
     
     public static void copyProperties(Object from,Object to) {
@@ -339,7 +349,7 @@ public class Beans {
 							}
 						}
 					}else{
-						throw new IllegalArgumentException("Invalid arrray property name '" + name + ", must be 'property[index]', i.e. 'values[0]'");
+						throw new IllegalArgumentException("Invalid array property name '" + name + ", must be 'property[index]', i.e. 'values[0]'");
 					}
 				}else if(isMap) {
 				    mapBean.put(name, entry.getValue());
@@ -387,19 +397,13 @@ public class Beans {
     }
     
     public static void setProperty(BeanType beanType,Object bean,String property,Object value, boolean ignoreCase){
-    	if(ignoreCase){
-    		if(beanType.trySetIgnoreCase(bean, property, value)){
-    			return;
-    		}
-    	}else{
-    		if(beanType.trySet(bean, property, value)){
-    			return;
-    		}
-    	}
-    	
-    	if(bean instanceof DynaBean){
-    		((DynaBean) bean).setProperty(property, value);
-    	}
+        if(bean instanceof DynaBean){
+            beanType.trySetProperty(bean, property, value, ignoreCase);
+
+            ((DynaBean) bean).setProperty(property, value);
+        }else{
+            beanType.setProperty(bean, property, value, ignoreCase);
+        }
     }
     
 	protected static void setNestedProperty(BeanType beanType,Object bean,BeanProperty bp,String nestedPropertyName,Object value){

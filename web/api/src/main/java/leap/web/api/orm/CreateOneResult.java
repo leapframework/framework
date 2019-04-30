@@ -21,9 +21,16 @@ package leap.web.api.orm;
 public class CreateOneResult {
 
     public final Object id;
+    public final Object entity;
 
     public CreateOneResult(Object id) {
+        this.id     = id;
+        this.entity = null;
+    }
+
+    public CreateOneResult(Object id, Object entity) {
         this.id = id;
+        this.entity = entity;
     }
 
 }

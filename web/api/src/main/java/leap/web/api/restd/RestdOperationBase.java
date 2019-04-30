@@ -18,11 +18,15 @@ package leap.web.api.restd;
 
 import leap.core.annotation.Inject;
 import leap.core.validation.ValidationManager;
+import leap.lang.Classes;
+import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.json.JsonSettings;
+import leap.lang.meta.MType;
 import leap.lang.path.Paths;
-import leap.web.App;
+import leap.orm.mapping.EntityMapping;
+import leap.web.action.Argument;
 import leap.web.action.ArgumentBuilder;
 import leap.web.action.FuncActionBuilder;
 import leap.web.annotation.NonParam;
@@ -30,25 +34,54 @@ import leap.web.annotation.ParamsWrapper;
 import leap.web.api.Apis;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.config.model.RestdConfig;
+import leap.web.api.meta.model.MApiOperationBuilder;
+import leap.web.api.meta.model.MApiParameter;
+import leap.web.api.meta.model.MApiParameterBuilder;
+import leap.web.api.meta.model.MApiTag;
 import leap.web.api.mvc.ApiFailureHandler;
+import leap.web.api.route.ApiRoute;
+import leap.web.api.spec.swagger.SwaggerConstants;
+import leap.web.format.RequestFormat;
+import leap.web.format.ResponseFormat;
 import leap.web.route.Route;
 import leap.web.route.RouteBuilder;
 import leap.web.route.RouteManager;
 
+import java.lang.reflect.Array;
+import java.util.Map;
+
 public abstract class RestdOperationBase {
 
-    protected @Inject RouteManager      rm;
-    protected @Inject Apis              apis;
-    protected @Inject ValidationManager validationManager;
-    protected @Inject ApiFailureHandler failureHandler;
+    protected @Inject RouteManager            rm;
+    protected @Inject Apis                    apis;
+    protected @Inject ValidationManager       validationManager;
+    protected @Inject RestdOperationSupport[] operationSupports;
+    protected @Inject RestdArgumentSupport[]  argumentSupports;
+    protected @Inject RequestFormat[]         supportedConsumes;
+    protected @Inject ResponseFormat[]        supportedProduces;
 
-    protected boolean isOperationExists(RestdContext context, String verb, String path) {
-        for(Route route : context.getRoutes()) {
-            if(verb.equalsIgnoreCase(route.getMethod()) &&
-                    route.getPathTemplate().getTemplate().equals(path)) {
+    protected boolean isOperationExists(RestdContext context, RouteBuilder route) {
+        for(ApiRoute ar : context.getApiConfig().getApiRoutes()) {
+            Route route1 = ar.getRoute();
+
+            if(route.getMethod().equalsIgnoreCase(route1.getMethod()) &&
+                    route.getPathTemplate().getTemplate().equals(route1.getPathTemplate().getTemplate())) {
+
+                route.setAction(route1.getAction());
+                route.setEnabled(false);
                 return true;
             }
         }
+
+        for(RestdOperationSupport support : operationSupports) {
+            if(support.isOperationExists(context, route)) {
+                if(null == route.getEnabled()) {
+                    route.setEnabled(false);
+                }
+                return route.isDisabledExplicitly();
+            }
+        }
+
         return false;
     }
 
@@ -67,18 +100,18 @@ public abstract class RestdOperationBase {
         return basePath.equals("/") ? path : basePath + path;
     }
 
-    protected ArgumentBuilder addArgument(FuncActionBuilder action, Class<?> type, String name) {
-        return addArgument(action, type, name, null);
+    protected ArgumentBuilder addArgument(RestdContext context, FuncActionBuilder action, Class<?> type, String name) {
+        return addArgument(context, action, type, name, null);
     }
 
-    protected ArgumentBuilder addArgument(FuncActionBuilder action, Class<?> type, String name, Boolean required) {
+    protected ArgumentBuilder addArgument(RestdContext context, FuncActionBuilder action, Class<?> type, String name, Boolean required) {
         ArgumentBuilder a = new ArgumentBuilder();
 
         a.setName(name);
         a.setType(type);
         a.setRequired(required);
 
-        if(type.isAnnotationPresent(ParamsWrapper.class)) {
+        if(Classes.isAnnotationPresent(type, ParamsWrapper.class)) {
             BeanType bt = BeanType.of(type);
             for (BeanProperty bp : bt.getProperties()) {
                 if (bp.isField() && !bp.isAnnotationPresent(NonParam.class)) {
@@ -88,12 +121,55 @@ public abstract class RestdOperationBase {
             }
         }
 
+        for(RestdArgumentSupport vs : argumentSupports) {
+            vs.processArgument(context, a);
+        }
+
         action.addArgument(a);
 
         return a;
     }
 
-    protected void configure(RestdContext context, RestdModel model, RouteBuilder route) {
+    protected void preConfigure(RestdContext context, RestdModel model, FuncActionBuilder action) {
+        RestdConfig.Model m = context.getConfig().getModel(model.getName());
+        if(null != m && !Strings.isEmpty(m.getTitle())) {
+            action.setExtension(new MApiTag[]{new MApiTag(model.getName(), m.getTitle())});
+        }else {
+            action.setExtension(new MApiTag[]{new MApiTag(model.getName())});
+        }
+    }
+
+    protected void postConfigure(RestdContext context, RestdModel model, RouteBuilder route) {
+        route.setCsrfEnabled(false);
+        route.setExtension(EntityMapping.class, model.getEntityMapping());
+        postConfigure(context, model, route, null);
+    }
+
+    protected void preConfigure(RestdContext context, RouteBuilder route, FuncActionBuilder action, MApiOperationBuilder mo) {
+        if(null == mo) {
+            return;
+        }
+
+        for(String consume : mo.getConsumes()) {
+            for(RequestFormat format : supportedConsumes) {
+                if(null != format.getPrimaryMimeType() && format.getPrimaryMimeType().getMediaType().equalsIgnoreCase(consume)) {
+                    action.addConsume(format);
+                    break;
+                }
+            }
+        }
+
+        for(String produce : mo.getProduces()) {
+            for(ResponseFormat format : supportedProduces) {
+                if(null != format.getPrimaryMimeType() && format.getPrimaryMimeType().getMediaType().equalsIgnoreCase(produce)) {
+                    action.addProduce(format);
+                    break;
+                }
+            }
+        }
+    }
+
+    protected void postConfigure(RestdContext context, RestdModel model, RouteBuilder route, MApiOperationBuilder mo) {
         RestdConfig c = context.getConfig();
 
         if(null != model) {
@@ -102,11 +178,134 @@ public abstract class RestdOperationBase {
             }
         }
 
-        route.setAllowClientOnly(true);
-        route.addFailureHandler(failureHandler);
+        route.addFailureHandler(context.getApiConfig().getFailureHandler());
 
-        JsonSettings settings = new JsonSettings.Builder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").build();
+        JsonSettings settings = new JsonSettings.Builder().setDateTimeFormatter(SwaggerConstants.DATE_TIME_FORMAT, "GMT").build();
         route.setExtension(settings);
+
+        if(null != mo) {
+            if(mo.isAllowAnonymous()) {
+                route.setAllowAnonymous(true);
+            }
+
+            if(mo.isAllowClientOnly()) {
+                route.setAllowClientOnly(true);
+            }
+
+            route.setPermissions(mo.getPermissions());
+            route.setSecurities(mo.getSecurities());
+        }
+    }
+
+    protected void createArguments(RouteBuilder route, FuncActionBuilder action, MApiOperationBuilder mo) {
+        for(MApiParameterBuilder p : mo.getParameters()) {
+            addArgument(route, action, p);
+        }
+    }
+
+    protected void addArgument(RouteBuilder route, FuncActionBuilder action, MApiParameterBuilder p) {
+        ArgumentBuilder arg = new ArgumentBuilder();
+        arg.setName(p.getName());
+        arg.setRequired(p.getRequired());
+
+        //validators
+        if(null != p.getValidators() && !p.getValidators().isEmpty())  {
+            p.getValidators().forEach(arg::addValidator);
+        }
+
+        //type
+        resolveArgumentType(route, p, arg);
+
+        //location.
+        resolveArgumentLocation(route, p, arg);
+
+        action.addArgument(arg);
+    }
+
+    protected void resolveArgumentType(RouteBuilder route, MApiParameterBuilder p, ArgumentBuilder arg) {
+        MType type = p.getType();
+        if (type.isComplexType() || type.isTypeRef()) {
+            arg.setType(Map.class);
+            return;
+        }
+
+        if(type.isSimpleType()) {
+            arg.setType(type.asSimpleType().getJavaType());
+            return;
+        }
+
+        if(type.isObjectType()) {
+            arg.setType(Object.class);
+            return;
+        }
+
+        if(type.isDictionaryType()) {
+            arg.setType(Map.class);
+            return;
+        }
+
+        if(type.isCollectionType()) {
+            MType elementType = type.asCollectionType().getElementType();
+            if(elementType.isSimpleType()) {
+                arg.setType(Array.newInstance(elementType.asSimpleType().getJavaType(),0).getClass());
+            }else if(elementType.isObjectType()){
+                arg.setType(Object[].class);
+            }else {
+                arg.setType(Map[].class);
+            }
+            return;
+        }
+
+        throw new IllegalStateException("Unsupported type '" + type + "' at parameter '" + p.getName() + "'");
+    }
+
+    protected void resolveArgumentLocation(RouteBuilder route, MApiParameterBuilder p, ArgumentBuilder arg) {
+        setDefaultLocation(route, p);
+
+        if (p.getLocation() == MApiParameter.Location.BODY) {
+            arg.setLocation(Argument.Location.REQUEST_BODY);
+            return;
+        }
+
+        if (p.getLocation() == MApiParameter.Location.QUERY) {
+            arg.setLocation(Argument.Location.QUERY_PARAM);
+            return;
+        }
+
+        if (p.getLocation() == MApiParameter.Location.FORM) {
+            arg.setLocation(Argument.Location.REQUEST_PARAM);
+            return;
+        }
+
+        if (p.getLocation() == MApiParameter.Location.PATH) {
+            arg.setLocation(Argument.Location.PATH_PARAM);
+            return;
+        }
+
+        if (p.getLocation() == MApiParameter.Location.HEADER) {
+            arg.setLocation(Argument.Location.HEADER_PARAM);
+            return;
+        }
+
+        throw new IllegalStateException("Location '" + p.getLocation() + "' not implemented!");
+    }
+
+    protected boolean setDefaultLocation(RouteBuilder route, MApiParameterBuilder p) {
+        if(null == p.getLocation()) {
+            if (route.getPathTemplate().getTemplateVariables().contains(p.getName())) {
+                p.setLocation(MApiParameter.Location.PATH);
+                return true;
+            }
+
+            if(p.getType().isComplexType() || p.getType().isTypeRef() || p.getType().isDictionaryType()) {
+                p.setLocation(MApiParameter.Location.BODY);
+                return true;
+            }
+
+            p.setLocation(MApiParameter.Location.QUERY);
+            return true;
+        }
+        return false;
     }
 
 }

@@ -19,6 +19,7 @@ package leap.oauth2.webapp.login;
 import leap.core.annotation.Inject;
 import leap.core.security.Authentication;
 import leap.core.security.ClientPrincipal;
+import leap.core.security.UserNotFoundException;
 import leap.core.security.UserPrincipal;
 import leap.core.security.token.TokenVerifyException;
 import leap.lang.Strings;
@@ -26,18 +27,19 @@ import leap.lang.http.HTTP;
 import leap.lang.intercepting.State;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
-import leap.oauth2.webapp.OAuth2Params;
-import leap.oauth2.webapp.OAuth2RequestParams;
 import leap.oauth2.webapp.OAuth2Config;
 import leap.oauth2.webapp.OAuth2ErrorHandler;
+import leap.oauth2.webapp.OAuth2Params;
+import leap.oauth2.webapp.OAuth2RequestParams;
 import leap.oauth2.webapp.client.OAuth2Client;
 import leap.oauth2.webapp.code.CodeVerifier;
+import leap.oauth2.webapp.token.TokenContext;
 import leap.oauth2.webapp.token.at.AccessToken;
 import leap.oauth2.webapp.token.at.AccessTokenStore;
 import leap.oauth2.webapp.token.id.IdToken;
 import leap.oauth2.webapp.token.id.IdTokenVerifier;
-import leap.oauth2.webapp.token.*;
 import leap.oauth2.webapp.user.UserDetailsLookup;
+import leap.oauth2.webapp.user.UserInfoLookup;
 import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.authc.AuthenticationContext;
@@ -56,6 +58,7 @@ public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
     protected @Inject AccessTokenStore      accessTokenStore;
     protected @Inject IdTokenVerifier       idTokenVerifier;
     protected @Inject CodeVerifier          codeVerifier;
+    protected @Inject UserInfoLookup        userInfoLookup;
     protected @Inject UserDetailsLookup     userDetailsLookup;
 
     @Override
@@ -149,6 +152,8 @@ public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
             return State.CONTINUE;
         }catch (TokenVerifyException e) {
             return error(request, response, e.getErrorCode().name(), e.getMessage());
+        }catch (UserNotFoundException e) {
+            return error(request, response, UserNotFoundException.ERR_CODE, e.getMessage());
         }
     }
 
@@ -159,12 +164,20 @@ public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
         UserPrincipal   user   = idtoken.getUserInfo();
         ClientPrincipal client = idtoken.getClientInfo();
 
-        if(null != userDetailsLookup && !Strings.isEmpty(userId)) {
-            user = userDetailsLookup.lookupUserDetails(at.getToken(), userId);
+        if(config.isForceLookupUserInfo() && null != at) {
+            user = userInfoLookup.lookupUserInfo(at.getToken(), userId);
+        }
+
+        if(null != userDetailsLookup && userDetailsLookup.isEnabled() && !Strings.isEmpty(userId)) {
+            user = userDetailsLookup.lookupUserDetails(userId, user.getName(), user.getLoginName());
+        }
+
+        if(null == user) {
+            throw new UserNotFoundException("User '" + userId + "' not found");
         }
 
         if(null == client && !Strings.isEmpty(clientId)) {
-            client = new OAuth2Client(clientId);
+            client = new OAuth2Client(clientId, idtoken.getClaims());
         }
 
         OAuth2LoginAuthentication authc = new OAuth2LoginAuthentication(user, idtoken);

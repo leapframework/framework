@@ -155,7 +155,7 @@ public class DefaultTransactionManager implements TransactionManager, DataSource
     protected TransactionProvider loadProvider(String name, DataSource ds) {
         TransactionProvider tp = null == name ? null : factory.tryGetBean(TransactionProvider.class, name);
         if(null == tp) {
-            tp = tpf.getTransactionProvider(ds);
+            tp = tpf.getTransactionProvider(ds, name);
         }
         providers.put(ds, tp);
         return tp;

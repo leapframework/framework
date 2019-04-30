@@ -23,42 +23,43 @@ import java.util.concurrent.CountDownLatch;
 import leap.lang.Strings;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.lang.resource.Resource;
 import leap.lang.servlet.ServletResource;
 
 public class ServletAssetResource extends AbstractAssetResource {
 	
 	private static final Log log = LogFactory.get(ServletAssetResource.class);
 	
-	protected final ServletResource resource;
+	protected final Resource resource;
 
     private volatile long lastChecked;
 	
-	public ServletAssetResource(AssetManager manager, Asset asset, ServletResource resource, boolean debug) throws IOException {
+	public ServletAssetResource(AssetManager manager, Asset asset, Resource resource, boolean debug) throws IOException {
 		this(manager,asset,resource,debug,null);
 	}
 	
-	public ServletAssetResource(AssetManager manager, Asset asset, ServletResource resource, boolean debug, String fingerprint) throws IOException {
+	public ServletAssetResource(AssetManager manager, Asset asset, Resource resource, boolean debug, String fingerprint) throws IOException {
 	    super(manager, asset);
 	    
 		this.debug		   = debug;
 		this.resource      = resource;
-		this.serverPath    = resource.getPathWithinContext();
+		this.serverPath    = resource.getPath();
 		this.lastModified  = resource.lastModified();
         this.lastChecked   = System.currentTimeMillis();
 
 		if(Strings.isEmpty(fingerprint)) {
-			this.generateFingerprint(resource.getPathWithinContext());
+			this.generateFingerprint(resource.getPath());
 		}else{
 			this.fingerprint = fingerprint;
 			log.debug("Got a fingerprint '{}' of {} resource '{}'", 
-					  fingerprint, debug ? "debug" : "production", resource.getPathWithinContext());
+					  fingerprint, debug ? "debug" : "production", resource.getPath());
 		}
 		
 		this.resolveClientPathAndUrl();
 		this.publishResource();
 	}
-	
-	public ServletResource getServletResource(){
+
+	public Resource getResource(){
 		return resource;
 	}
 

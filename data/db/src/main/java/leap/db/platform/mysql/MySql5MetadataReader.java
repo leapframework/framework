@@ -51,7 +51,7 @@ public class MySql5MetadataReader extends GenericDbMetadataReader {
     }
 	
 	@Override
-    protected String getColumnSchema(ResultSet rs) throws SQLException {
+    protected String getColumnSchema(MetadataParameters parameters, ResultSet rs) throws SQLException {
 		return rs.getString(TABlE_CATALOG);
     }
 
@@ -94,15 +94,16 @@ public class MySql5MetadataReader extends GenericDbMetadataReader {
 					 "A.ORDINAL_POSITION AS KEY_SEQ," + 
 					 "A.CONSTRAINT_NAME AS PK_NAME " + 
 					 "FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE A " + 
-					 "JOIN INFORMATION_SCHEMA.TABLE_CONSTRAINTS B " + 
-					 " ON IFNULL(A.CONSTRAINT_CATALOG,'') = IFNULL(B.CONSTRAINT_CATALOG,'') " + 
-					 " AND A.CONSTRAINT_SCHEMA = B.CONSTRAINT_SCHEMA " +  
-					 " AND A.CONSTRAINT_NAME = B.CONSTRAINT_NAME " + 
+					 "JOIN (select * from INFORMATION_SCHEMA.TABLE_CONSTRAINTS where table_schema = ?) B " +
+					 " ON A.CONSTRAINT_NAME = B.CONSTRAINT_NAME " +
 					 " AND A.TABLE_NAME = B.TABLE_NAME " + 
 					 " WHERE B.CONSTRAINT_TYPE = 'PRIMARY KEY' " + 
-					 " AND A.TABLE_SCHEMA = ? "; 
-		
-        return executeSchemaQuery(connection, params, sql);
+					 " AND A.TABLE_SCHEMA = ? ";
+
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setString(1, params.schema);
+        ps.setString(2, params.schema);
+        return new CloseStatementResultSet(ps, ps.executeQuery());
     }
 	
 	@Override
@@ -121,15 +122,16 @@ public class MySql5MetadataReader extends GenericDbMetadataReader {
 				      generateDeleteRuleClause() + " AS DELETE_RULE," + 
 				     "A.CONSTRAINT_NAME AS FK_NAME," + 
 				     "IFNULL(R.UNIQUE_CONSTRAINT_NAME,'PRIMARY') AS PK_NAME " + 
-				     "FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE A " + 
-				     "JOIN INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS R " + 
-				     " ON IFNULL(A.CONSTRAINT_CATALOG,'') = IFNULL(R.CONSTRAINT_CATALOG,'') " +
-				     " AND A.CONSTRAINT_SCHEMA = R.CONSTRAINT_SCHEMA " +
-				     " AND A.CONSTRAINT_NAME = R.CONSTRAINT_NAME " +
+				     "FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE A " +
+				     "JOIN (select * from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS where constraint_schema = ?) R " +
+				     " ON A.CONSTRAINT_NAME = R.CONSTRAINT_NAME " +
 				     " AND A.TABLE_NAME = R.TABLE_NAME " + 
 				     "WHERE A.TABLE_SCHEMA = ? ";
 
-        return executeSchemaQuery(connection, params, sql);
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setString(1, params.schema);
+        ps.setString(2, params.schema);
+        return new CloseStatementResultSet(ps, ps.executeQuery());
     }
 	
 	@Override

@@ -19,20 +19,66 @@
 package leap.web.api.orm;
 
 import leap.web.api.mvc.params.DeleteOptions;
+import leap.web.api.remote.RestResource;
 
 public class DefaultModelDeleteExecutor extends ModelExecutorBase implements ModelDeleteExecutor {
 
-    public DefaultModelDeleteExecutor(ModelExecutorContext context) {
+    protected final ModelDeleteExtension ex;
+
+    public DefaultModelDeleteExecutor(ModelExecutorContext context, ModelDeleteExtension ex) {
         super(context);
+        this.ex = null == ex ? ModelDeleteExtension.EMPTY : ex;
     }
 
     @Override
     public DeleteOneResult deleteOne(Object id, DeleteOptions options) {
-        if(null == options || !options.isCascadeDelete()) {
-            return new DeleteOneResult(dao.delete(em, id) > 0);
-        }else{
-            return new DeleteOneResult(dao.cascadeDelete(em, id));
+        ModelExecutionContext context = new DefaultModelExecutionContext(this.context);
+
+        if (null == options) {
+            options = new DeleteOptions();
         }
+
+        ex.processDeleteOneOptions(context, id, options);
+        ex.processDeleteOneOptions((ModelExecutorContext) context, id, options);
+
+        DeleteOneResult result;
+        if (null != ex.handler) {
+            ex.handler.processDeleteOptions(context, id, options);
+            result = ex.handler.handleDeleteExecution(context, id, options);
+        } else {
+            result = ex.handleDeleteOne(context, id, options);
+        }
+
+        if (null == result) {
+            if (!em.isRemoteRest()) {
+                if (!options.isCascadeDelete()) {
+                    result = dao.withEvents(() -> new DeleteOneResult(dao.delete(em, id) > 0));
+                } else {
+                    result = dao.withEvents(() -> new DeleteOneResult(dao.cascadeDelete(em, id)));
+                }
+            } else {
+                RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), em);
+                if (restResource.delete(id, options)) {
+                    result = new DeleteOneResult(true);
+                } else {
+                    result = new DeleteOneResult(false);
+                }
+            }
+        }
+
+        if (null != ex.handler) {
+            DeleteOneResult r = ex.handler.postDeleteRecord(context, id, options, result);
+            if (null != r) {
+                result = r;
+            }
+        }
+
+        Object entity = ex.processDeleteOneResult(context, id, result.success);
+        if (null != entity) {
+            result = new DeleteOneResult(result.success, entity);
+        }
+
+        return result;
     }
 
 }

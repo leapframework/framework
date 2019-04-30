@@ -20,12 +20,14 @@ import java.util.Set;
 
 import leap.lang.Args;
 import leap.lang.Named;
+import leap.lang.accessor.Getter;
+import leap.lang.accessor.ObjectPropertyGetter;
 import leap.lang.params.ParamsMap;
 
 /**
  * Wraps a {@link Map} as a record of entity
  */
-public class Entity extends ParamsMap implements EntityBase {
+public class Entity extends ParamsMap implements EntityBase, Getter {
 
 	private static final long serialVersionUID = 5313900644420987429L;
 	

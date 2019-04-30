@@ -24,11 +24,11 @@ import leap.lang.beans.BeanException;
 import leap.lang.beans.NoSuchBeanException;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.lang.reflect.ReflectValued;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.*;
 import java.util.Map.Entry;
 
 /**
@@ -77,7 +77,12 @@ public class DefaultBeanFactory extends BeanFactoryInternal implements BeanFacto
 	    return config;
     }
 
-	@Override
+    @Override
+    public void configure(Object bean, String prefix) {
+        beanContainer.configure(bean, prefix);
+    }
+
+    @Override
     public <T> T inject(T bean) throws BeanException {
 		Args.notNull(bean,"bean");
 		if(null != externalFactory){
@@ -182,7 +187,12 @@ public class DefaultBeanFactory extends BeanFactoryInternal implements BeanFacto
 	    this.beanContainer.addBean(beanType, primary, name, lazyInit, beanClass, constructorArgs);
     }
 
-	@Override
+    @Override
+    public void addAlias(Class<?> type, String name, String alias) {
+        beanContainer.addAlias(type, name, alias);
+    }
+
+    @Override
     public <T> T getBean(String id) throws NoSuchBeanException {
 		T bean = (T)(null != externalFactory ? externalFactory.tryGetBean(id) : null);
 		
@@ -214,8 +224,30 @@ public class DefaultBeanFactory extends BeanFactoryInternal implements BeanFacto
 	    
 	    return bean;
     }
-    
-	@Override
+
+    @Override
+    public <T> T getBean(String namespace, String name) throws BeanException {
+        T bean = (T)(null != externalFactory ? externalFactory.tryGetBean(namespace, name) : null);
+
+        if(null == bean){
+            return beanContainer.getBean(namespace, name);
+        }
+
+        return bean;
+    }
+
+    @Override
+    public <T> T tryGetBean(String namespace, String name) throws BeanException {
+        T bean = (T)(null != externalFactory ? externalFactory.tryGetBean(namespace, name) : null);
+
+        if(null == bean){
+            bean = beanContainer.tryGetBean(namespace, name);
+        }
+
+        return bean;
+    }
+
+    @Override
     public <T> T getBean(Class<? super T> type) throws NoSuchBeanException, BeanException {
 		T bean = (T)(null != externalFactory ? externalFactory.tryGetBean(type) : null);
 		
@@ -381,12 +413,42 @@ public class DefaultBeanFactory extends BeanFactoryInternal implements BeanFacto
 		}
     }
 
+	@Override
+	public Set<String> getBeanAliases(Class<?> type, String name) {
+		return beanContainer.getBeanAliases(type, name);
+	}
+
+	@Override
+    public <T> Map<T, BeanDefinition> createBeansWithDefinition(Class<? super T> type) {
+        return beanContainer.createBeansWithDefinition(type);
+    }
+
     @Override
     public boolean tryInitBean(BeanDefinition bd) {
         if(null != externalFactory && externalFactory.tryInitBean(bd)) {
             return true;
         }
         return beanContainer.tryInitBean(bd);
+    }
+
+    @Override
+    public <T> T tryCreateBean(String id) {
+        return beanContainer.tryCreateBean(id);
+    }
+
+    @Override
+    public <T> T tryCreateBean(String namespace, String name) {
+        return beanContainer.tryCreateBean(namespace, name);
+    }
+
+	@Override
+	public <T> T tryCreateBean(Class<T> type) {
+		return beanContainer.tryCreateBean(type);
+	}
+
+	@Override
+    public <T> T tryCreateBean(Class<T> type, String name) {
+        return beanContainer.tryCreateBean(type, name);
     }
 
     @Override
@@ -445,7 +507,27 @@ public class DefaultBeanFactory extends BeanFactoryInternal implements BeanFacto
 	    this.initialized = true;
     }
 
-	public void close(){
+    @Override
+    public boolean initBean(Object bean) {
+        return beanContainer.initBean(bean);
+    }
+
+    @Override
+    public boolean destroyBean(Object bean) {
+        return beanContainer.destroyBean(bean);
+    }
+
+    @Override
+    public Object resolveInjectValue(Class<?> type, Type genericType, Annotation[] annotations) {
+        return beanContainer.resolveInjectValue(type, genericType, annotations);
+    }
+
+    @Override
+    public Object resolveInjectValue(Class<?> type, Type genericType, String name, Annotation[] annotations) {
+        return beanContainer.resolveInjectValue(type, genericType, name, annotations);
+    }
+
+    public void close(){
 		try{
 			if(null != beanContainer){
 				beanContainer.close();

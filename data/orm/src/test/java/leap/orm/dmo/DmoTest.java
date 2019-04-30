@@ -15,6 +15,7 @@
  */
 package leap.orm.dmo;
 
+import leap.core.security.annotation.Ignore;
 import leap.db.model.DbColumnBuilder;
 import leap.db.model.DbTable;
 import leap.db.model.DbTableBuilder;
@@ -27,6 +28,7 @@ import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
 import leap.orm.tested.CreationEntity;
 
+import leap.orm.tested.SelfRefEntity;
 import org.junit.Test;
 
 import java.sql.JDBCType;
@@ -53,6 +55,19 @@ public class DmoTest extends OrmTestCase {
 		metadata.removeEntityMapping(em);
 		db.cmdDropTable(em.getTable()).execute();
 	}
+
+	@Test
+	public void testCreateSelfRefEntity() {
+        EntityMapping em = metadata.tryGetEntityMapping(SelfRefEntity.class);
+        assertNull(em);
+
+	    dmo.cmdCreateEntity(SelfRefEntity.class).execute(false);
+	    em = metadata.tryGetEntityMapping(SelfRefEntity.class);
+	    assertNotNull(em);
+
+	    metadata.removeEntityMapping(em);
+    }
+
 	@Test
 	@Contextual
 	public void testConcurrentCreateTable() throws InterruptedException {

@@ -24,7 +24,7 @@ import leap.lang.expression.Expression;
 import leap.lang.jdbc.JdbcTypes;
 import leap.lang.meta.MType;
 import leap.orm.annotation.Column;
-import leap.orm.domain.FieldDomain;
+import leap.orm.domain.Domain;
 import leap.orm.generator.IdGenerator;
 import leap.orm.generator.ValueGenerator;
 import leap.orm.serialize.FieldSerializer;
@@ -44,6 +44,7 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
     protected String                metaFieldName;
     protected Class<?>              javaType;
     protected BeanProperty          beanProperty;
+    protected boolean               secondary;
     protected DbColumnBuilder       column;
     protected boolean               columnNameDeclared;
     protected String                sequenceName;
@@ -55,21 +56,24 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
     protected String                defaultValue;
     protected Expression            defaultValueExpression;
     protected Boolean               insert;
-    protected Boolean               update;
-    protected Boolean               filter;
     protected Expression            insertValue;
+    protected Boolean               update;
     protected Expression            updateValue;
-    protected Expression            filterValue;
+    protected Boolean               filtered;
+    protected Expression            filteredIf;
+    protected Expression            filteredValue;
     protected boolean               optimisticLock;
     protected String                newOptimisticLockFieldName;
-    protected FieldDomain           domain;
+    protected Domain                domain;
     protected Annotation[]          annotations;
     protected List<FieldValidator>  validators;
     protected Float                 sortOrder;
     protected ReservedMetaFieldName reservedMetaFieldName;
-    protected boolean               sharding;
     protected String                serializeFormat;
     protected FieldSerializer       serializer;
+    protected boolean               hasPhysicalColumn;
+    protected Boolean				filterable;
+    protected Boolean				sortable;
 
     public FieldMappingBuilder(){
 		this.column = new DbColumnBuilder();
@@ -87,6 +91,7 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
         this.metaFieldName = template.metaFieldName;
         this.javaType = template.getJavaType();
         this.beanProperty = template.beanProperty;
+        this.secondary = template.secondary;
         this.column = new DbColumnBuilder(template.column);
         this.columnNameDeclared = template.columnNameDeclared;
         this.sequenceName = template.sequenceName;
@@ -99,10 +104,12 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
         this.defaultValueExpression = template.defaultValueExpression;
         this.insert = template.insert;
         this.update = template.update;
-        this.filter = template.filter;
         this.insertValue = template.insertValue;
         this.updateValue = template.updateValue;
-        this.filterValue = template.filterValue;
+        this.filterable = template.filterable;
+        this.sortable = template.sortable;
+		this.filtered = template.filtered;
+        this.filteredValue = template.filteredValue;
         this.optimisticLock = template.optimisticLock;
         this.newOptimisticLockFieldName = template.newOptimisticLockFieldName;
         this.domain = template.domain;
@@ -158,8 +165,16 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
             this.update = fm.update;
         }
 
-        if(null != fm.filter) {
-            this.filter = fm.filter;
+        if(null != fm.filterable) {
+        	this.filterable = fm.filterable;
+		}
+
+		if(null != fm.sortable) {
+			this.sortable = fm.sortable;
+		}
+
+        if(null != fm.filtered) {
+            this.filtered = fm.filtered;
         }
 
         if(null != fm.insertValue) {
@@ -170,8 +185,12 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
             this.updateValue = fm.updateValue;
         }
 
-        if(null != fm.filterValue) {
-            this.filterValue = fm.filterValue;
+        if(null != fm.filteredValue) {
+            this.filteredValue = fm.filteredValue;
+        }
+
+        if(null != fm.filteredIf) {
+            this.filteredIf = fm.filteredIf;
         }
 
         if(null != fm.domain) {
@@ -206,8 +225,8 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
     public String getColumnName() {
         return column.getName();
     }
-	
-	public MType getDataType() {
+
+    public MType getDataType() {
 		return dataType;
 	}
 
@@ -280,13 +299,6 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		return this;
 	}
 	
-	public FieldMappingBuilder trySetBeanProperty(BeanProperty beanProperty) {
-		if(null == this.beanProperty){
-			this.beanProperty = beanProperty;
-		}
-		return this;
-	}
-	
 	public Annotation[] getAnnotations(){
 		return null != annotations ? annotations : (null == beanProperty ? Classes.EMPTY_ANNOTATION_ARRAY : beanProperty.getAnnotations());
 	}
@@ -296,7 +308,16 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		return this;
 	}
 
-	public DbColumnBuilder getColumn() {
+    public boolean isSecondary() {
+        return secondary;
+    }
+
+    public FieldMappingBuilder setSecondary(boolean secondary) {
+        this.secondary = secondary;
+        return this;
+    }
+
+    public DbColumnBuilder getColumn() {
 		return column;
 	}
 
@@ -395,16 +416,53 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		return this;
 	}
 
-    public Expression getFilterValue() {
-        return filterValue;
-    }
+	public FieldMappingBuilder trySetFilterable(Boolean filterable) {
+    	if(null == this.filterable) {
+            this.filterable = filterable;
+		}
+		return this;
+	}
 
-    public FieldMappingBuilder setFilterValue(Expression v) {
-        this.filterValue = v;
+    public FieldMappingBuilder trySetSortable(Boolean sortable) {
+        if(null == this.sortable) {
+            this.sortable = sortable;
+        }
         return this;
     }
 
-	public FieldMappingBuilder setValueGenerator(ValueGenerator valueGenerator){
+    public Expression getFilteredValue() {
+        return filteredValue;
+    }
+
+    public FieldMappingBuilder setFilteredValue(Expression v) {
+        this.filteredValue = v;
+        return this;
+    }
+
+    public FieldMappingBuilder trySetFilteredValue(Expression v) {
+        if(null == this.filteredValue) {
+            this.filteredValue = v;
+        }
+        return this;
+    }
+
+    public Expression getFilteredIf() {
+        return filteredIf;
+    }
+
+    public FieldMappingBuilder setFilteredIf(Expression filteredIf) {
+        this.filteredIf = filteredIf;
+        return this;
+    }
+
+    public FieldMappingBuilder trySetFilteredIf(Expression expr) {
+        if(null == this.filteredIf) {
+            this.filteredIf = expr;
+        }
+        return this;
+    }
+
+    public FieldMappingBuilder setValueGenerator(ValueGenerator valueGenerator){
 		return setInsertValue(valueGenerator).setUpdateValue(valueGenerator);
 	}
 	
@@ -529,22 +587,18 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		return this;
 	}
 
-    public boolean getFilter() {
-        return null != filter && filter;
+    public boolean getFiltered() {
+        return null != filtered && filtered;
     }
 
-    public Boolean getWhere(){
-        return filter;
-    }
-
-    public FieldMappingBuilder setFilter(Boolean b) {
-        this.filter = b;
+    public FieldMappingBuilder setFiltered(Boolean b) {
+        this.filtered = b;
         return this;
     }
 
-    public FieldMappingBuilder trySetWhere(Boolean b){
-        if(null == this.filter){
-            this.filter = b;
+    public FieldMappingBuilder trySetFiltered(Boolean b){
+        if(null == this.filtered){
+            this.filtered = b;
         }
         return this;
     }
@@ -571,11 +625,11 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		return this;
 	}
 
-	public FieldDomain getDomain() {
+	public Domain getDomain() {
 		return domain;
 	}
 
-	public FieldMappingBuilder setDomain(FieldDomain domain) {
+	public FieldMappingBuilder setDomain(Domain domain) {
 		this.domain = domain;
 		return this;
 	}
@@ -620,15 +674,6 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		return this;
 	}
 
-    public boolean isSharding() {
-        return sharding;
-    }
-
-    public FieldMappingBuilder setSharding(boolean sharding) {
-        this.sharding = sharding;
-        return this;
-    }
-
     public String getSerializeFormat() {
         return serializeFormat;
     }
@@ -645,11 +690,49 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
         this.serializer = serializer;
     }
 
-    @Override
+    public boolean isHasPhysicalColumn() {
+        return hasPhysicalColumn;
+    }
+
+    public void setHasPhysicalColumn(boolean hasPhysicalColumn) {
+        this.hasPhysicalColumn = hasPhysicalColumn;
+    }
+
+    public boolean isFilterable() {
+        return null == filterable ? false : filterable;
+    }
+
+	public Boolean getFilterable() {
+		return filterable;
+	}
+
+	public FieldMappingBuilder setFilterable(boolean filterable) {
+		this.filterable = filterable;
+		return this;
+	}
+
+	public boolean isSortable() {
+        return null == sortable ? false : sortable;
+    }
+
+	public Boolean getSortable() {
+		return sortable;
+	}
+
+	public FieldMappingBuilder setSortable(boolean sortable) {
+		this.sortable = sortable;
+		return this;
+	}
+
+	@Override
     public FieldMapping build() {
 		if(null == javaType){
 			javaType = null != beanProperty ? beanProperty.getType() : JdbcTypes.forTypeCode(column.getTypeCode()).getDefaultReadType();
 		}
+
+        if(column.isAutoIncrement()) {
+            insert = false;
+        }
 		
 		if(null == nullable){
 			nullable = true;
@@ -663,8 +746,8 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 			update = column.isPrimaryKey() ? false : true;
 		}
 
-        if(null == filter) {
-            filter = false;
+        if(null == filtered) {
+            filtered = false;
         }
 		
 		if(null == defaultValueExpression){
@@ -675,19 +758,23 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 			this.metaFieldName = reservedMetaFieldName.getFieldName();
 		}
 
+		if(null != column && column.isPrimaryKey()) {
+			filterable = true;
+		}
+
 	    return new FieldMapping(fieldName,
 	    						dataType,
 	    						metaFieldName,
 	    						javaType,
-	    						beanProperty, column.build(), sequenceName,
+	    						beanProperty, secondary, column.build(), sequenceName,
 	    						nullable,maxLength,precision,scale,
-                                insert, update, filter,
+                                insert, update, filtered, filteredIf,
                                 defaultValueExpression,
-                                insertValue, updateValue, filterValue,
+                                insertValue, updateValue, filteredValue,
 	    						optimisticLock,newOptimisticLockFieldName,
 	    						domain,validators,
 	    						reservedMetaFieldName,
-                                sharding, serializer);
+                                serializer, isFilterable(), isSortable());
     }
 
 	@Override

@@ -16,12 +16,13 @@
 package leap.core;
 
 import leap.core.config.*;
-import leap.core.ds.DataSourceConfig;
+import leap.core.ds.DataSourceProps;
 import leap.core.ioc.ConfigBean;
 import leap.core.sys.SysPermissionDef;
 import leap.lang.*;
 import leap.lang.Comparators;
 import leap.lang.accessor.MapAttributeAccessor;
+import leap.lang.accessor.PropertyGetter;
 import leap.lang.accessor.SystemPropertyAccessor;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
@@ -44,6 +45,7 @@ import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 import static leap.core.AppConfig.*;
 
@@ -92,6 +94,8 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
         //post loading.
         postLoad(config);
+
+        Context.remove();
 
         return config;
     }
@@ -228,12 +232,12 @@ public class DefaultAppConfigSource implements AppConfigSource {
         final Set<String>                resolvingProperties = new HashSet<>();
         final DefaultPlaceholderResolver resolver;
 
-        protected final Map<String, AppProperty>                     properties         = new ConcurrentHashMap<>();
-        protected final Map<String, List<String>>                    arrayProperties    = new ConcurrentHashMap<>();
-        protected final Set<Resource>                                resources          = new HashSet<>();
-        protected final List<SysPermissionDef>                       permissions        = new ArrayList<>();
-        protected final Map<Class<?>, Map<String, SysPermissionDef>> typedPermissions   = new HashMap<>();
-        protected final Map<String, DataSourceConfig.Builder>        dataSourceConfigs  = new HashMap<>();
+        protected final Map<String, AppProperty>                     properties        = new ConcurrentHashMap<>();
+        protected final Map<String, List<String>>                    arrayProperties   = new ConcurrentHashMap<>();
+        protected final Set<Resource>                                resources         = new HashSet<>();
+        protected final List<SysPermissionDef>                       permissions       = new ArrayList<>();
+        protected final Map<Class<?>, Map<String, SysPermissionDef>> typedPermissions  = new HashMap<>();
+        protected final Map<String, DataSourceProps.Builder>         dataSourceConfigs = new HashMap<>();
         protected final Set<AppPropertyLoaderConfig> propertyLoaders;
 
         Loader(Object externalContext, Map<String,AppProperty> props, String profile) {
@@ -341,6 +345,13 @@ public class DefaultAppConfigSource implements AppConfigSource {
                 }
             }
 
+            if(properties.containsKey(INIT_PROPERTY_RELOAD)) {
+                String value = properties.get(INIT_PROPERTY_RELOAD).getValue();
+                if(!Strings.isEmpty(value)) {
+                    config.reloadEnabled = Converts.toBoolean(value);
+                }
+            }
+
             if(properties.containsKey(INIT_PROPERTY_LAZY_TEMPLATE)) {
                 String value = properties.get(INIT_PROPERTY_LAZY_TEMPLATE).getValue();
                 if(!Strings.isEmpty(value)) {
@@ -364,19 +375,26 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
             //base package
             if(Strings.isEmpty(config.basePackage)){
-                config.basePackage = DEFAULT_BASE_PACKAGE;
+                config.basePackage = getInitialProperty(String.class, DEFAULT_BASE_PACKAGE,
+                                        () -> Strings.firstNotEmpty(AppContextInitializer.getBasePackage(), DEFAULT_BASE_PACKAGE));
                 config.properties.put(INIT_PROPERTY_BASE_PACKAGE,config.basePackage);
             }
 
             //debug
             if(null == config.debug){
-                config.debug = AppConfig.PROFILE_DEVELOPMENT.equals(config.getProfile()) ? true : false;
+                config.debug = getInitialProperty(Boolean.class, INIT_PROPERTY_DEBUG,
+                                    () -> AppConfig.PROFILE_DEVELOPMENT.equals(config.getProfile()) ? true : false);
                 config.properties.put(INIT_PROPERTY_DEBUG,String.valueOf(config.debug));
+            }
+
+            //reload
+            if(null == config.reloadEnabled){
+                config.reloadEnabled = getInitialProperty(Boolean.class, INIT_PROPERTY_RELOAD, () -> null);
             }
 
             //lazyTemplate
             if(null == config.lazyTemplate){
-                config.lazyTemplate = false;
+                config.lazyTemplate = getInitialProperty(Boolean.class, INIT_PROPERTY_LAZY_TEMPLATE, () -> false);
                 config.properties.put(INIT_PROPERTY_LAZY_TEMPLATE,String.valueOf(config.lazyTemplate));
             }
 
@@ -394,6 +412,18 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
             resolveProperties();
             processProperties();
+        }
+
+        protected <T> T getInitialProperty(Class<T> c, String name, Supplier<T> defaults) {
+            PropertyGetter initialPropertySource = Context.get().getInitialPropertySource();
+            if(null == initialPropertySource) {
+                return defaults.get();
+            }
+            String v = initialPropertySource.getProperty(name);
+            if(Strings.isEmpty(v)) {
+                return defaults.get();
+            }
+            return Converts.convert(v, c);
         }
 
         protected void loadConfig(ConfigContext context) {
@@ -426,6 +456,9 @@ public class DefaultAppConfigSource implements AppConfigSource {
                 Map<String,Resource> urlResourceMap = new HashMap<>();
 
                 loadBasePackageResources(urlResourceMap,config.basePackage);
+                for(String basePackage : config.getAdditionalPackages()) {
+                    loadBasePackageResources(urlResourceMap, basePackage);
+                }
                 loadResources(urlResourceMap);
                 
                 config.resources = new SimpleResourceSet(urlResourceMap.values().toArray(new Resource[]{}));
@@ -445,7 +478,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
                 StringWriter msg = new StringWriter();
                 PrintWriter writer = new PrintWriter(msg);
                 propertyPrinter.printProperties(this.properties.values(), writer);
-                log.debug("Print properties (excludes system) : \n\n{}",msg.toString());
+                log.debug("Print properties : \n\n{}",msg.toString());
             }
         }
 
@@ -482,8 +515,8 @@ public class DefaultAppConfigSource implements AppConfigSource {
             }
         }
 
-        protected void putProperty(Object source, String name, String value) {
-            properties.put(name, new SimpleAppProperty(source, name, value));
+        protected void putProperty(Object source, String name, String value, boolean override) {
+            properties.put(name, new SimpleAppProperty(source, name, value, override));
         }
 
         protected String resolveProperty(String name) {
@@ -561,9 +594,6 @@ public class DefaultAppConfigSource implements AppConfigSource {
         }
 
         protected void loadResources(Map<String,Resource> urlResourceMap) throws IOException{
-            for(String basePackage : config.additionalPackages) {
-                loadBasePackageResources(urlResourceMap, basePackage);
-            }
             for(Resource resource : resources){
                 urlResourceMap.put(resource.getURL().toExternalForm(), resource);
             }
@@ -624,7 +654,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
         protected boolean     defaultOverride;
         protected boolean     hasDefaultDataSource = false;
-        protected Set<String> resources            = new HashSet<>();
+        protected Set<String> resources            = new LinkedHashSet<>();
 
         ConfigContext(Loader loader, boolean defaultOverride, boolean forProperty){
             this.loader = loader;
@@ -699,6 +729,11 @@ public class DefaultAppConfigSource implements AppConfigSource {
         }
 
         @Override
+        public AppProperty getProperty(String name) {
+            return loader.properties.get(name);
+        }
+
+        @Override
         public Set<String> getAdditionalPackages() {
             return loader.config.additionalPackages;
         }
@@ -725,7 +760,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
         }
 
         @Override
-        public void putProperty(Object source, String name, String value) {
+        public void putProperty(Object source, String name, String value, boolean override) {
             if(name.endsWith("[]")) {
                 name = name.substring(0, name.length()-2);
                 List<String> list = loader.arrayProperties.get(name);
@@ -735,8 +770,13 @@ public class DefaultAppConfigSource implements AppConfigSource {
                 }
                 list.add(value);
             }else{
-                loader.putProperty(source, name, value);
+                loader.putProperty(source, name, value, override);
             }
+        }
+
+        @Override
+        public void putProperty(Object source, String name, String value) {
+            putProperty(source, name, value, false);
         }
 
         @Override

@@ -29,6 +29,16 @@ import leap.db.model.DbSchemaObjectName;
  * a wrapper interface of {@link DatabaseMetaData}
  */
 public interface DbMetadata {
+
+    /**
+     * @see DatabaseMetaData#getURL()
+     */
+    String getURL();
+
+    /**
+     * @see DatabaseMetaData#getUserName()
+     */
+    String getUsername();
 	
 	/**
 	 * @see DatabaseMetaData#getDatabaseProductName()

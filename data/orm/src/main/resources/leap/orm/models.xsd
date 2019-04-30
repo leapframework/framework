@@ -9,7 +9,6 @@
 				<xsd:choice minOccurs="0" maxOccurs="unbounded">
 					<xsd:element ref="import" />
                     <xsd:element ref="global-field"/>
-                    <xsd:element ref="sharding"/>
 					<xsd:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded" />
 				</xsd:choice>
 			</xsd:sequence>
@@ -51,14 +50,6 @@
                     </xsd:attribute>
                 </xsd:restriction>
             </xsd:complexContent>
-        </xsd:complexType>
-    </xsd:element>
-
-    <xsd:element name="sharding">
-        <xsd:complexType>
-            <xsd:attribute name="entity"            type="xsd:string"  use="required"/>
-            <xsd:attribute name="sharding-field"    type="xsd:string"  use="required"/>
-            <xsd:attribute name="auto-create-table" type="xsd:boolean" use="optional" default="false"/>
         </xsd:complexType>
     </xsd:element>
 
@@ -131,8 +122,9 @@
         <xsd:attribute name="update" type="xsd:boolean" use="optional"/>
         <xsd:attribute name="insert-value" type="xsd:string" use="optional"/>
         <xsd:attribute name="update-value" type="xsd:string" use="optional"/>
-        <xsd:attribute name="filter" type="xsd:boolean" use="optional"/>
-        <xsd:attribute name="filter-value" type="xsd:string" use="optional"/>
+        <xsd:attribute name="filtered" type="xsd:boolean" use="optional"/>
+        <xsd:attribute name="filtered-if"    type="xsd:string" use="optional"/>
+        <xsd:attribute name="filtered-value" type="xsd:string" use="optional"/>
         <xsd:anyAttribute namespace="##other" processContents="lax" />
     </xsd:attributeGroup>
 

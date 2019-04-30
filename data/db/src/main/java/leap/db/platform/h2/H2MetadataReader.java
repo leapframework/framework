@@ -35,8 +35,27 @@ public class H2MetadataReader extends GenericDbMetadataReader {
 	protected H2MetadataReader(){
 		
 	}
-	
-	@Override
+
+    @Override
+    protected void readTableProperties(DbTableBuilder table, ResultSet rs) throws SQLException {
+        super.readTableProperties(table, rs);
+
+        try {
+            String sql = rs.getString("SQL");
+            if(!Strings.isEmpty(sql)) {
+                int index = sql.indexOf(table.getName());
+                if(index > 0) {
+                    if('"' == sql.charAt(index - 1)) {
+                        table.setQuoted(true);
+                    }
+                }
+            }
+        }catch (SQLException e) {
+
+        }
+    }
+
+    @Override
     protected ResultSet getPrimaryKeys(Connection connection, DatabaseMetaData metadata, MetadataParameters params) throws SQLException {
 		String sql = "SELECT " + 
 					 "NULL TABLE_CAT, " + 

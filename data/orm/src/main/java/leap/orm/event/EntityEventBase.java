@@ -22,8 +22,8 @@ import leap.orm.mapping.EntityMapping;
 
 public abstract class EntityEventBase implements EntityEvent {
 
-    private final OrmContext    context;
-    private final EntityMapping mapping;
+    protected final OrmContext    context;
+    protected final EntityMapping mapping;
 
     private TransactionStatus transactionStatus;
 

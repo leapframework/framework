@@ -16,6 +16,7 @@
 
 package leap.orm.dao;
 
+import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.ioc.BeanDefinition;
 import leap.core.ioc.BeanInjector;
@@ -24,14 +25,13 @@ import leap.lang.Strings;
 import leap.lang.beans.BeanCreationException;
 import leap.lang.reflect.ReflectValued;
 import leap.orm.annotation.SqlKey;
-import leap.orm.metadata.SqlRegistry;
-import leap.orm.sql.SqlCommand;
 
 import java.lang.annotation.Annotation;
 
 public class DaoCommandInjector implements BeanInjector {
 
-    protected @Inject SqlRegistry sqls;
+    protected @Inject BeanFactory       beanFactory;
+    protected @Inject DaoCommandFactory commandFactory;
 
     @Override
     public boolean resolveInjectValue(BeanDefinition bd, Object bean, ReflectValued v, Annotation a, Out<Object> value) {
@@ -39,34 +39,41 @@ public class DaoCommandInjector implements BeanInjector {
             return false;
         }
 
-        KeyAndDataSource kds;
-        if (a.annotationType().equals(Inject.class)) {
-            kds = resolveSqlIdentity(bd, v, (Inject) a);
-        } else if (a.annotationType().equals(SqlKey.class)) {
-            kds = resolveSqlIdentity(bd, v, (SqlKey) a);
-        } else {
+        if (null == a && Strings.isEmpty(bd.getId()) && Strings.isEmpty(bd.getName())) {
             return false;
         }
 
-        SqlCommand sql = sqls.tryGetSqlCommand(kds.key);
-        if (null == sql) {
-            throw new BeanCreationException("Sql key '" + kds.key + "' not found, check the bean : " + bd);
-        }
+        boolean required = true;
 
-        Dao dao;
-        if (!Strings.isEmpty(sql.getDataSourceName())) {
-            dao = Dao.get(sql.getDataSourceName());
-        } else if (!Strings.isEmpty(kds.dataSource)) {
-            dao = Dao.get(kds.dataSource);
+        DaoCommandDef kds;
+        if (null != a && a.annotationType().equals(Inject.class)) {
+            kds = resolveSqlIdentity(bd, v, (Inject) a);
+        } else if (null != a && a.annotationType().equals(SqlKey.class)) {
+            SqlKey sqlKey = (SqlKey) a;
+            kds = resolveSqlIdentity(bd, v, sqlKey);
+            required = sqlKey.required();
         } else {
-            dao = Dao.get();
+            String key = Strings.firstNotEmpty(bd.getId(), bd.getName());
+            if (!Strings.isEmpty(key)) {
+                kds = new DaoCommandDef(key, null);
+            } else {
+                return false;
+            }
         }
 
-        value.set(new SimpleDaoCommand(dao, sql));
+        DaoCommand command = commandFactory.createDaoCommand(kds);
+        if (null == command) {
+            if (required) {
+                throw new BeanCreationException("Sql key '" + kds.key + "' not found, check the bean : " + bd);
+            } else {
+                return false;
+            }
+        }
+        value.set(command);
         return true;
     }
 
-    protected KeyAndDataSource resolveSqlIdentity(BeanDefinition bd, ReflectValued v, Inject inject) {
+    protected DaoCommandDef resolveSqlIdentity(BeanDefinition bd, ReflectValued v, Inject inject) {
         String key = Strings.firstNotEmpty(inject.name(), inject.value());
 
         SqlKey sk = v.getAnnotation(SqlKey.class);
@@ -76,11 +83,11 @@ public class DaoCommandInjector implements BeanInjector {
         if (Strings.isEmpty(key)) {
             key = v.getName();
         }
-        return new KeyAndDataSource(key, null);
+        return new DaoCommandDef(key, null);
     }
 
-    protected KeyAndDataSource resolveSqlIdentity(BeanDefinition bd, ReflectValued v, SqlKey a) {
-        String key = a.value();
+    protected DaoCommandDef resolveSqlIdentity(BeanDefinition bd, ReflectValued v, SqlKey a) {
+        String key        = Strings.firstNotEmpty(a.key(), a.value());
         String datasource = a.datasource();
         if (Strings.isEmpty(datasource)) {
             datasource = null;
@@ -88,16 +95,7 @@ public class DaoCommandInjector implements BeanInjector {
         if (Strings.isEmpty(key)) {
             throw new BeanCreationException("The value of '" + SqlKey.class + "' must not be empty, check the bean : " + bd);
         }
-        return new KeyAndDataSource(key, datasource);
+        return new DaoCommandDef(key, datasource);
     }
 
-    protected final class KeyAndDataSource {
-        public final String key;
-        public final String dataSource;
-
-        public KeyAndDataSource(String key, String dataSource) {
-            this.key = key;
-            this.dataSource = dataSource;
-        }
-    }
 }

@@ -15,9 +15,8 @@
  */
 package leap.web;
 
-import leap.core.AppContext;
-import leap.core.AppException;
-import leap.core.RequestContext;
+import leap.core.*;
+import leap.core.validation.ValidationException;
 import leap.core.web.RequestBase;
 import leap.core.web.RequestIgnore;
 import leap.core.web.ResponseBase;
@@ -28,18 +27,19 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.servlet.Servlets;
 import leap.web.assets.AssetHandler;
+import leap.web.config.WebConfig;
 import leap.web.exception.ResponseException;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.*;
+import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
-
 public class AppFilter implements Filter {
 	
 	private static final Log log = LogFactory.get(AppFilter.class);
@@ -47,10 +47,27 @@ public class AppFilter implements Filter {
 	protected ServletContext  servletContext;
 	protected AppBootstrap    bootstrap;
 	protected App			  app;
+	protected WebConfig       config;
 	protected AppHandler	  appHandler;
 	protected AppContext	  appContext;
 	protected AssetHandler	  assetHandler;
 	protected RequestIgnore[] ignores;
+
+    public AppBootstrap bootstrap() {
+        return bootstrap;
+    }
+
+    public AppContext context() {
+        return null == bootstrap ? null : bootstrap.getAppContext();
+    }
+
+    public AppConfig config() {
+        return null == bootstrap ? null : bootstrap.getAppConfig();
+    }
+
+    public BeanFactory factory() {
+        return null == bootstrap ? null : bootstrap.getBeanFactory();
+    }
 	
 	@Override
     public void init(FilterConfig config) throws ServletException {
@@ -70,6 +87,7 @@ public class AppFilter implements Filter {
 
 			//get beans
 			this.app		  = bootstrap.getApp();
+			this.config       = app.getWebConfig();
 			this.appHandler   = bootstrap.getAppHandler();
 			this.appContext   = bootstrap.getAppContext();
 			this.assetHandler = bootstrap.getBeanFactory().tryGetBean(AssetHandler.class);
@@ -87,7 +105,15 @@ public class AppFilter implements Filter {
 
 	@Override
     public void doFilter(ServletRequest req, ServletResponse resp, final FilterChain chain) throws IOException, ServletException {
-        final RequestWrapper requestWrapper = new RequestWrapper((HttpServletRequest)req);
+        HttpServletRequest httpReq = (HttpServletRequest)req;
+        for(String ignoredPath : app.ignoredPaths()) {
+            if(httpReq.getRequestURI().startsWith(ignoredPath)) {
+                chain.doFilter(req, resp);
+                return;
+            }
+        }
+
+        final RequestWrapper requestWrapper = req instanceof RequestWrapper ? (RequestWrapper)req : new RequestWrapper(httpReq);
 
 		final DefaultResponse response = createResponse((HttpServletResponse)resp);
 		final DefaultRequest  request  = createRequest(requestWrapper, response);
@@ -124,6 +150,15 @@ public class AppFilter implements Filter {
 			boolean handled = false;
 			
 			try {
+			    //todo: hard code ResponseException & ValidationException handling for spring boot integration
+			    if(e instanceof ServletException) {
+			        if(e.getCause() instanceof ResponseException) {
+			            e = e.getCause();
+                    }else if(e.getCause() instanceof ValidationException) {
+			            e = e.getCause();
+                    }
+                }
+
 				if(e instanceof ResponseException) {
 					appHandler.renderResponseException(request, response, (ResponseException)e);
 					handled = true;
@@ -142,7 +177,11 @@ public class AppFilter implements Filter {
 					e.printStackTrace(response.getWriter());
 				}else{
 					if(e instanceof RuntimeException) {
-						throw (RuntimeException)e;
+                        throw (RuntimeException) e;
+                    }else if(e instanceof ServletException) {
+                        throw (ServletException) e;
+                    }else if(e instanceof IOException) {
+					    throw (IOException)e;
 					}else{
 						throw new AppException(e.getMessage(),e);	
 					}
@@ -204,17 +243,24 @@ public class AppFilter implements Filter {
 			
 			//service the request
 	        if(!appHandler.handleRequest(request,response)){
-	        	ErrorServletResponseWrapper espw = new ErrorServletResponseWrapper(response.getServletResponse());
-	        	
-	        	chain.doFilter(request.getServletRequest(), espw);
-
-	        	if(espw.isError()) {
-	        		if(!appHandler.handleError(request, response, espw.getErrorStatus(), espw.getErrorMessage())) {
-	        			espw.commitError();
-	        		}
-	        	}
+	            if(!config.isHandleExternalResponseErrors()) {
+                    chain.doFilter(request.getServletRequest(), response.getServletResponse());
+                }else {
+                    ErrorServletResponseWrapper espw = new ErrorServletResponseWrapper(response.getServletResponse());
+                    chain.doFilter(request.getServletRequest(), espw);
+                    if(espw.isError()) {
+                        if(response.isCommitted()) {
+                            return;
+                        }
+                        if(!appHandler.handleError(request, response, espw.getErrorStatus(), espw.getErrorMessage())) {
+                            espw.commitError();
+                        }
+                    }
+                }
 	        }
-		} catch (RuntimeException e){
+		} catch (RuntimeException e) {
+			throw e;
+		}catch (IOException | ServletException e) {
 			throw e;
         } catch (Throwable e) {
         	throw new ServletException("Error servicing current request, " + e.getMessage(), e);

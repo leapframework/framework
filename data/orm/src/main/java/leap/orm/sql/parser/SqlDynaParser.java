@@ -67,6 +67,11 @@ public class SqlDynaParser extends SqlParser {
             return;
         }
 
+        if(token == Token.LITERAL_CHARS){
+            parseSqlString();
+            return;
+        }
+
         acceptText();
     }
 }

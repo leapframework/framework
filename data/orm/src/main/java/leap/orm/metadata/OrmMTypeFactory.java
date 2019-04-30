@@ -62,6 +62,7 @@ public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactor
 		MComplexTypeBuilder ct = new MComplexTypeBuilder(type);
 
 		ct.setName(em.getEntityName());
+        ct.setEntity(true);
 
         if(null != type) {
             context.onComplexTypeCreating(type, ct.getName());
@@ -81,6 +82,8 @@ public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactor
                 p.setType(root.getMType(fm.getJavaType()));
             }
 
+            p.setIdentity(fm.isPrimaryKey());
+            p.setUnique(fm.getColumn().isUnique());
 			p.setLength(fm.getMaxLength());
 			p.setRequired(!fm.isNullable());
 			p.setPrecision(fm.getPrecision());
@@ -88,6 +91,18 @@ public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactor
 
             if(null != bp) {
                 configureProperty(bp, p);
+            }
+
+            if(null == p.getFilterable()) {
+                p.setFilterable(fm.isFilterable());
+            }
+
+            if(null == p.getSortable()) {
+                p.setSortable(fm.isSortable());
+            }
+
+            if(null == p.getSelectable()) {
+                p.setSelectable(true);
             }
 
             if(null == p.getCreatable()) {
@@ -108,15 +123,11 @@ public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactor
                 p.setSortable(false);
             }
 
-            if(null == p.getFilterable()) {
-                p.setFilterable(fm.isPrimaryKey());
-            }
-
             if(null != bp) {
                 configureProperty(bp, p);
             }
 
-			ct.addProperty(p.build());
+			ct.addProperty(p);
 		}
 
         for(RelationProperty rp : em.getRelationProperties()) {
@@ -158,7 +169,7 @@ public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactor
                 }
             }
 
-            ct.addProperty(p.build());
+            ct.addProperty(p);
         }
 
         MComplexType ret = ct.build();

@@ -23,7 +23,7 @@ import leap.lang.logging.LogFactory;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-public class LocalTransaction implements Transaction, TransactionStatus {
+public class LocalTransaction extends AbstractTransaction {
     private static final Log log = LogFactory.get(LocalTransaction.class);
 
     private final LocalTransactionProvider tp;
@@ -72,71 +72,9 @@ public class LocalTransaction implements Transaction, TransactionStatus {
         return connection;
     }
 
-    protected void setConnection(Connection connection) {
-        try {
-            this.originalAutoCommit = connection.getAutoCommit();
-            connection.setAutoCommit(false);
-        } catch (SQLException e) {
-            tp.returnConnectionToDataSource(connection);
-            throw new NestedSQLException("Error setting connection's 'autoCommit'" + e.getMessage(), e);
-        }
-
-        if (isolation != TransactionDefinition.Isolation.DEFAULT.getValue()) {
-            try {
-                this.originalIsolationLevel = connection.getTransactionIsolation();
-                if (this.isolation != this.originalIsolationLevel) {
-                    connection.setTransactionIsolation(this.isolation);
-                }
-            } catch (SQLException e) {
-                tp.returnConnectionToDataSource(connection);
-                throw new NestedSQLException("Error setting connection's transaction isolation" + e.getMessage(), e);
-            }
-        }
-
-        this.connection = connection;
-    }
-
-    public void execute(TransactionCallback callback) {
-        begin();
-
-        try {
-            callback.doInTransaction(this);
-        } catch (Throwable e) {
-            setRollbackOnly();
-            log.warn("Error executing transaction, auto rollback", e);
-
-            if (e instanceof RuntimeException) {
-                throw (RuntimeException) e;
-            } else {
-                throw new TransactionException("Error executing transaction, " + e.getMessage(), e);
-            }
-        } finally {
-            complete();
-        }
-    }
-
-    public <T> T executeWithResult(TransactionCallbackWithResult<T> callback) {
-        begin();
-
-        try {
-            return callback.doInTransaction(this);
-        } catch (Throwable e) {
-            setRollbackOnly();
-            log.warn("Error executing transaction, auto rollback", e);
-
-            if (e instanceof RuntimeException) {
-                throw (RuntimeException) e;
-            } else {
-                throw new TransactionException("Error executing transaction, " + e.getMessage(), e);
-            }
-        } finally {
-            complete();
-        }
-    }
-
+    @Override
     public LocalTransaction begin() {
         increase();
-
         if (log.isDebugEnabled()) {
             if (isNewTransaction()) {
                 log.debug("Begin a new transaction, referencedCount={}", referenceCount);
@@ -144,7 +82,6 @@ public class LocalTransaction implements Transaction, TransactionStatus {
                 log.debug("Join a exists transaction, referencedCount={}", referenceCount);
             }
         }
-
         return this;
     }
 
@@ -188,6 +125,30 @@ public class LocalTransaction implements Transaction, TransactionStatus {
         } else {
             log.debug("Exit transaction(no rollback or commit), referencedCount={}, rollbackOnly={}", referenceCount, rollbackOnly);
         }
+    }
+
+    protected void setConnection(Connection connection) {
+        try {
+            this.originalAutoCommit = connection.getAutoCommit();
+            connection.setAutoCommit(false);
+        } catch (SQLException e) {
+            tp.returnConnectionToDataSource(connection);
+            throw new NestedSQLException("Error setting connection's 'autoCommit'" + e.getMessage(), e);
+        }
+
+        if (isolation != TransactionDefinition.Isolation.DEFAULT.getValue()) {
+            try {
+                this.originalIsolationLevel = connection.getTransactionIsolation();
+                if (this.isolation != this.originalIsolationLevel) {
+                    connection.setTransactionIsolation(this.isolation);
+                }
+            } catch (SQLException e) {
+                tp.returnConnectionToDataSource(connection);
+                throw new NestedSQLException("Error setting connection's transaction isolation" + e.getMessage(), e);
+            }
+        }
+
+        this.connection = connection;
     }
 
     /**

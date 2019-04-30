@@ -15,23 +15,23 @@
  */
 package leap.web.view;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
-
 import leap.lang.Strings;
 import leap.lang.http.ContentTypes;
 import leap.lang.http.MimeTypes;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.path.Paths;
-import leap.lang.servlet.ServletResource;
+import leap.lang.resource.Resource;
 import leap.lang.servlet.Servlets;
 import leap.web.App;
 import leap.web.Request;
 import leap.web.Response;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
 
 //some codes from spring framework
 
@@ -43,7 +43,7 @@ public class RequestDispatchView extends AbstractServletResourceView {
 	protected boolean alwaysInclude       = false;
 
 	
-	public RequestDispatchView(App app, String path, ServletResource resource) {
+	public RequestDispatchView(App app, String path, Resource resource) {
 	    super(app, path, resource);
 	    this.defaultContentType = ContentTypes.create(MimeTypes.TEXT_HTML, app.getDefaultCharset().name());
     }

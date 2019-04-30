@@ -45,13 +45,20 @@ public class DefaultActionStrategy implements ActionStrategy {
     public static final String[] CONTROLLER_PACKAGES = new String[]{"controllers", "controller"};
     public static final String[] RESOURCE_PACKAGES   = new String[]{"resources", "resource"};
 
-    protected @Inject App         app;
-    protected @Inject BeanFactory factory;
-    protected @Inject WebConfig   config;
+    protected @Inject App                     app;
+    protected @Inject BeanFactory             factory;
+    protected @Inject WebConfig               config;
+    protected @Inject ActionStrategySupport[] supports;
 
 	@Override
     public boolean isControllerClass(Class<?> cls) {
-		if(cls.isAnnotationPresent(NonController.class)){
+        for(ActionStrategySupport support : supports) {
+            if(support.isExplicitNonController(cls)) {
+                return false;
+            }
+        }
+
+		if(Classes.isAnnotationPresent(cls, NonController.class)){
 			return false;
 		}
 
@@ -64,7 +71,7 @@ public class DefaultActionStrategy implements ActionStrategy {
             return false;
         }
 
-        if(Classes.isAnnotatioinPresent(cls.getAnnotations(), Controller.class, true)) {
+        if(Classes.isAnnotationPresent(cls.getAnnotations(), Controller.class, true)) {
             return true;
         }
 
@@ -104,7 +111,7 @@ public class DefaultActionStrategy implements ActionStrategy {
     @Override
     public boolean isIndexAction(ActionBuilder action) {
 	    return Strings.equalsIgnoreCase(config.getIndexActionName(),action.getName()) ||
-               Classes.isAnnotatioinPresent(action.getAnnotations(), Index.class);
+               Classes.isAnnotationPresent(action.getAnnotations(), Index.class);
     }
 
 	@Override
@@ -125,15 +132,10 @@ public class DefaultActionStrategy implements ActionStrategy {
     @Override
     @SuppressWarnings("unchecked")
     public Object getControllerInstance(Class<?> cls) {
-		Object controller = factory.tryGetBean((Class<Object>)cls);
-		if(null != controller){
-			return controller;
-		}
-
         try {
-        	return factory.createBean(cls);
+        	return factory.getOrAddBean(cls);
         } catch (Exception e) {
-        	throw new AppConfigException("Error creating instance of controller '" + cls.getName() + "' : " + e.getMessage(), e);
+        	throw new AppConfigException("Error get or creating instance of controller '" + cls.getName() + "' : " + e.getMessage(), e);
         }
     }
 
@@ -283,7 +285,7 @@ public class DefaultActionStrategy implements ActionStrategy {
         //Check is restful style.
         Object controller = action.getController();
         boolean restful = false;
-        if(null != controller && controller.getClass().isAnnotationPresent(Restful.class)) {
+        if(null != controller && Classes.isAnnotationPresent(controller.getClass(), Restful.class)) {
             restful = true;
         }
 

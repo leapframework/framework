@@ -22,8 +22,13 @@ import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.ioc.PostCreateBean;
 import leap.lang.Arrays2;
+import leap.lang.Strings;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 
 public class ClasspathMessageSource extends ResourceMessageSource implements MessageSource,PostCreateBean {
+
+    private static final Log log = LogFactory.get(ClasspathMessageSource.class);
 
     protected @Inject AppConfig config;
 
@@ -35,6 +40,7 @@ public class ClasspathMessageSource extends ResourceMessageSource implements Mes
                 Arrays2.concat(ars.search("messages"),
                                ars.searchAllFiles(new String[]{"messages_*.*"}));
 
+        log.info("Found {} messages files: [{}]", resources.length, Strings.join(resources, ','));
 		super.readFromResources(resources);
     }
 

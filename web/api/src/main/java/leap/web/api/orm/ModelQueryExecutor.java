@@ -17,6 +17,7 @@
 package leap.web.api.orm;
 
 import leap.orm.query.CriteriaQuery;
+import leap.web.api.mvc.params.CountOptions;
 import leap.web.api.mvc.params.QueryOptions;
 import leap.web.api.mvc.params.QueryOptionsBase;
 
@@ -29,9 +30,19 @@ import java.util.function.Consumer;
 public interface ModelQueryExecutor {
 
     /**
+     * @see {@link CriteriaQuery#fromSqlView(String)}.
+     */
+    ModelQueryExecutor fromSqlView(String sql);
+
+    /**
      * Excludes the field names in the result record.
      */
     ModelQueryExecutor selectExclude(String... names);
+
+    /**
+     * Sets filter by params.
+     */
+    ModelQueryExecutor setFilterByParams(boolean filterByParams);
 
     /**
      * Finds the record by the given id.
@@ -45,8 +56,41 @@ public interface ModelQueryExecutor {
         return queryList(options, null);
     }
 
-    QueryListResult queryList(QueryOptions options, Map<String, Object> filters);
+    /**
+     * Query the records of model with the given filter fields.
+     */
+    default QueryListResult queryList(QueryOptions options, Map<String, Object> filters) {
+        return queryList(options, filters, null);
+    }
 
+    /**
+     * Query the records of model with the given filter fields.
+     *
+     * <p/>
+     * The callback will be invoked before executing the query.
+     */
     QueryListResult queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback);
 
+    /**
+     * Query the records of model with the given filter fields.
+     *
+     * <p/>
+     * The callback will be invoked before executing the query.
+     */
+    QueryListResult queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback, boolean filterByParams);
+
+    /**
+     * Query the total count of records.
+     */
+    default QueryListResult count(CountOptions options) {
+        return count(options, null);
+    }
+
+    /**
+     * Query the total count of records.
+     *
+     * <p/>
+     * The callback will be invoked before executing the query.
+     */
+    QueryListResult count(CountOptions options, Consumer<CriteriaQuery> callback);
 }

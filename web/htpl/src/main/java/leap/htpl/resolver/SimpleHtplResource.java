@@ -15,139 +15,120 @@
  */
 package leap.htpl.resolver;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.util.Locale;
-
+import leap.htpl.HtplException;
 import leap.htpl.HtplResource;
 import leap.lang.Args;
 import leap.lang.Locales;
 import leap.lang.Out;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
-import leap.lang.resource.ContextResource;
 import leap.lang.resource.Resource;
 
+import java.io.*;
+import java.util.Locale;
+
 public class SimpleHtplResource implements HtplResource {
-	private static final Log log = LogFactory.get(SimpleHtplResource.class);
-	
-	private final Resource r;
-	private final Locale   locale;
-	private final String   source;
-	private final File     file;
-	
-	private long lastModified = 0;
-	
-	public SimpleHtplResource(Resource r,Locale locale){
-		Args.notNull(r,"resource");
-		this.r = r;
-		this.locale = locale;
-		this.source = getSource(r);
-		
-		File f;
-		try {
-	        f = r.getFile();
-        } catch (IllegalStateException e) {
-        	f = null;
+    private static final Log log = LogFactory.get(SimpleHtplResource.class);
+
+    protected final Resource resource;
+    protected final Locale   locale;
+    protected final String   source;
+    protected final File     file;
+
+    private long lastModified = 0L;
+
+    public SimpleHtplResource(Resource resource, Locale locale) {
+        Args.notNull(resource, "resource");
+        this.resource = resource;
+        this.locale = locale;
+        this.source = resource.getPath();
+        this.file = resource.isFile() ? resource.getFile() : null;
+        if(null != file) {
+            this.lastModified = file.lastModified();
         }
-		this.file = f;
-		if(null != this.file){
-			this.lastModified = file.lastModified();
-		}
-	}
-	
-	@Override
-    public Locale getLocale() {
-	    return locale;
     }
 
-	@Override
+    @Override
     public Object getSource() {
-		return source;
-	}
+        return source;
+    }
 
-	@Override
+    @Override
+    public Resource getResource() {
+        return resource;
+    }
+
+    @Override
+    public Locale getLocale() {
+        return locale;
+    }
+
+    @Override
     public Reader getReader() throws IOException {
-        return r.getInputStreamReader();
+        return resource.getInputStreamReader();
     }
-	
-	@Override
+
+    @Override
     public File getFile() {
-		return file;
-	}
+        return file;
+    }
 
-	@Override
+    @Override
     public String getFileName() {
-		return null != file ? file.getName() : null;
-	}
+        return null != file ? file.getName() : null;
+    }
 
-	@Override
+    @Override
     public boolean reloadable() {
-	    return null != file;
+        return null != file;
     }
-	
-	@Override
-    public boolean reload(Out<Reader> out) throws IOException {
-		if(null != file){
-			long lastModified = file.lastModified();
-			if(lastModified != this.lastModified){
-				
-				//TODO : handles file not found.
-				
-				if(!file.exists()){
-					return false;
-				}
-				
-				try {
-	                this.lastModified = lastModified;
-	                out.set(new InputStreamReader(new FileInputStream(file)));
-	                return true;
-                } catch (FileNotFoundException e) {
-                	return false;
-                }
-			}
-		}
-	    return false;
-    }
-	
-	@Override
-    public HtplResource tryGetRelative(String relativePath, Locale locale) {
-		if(null != file){
-			String[] paths = null == locale ? new String[]{relativePath} : Locales.getLocalePaths(locale, relativePath);
-			
-			for(String path : paths){
-				try {
-					Resource rr = r.createRelative(path);
-					if(null != rr && rr.exists()){
-						return new SimpleHtplResource(rr,locale);
-					}
-		        } catch (IOException e) {
-		        	log.info("Error creating relative resource '" + relativePath + "', " + e.getMessage(), e);
-		        }
-			}
-		}
-		
-		return null;
-	}
 
-	@Override
-    public String toString() {
-		return r.toString();
+    @Override
+    public boolean reload(Out<Reader> out) throws IOException {
+        if (null != file) {
+            long lastModified = file.lastModified();
+            if (lastModified != this.lastModified) {
+
+                //TODO : handles file not found.
+
+                if (!file.exists()) {
+                    return false;
+                }
+
+                try {
+                    this.lastModified = lastModified;
+                    out.set(new InputStreamReader(new FileInputStream(file)));
+                    return true;
+                } catch (FileNotFoundException e) {
+                    return false;
+                }
+            }
+        }
+        return false;
     }
-	
-	protected String getSource(Resource r){
-		if(r instanceof ContextResource){
-			return ((ContextResource) r).getPathWithinContext();
-		}
-		
-		if(null != r.getClasspath()){
-			return r.getClasspath();
-		}
-		
-		return r.getURLString();
-	}
+
+    @Override
+    public HtplResource tryGetRelative(String relativePath, Locale locale) {
+        if (null != file) {
+            String[] paths = null == locale ? new String[]{relativePath} : Locales.getLocalePaths(locale, relativePath);
+
+            for (String path : paths) {
+                try {
+                    Resource rr = resource.createRelative(path);
+                    if (null != rr && rr.exists()) {
+                        return new SimpleHtplResource(rr, locale);
+                    }
+                } catch (IOException e) {
+                    log.info("Error creating relative resource '" + relativePath + "', " + e.getMessage(), e);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public String toString() {
+        return resource.toString();
+    }
 }

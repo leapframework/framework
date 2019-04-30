@@ -41,6 +41,7 @@ import leap.lang.meta.annotation.ComplexType;
 import leap.lang.params.NamedParamsBase;
 import leap.lang.params.Params;
 import leap.lang.tostring.ToStringBuilder;
+import leap.orm.OrmContext;
 import leap.orm.annotation.Instrument;
 import leap.orm.callback.CreateCallback;
 import leap.orm.callback.PostCreateCallback;
@@ -52,6 +53,7 @@ import leap.orm.dao.Dao;
 import leap.orm.dmo.Dmo;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
+import leap.orm.mapping.Mappings;
 import leap.orm.model.ModelRegistry.ModelContext;
 import leap.orm.query.CriteriaQuery;
 import leap.orm.query.CriteriaWhere;
@@ -87,7 +89,7 @@ public abstract class Model implements Getter,ValidatableBean,JsonStringable {
     /**
      * Returns the next generated id.
      *
-     * @throws IllegalStateException if not id generator.
+     * @throws IllegalStateException if no id generator.
      */
     @Instrument
     public static Object nextId() throws IllegalStateException{
@@ -494,12 +496,12 @@ public abstract class Model implements Getter,ValidatableBean,JsonStringable {
 	public static Db db(){
 		return context().getOrmContext().getDb();
 	}
-	
+
 	@Instrument
 	protected static ModelContext context(){
 		return ModelRegistry.getModelContext(getClassName());
 	}
-	
+
 	@Instrument
 	protected static String className(){
 		return getClassName();
@@ -528,6 +530,14 @@ public abstract class Model implements Getter,ValidatableBean,JsonStringable {
     public Model() {
 
     }
+
+	/**
+	 * Manual init.
+	 */
+	public final void init(OrmContext context, EntityMapping em) {
+		this.em  = em;
+		this.dao = context.getDao();
+	}
 
 	public final String getEntityName() {
     	_init();
@@ -983,20 +993,7 @@ public abstract class Model implements Getter,ValidatableBean,JsonStringable {
     }
     
 	protected Object doGetId(){
-		String[] keyNames = em.getKeyFieldNames();
-		if(keyNames.length == 1){
-			return get(keyNames[0]);
-		}
-		
-		if(keyNames.length == 0){
-			return null;
-		}
-		
-		Map<String, Object> id = new LinkedHashMap<String, Object>();
-		for(int i=0;i<keyNames.length;i++){
-			id.put(keyNames[i], get(keyNames[i]));
-		}
-		return id;
+        return Mappings.getId(em, this);
     }
 	
 	@SuppressWarnings("rawtypes")
@@ -1108,8 +1105,7 @@ public abstract class Model implements Getter,ValidatableBean,JsonStringable {
     protected final void _init(){
     	if(null == em){
     		ModelContext context = ModelRegistry.getModelContext(this.getClass().getName());
-    		this.em  = context.getEntityMapping();
-    		this.dao = context.getDao();
+    		this.init(context.getOrmContext(), context.getEntityMapping());
     	}
     }
     

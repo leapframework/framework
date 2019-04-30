@@ -16,20 +16,29 @@
 
 package app.models;
 
+import java.util.List;
+
 import leap.orm.annotation.AutoCreateTable;
+import leap.orm.annotation.Id;
+import leap.orm.annotation.ManyToMany;
 import leap.orm.annotation.ManyToOne;
 import leap.orm.annotation.Relational;
 import leap.orm.model.Model;
 
 @AutoCreateTable
+@ManyToMany(joinEntityType=BookTag.class,name="tags",target=Tag.class)
 public class Book extends Model {
 
+	@Id(generator = "shortid")
     protected String id;
     protected String title;
     protected String authorId;
 
     @Relational
     protected Author author;
+
+    @Relational
+	private List<Tag> tags;
 
     public String getId() {
         return id;
@@ -63,4 +72,12 @@ public class Book extends Model {
     public void setAuthor(Author author) {
         this.author = author;
     }
+
+	public List<Tag> getTags() {
+		return tags;
+	}
+
+	public void setTags(List<Tag> tags) {
+		this.tags = tags;
+	}
 }

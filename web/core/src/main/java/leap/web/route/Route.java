@@ -1,5 +1,6 @@
 package leap.web.route;
 
+import leap.core.security.SimpleSecurity;
 import leap.lang.Extensible;
 import leap.lang.Sourced;
 import leap.web.action.FailureHandler;
@@ -52,6 +53,20 @@ public interface Route extends RouteBase, Sourced, Extensible {
 
                 return result == 0 ? 1 : result;
             };
+
+    /**
+     * Returns true if this route is enabled.
+     */
+    default boolean isEnabled() {
+        return true;
+    }
+
+    /**
+     * Returns true if this route is executable.
+     */
+    default boolean isExecutable() {
+        return true;
+    }
 
 	/**
 	 * Returns a object indicates the source location defined this route.
@@ -212,6 +227,16 @@ public interface Route extends RouteBase, Sourced, Extensible {
      * Sets the roles.
      */
     void setRoles(String[] roles);
+
+    /**
+     * Optional. Returns the securities.
+     */
+    SimpleSecurity[] getSecurities();
+
+    /**
+     * Sets the security.
+     */
+    void setSecurities(SimpleSecurity[] securities);
 	
 	/**
 	 * Returns <code>true</code> if the route enables csrf support explicitly.

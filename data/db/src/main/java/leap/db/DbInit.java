@@ -28,6 +28,7 @@ import leap.core.annotation.M;
 import leap.core.ds.DataSourceListener;
 import leap.core.ds.DataSourceManager;
 import leap.lang.Assert;
+import leap.lang.Lazy;
 
 public class DbInit implements AppContextInitializable {
 	
@@ -59,6 +60,10 @@ public class DbInit implements AppContextInitializable {
     }
 	
 	protected void initBeans(String name,DataSource ds,boolean primary) {
+        if(ds instanceof Lazy) {
+            return;
+        }
+
 		Db db = factory.tryGetBean(Db.class,name);
 		if(null == db){
 			db = DbFactory.getInstance(name,ds);

@@ -18,7 +18,9 @@
 package tests.resource;
 
 import leap.core.security.SEC;
+import leap.core.security.UserNotFoundException;
 import leap.lang.Assert;
+import leap.lang.json.JsonObject;
 import org.junit.Test;
 import tested.models.User;
 import tests.OAuth2TestBase;
@@ -67,7 +69,8 @@ public class AdminControllerTest extends OAuth2TestBase {
         Assert.notNull(token.accessToken);
 
         user.delete();
-        assertEquals("success",withAccessToken(useGet("/admin/allow_anonymous"), token.accessToken).send().getContent());
+        JsonObject err = withAccessToken(useGet("/admin/allow_anonymous"), token.accessToken).send().assertForbidden().asJsonObject();
+        assertEquals(UserNotFoundException.ERR_CODE, err.getString("error"));
     }
     @Test
     public void testInvalidAccessToken(){

@@ -49,6 +49,11 @@ public class MapArrayParams extends NamedParamsBase {
     }
 
 	@Override
+	public boolean isArray() {
+		return true;
+	}
+
+	@Override
     public Object get(int i) throws IllegalStateException {
 	    return values[i];
     }

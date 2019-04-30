@@ -16,6 +16,9 @@
 
 package leap.web.api.spec;
 
+import java.util.Collections;
+import java.util.Set;
+
 public interface ApiSpecContext {
 
     ApiSpecContext EMPTY = new ApiSpecContext() {};
@@ -39,5 +42,9 @@ public interface ApiSpecContext {
      */
     default String getContextPath() {
         return "";
+    }
+
+    default Set<String> getParts() {
+        return Collections.EMPTY_SET;
     }
 }

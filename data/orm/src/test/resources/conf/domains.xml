@@ -1,8 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <domains xmlns="http://www.leapframework.org/schema/domains">
 
-	<entity-domain-alias domain="Person" alias="Owner"/>
+    <domain name="test" type="varchar" length="100" alias="string1" auto-mapping="true"/>
 
-    <field-domain name="test" type="varchar" length="100" auto-mapping="true" alias="string1"/>
-    
+    <domain name="publishedAt" type="timestamp"/>
+
+    <domain name="createdAt" type="timestamp"
+            nullable="false" insert="true" update="false"
+            insert-value="${env.timestamp}" auto-mapping="true"
+            sort-order="1001"/>
+
+    <domain name="updatedAt" type="timestamp" nullable="false"
+            insert="true" update="true"
+            insert-value="${env.timestamp}" update-value="${env.timestamp}" auto-mapping="true"
+            sort-order="1002"/>
+
 </domains>

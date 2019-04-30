@@ -15,27 +15,36 @@
  */
 package leap.web.api.config;
 
-import java.util.Map;
-import java.util.Set;
-
 import leap.lang.Described;
 import leap.lang.Extensible;
 import leap.lang.Named;
 import leap.lang.Titled;
+import leap.lang.meta.MComplexType;
 import leap.lang.naming.NamingStyle;
-import leap.web.api.config.model.*;
+import leap.web.App;
+import leap.web.api.config.model.ModelConfig;
+import leap.web.api.config.model.OAuthConfig;
+import leap.web.api.config.model.ParamConfig;
+import leap.web.api.config.model.RestdConfig;
 import leap.web.api.meta.ApiMetadata;
+import leap.web.api.meta.model.MApiModel;
 import leap.web.api.meta.model.MApiModelBuilder;
-import leap.web.api.meta.model.MApiResponse;
 import leap.web.api.meta.model.MApiPermission;
+import leap.web.api.meta.model.MApiResponse;
+import leap.web.api.mvc.ApiFailureHandler;
 import leap.web.api.permission.ResourcePermissionsSet;
+import leap.web.api.route.ApiRoute;
 import leap.web.route.Route;
 import leap.web.route.Routes;
+
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Represents the configuration of a web api.
  */
 public interface ApiConfig extends Named,Titled,Described,Extensible {
+
 	/**
 	 * Returns config source.
 	 */
@@ -104,24 +113,34 @@ public interface ApiConfig extends Named,Titled,Described,Extensible {
     /**
      * Returns an immutable {@link Set} contains all the configurations of models.
      */
-    Set<ModelConfig> getModels();
+    Set<ModelConfig> getModelConfigs();
+
+    /**
+     * Returns the extra models.
+     */
+    Set<MApiModelBuilder> getModels();
+
+    /**
+     * Returns the extra complex types.
+     */
+    Set<MComplexType> getComplexTypes();
 
     /**
      * Returns the model config matches the name or null if not exists.
      */
-    ModelConfig getModel(String name);
+    ModelConfig getModelConfig(String name);
 
     /**
      * Returns the model config matches the class or null if not exists.
      */
-    default ModelConfig getModel(Class<?> type) {
-        return getModelByClassName(null == type ? null : type.getName());
+    default ModelConfig getModelConfig(Class<?> type) {
+        return getModelConfigByClassName(null == type ? null : type.getName());
     }
 
     /**
      * Returns the model config matches the class name or null if not exists.
      */
-    ModelConfig getModelByClassName(String className);
+    ModelConfig getModelConfigByClassName(String className);
 
     /**
      * Returns an immutable {@link Set} contains all the configurations of parameters.
@@ -179,10 +198,20 @@ public interface ApiConfig extends Named,Titled,Described,Extensible {
      */
     int getDefaultPageSize();
 
+    /**
+     * Returns the max expand.
+     */
+    int getMaxPageSizeWithExpandMany();
+
 	/**
-	 * Returns all the routes in this api.
+	 * Returns the max expand.
 	 */
-	Set<Route> getRoutes();
+    int getMaxPageSizeWithExpandOne();
+
+    /**
+     * Returns the expand limit.
+     */
+    int getMaxRecordsPerExpand();
 
 	/**
 	 * Returns the base package of this api.
@@ -193,6 +222,19 @@ public interface ApiConfig extends Named,Titled,Described,Extensible {
      * Returns the if all the api operations are anonymous access by default.
      */
     boolean isDefaultAnonymous();
+
+    /**
+     * Returns the {@link Routes} for added the api route(s) to it.
+     *
+     * <p/>
+     * Default is {@link App#routes()}.
+     */
+    Routes getContainerRoutes();
+
+    /**
+     * Returns all the routes in this api.
+     */
+    Set<ApiRoute> getApiRoutes();
 
     /**
      * Returns all the resource types of route.
@@ -237,7 +279,7 @@ public interface ApiConfig extends Named,Titled,Described,Extensible {
     RestdConfig getRestdConfig();
 
     /**
-     * Returns the {@link Routes} for dynamic created route(s) of api.
+     * Returns the failure handler.
      */
-    Routes getDynamicRoutes();
+    ApiFailureHandler getFailureHandler();
 }

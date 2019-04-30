@@ -23,19 +23,20 @@ import java.util.Map;
 
 public class MApiOperation extends MApiNamedWithDesc {
 
-    protected final String          id;
-    protected final Route           route;
-    protected final HTTP.Method     method;
-    protected final String[]        tags;
-    protected final MApiParameter[] parameters;
-    protected final MApiResponse[]  responses;
-    protected final String[]        consumes;
-    protected final String[]        produces;
-    protected final MApiSecurity[]  security;
-    protected final boolean         allowAnonymous;
-    protected final boolean         allowClientOnly;
-    protected final boolean         deprecated;
-    protected final Boolean         corsEnabled;
+    protected final String            id;
+    protected final Route             route;
+    protected final HTTP.Method       method;
+    protected final String[]          tags;
+    protected final MApiParameter[]   parameters;
+    protected final MApiResponse[]    responses;
+    protected final String[]          consumes;
+    protected final String[]          produces;
+    protected final MApiSecurityReq[] security;
+    protected final boolean           allowAnonymous;
+    protected final boolean           allowClientOnly;
+    protected final boolean           deprecated;
+    protected final Boolean           corsEnabled;
+    protected final MApiExtension     extension;
 
     public MApiOperation(String id, String name, String title, String summary, String description,
                          HTTP.Method method,
@@ -45,12 +46,12 @@ public class MApiOperation extends MApiNamedWithDesc {
                          List<MApiResponse> responses,
                          String[] consumes,
                          String[] produces,
-                         MApiSecurity[] security,
+                         MApiSecurityReq[] security,
                          boolean allowAnonymous,
                          boolean allowClientOnly,
                          boolean deprecated,
                          Boolean cors,
-                         Map<String, Object> attrs) {
+                         Map<String, Object> attrs,MApiExtension extension) {
         super(name, title, summary, description, attrs);
 
         this.id = id;
@@ -66,6 +67,7 @@ public class MApiOperation extends MApiNamedWithDesc {
         this.allowClientOnly = allowClientOnly;
         this.deprecated = deprecated;
         this.corsEnabled = cors;
+        this.extension = extension;
     }
 
     /**
@@ -155,7 +157,7 @@ public class MApiOperation extends MApiNamedWithDesc {
     /**
      * Returns the permissions required by this operation.
      */
-    public MApiSecurity[] getSecurity() {
+    public MApiSecurityReq[] getSecurity() {
         return security;
     }
 
@@ -185,5 +187,9 @@ public class MApiOperation extends MApiNamedWithDesc {
      */
     public Boolean getCorsEnabled() {
         return corsEnabled;
+    }
+
+    public MApiExtension getExtension() {
+        return extension;
     }
 }

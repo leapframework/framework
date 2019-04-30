@@ -83,10 +83,10 @@ public interface DataSourceManager extends Listenable<DataSourceListener> {
 	 * Creates a managed {@link DataSource} as default {@link DataSource} in this manager.
 	 * 
 	 * @throws ObjectExistsException if a default {@link DataSource} aleady exists in this manager.
-	 * @throws UnsupportedOperationException if this manager does not supports the {@link DataSourceConfig}.
+	 * @throws UnsupportedOperationException if this manager does not supports the {@link DataSourceProps}.
 	 * @throws NestedClassNotFoundException if the given 'driverClassName' property not found.
 	 */
-	DataSource createDefaultDataSource(DataSourceConfig props) 
+	DataSource createDefaultDataSource(DataSourceProps props)
 			throws ObjectExistsException,UnsupportedOperationException,NestedClassNotFoundException,SQLException;
 
     /**
@@ -103,10 +103,10 @@ public interface DataSourceManager extends Listenable<DataSourceListener> {
 	 * Creates a managed {@link DataSource} as a named {@link DataSource} in this manager.
 	 * 
 	 * @throws ObjectExistsException if a {@link DataSource} with the same name aleady exists in this manager.
-	 * @throws UnsupportedOperationException if this manager does not supports the {@link DataSourceConfig}.
+	 * @throws UnsupportedOperationException if this manager does not supports the {@link DataSourceProps}.
 	 * @throws NestedClassNotFoundException if the given 'driverClassName' property not found.
 	 */
-	DataSource createDataSource(String name,DataSourceConfig props) 
+	DataSource createDataSource(String name,DataSourceProps props)
 			throws ObjectExistsException,UnsupportedOperationException,NestedClassNotFoundException,SQLException;
 	
 	/**
@@ -115,7 +115,7 @@ public interface DataSourceManager extends Listenable<DataSourceListener> {
 	 * @throws UnsupportedOperationException if this manager does not supports the given properties.
 	 * @throws NestedClassNotFoundException if the 'driverClassName' is invalid.
 	 */
-	DataSource createDataSource(DataSourceConfig props) throws UnsupportedOperationException,SQLException;
+	DataSource createDataSource(DataSourceProps props) throws UnsupportedOperationException,SQLException;
 	
 	/**
 	 * Try creates a non managed {@link DataSource} of the given properties.
@@ -125,7 +125,7 @@ public interface DataSourceManager extends Listenable<DataSourceListener> {
 	 * 
 	 * @throws NestedClassNotFoundException if the given 'driverClassName' property not found.
 	 */
-	DataSource tryCreateDataSource(DataSourceConfig props) throws NestedClassNotFoundException,SQLException;
+	DataSource tryCreateDataSource(DataSourceProps props) throws NestedClassNotFoundException,SQLException;
 	
 	/**
 	 * Destroy the given {@link DataSource}, that means close all the connections and release other resources created by the {@link DataSource}.

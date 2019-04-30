@@ -13,6 +13,8 @@
 # IntelliJ IDEA Files #
 *.iml
 .idea
+*.ipr
+*.iws
 
 # Maven Fields #
 target
@@ -25,3 +27,4 @@ target
 derby.log
 .rsa_key
 .secret
+mem.h2.db

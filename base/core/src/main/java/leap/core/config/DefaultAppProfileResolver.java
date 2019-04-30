@@ -17,6 +17,7 @@
 package leap.core.config;
 
 import leap.core.AppConfig;
+import leap.lang.Arrays2;
 import leap.lang.Strings;
 import leap.lang.resource.Resource;
 import leap.lang.resource.Resources;
@@ -29,12 +30,15 @@ public class DefaultAppProfileResolver implements AppProfileResolver {
     protected static final String APP_PROFILE_LOCAL_CONFIG_RESOURCE = "classpath:/profile_local";
 
     @Override
-    public String resolveProfile(Object externalContext, Map<String, String> externalProperties) {
+    public String[] resolveProfiles(Object externalContext, Map<String, String> externalProperties) {
+        Context.InitialProfileResolver externalResolver = Context.get().getInitialProfileResolver();
+        String[] profiles = null == externalResolver ? null : externalResolver.getProfiles();
+        if(!Arrays2.isEmpty(profiles)) {
+            return profiles;
+        }
+
         //from system properties.
         String profile = System.getProperty(AppConfig.SYS_PROPERTY_PROFILE);
-        if(!Strings.isEmpty(profile)) {
-            return profile;
-        }
 
         //from external properties.
         if(Strings.isEmpty(profile) && null != externalProperties) {
@@ -61,7 +65,19 @@ public class DefaultAppProfileResolver implements AppProfileResolver {
             profile = AppConfig.PROFILE_PRODUCTION;
         }
 
-        return profile;
+        profiles = new String[]{profile};
+
+        if(null != externalResolver) {
+            externalResolver.setProfiles(profiles);
+        }
+
+        return profiles;
+    }
+
+    @Override
+    public String resolveProfile(Object externalContext, Map<String, String> externalProperties) {
+        String[] profiles = resolveProfiles(externalContext, externalProperties);
+        return profiles[0];
     }
 
     protected String readProfileFile(Map<String,String> externalProperties, String location) {

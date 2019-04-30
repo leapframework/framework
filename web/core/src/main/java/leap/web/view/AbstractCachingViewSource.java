@@ -35,7 +35,7 @@ public abstract class AbstractCachingViewSource implements ViewSource, AppConfig
 	
 	protected final Log log = LogFactory.get(this.getClass());
 	
-	protected static final View UNRESOVLED_VIEW = new View() {
+	protected static final View UNRESOLVED_VIEW = new View() {
 		@Override
         public String getContentType(Request request) throws Throwable {
 	        return null;
@@ -53,9 +53,9 @@ public abstract class AbstractCachingViewSource implements ViewSource, AppConfig
     protected @Inject @M AppConfig        appConfig;
     protected @Inject @M SchedulerManager schedulerManager;
 
-    protected Locale                   defaultLocale;
-    protected Scheduler                reloadScheduler;
-    protected boolean                  reloadSchueduled;
+    protected Locale    defaultLocale;
+    protected Scheduler reloadScheduler;
+    protected boolean   reloadScheduled;
 	
 	private final Object viewCreationLock = new Object();
 	
@@ -90,10 +90,10 @@ public abstract class AbstractCachingViewSource implements ViewSource, AppConfig
                     }
 					
 					if(null == view){
-						view = UNRESOVLED_VIEW;
+						view = UNRESOLVED_VIEW;
 					}
 					
-					if(!reloadSchueduled){
+					if(!reloadScheduled){
 						scheduleReload();
 					}
 					
@@ -102,7 +102,7 @@ public abstract class AbstractCachingViewSource implements ViewSource, AppConfig
             }
 		}
 		
-		return view == UNRESOVLED_VIEW ? null : view;
+		return view == UNRESOLVED_VIEW ? null : view;
 	}
 	
 	protected Object getCacheKey(String viewName, Locale locale) {
@@ -121,7 +121,7 @@ public abstract class AbstractCachingViewSource implements ViewSource, AppConfig
 			    }
 				reloadScheduler.scheduleAtFixedRate(new ReloadTask(), 2000); //2 second TODO : hard code
 			}
-			this.reloadSchueduled = true;
+			this.reloadScheduled = true;
         }
 	}
 	

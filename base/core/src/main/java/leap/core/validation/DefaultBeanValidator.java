@@ -85,6 +85,10 @@ public class DefaultBeanValidator implements BeanValidator {
                 return validateCollection(name, (Iterable)bean, validation, maxErrors);
             }
 
+            if(bean instanceof Object[]) {
+                return validateArray(name, (Object[])bean, validation, maxErrors);
+            }
+
             BeanType bt = BeanType.of(bean.getClass());
 
             ValidatedProperty[] validateProperties =
@@ -158,6 +162,31 @@ public class DefaultBeanValidator implements BeanValidator {
         return true;
     }
 
+    protected boolean validateArray(String name, Object[] array, Validation validation, int maxErrors) {
+        TypeInfo typeInfo = null;
+        for(int i=0;i<array.length;i++) {
+            Object value = array[i];
+            if(value == null) {
+                continue;
+            }
+
+            if(typeInfo == null) {
+                typeInfo = Types.getTypeInfo(value.getClass());
+            }
+
+            if(typeInfo.isComplexType() || typeInfo.isCollectionType()) {
+                String fullName = Strings.nullToEmpty(name) + "[" + String.valueOf(i) + "]";
+                if(!validate(fullName, value, validation, maxErrors) ){
+                    return false;
+                }
+            } else {
+                return true;
+            }
+        }
+
+        return true;
+    }
+
 	protected boolean validate(String name, Object bean, Validation validation, int maxErrors, BeanType bt, ValidatedProperty[] vps) {
 		//Validate properties
 		
@@ -221,6 +250,10 @@ public class DefaultBeanValidator implements BeanValidator {
 		List<ValidatedProperty> vps = new ArrayList<>();
 		
 		for(BeanProperty bp : bt.getProperties()){
+            if(!bp.isReadable()) {
+                continue;
+            }
+
 			Valid valid = bp.getAnnotation(Valid.class);
             if(null != valid && !valid.value()) {
                 continue;

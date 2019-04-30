@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.leapframework.org/schema/config">
+    <additional-packages>
+        pkg1
+    </additional-packages>
+</config>

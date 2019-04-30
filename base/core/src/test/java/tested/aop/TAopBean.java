@@ -25,10 +25,11 @@ import leap.lang.enums.Bool;
 import java.io.IOException;
 import java.util.List;
 
-public class TAopBean {
+public class TAopBean implements IAopBean {
 
     private String lastHello;
 
+    @Override
     public String getLastHello() {
         return lastHello;
     }

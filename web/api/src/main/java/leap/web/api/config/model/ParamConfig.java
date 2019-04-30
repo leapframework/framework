@@ -37,6 +37,11 @@ public interface ParamConfig extends Named,Titled,Described,Keyed {
     }
 
     /**
+     * Is overrides the old with same key.
+     */
+    boolean isOverride();
+
+    /**
      * Required.
      */
     String getClassName();

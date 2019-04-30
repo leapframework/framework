@@ -72,9 +72,9 @@ public class WebHtplView extends AbstractView {
 		javax.servlet.http.HttpServletResponse resp = response.getServletResponse();
 		
 		try {
-	        req.getRequestDispatcher(jsp.getPathWithinContext()).include(req, resp);
+	        req.getRequestDispatcher(jsp.getPath()).include(req, resp);
         } catch (javax.servlet.ServletException e) {
-        	throw new HtplRenderException("Error including jsp '" + jsp.getPathWithinContext() + "', " + e.getMessage(), e);
+        	throw new HtplRenderException("Error including jsp '" + jsp.getPath() + "', " + e.getMessage(), e);
         }
 	}
 	*/

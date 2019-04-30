@@ -37,6 +37,8 @@ public interface SecuredPathBuilder extends Buildable<SecuredPath> {
         return setAllowClientOnly(true);
     }
 
+    SecuredPathBuilder setSource(Object source);
+
     SecuredPathBuilder setPattern(PathPattern pattern);
 
     SecuredPathBuilder setAllowAnonymous(Boolean allow);
@@ -47,13 +49,8 @@ public interface SecuredPathBuilder extends Buildable<SecuredPath> {
 
     SecuredPathBuilder setFailureHandler(SecurityFailureHandler h);
 
-    SecuredPathBuilder setPermissionsAllowed(String... permissions);
+    SecuredPathBuilder setPermissions(String... permissions);
 
-    SecuredPathBuilder setRolesAllowed(String... roles);
-
-    SecuredPathBuilder addPermissionsAllowed(String... permissions);
-
-    SecuredPathBuilder addRolesAllowed(String... roles);
-
+    SecuredPathBuilder setRoles(String... roles);
 
 }

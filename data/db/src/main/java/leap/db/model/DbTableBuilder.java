@@ -30,6 +30,7 @@ public class DbTableBuilder implements Buildable<DbTable>,JsonParsable {
 	protected String schema;
 	protected String name;
 	protected String type = DbTableTypes.TABLE;
+    protected boolean quoted;
 	protected String comment;
 	protected String primaryKeyName;
 
@@ -114,7 +115,15 @@ public class DbTableBuilder implements Buildable<DbTable>,JsonParsable {
 		return this;
 	}
 
-	public String getComment() {
+    public boolean isQuoted() {
+        return quoted;
+    }
+
+    public void setQuoted(boolean quoted) {
+        this.quoted = quoted;
+    }
+
+    public String getComment() {
 		return comment;
 	}
 
@@ -300,6 +309,7 @@ public class DbTableBuilder implements Buildable<DbTable>,JsonParsable {
         this.schema  = o.getString("schema");
         this.name    = o.getString("name");
         this.type    = o.getString("type",DbTableTypes.TABLE);
+        this.quoted  = o.getBoolean("quoted", false);
         this.comment = o.getString("comment");
         this.primaryKeyName = o.getString("primaryKeyName");
 
@@ -337,7 +347,7 @@ public class DbTableBuilder implements Buildable<DbTable>,JsonParsable {
             primaryKeyName = "PK_" + name;
         }
 
-        return new DbTable(catalog, schema, name, type, comment,
+        return new DbTable(catalog, schema, name, type, quoted, comment,
                 primaryKeyName,
                 primaryKeyColumnNames.toArray(new String[primaryKeyColumnNames.size()]),
                 Builders.buildArray(columns, new DbColumn[columns.size()]),

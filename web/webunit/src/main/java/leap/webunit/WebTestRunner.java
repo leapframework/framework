@@ -20,8 +20,8 @@ import leap.core.AppContextInitializer;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.tools.DEV;
+import leap.webunit.client.OkTHttpClient;
 import leap.webunit.client.THttpClient;
-import leap.webunit.client.THttpClientImpl;
 import leap.webunit.server.TWebServer;
 import org.junit.After;
 import org.junit.Before;
@@ -71,11 +71,11 @@ public class WebTestRunner extends BlockJUnit4ClassRunner {
         synchronized (WebTestRunner.class) {
             if(null == server) {
                 if(null == httpClient) {
-                    httpClient = new THttpClientImpl(httpPort);
+                    httpClient = new OkTHttpClient(httpPort);
                 }
 
                 if(null == httpsClient) {
-                    httpsClient = new THttpClientImpl(httpsPort, true);
+                    httpsClient = new OkTHttpClient(httpsPort, true);
                 }
 
                 if (null == server) {

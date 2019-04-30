@@ -81,6 +81,7 @@ class XmlBeanDefinitionLoader {
     public static final String IF_EXPR                        = "if-expr";
     public static final String IF_CLASS_PRESENT               = "if-class-present";
     public static final String IF_SERVLET_ENVIRONMENT         = "if-servlet-environment";
+    public static final String NAMESPACE_ATTRIBUTE            = "namespace";
     public static final String ID_ATTRIBUTE                   = "id";
     public static final String CLASS_ATTRIBUTE                = "class";
     public static final String ALIAS_ATTRIBUTE                = "alias";
@@ -95,6 +96,7 @@ class XmlBeanDefinitionLoader {
     public static final String VALUE_TYPE_ATTRIBUTE           = "value-type";
     public static final String PROXY_CLASS_ATTRIBUTE          = "proxy-class";
     public static final String TARGET_TYPE_ATTRIBUTE          = "target-type";
+    public static final String TARGET_NAMESPACE_ATTRIBUTE     = "target-namespace";
     public static final String TARGET_NAME_ATTRIBUTE          = "target-name";
     public static final String TARGET_ID_ATTRIBUTE            = "target-id";
     public static final String TARGET_PRIMARY_ATTRIBUTE       = "target-primary";
@@ -438,6 +440,7 @@ class XmlBeanDefinitionLoader {
 
         BeanDefinitionBase bean = new BeanDefinitionBase(reader.getSource());
 
+        bean.setNamespace(proxy ? reader.getAttribute(TARGET_NAMESPACE_ATTRIBUTE) : reader.getAttribute(NAMESPACE_ATTRIBUTE));
         bean.setId(proxy ? reader.getAttribute(TARGET_ID_ATTRIBUTE) : reader.getAttribute(ID_ATTRIBUTE));
         bean.setName(proxy ? reader.getAttribute(TARGET_NAME_ATTRIBUTE) : reader.getAttribute(NAME_ATTRIBUTE));
 
@@ -1405,7 +1408,7 @@ class XmlBeanDefinitionLoader {
 
         IfAttr isServletEnvironment = readIfAttr(e, IF_SERVLET_ENVIRONMENT);
         if(null != isServletEnvironment) {
-            if(!isServletEnvironment.test(Boolean.valueOf(isServletEnvironment.value))) {
+            if(!isServletEnvironment.test(container.getAppContext().isServletEnvironment())) {
                 return false;
             }
         }

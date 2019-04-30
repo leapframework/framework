@@ -167,5 +167,8 @@
     <!-- AuthzAuthentication Manager  -->
     <bean type="leap.oauth2.server.authc.AuthzAuthenticationManager"
           class="leap.oauth2.server.authc.DefaultAuthzAuthenticationManager" primary="true"/>
-
+    
+    <!-- app listener -->
+    <bean type="leap.web.AppListener" class="leap.oauth2.server.OAuth2ServerListener"/>
+    
 </beans>

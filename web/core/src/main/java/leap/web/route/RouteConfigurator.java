@@ -104,8 +104,27 @@ public interface RouteConfigurator {
         return allowAnonymous().enableCors().disableCsrf();
     }
 
+    /**
+     * Returns a new {@link RouteBuilder}.
+     */
+    RouteBuilder builder();
+
+    /**
+     * Builds a new {@link Route} only, do not add it to {@link Routes}.
+     */
+    default Route build() {
+        return builder().build();
+    }
+
 	/**
 	 * Apply the route.
 	 */
-	Route apply();
+	Route apply(boolean removeExistence);
+
+	/**
+	 * Apply the route.
+	 */
+	default Route apply() {
+		return apply(false);
+	}
 }

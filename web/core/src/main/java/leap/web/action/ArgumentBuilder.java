@@ -95,6 +95,28 @@ public class ArgumentBuilder extends ExtensibleBase implements Buildable<Argumen
         this.resolveValidators(validationManager);
 	}
 
+    public ArgumentBuilder(Argument a) {
+        this.name         = a.getName();
+        this.declaredName = a.getDeclaredName();
+        this.parameter    = a.getParameter();
+        this.type         = a.getType();
+        this.genericType  = a.getGenericType();
+        this.typeInfo     = a.getTypeInfo();
+        this.beanProperty = a.getBeanProperty();
+        this.required     = a.getRequired();
+        this.location     = a.getLocation();
+        this.annotations  = a.getAnnotations();
+        this.binder       = a.getBinder();
+
+        Collections2.addAll(this.validators, a.getValidators());
+
+        for(Argument wrappedArgument : a.getWrappedArguments()) {
+            this.addWrappedArgument(new ArgumentBuilder(wrappedArgument));
+        }
+
+        this.extensions.putAll(a.getExtensions());
+    }
+
 	public String getName() {
 		return name;
 	}
@@ -214,12 +236,12 @@ public class ArgumentBuilder extends ExtensibleBase implements Buildable<Argumen
             }
         }
 
-        if(Classes.isAnnotatioinPresent(annotations,Valid.class) ){
+        if(Classes.isAnnotationPresent(annotations,Valid.class) ){
             Valid valid = Classes.getAnnotation(annotations, Valid.class);
             if(valid.value()) {
                 addValidator(new NestedArgumentValidator(valid));
             }
-        }else if(type.isAnnotationPresent(Valid.class)) {
+        }else if(Classes.isAnnotationPresent(type, Valid.class)) {
             Valid valid = type.getAnnotation(Valid.class);
             if(valid.value()) {
                 addValidator(new NestedArgumentValidator(type.getAnnotation(Valid.class)));
@@ -298,7 +320,7 @@ public class ArgumentBuilder extends ExtensibleBase implements Buildable<Argumen
                 return;
             }
 
-            if(Classes.isAnnotatioinPresent(annotations, Multipart.class)) {
+            if(Classes.isAnnotationPresent(annotations, Multipart.class)) {
                 location = Location.PART_PARAM;
                 return;
             }

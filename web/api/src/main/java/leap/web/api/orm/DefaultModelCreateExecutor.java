@@ -20,35 +20,52 @@ package leap.web.api.orm;
 
 import leap.core.validation.Errors;
 import leap.core.validation.ValidationException;
+import leap.core.value.Record;
 import leap.lang.Beans;
 import leap.lang.Enumerable;
 import leap.lang.Enumerables;
+import leap.lang.New;
 import leap.orm.command.InsertCommand;
-import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
+import leap.orm.mapping.Mappings;
 import leap.orm.mapping.RelationMapping;
 import leap.orm.mapping.RelationProperty;
-import leap.web.api.meta.model.MApiModel;
 import leap.web.api.meta.model.MApiProperty;
 import leap.web.api.mvc.params.Partial;
+import leap.web.api.remote.RestResource;
 import leap.web.exception.BadRequestException;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class DefaultModelCreateExecutor extends ModelExecutorBase implements ModelCreateExecutor {
 
-    public DefaultModelCreateExecutor(ModelExecutorContext context) {
+    protected final ModelCreateExtension ex;
+
+    public DefaultModelCreateExecutor(ModelExecutorContext context, ModelCreateExtension ex) {
         super(context);
+        this.ex = null == ex ? ModelCreateExtension.EMPTY : ex;
     }
 
     @Override
     public CreateOneResult createOne(Object request, Object id, Map<String, Object> extraProperties) {
+        ModelExecutionContext context = new DefaultModelExecutionContext(this.context);
+
+        Object v = ex.processCreationParams(context, request);
+        if(null != v) {
+            request = v;
+        }
+        if(null != ex.handler) {
+            Object r = ex.handler.processCreationParams(context, request);
+            if(null != r) {
+                request = r;
+            }
+        }
+
         Map<String,Object> properties;
         if(request instanceof Partial) {
             properties = ((Partial) request).getProperties();
+        }else if(request instanceof Map) {
+            properties = (Map)request;
         }else{
             properties = Beans.toMap(request);
         }
@@ -61,21 +78,39 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
             properties.putAll(extraProperties);
         }
 
+        ex.processCreationRecord(context, properties);
+        if(null != ex.handler) {
+            ex.handler.processCreationRecord(context, properties);
+        }
+
         Map<RelationProperty, Object[]> relationProperties = new LinkedHashMap<>();
 
-        for(String name : properties.keySet()) {
+        Set<String> removes = new HashSet<>();
+
+        for (Map.Entry<String, Object> entry : properties.entrySet()) {
+            String name = entry.getKey();
             MApiProperty p = am.tryGetProperty(name);
+
             if(null == p) {
+                if(ex.handleCreationPropertyNotFound(context, name, entry.getValue(), removes)) {
+                    continue;
+                }
                 throw new BadRequestException("Property '" + name + "' not exists!");
             }
+
             if(p.isNotCreatableExplicitly()) {
-                throw new BadRequestException("Property '" + name + "' is not creatable!");
+                if(null == properties.get(name)) {
+                    removes.add(name);
+                }else{
+                    if(ex.handleCreationPropertyReadonly(context, name, entry.getValue(), removes)) {
+                        continue;
+                    }
+                    throw new BadRequestException("Property '" + name + "' is not creatable!");
+                }
             }
 
             if(null != p.getMetaProperty() && p.getMetaProperty().isReference()) {
-
-                Object v = properties.get(name);
-
+                v = properties.get(name);
                 if(null == v) {
                     continue;
                 }
@@ -89,63 +124,101 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
                     relationProperties.put(rp, e.toArray());
                 }
             }
+
+            tryHandleSpecialValue(entry, p);
         }
+
+        //Removes the not creatable properties.
+        removes.forEach(properties::remove);
 
         Errors errors = dao.validate(em, properties);
         if(!errors.isEmpty()) {
             throw new ValidationException(errors);
         }
 
-        InsertCommand insert = dao.cmdInsert(em.getEntityName()).from(properties);
-        if(null != id) {
-            insert.withId(id);
+        ex.preCreateRecord(context, properties);
+        if(null != ex.handler) {
+            ex.handler.preCreateRecord(context, properties);
         }
 
-        if(relationProperties.isEmpty()) {
-            insert.execute();
-        }else{
+        Object createdId;
+        Record record;
 
-            dao.doTransaction((conn) -> {
-                insert.execute();
+        if(!em.isRemoteRest()) {
+            InsertCommand insert = dao.cmdInsert(em.getEntityName()).from(properties);
+            if (null != id) {
+                insert.withId(id);
+            }
 
-                for(Map.Entry<RelationProperty, Object[]> entry : relationProperties.entrySet()) {
-                    //valid for many-to-many only ?
+            dao.withEvents(() -> {
+                if (relationProperties.isEmpty()) {
+                    executeInsert(insert);
+                } else {
+                    dao.doTransaction((conn) -> {
+                        executeInsert(insert);
 
-                    RelationProperty rp = entry.getKey();
+                        for (Map.Entry<RelationProperty, Object[]> entry : relationProperties.entrySet()) {
+                            //valid for many-to-many only ?
 
-                    RelationMapping rm = em.getRelationMapping(rp.getRelationName());
-                    if(rm.isManyToMany()) {
-                        EntityMapping joinEntity = md.getEntityMapping(rm.getJoinEntityName());
+                            RelationProperty rp = entry.getKey();
 
-                        RelationMapping manyToOne1 = joinEntity.tryGetKeyRelationMappingOfTargetEntity(em.getEntityName());
+                            RelationMapping rm = em.getRelationMapping(rp.getRelationName());
+                            if (rm.isManyToMany()) {
+                                EntityMapping joinEntity = md.getEntityMapping(rm.getJoinEntityName());
 
-                        boolean localFirst = true;
-                        if(!joinEntity.getKeyFieldMappings()[0].getFieldName().equals(manyToOne1.getJoinFields()[0].getLocalFieldName())){
-                            localFirst = false;
-                        }
+                                RelationMapping manyToOne1 = joinEntity.tryGetKeyRelationMappingOfTargetEntity(em.getEntityName());
 
-                        Object localId = insert.id();
+                                String localName;
+                                String targetName;
 
-                        List<Object[]> batchId = new ArrayList<>();
+                                if (joinEntity.getKeyFieldMappings()[0].getFieldName().equals(manyToOne1.getJoinFields()[0].getLocalFieldName())) {
+                                    localName = joinEntity.getKeyFieldNames()[0];
+                                    targetName = joinEntity.getKeyFieldNames()[1];
+                                } else {
+                                    localName = joinEntity.getKeyFieldNames()[1];
+                                    targetName = joinEntity.getKeyFieldNames()[0];
+                                }
 
-                        for(Object targetId : entry.getValue()) {
+                                Object localId = insert.id();
 
-                            if(localFirst) {
-                                batchId.add(new Object[]{localId, targetId});
-                            }else{
-                                batchId.add(new Object[]{targetId, localId});
+                                List<Map<String, Object>> batchId = new ArrayList<>();
+
+                                for (Object targetId : entry.getValue()) {
+                                    batchId.add(New.hashMap(localName, localId, targetName, targetId));
+                                }
+
+                                dao.batchInsert(joinEntity, batchId);
                             }
-
                         }
 
-                        dao.batchInsert(joinEntity, batchId);
-                    }
+                    });
                 }
-
             });
+
+            createdId = insert.id();
+            record    = dao.find(em, createdId);
+        }else {
+            RestResource restResource =
+                    restResourceFactory.createResource(dao.getOrmContext(), em);
+            record = restResource.create(properties);
+            createdId = Mappings.getId(em, record);
         }
 
-        return new CreateOneResult(insert.id());
+        record.put("$id", createdId);
+
+        Object entity = ex.postCreateRecord(context, createdId, record);
+        if(null != entity) {
+            return new CreateOneResult(createdId, entity);
+        }else {
+            return new CreateOneResult(createdId, record);
+        }
+    }
+
+    protected void executeInsert(InsertCommand insert) {
+        insert.execute();
+        if(null != ex.handler) {
+            ex.handler.postCreateRecord(context, insert.id());
+        }
     }
 
 }

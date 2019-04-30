@@ -22,8 +22,8 @@ import leap.lang.Arrays2;
 import leap.lang.path.PathPattern;
 import leap.web.Request;
 import leap.web.route.Route;
+import leap.web.security.SecurityContextHolder;
 import leap.web.security.SecurityFailureHandler;
-import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.authz.AuthorizationContext;
 
 public class MergedSecuredPath implements SecuredPath {
@@ -34,6 +34,11 @@ public class MergedSecuredPath implements SecuredPath {
     public MergedSecuredPath(Route route, SecuredPath p1, SecuredPath p2) {
         this.route  = route;
         this.merged = merge(p1, p2);
+    }
+
+    @Override
+    public Object getSource() {
+        return merged.getSource();
     }
 
     @Override
@@ -77,13 +82,13 @@ public class MergedSecuredPath implements SecuredPath {
     }
 
     @Override
-    public boolean checkAuthentication(Request request, AuthenticationContext context) {
-        return merged.checkAuthentication(request, context);
+    public Boolean tryCheckAuthentication(SecurityContextHolder context) {
+        return merged.tryCheckAuthentication(context);
     }
 
     @Override
-    public boolean checkAuthorization(Request request, AuthorizationContext context) {
-        return merged.checkAuthorization(request, context);
+    public Boolean tryCheckAuthorization(SecurityContextHolder context) {
+        return merged.tryCheckAuthorization(context);
     }
 
     @Override
@@ -93,6 +98,12 @@ public class MergedSecuredPath implements SecuredPath {
 
     private SecuredPath merge(SecuredPath p1, SecuredPath p2) {
         SecuredPathBuilder spb = new DefaultSecuredPathBuilder(route);
+
+        if(null != p1.getSource()) {
+            spb.setSource(p1.getSource());
+        }else if(null != p2.getSource()) {
+            spb.setSource(p2.getSource());
+        }
 
         if(null != p1.getAllowAnonymous()) {
             spb.setAllowAnonymous(p1.getAllowAnonymous());
@@ -113,15 +124,15 @@ public class MergedSecuredPath implements SecuredPath {
         }
 
         if(!Arrays2.isEmpty(p1.getPermissions())) {
-            spb.setPermissionsAllowed(p1.getPermissions());
+            spb.setPermissions(p1.getPermissions());
         }else{
-            spb.setPermissionsAllowed(p2.getPermissions());
+            spb.setPermissions(p2.getPermissions());
         }
 
         if(!Arrays2.isEmpty(p1.getRoles())) {
-            spb.setRolesAllowed(p1.getRoles());
+            spb.setRoles(p1.getRoles());
         }else{
-            spb.setRolesAllowed(p2.getRoles());
+            spb.setRoles(p2.getRoles());
         }
 
         if(null != p1.getFailureHandler()) {

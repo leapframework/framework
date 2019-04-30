@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 import leap.lang.Args;
 import leap.lang.Classes;
@@ -45,6 +46,7 @@ import leap.lang.Strings;
 import leap.lang.Valued;
 import leap.lang.convert.CollectionConverters.ListConverter;
 import leap.lang.meta.MSimpleType;
+import leap.lang.reflect.Reflection;
 import leap.lang.value.Null;
 
 @SuppressWarnings({"unchecked","rawtypes"})
@@ -55,7 +57,7 @@ public class Converts {
 	
 	private static final Object NOT_CONVERTED = new Object();
 	
-	private static Converter     beanConverter  = new BeanConverter();
+	private static BeanConverter beanConverter  = new BeanConverter();
 	private static Converter     arrayConverter = new ArrayConverter();
 	private static Converter     enumConverter  = new EnumConverter();
 	private static ListConverter listConverter  = new ListConverter();
@@ -75,6 +77,7 @@ public class Converts {
 		register(Double.class,				new NumberConverters.DoubleConverter());
 		register(BigInteger.class,			new NumberConverters.BigIntegerConverter());
 		register(BigDecimal.class,			new NumberConverters.BigDecimalConverter());
+		register(Number.class,				new NumberConverters.NumberConverter());
 		
 		//Legacy Date & Time: java.util.Date, java.sql.Date, java.sql.Time, java.sql.Timestamp, Calendar
 		//Java8 Date & Time : LocalDate, LocalTime, LocalDateTime, Instant
@@ -86,6 +89,9 @@ public class Converts {
 		register(LocalDate.class,           new DateTimeConverters.LocalDateConverter());
         register(LocalTime.class,           new DateTimeConverters.LocalTimeConverter());
         register(LocalDateTime.class,       new DateTimeConverters.LocalDateTimeConverter());
+
+        //Pattern
+        register(Pattern.class, new PatternConverter());
 		
 		//Collection :  
 		register(Iterable.class,new CollectionConverters.ListConverter());
@@ -106,6 +112,7 @@ public class Converts {
 		
 		//Clob, Blob, InputStream
 		registerAssignableFrom(Clob.class, new ClobConverter());
+        registerAssignableFrom(Map.class,  new MapConverter.ConcreteMapConverter());
 		registerAssignableFrom(Blob.class, new BlobConverter());
 		registerAssignableFrom(InputStream.class, new InputStreamConverter());
 		
@@ -141,12 +148,13 @@ public class Converts {
         Object v = doConvert(value, targetType, genericType, context);
 
         if(NOT_CONVERTED == v) {
-            throw new ConvertUnsupportedException(Strings.format("Cannot convert '{0}' to '{1}', value : {2}",value.getClass(),targetType.getName(),value.toString()));
+            String s = Strings.format("Can't convert value '{0}' from {1} to {2}",value.toString(),value.getClass(),targetType);
+            throw new ConvertUnsupportedException(s);
         }
 
         return (T)v;
     }
-	
+
 	public static <T> T tryConvert(Object value,Class<T> targetType, Type genericType) {
 		Object v = doConvert(value, targetType, genericType, null);
         
@@ -159,8 +167,9 @@ public class Converts {
 	
 	protected static <T> Object doConvert(Object value,Class<T> targetType, Type genericType, ConvertContext context) {
 		Args.notNull(targetType,"targetType");
-		
-		if(!CharSequence.class.isAssignableFrom(targetType)){
+
+		if(!CharSequence.class.isAssignableFrom(targetType) &&
+				!Object.class.equals(targetType) && !StringParsable.class.isAssignableFrom(targetType)){
 			value = trimToNull(value);	
 		}
         
@@ -193,7 +202,7 @@ public class Converts {
         }
         
         if(targetType.isEnum()){
-        	return (T)Enums.valueOf((Class<? extends Enum>)targetType,value);
+        	return (T)Enums.valueOrNameOf((Class<? extends Enum>)targetType,value);
         }
         
         try {
@@ -281,7 +290,7 @@ public class Converts {
 	}
 	
 	public static <T> T toBean(Map<String, ?> map,Class<T> beanClass) {
-		Out<T> out = new Out<T>();
+		Out<Object> out = new Out<>();
 		try {
 	        beanConverter.convertFrom(map, beanClass, null, out, null);
         } catch (ConvertException e){
@@ -289,8 +298,18 @@ public class Converts {
         } catch (Throwable e) {
         	throw new ConvertException(Strings.format("Error converting map to bean '{0}'",beanClass.getName()),e);
         }
-		return out.getValue();
+		return (T)out.getValue();
 	}
+
+    public static void toBean(Map map, Object bean) {
+        try {
+            beanConverter.convert(map, bean, null);
+        } catch (ConvertException e){
+            throw e;
+        } catch (Throwable e) {
+            throw new ConvertException(Strings.format("Error converting map to bean '{0}'",bean.getClass().getName()),e);
+        }
+    }
 	
 	public static String toString(Object value) {
 		if(null == value){

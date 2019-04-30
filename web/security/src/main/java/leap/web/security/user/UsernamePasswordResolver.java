@@ -67,13 +67,14 @@ public class UsernamePasswordResolver implements CredentialsResolver {
 			String username = request.getParameter(usernameParameter);
 			if(context.validation()
 					   .required(usernameParameter, username)
-					   .hasErrors()){
+					   .errors().contains(usernameParameter)){
 				return true;
 			}
 			context.setIdentity(username);
 			//Validates password if necessary
 			String password = request.getParameter(passwordParameter);
-			if(passwordRequired && context.validation().required(passwordParameter, password).hasErrors()){
+			if(passwordRequired && context.validation().required(passwordParameter, password)
+					.errors().contains(passwordParameter)){
 				return true;
 			}
 			

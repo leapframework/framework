@@ -17,6 +17,8 @@ package leap.web.api.spec.swagger;
 
 public class SwaggerConstants {
 
+    public static final String DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+
     public static final String SWAGGER               = "swagger";
     public static final String INFO                  = "info";
     public static final String NAME                  = "name";
@@ -52,6 +54,14 @@ public class SwaggerConstants {
     public static final String FORMAT                = "format";
     public static final String ENUM                  = "enum";
     public static final String ARRAY                 = "array";
+    public static final String DEFAULT               = "default";
+    public static final String PATTERN               = "pattern";
+    public static final String MAX_LENGTH            = "maxLength";
+    public static final String MIN_LENGTH            = "minLength";
+    public static final String MAXIMUM               = "maximum";
+    public static final String MINIMUM               = "minimum";
+    public static final String EXCLUSIVE_MAXIMUM     = "exclusiveMaximum";
+    public static final String EXCLUSIVE_MINIMUM     = "exclusiveMinimum";
     public static final String ITEMS                 = "items";
     public static final String REF                   = "$ref";
     public static final String OBJECT                = "object";
@@ -66,22 +76,31 @@ public class SwaggerConstants {
 	public static final String FLOW                 = "flow";
 	public static final String IMPLICIT             = "implicit";
 	public static final String ACCESS_CODE          = "accessCode";
+    public static final String APPLICATION          = "application";
+    public static final String PASSWORD             = "password";
 	public static final String AUTHZ_URL            = "authorizationUrl";
 	public static final String TOKEN_URL            = "tokenUrl";
 	public static final String SCOPES               = "scopes";
 
     public static final String USER_REQUIRED        = "userRequired";
-    public static final String CLIENT_REQUIRED      = "clientRequired";
-	
+    public static final String ALLOW_CLIENT_ONLY    = "allowClientOnly";
+
     //extend
     public static final String X_SECURITY   = "x-security";
 
     public static final String X_CORS       = "x-cors";
-    
+
+    public static final String X_ENTITY     = "x-entity";
+    public static final String X_IDENTITY   = "x-identity";
+    public static final String X_UNIQUE     = "x-unique";
+    public static final String X_SELECTABLE = "x-selectable";
+    public static final String X_AGGREGATABLE = "x-aggregatable";
+    public static final String X_GROUPABLE  = "x-groupable";
     public static final String X_CREATABLE  = "x-creatable";
     public static final String X_UPDATABLE  = "x-updatable";
     public static final String X_SORTABLE   = "x-sortable";
     public static final String X_FILTERABLE = "x-filterable";
+    public static final String X_EXPANDABLE = "x-expandable";
 
 	
 	protected SwaggerConstants() {

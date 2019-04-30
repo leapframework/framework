@@ -46,6 +46,13 @@ public interface OrmRegistry extends Emptiable {
     void registerContext(OrmContext context, boolean _default) throws ObjectExistsException;
 
     /**
+     * Register a {@link OrmContext}.
+     *
+     * @throws ObjectExistsException if a context with the same name already exists.
+     */
+    void registerContext(OrmContext context, String alias) throws ObjectExistsException;
+
+    /**
      * Removes the context with the given name and returns the removed context..
      *
      * <p/>

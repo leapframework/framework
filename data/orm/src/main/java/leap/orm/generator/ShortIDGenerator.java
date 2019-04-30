@@ -86,7 +86,7 @@ public class ShortIDGenerator extends AbstractExpression implements IdGenerator,
 
     @Override
     public void mapping(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder fmb) {
-		fmb.setValueGenerator(this);
+		fmb.setInsertValue(this);
     }
 	
 	@Override

@@ -31,11 +31,6 @@ public class ClientOnlyAuthentication extends AbstractAuthentication {
     }
 
     @Override
-    public boolean isAuthenticated() {
-        return true;
-    }
-
-    @Override
     public boolean isRememberMe() {
         return false;
     }

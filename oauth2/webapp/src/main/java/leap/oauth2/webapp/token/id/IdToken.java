@@ -20,6 +20,8 @@ import leap.core.security.ClientPrincipal;
 import leap.core.security.UserPrincipal;
 import leap.core.security.token.TokenCredentials;
 
+import java.util.Map;
+
 /**
  * The id token redirect back from oauth2 server.
  *
@@ -45,4 +47,6 @@ public interface IdToken extends TokenCredentials {
     default ClientPrincipal getClientInfo() {
         return null;
     }
+
+    Map<String, Object> getClaims();
 }

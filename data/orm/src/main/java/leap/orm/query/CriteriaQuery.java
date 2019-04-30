@@ -23,19 +23,62 @@ import leap.lang.params.ArrayParams;
 import leap.lang.params.Params;
 import leap.lang.value.Limit;
 import leap.lang.value.Page;
-import leap.orm.linq.Condition;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
 import leap.orm.mapping.RelationMapping;
 
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 
 public interface CriteriaQuery<T> extends Query<T> {
 
     String DEFAULT_ALIAS_NAME = "t";
+
+    /**
+     * Returns the selection fields or null.
+     */
+    String[] getSelects();
+
+    /**
+     * Returns the where expression or null.
+     */
+    String getWhere();
+
+    /**
+     * Returns is distinct query or not.
+     */
+    boolean isDistinct();
+
+    /**
+     * Returns the group by expression or null.
+     */
+    String getGroupBy();
+
+    /**
+     * Returns the having expression or null.
+     */
+    String getHaving();
+
+    /**
+     * Returns the sql view or null.
+     */
+    String getSqlView();
+
+    /**
+     * Sets the sql of from.
+     *
+     * <p/>
+     * select * from (sql view) t.
+     */
+    CriteriaQuery<T> fromSqlView(String sql);
+
+    /**
+     * Wraps the sql query with the wrapper.
+     */
+    CriteriaQuery<T> wrapSqlQuery(Function<String, String> wrapper);
 
     /**
      * Sets the given name and value as CriteriaQuery parameter.
@@ -114,6 +157,11 @@ public interface CriteriaQuery<T> extends Query<T> {
     EntityMapping getEntityMapping();
 
     /**
+     * Select distinct ...
+     */
+    CriteriaQuery<T> distinct();
+
+    /**
      * Sets the selected fields(columns) in the CriteriaQuery result.
      * <p>
      * <p>
@@ -133,6 +181,16 @@ public interface CriteriaQuery<T> extends Query<T> {
      * Returns <code>true</code> in the {@link Predicate#test(Object)} method if the field should be included in selected list.
      */
     CriteriaQuery<T> select(Predicate<FieldMapping> filter);
+
+    /**
+     * Appends a select item.
+     */
+    CriteriaQuery<T> addSelectItem(String fieldOrExpr);
+
+    /**
+     * Appends a select field, skip if exists.
+     */
+    CriteriaQuery<T> addSelectField(String field);
 
     /**
      * Returns the table alias of primary entity.
@@ -318,6 +376,11 @@ public interface CriteriaQuery<T> extends Query<T> {
     CriteriaWhere<T> where();
 
     /**
+     * Sets the where expression by the given field names and values.
+     */
+    CriteriaQuery<T> where(Map<String, Object> fields);
+
+    /**
      * Sets the where expression in this CriteriaQuery.
      */
     CriteriaQuery<T> where(String expression);
@@ -326,6 +389,26 @@ public interface CriteriaQuery<T> extends Query<T> {
      * Sets the where expression in this CriteriaQuery.
      */
     CriteriaQuery<T> where(String expression, Object... args);
+
+    /**
+     * Where -> (where) and (expr)
+     */
+    CriteriaQuery<T> whereAnd(String expr);
+
+    /**
+     * Where -> (where) and (expr)
+     */
+    CriteriaQuery<T> whereAnd(String expr, Object... args);
+
+    /**
+     * Where -> (where) or (expr)
+     */
+    CriteriaQuery<T> whereOr(String expr);
+
+    /**
+     * Where -> (where) or (expr)
+     */
+    CriteriaQuery<T> whereOr(String expr, Object... args);
 
     /**
      * Sets the 'group by' sql expression in the generated sql.

@@ -18,10 +18,21 @@ package leap.orm.sql.parser;
 import leap.orm.sql.Sql;
 import leap.orm.sql.ast.*;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
 abstract class SqlQueryParser extends SqlParser {
+
+    protected static final Set<Token> WHERE_KEYWORDS = new HashSet<>();
+    static {
+        WHERE_KEYWORDS.add(Token.WHEN);
+        WHERE_KEYWORDS.add(Token.TOP);
+        WHERE_KEYWORDS.add(Token.COUNT);
+        WHERE_KEYWORDS.add(Token.DELETE);
+        WHERE_KEYWORDS.add(Token.END);
+    }
 
 	public SqlQueryParser(SqlParser parent) {
 		super(parent);
@@ -37,7 +48,7 @@ abstract class SqlQueryParser extends SqlParser {
     }
 
     protected void parseFromItem(SqlQuery query) {
-        parseTableSource(query);
+        query.setFrom(parseTableSource(query));
     }
 
     protected SqlTableSource parseTableSource(SqlQuery query) {
@@ -60,6 +71,17 @@ abstract class SqlQueryParser extends SqlParser {
                 parseUnion();
 
                 expect(Token.RPAREN).acceptText();
+
+                if (null == query.getFrom() && query.getTableSources().size() == 1) {
+                    SqlTableSource ts = query.getTableSources().get(0);
+                    if(ts instanceof SqlSelect) {
+                        SqlSelect ss = (SqlSelect)ts;
+                        ss.setAlias(parseTableAlias());
+                    }
+                }else if(query.getFrom() instanceof SqlSelect) {
+                    SqlSelect ss = (SqlSelect)query.getFrom();
+                    ss.setAlias(parseTableAlias());
+                }
 
                 return null;
             }
@@ -185,11 +207,6 @@ abstract class SqlQueryParser extends SqlParser {
             return true;
         }
 
-        if(token == Token.IDENTIFIER){
-            parseSqlObjectName();
-            return true;
-        }
-
         if(token == Token.AND) {
             acceptNode();
             return true;
@@ -197,6 +214,16 @@ abstract class SqlQueryParser extends SqlParser {
 
         if(token == Token.EQ) {
             acceptNode();
+            return true;
+        }
+
+        if(token == Token.IDENTIFIER){
+            parseSqlObjectName();
+            return true;
+        }
+
+        if(token.isKeyword() && WHERE_KEYWORDS.contains(token)) {
+            parseSqlObjectName();
             return true;
         }
 
@@ -260,6 +287,10 @@ abstract class SqlQueryParser extends SqlParser {
 	}
 	
 	protected String parseTableAlias(){
+        if(lexer.token() == Token.RPAREN) {
+            return null;
+        }
+
 		if(lexer.token() == Token.AS){
             return acceptAlias();
 		}
@@ -289,6 +320,10 @@ abstract class SqlQueryParser extends SqlParser {
             expect(Token.LPAREN).acceptText();
             parseRestForClosingParen();
             expect(Token.RPAREN).acceptText();
+
+            if(lexer.token() == Token.FROM) {
+                return;
+            }
 
             if(lexer.token().isKeywordOrIdentifier() && lexer.peekCharSkipWhitespaces() == '(') {
                 acceptText();

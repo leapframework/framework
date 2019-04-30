@@ -21,6 +21,8 @@ import leap.lang.ExtensibleBase;
 import leap.lang.Named;
 import leap.lang.accessor.AnnotationsGetter;
 import leap.lang.reflect.ReflectMethod;
+import leap.web.format.RequestFormat;
+import leap.web.format.ResponseFormat;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
@@ -31,6 +33,8 @@ public interface Action extends Named,AnnotationsGetter,Extensible {
 	
 	Argument[]			EMPTY_ARGUMENTS	   = new Argument[]{};
 	ActionInterceptor[] EMPTY_INTERCEPTORS = new ActionInterceptor[]{};
+    RequestFormat[]     EMPTY_CONSUMES     = new RequestFormat[]{};
+    ResponseFormat[]    EMPTY_PRODUCES     = new ResponseFormat[]{};
 	
 	@Override
 	default String getName() {
@@ -72,6 +76,14 @@ public interface Action extends Named,AnnotationsGetter,Extensible {
 	default Argument[] getArguments() {
 		return EMPTY_ARGUMENTS;
 	}
+
+    default RequestFormat[] getConsumes() {
+        return EMPTY_CONSUMES;
+    }
+
+    default ResponseFormat[] getProduces() {
+        return EMPTY_PRODUCES;
+    }
 	
 	/**
 	 * Returns the annotations defined in action level.
@@ -81,7 +93,7 @@ public interface Action extends Named,AnnotationsGetter,Extensible {
 	}
 
 	/**
-	 * @see {@link java.lang.reflect.Method#getAnnotationsByType(Class)}
+	 * see {@link Method#getAnnotation(Class)}
      */
 	default <T extends Annotation> T[] getAnnotationsByType(Class<T> annotationClass) {
 		return (T[])Array.newInstance(annotationClass,0);
@@ -98,7 +110,7 @@ public interface Action extends Named,AnnotationsGetter,Extensible {
 	 * Returns the a merged annotations of controller and action.
 	 * 
 	 * <p>
-	 * If an annotation ared defined both in controller and action, the action's will override the annotation of controller.  
+	 * If an annotation is defined both in controller and action, the action's will override the annotation of controller.
 	 */
 	default Annotation[] getMergedAnnotations() {
 		return Classes.EMPTY_ANNOTATION_ARRAY;

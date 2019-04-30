@@ -19,6 +19,7 @@ import leap.lang.convert.Converts;
 import leap.web.App;
 import leap.web.annotation.RequestBody;
 import leap.web.body.RequestBodyReader;
+import leap.web.exception.BadRequestException;
 import leap.web.format.RequestFormat;
 
 import java.util.Optional;
@@ -29,6 +30,10 @@ public class RequestBodyArgumentResolver implements ArgumentResolver {
 	protected final boolean			  requestBodyDeclared;
 	protected final RequestBodyReader requestBodyReader;
 	protected final ArgumentResolver  nonRequestBodyResolver;
+
+	public RequestBodyArgumentResolver(App app, Action action, Argument argument) {
+		this(app, action, argument, null, false, null);
+	}
 	
 	public RequestBodyArgumentResolver(App app,
 									   Action action,
@@ -68,10 +73,18 @@ public class RequestBodyArgumentResolver implements ArgumentResolver {
         }
 
         if(requestBodyDeclared){
-            throw new IllegalArgumentException("Reading request body for type '" + argument.getType() + "' not supported");
+            if(null == format) {
+                throw new BadRequestException("Unsupported request content-type '" + context.getRequest().getContentTypeValue() + "'");
+            }else {
+                throw new IllegalArgumentException("Reading request body for type '" + argument.getType() + "' not supported");
+            }
         }
 
-        return nonRequestBodyResolver.resolveValue(context, argument);
+        if(null != nonRequestBodyResolver) {
+            return nonRequestBodyResolver.resolveValue(context, argument);
+        }else {
+            return null;
+        }
 	}
 
 	protected RequestBodyReader getRequestBodyReader(App app,Argument argument) {

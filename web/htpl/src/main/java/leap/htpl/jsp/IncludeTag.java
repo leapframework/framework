@@ -15,19 +15,19 @@
  */
 package leap.htpl.jsp;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.servlet.jsp.JspException;
-
 import leap.htpl.HtplContext;
 import leap.htpl.HtplTemplate;
 import leap.htpl.web.WebHtplContext;
 import leap.lang.Classes;
 import leap.lang.Strings;
-import leap.lang.servlet.ServletResource;
-import leap.lang.servlet.Servlets;
+import leap.lang.resource.Resource;
 import leap.web.Request;
+import leap.web.Utils;
+
+import javax.servlet.jsp.JspException;
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Renders a template file.
@@ -69,22 +69,26 @@ public class IncludeTag extends HtplTagBase {
 				t = tempaltes.get(file);
 				
 				if(null == t){
-					ServletResource jsp = getCurrentJspResource();
+					Resource jsp = getCurrentJspResource();
 					if(null == jsp){
 						throw new JspException("Cannot resolve current jsp resource, check the class '" + 
 											   SERVLET_RESOURCE_VIEW_BASE_CLASS_NAME + "'");
 					}			
-					
-					ServletResource r = Strings.startsWith(file, "/") ? 
-											Servlets.getResource(pageContext.getServletContext(), file) : 
-										    jsp.createRelative(file);
 
-					if(null == r || !r.exists()){
-						throw new JspException("Htpl template file '" + file + "' cannot be resolved from jsp '" + 
-											   jsp.getPathWithinContext() + "'");
+					try {
+						Resource r = Strings.startsWith(file, "/") ?
+								Utils.getResource(pageContext.getServletContext(), file) :
+								jsp.createRelative(file);
+
+						if (null == r || !r.exists()) {
+							throw new JspException("Htpl template file '" + file + "' cannot be resolved from jsp '" +
+									jsp.getPath() + "'");
+						}
+
+						t = engine().createTemplate(r);
+					}catch (IOException e) {
+						throw new JspException("Err resolve template '" + file + "'", e);
 					}
-					
-					t = engine().createTemplate(r);
 				}
             }
 		}
@@ -92,8 +96,8 @@ public class IncludeTag extends HtplTagBase {
 		return t;
 	}
 	
-	protected ServletResource getCurrentJspResource() {
-		return (ServletResource)pageContext.getRequest().getAttribute(leap.web.view.AbstractServletResourceView.VIEW_RESOURCE_ATTRIBUTE);
+	protected Resource getCurrentJspResource() {
+		return (Resource) pageContext.getRequest().getAttribute(leap.web.view.AbstractServletResourceView.VIEW_RESOURCE_ATTRIBUTE);
 	}
 	
 	protected int doEndTag(HtplTemplate t) throws JspException {

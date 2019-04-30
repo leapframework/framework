@@ -22,6 +22,10 @@ import leap.web.security.SecurityTestCase;
 import org.junit.Test;
 
 public class TokenAuthenticationTest extends SecurityTestCase {
+
+    private static String prefixWithDot(String s) {
+        return s.startsWith(".") ? s : "." + s;
+    }
 	
 	@Test
 	public void testTokenCookieDomain() {
@@ -42,7 +46,7 @@ public class TokenAuthenticationTest extends SecurityTestCase {
 		forLogin("http://www.example.com:8080/app3").sendAjax();
 		cookie = client().getCookie(cookieName);
 		assertNotNull(cookie);
-		assertEquals(".example.com", cookie.getDomain());
+		assertEquals(".example.com", prefixWithDot(cookie.getDomain()));
 	}
 	
 	@Test

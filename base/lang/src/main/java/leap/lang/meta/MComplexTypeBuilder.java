@@ -15,13 +15,16 @@
  */
 package leap.lang.meta;
 
+import leap.lang.Builders;
+
 import java.lang.reflect.Modifier;
 
-public class MComplexTypeBuilder extends MStructualTypeBuilder<MComplexType> {
+public class MComplexTypeBuilder extends MStructuralTypeBuilder<MComplexType> {
 
 	protected MComplexType baseType;
     protected Class<?>     javaType;
 	protected boolean	   _abstract;
+    protected boolean      entity;
 
     public MComplexTypeBuilder() {
 
@@ -50,6 +53,14 @@ public class MComplexTypeBuilder extends MStructualTypeBuilder<MComplexType> {
 		this.baseType = baseType;
 	}
 
+    public boolean isEntity() {
+        return entity;
+    }
+
+    public void setEntity(boolean entity) {
+        this.entity = entity;
+    }
+
     public Class<?> getJavaType() {
         return javaType;
     }
@@ -61,7 +72,7 @@ public class MComplexTypeBuilder extends MStructualTypeBuilder<MComplexType> {
     @Override
     public MComplexType build() {
 	    return new MComplexType(name, title, summary, description,
-                                baseType, javaType, properties, _abstract);
+                                baseType, javaType, Builders.buildList(properties), _abstract, entity);
     }
 	
 }

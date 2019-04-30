@@ -20,11 +20,19 @@ import leap.lang.exception.NestedSQLException;
 import leap.lang.jdbc.ConnectionCallback;
 import leap.lang.jdbc.ConnectionCallbackWithResult;
 
+import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 public interface JdbcExecutor {
+
+    /**
+     * Use the given {@link DataSource} to execute the {@link Runnable}
+     *
+     * and restore to default {@link DataSource} after finish running.
+     */
+    void withDataSource(DataSource dataSource, Runnable runnable);
 	
 	/**
 	 * Executes the given {@link ConnectionCallback}.

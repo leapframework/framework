@@ -27,7 +27,12 @@ public class MUnresolvedType extends MType {
 	    super(summary, description);
     }
 
-	@Override
+    @Override
+    public String getName() {
+        return "unresolved";
+    }
+
+    @Override
 	public MTypeKind getTypeKind() {
 		return MTypeKind.UNRESOLVED;
 	}

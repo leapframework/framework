@@ -32,6 +32,7 @@ import leap.orm.query.QueryFactory;
 import leap.orm.reader.EntityReader;
 import leap.orm.reader.RowReader;
 import leap.orm.sql.SqlFactory;
+import leap.orm.validation.EntityValidator;
 
 import javax.sql.DataSource;
 
@@ -54,6 +55,7 @@ public class DefaultOrmDynaContext implements DynaOrmContext {
     protected QueryFactory       queryFactory;
     protected EntityReader       entityReader;
     protected RowReader          rowReader;
+    protected EntityValidator    entityValidator;
     protected EntityEventHandler eventHandler;
 
     public DefaultOrmDynaContext(String name, Db db, OrmMetadata md) {
@@ -148,6 +150,11 @@ public class DefaultOrmDynaContext implements DynaOrmContext {
     }
 
     @Override
+    public EntityValidator getEntityValidator() {
+        return entityValidator;
+    }
+
+    @Override
     public EntityEventHandler getEntityEventHandler() {
         return eventHandler;
     }
@@ -195,6 +202,10 @@ public class DefaultOrmDynaContext implements DynaOrmContext {
 
     public void setQueryFactory(QueryFactory queryFactory) {
         this.queryFactory = queryFactory;
+    }
+
+    public void setEntityValidator(EntityValidator entityValidator) {
+        this.entityValidator = entityValidator;
     }
 
     public void setEntityReader(EntityReader entityReader) {

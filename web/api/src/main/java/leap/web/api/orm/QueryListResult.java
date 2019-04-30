@@ -20,15 +20,75 @@ package leap.web.api.orm;
 
 import leap.core.value.Record;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public final class QueryListResult {
 
-    public final List<Record> list;
-    public final long         count;
+    public static QueryListResult EMPTY = new QueryListResult(new ArrayList<>(), 0);
+
+    public List<Record>      list;
+    public long              count;
+    public Object            entity;
+    public List<ExpandError> expandErrors;
+
+    public QueryListResult() {
+
+    }
 
     public QueryListResult(List<Record> list, long count) {
+        this(list, count, null);
+    }
+
+    public QueryListResult(List<Record> list, long count, Object entity) {
         this.list = list;
         this.count = count;
+        this.entity = entity;
+    }
+
+    public QueryListResult(List<Record> list, long count, Object entity, List<ExpandError> expandErrors) {
+        this.list = list;
+        this.count = count;
+        this.entity = entity;
+        this.expandErrors = expandErrors;
+    }
+
+    public List<Record> getList() {
+        return list;
+    }
+
+    public void setList(List<Record> list) {
+        this.list = list;
+    }
+
+    public long getCount() {
+        return count;
+    }
+
+    public void setCount(long count) {
+        this.count = count;
+    }
+
+    public Object getEntity() {
+        return entity;
+    }
+
+    public void setEntity(Object entity) {
+        this.entity = entity;
+    }
+
+    public List<ExpandError> getExpandErrors() {
+        return expandErrors;
+    }
+
+    public void setExpandErrors(List<ExpandError> expandErrors) {
+        this.expandErrors = expandErrors;
+    }
+
+    public void addExpandError(ExpandError e) {
+        if (null == expandErrors) {
+            expandErrors = new ArrayList<>();
+        }
+        expandErrors.add(e);
     }
 }

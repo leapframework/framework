@@ -29,6 +29,8 @@ import leap.lang.New;
 import leap.lang.Strings;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.query.CriteriaQuery;
+import leap.web.Request;
+import leap.web.Response;
 import leap.web.annotation.Path;
 import leap.web.annotation.http.DELETE;
 import leap.web.annotation.http.GET;
@@ -66,7 +68,6 @@ public class RestApiController extends ModelController<RestApi> {
     @GET
     public ApiResponse<List<RestApi>> getRestApis(QueryOptions options) {
         return queryList(options,query -> query.join((sqlBuilder, context) -> {
-            System.out.println("");
             sqlBuilder.append(" left join RestOperation o on o.apiId="+query.alias()
                     +".id AND o.name=:oname AND "+query.alias()+".name=:oname ");
             query.param("oname","name");
@@ -81,7 +82,7 @@ public class RestApiController extends ModelController<RestApi> {
     @AllowAnonymous
     @GET("/published")
     public ApiResponse<List<RestApi>> getPublishedApis(QueryOptions options){
-        return queryList(options, New.hashMap("published", true));
+        return queryList(options, New.hashMap("published", new boolean[]{true,false}));
     }
 
     @GET("/{id}")

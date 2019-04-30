@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <sqls xmlns="http://www.leapframework.org/schema/sqls">
+
+    <command key="findOwner1ByName">
+        select id, name from owners1 where name = :name
+    </command>
     
     <command key="findOwnerByLastName">
         select * from owners where last_name like :lastName
@@ -9,7 +13,7 @@
         select first_name as FIRST_NAME from owners where last_name = ?
     </command>
     
-    <command key="findOwnerByLastNameSimple" lang="dynamic:simple">
+    <command key="findOwnerByLastNameSimple">
         select * from owners where last_name like :lastName
     </command>    
     

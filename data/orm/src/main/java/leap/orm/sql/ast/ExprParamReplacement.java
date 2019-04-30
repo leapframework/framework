@@ -16,12 +16,16 @@
 package leap.orm.sql.ast;
 
 import leap.lang.expression.Expression;
+import leap.lang.params.Params;
 import leap.orm.sql.PreparedBatchSqlStatementBuilder;
+import leap.orm.sql.Sql;
 import leap.orm.sql.Sql.Scope;
 import leap.orm.sql.SqlClauseException;
 import leap.orm.sql.SqlContext;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ExprParamReplacement extends ExprParamBase {
 	
@@ -34,7 +38,20 @@ public class ExprParamReplacement extends ExprParamBase {
 	    return true;
     }
 
-	@Override
+    @Override
+    public boolean resolveDynamic(SqlContext context, Sql sql, Appendable buf, Params params) throws IOException {
+        Object v = expression.getValue();
+        if(null != v) {
+            String s = v.toString();
+            if(s.length() > 0) {
+                buf.append(s);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     protected void prepareBatchStatement_(SqlContext context, PreparedBatchSqlStatementBuilder stm,Object[] params) throws IOException {
 		throw new SqlClauseException("Batch executing sql cannot use Replacement Expression [" + this + "]");	    
     }

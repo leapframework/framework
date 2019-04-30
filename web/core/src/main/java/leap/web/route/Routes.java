@@ -30,9 +30,19 @@ public interface Routes extends Iterable<Route>,Emptiable {
 	int size();
 
 	/**
+	 * Returns the path prefix.
+	 */
+	String getPathPrefix();
+
+	/**
 	 * Returns a new created {@link RouteConfigurator}.
 	 */
 	RouteConfigurator create();
+
+    /**
+     * Add a nested routes for the given path prefix.
+     */
+	Routes addNested(Object source, String pathPrefix);
 	
 	/**
 	 * Adds a route handling a http get request. 
@@ -175,6 +185,11 @@ public interface Routes extends Iterable<Route>,Emptiable {
         }
         return false;
     }
+
+    /**
+     * Returns true if the given {@link Route} exists.
+     */
+    boolean exists(Route route);
 
     /**
      * Removes the {@link Route}.

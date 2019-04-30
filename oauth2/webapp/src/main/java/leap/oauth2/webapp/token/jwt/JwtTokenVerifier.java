@@ -18,7 +18,6 @@ package leap.oauth2.webapp.token.jwt;
 
 import leap.core.AppConfigException;
 import leap.core.annotation.Inject;
-import leap.core.security.token.TokenExpiredException;
 import leap.core.security.token.TokenVerifyException;
 import leap.core.security.token.jwt.JWT;
 import leap.core.security.token.jwt.JwtVerifier;
@@ -29,15 +28,16 @@ import leap.lang.http.client.HttpResponse;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.security.RSA;
-import leap.oauth2.webapp.OAuth2InternalServerException;
 import leap.oauth2.webapp.OAuth2Config;
-import leap.oauth2.webapp.token.*;
-import leap.oauth2.webapp.token.at.SimpleAccessToken;
+import leap.oauth2.webapp.OAuth2InternalServerException;
+import leap.oauth2.webapp.token.SimpleTokenInfo;
+import leap.oauth2.webapp.token.Token;
+import leap.oauth2.webapp.token.TokenInfo;
+import leap.oauth2.webapp.token.TokenVerifier;
 import leap.web.security.SecurityConfig;
 
 import java.security.interfaces.RSAPublicKey;
 import java.util.Map;
-import java.util.Objects;
 
 public class JwtTokenVerifier implements TokenVerifier {
 
@@ -86,12 +86,10 @@ public class JwtTokenVerifier implements TokenVerifier {
 
         SimpleTokenInfo tokenInfo = new SimpleTokenInfo();
 
-        String userId   = (String)jwtDetail.remove(JWT.CLAIM_SUBJECT);
+        String userId   = (String)jwtDetail.get(JWT.CLAIM_SUBJECT);
         tokenInfo.setUserId(userId);
-        tokenInfo.setScope((String)jwtDetail.remove("scope"));
-        tokenInfo.setClientId((String)jwtDetail.remove(JWT.CLAIM_AUDIENCE));
-
-        //todo: userinfo
+        tokenInfo.setScope((String)jwtDetail.get("scope"));
+        tokenInfo.setClientId((String)jwtDetail.get("client_id"));
 
         tokenInfo.setCreated(System.currentTimeMillis());
         Object exp = jwtDetail.get(JWT.CLAIM_EXPIRATION_TIME);
@@ -100,6 +98,7 @@ public class JwtTokenVerifier implements TokenVerifier {
             long nowTimeInSecond = System.currentTimeMillis()/1000L;
             tokenInfo.setExpiresIn((int)(expirationTimeSecond-nowTimeInSecond));
         }
+        tokenInfo.setClaims(jwtDetail);
         return tokenInfo;
     }
 

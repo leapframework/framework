@@ -32,6 +32,9 @@ class Keywords {
         map.put("do", Token.DO);
         map.put("new", Token.NEW);
         map.put("instanceof", Token.INSTNACEOF);
+        map.put("contains", Token.CONTAINS);
+        map.put("startsWith", Token.STARTS_WITH);
+        map.put("endsWith", Token.ENDS_WITH);
         
         map.put("byte", Token.BYTE);
         map.put("short", Token.SHORT);

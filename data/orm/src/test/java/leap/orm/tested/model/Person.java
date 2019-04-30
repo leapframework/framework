@@ -15,36 +15,17 @@
  */
 package leap.orm.tested.model;
 
-import java.util.List;
-
 import leap.core.validation.annotations.Email;
 import leap.core.validation.annotations.NotEmpty;
-import leap.orm.annotation.Finder;
 import leap.orm.annotation.Id;
 import leap.orm.model.Model;
 
 public class Person extends Model {
 
-	@Finder
-	public static Person findByName(String name){
-		return null;
-	}
-	
-	public static List<Person> findAllByNameLike(String name){
-		return null;
-	}
-	
-	public static List<Person> findAllByNameOrNameLike(String name,String name1){
-		return null;
-	}
-	
-	public static Person findByName1(String name){
-		return new Person();
-	}
-	
 	public static void test(){
 
 	}
+
 	@Id
 	private String id;
 	

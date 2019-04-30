@@ -19,7 +19,6 @@ import leap.lang.params.Params;
 import leap.orm.dao.Dao;
 import leap.orm.event.DeleteEntityEventImpl;
 import leap.orm.event.EntityEventHandler;
-import leap.orm.event.EntityEventWithWrapperImpl;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.sql.SqlCommand;
 
@@ -28,13 +27,13 @@ public class DefaultDeleteCommand extends AbstractEntityDaoCommand implements De
     protected final EntityEventHandler eventHandler;
     protected final Object             id;
     protected final Params             idParameter;
-    protected final SqlCommand         sqlCommand;
+    protected final SqlCommand         primaryCommand;
 
     public DefaultDeleteCommand(Dao dao,EntityMapping em,Object id) {
 	    super(dao,em);
 
         this.eventHandler = context.getEntityEventHandler();
-	    this.sqlCommand   = metadata.getSqlCommand(em.getEntityName(), SqlCommand.DELETE_COMMAND_NAME);
+	    this.primaryCommand = metadata.getSqlCommand(em.getEntityName(), SqlCommand.DELETE_COMMAND_NAME);
 	    this.id 		  = id;
     	this.idParameter  = context.getParameterStrategy().createIdParameters(context, em, id);
     }
@@ -49,7 +48,7 @@ public class DefaultDeleteCommand extends AbstractEntityDaoCommand implements De
             //pre without transaction.
             eventHandler.preDeleteEntityNoTrans(context, em, e);
 
-            if(eventHandler.isDeleteEventTransactional(context, em)) {
+            if(em.hasSecondaryTable() || eventHandler.isDeleteEventTransactional(context, em)) {
                 result = dao.doTransaction((status) -> {
                     e.setTransactionStatus(status);
 
@@ -80,7 +79,10 @@ public class DefaultDeleteCommand extends AbstractEntityDaoCommand implements De
 	}
 
     protected int doExecuteDelete() {
-        return sqlCommand.executeUpdate(this, idParameter);
+        if(em.hasSecondaryTable()) {
+            context.getSqlFactory().createDeleteCommand(context, em, true).executeUpdate(this, idParameter);
+        }
+        return primaryCommand.executeUpdate(this, idParameter);
     }
 
 }

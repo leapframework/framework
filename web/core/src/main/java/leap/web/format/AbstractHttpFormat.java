@@ -47,6 +47,13 @@ public abstract class AbstractHttpFormat implements BeanNameAware,Named {
     public void setBeanName(String name) {
 		this.name = name;
     }
+
+    /**
+     * Returns the primary mime type of this format.
+     */
+    public MimeType getPrimaryMimeType() {
+        return null == supportedMediaTypes || supportedMediaTypes.isEmpty() ? null : supportedMediaTypes.get(0);
+    }
 	
 	public List<MimeType> getSupportedMediaTypes() {
 		return supportedMediaTypes;

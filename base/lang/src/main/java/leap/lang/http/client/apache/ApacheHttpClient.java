@@ -133,7 +133,7 @@ public class ApacheHttpClient extends AbstractHttpClient implements Initializabl
 
         cb.setConnectionManager(cm);
         cb.setDefaultRequestConfig(requestConfig);
-
+        cb.disableCookieManagement();
         return cb.build();
     }
 

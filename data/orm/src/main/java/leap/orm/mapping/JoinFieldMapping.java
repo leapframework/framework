@@ -21,22 +21,31 @@ public class JoinFieldMapping {
 
 	protected final String  localFieldName;
     protected final boolean localPrimaryKey;
+    protected final String  referencedEntityName;
 	protected final String  referencedFieldName;
 	
-	public JoinFieldMapping(String localFieldName, boolean localPrimaryKey, String referencedFieldName) {
+	public JoinFieldMapping(String localFieldName, boolean localPrimaryKey, String referencedEntityName, String referencedFieldName) {
 		Args.notEmpty(localFieldName,"localFieldName");
 		Args.notEmpty(referencedFieldName,"referencedFieldName");
 		
-		this.localFieldName      = localFieldName;
-        this.localPrimaryKey     = localPrimaryKey;
-		this.referencedFieldName = referencedFieldName;
+		this.localFieldName       = localFieldName;
+        this.localPrimaryKey      = localPrimaryKey;
+        this.referencedEntityName = referencedEntityName;
+		this.referencedFieldName  = referencedFieldName;
 	}
 
 	public String getLocalFieldName() {
 		return localFieldName;
 	}
 
-	public String getReferencedFieldName() {
+    /**
+     * For many-to-many only.
+     */
+    public String getReferencedEntityName() {
+        return referencedEntityName;
+    }
+
+    public String getReferencedFieldName() {
 		return referencedFieldName;
 	}
 

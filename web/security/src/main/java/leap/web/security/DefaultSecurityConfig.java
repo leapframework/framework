@@ -23,9 +23,11 @@ import leap.core.annotation.Inject;
 import leap.core.ioc.BeanList;
 import leap.core.ioc.PostConfigureBean;
 import leap.core.security.crypto.PasswordEncoder;
+import leap.core.web.RequestBase;
 import leap.core.web.RequestIgnore;
 import leap.lang.Args;
 import leap.lang.Strings;
+import leap.lang.path.AntPathMatcher;
 import leap.lang.path.AntPathPattern;
 import leap.web.Renderable;
 import leap.web.security.csrf.CsrfStore;
@@ -44,6 +46,10 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
     protected boolean                  enabled                        = false;
     protected boolean                  crossContext                   = false;
     protected Boolean                  csrfEnabled                    = null;
+    protected boolean                  corsIgnored                    = false;
+    protected boolean                  loginEnabled                   = true;
+    protected boolean                  loginRedirectRoot              = true;
+    protected boolean                  logoutEnabled                  = true;
     protected boolean                  authenticateAnyRequests        = true;
     protected boolean                  authorizeAnyRequests           = false;
     protected int                      defaultAuthenticationExpires   = SecurityConstants.DEFAULT_AUTHENTICATION_EXPIRES;
@@ -66,6 +72,7 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
     protected String                   authenticationTokenType        = SecurityConstants.DEFAULT_TOKEN_TYPE;
     protected String                   tokenSecret                    = null;
     protected String                   cookieDomain                   = null;
+    protected String[]                 ignorePaths                    = new String[0];
     protected List<RequestIgnore>      ignores                        = new ArrayList<>();
 
     protected Map<String,SecurityFailureHandler> pathPrefixFailureHandlers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -129,6 +136,16 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
     public DefaultSecurityConfig setCrossContext(boolean crossContext) {
         this.crossContext = crossContext;
         return this;
+    }
+
+    @Override
+    public boolean isCorsIgnored() {
+        return corsIgnored;
+    }
+
+    @ConfigProperty
+    public void setCorsIgnored(boolean corsIgnored) {
+        this.corsIgnored = corsIgnored;
     }
 
     public boolean isCsrfEnabled() {
@@ -317,6 +334,12 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
     }
 
     @ConfigProperty
+    public SecurityConfigurator setDefaultAuthenticationExpires(int defaultAuthenticationExpires) {
+        this.defaultAuthenticationExpires = defaultAuthenticationExpires;
+        return this;
+    }
+
+    @ConfigProperty
     public void setAuthenticationTokenCookieName(String authenticationTokenCookieName) {
         this.authenticationTokenCookieName = authenticationTokenCookieName;
     }
@@ -338,7 +361,16 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
     public void setTokenSecret(String tokenSecret) {
         this.tokenSecret = tokenSecret;
     }
-
+    
+    public String[] getIgnorePaths(){
+        return this.ignorePaths;
+    }
+    
+    @ConfigProperty
+    public void setIgnorePaths(String[] ignorePaths){
+        this.ignorePaths = ignorePaths;
+    }
+    
     public String getCookieDomain() {
         return cookieDomain;
     }
@@ -346,6 +378,38 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
     @ConfigProperty
     public void setCookieDomain(String cookieDomain) {
         this.cookieDomain = cookieDomain;
+    }
+
+    @Override
+    public boolean isLoginEnabled() {
+        return loginEnabled;
+    }
+
+    @ConfigProperty
+    public SecurityConfigurator setLoginEnabled(boolean loginEnabled) {
+        this.loginEnabled = loginEnabled;
+        return this;
+    }
+
+    @Override
+    public boolean isLoginRedirectRoot() {
+        return loginRedirectRoot;
+    }
+
+    @ConfigProperty
+    public void setLoginRedirectRoot(boolean loginRedirectRoot) {
+        this.loginRedirectRoot = loginRedirectRoot;
+    }
+
+    @Override
+    public boolean isLogoutEnabled() {
+        return logoutEnabled;
+    }
+
+    @ConfigProperty
+    public SecurityConfigurator setLogoutEnabled(boolean logoutEnabled) {
+        this.logoutEnabled = logoutEnabled;
+        return this;
     }
 
     public String getLoginUrl() {
@@ -417,8 +481,17 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
 
     @Override
     public SecurityConfigurator ignore(String path) {
-        AntPathPattern pattern = new AntPathPattern(path);
-        ignores.add((req) -> pattern.matches(req.getPath()));
+        if(Strings.isEmpty(path)) {
+            return this;
+        }
+
+        for(RequestIgnore ignore : ignores) {
+            if(ignore instanceof AntPathIgnore && ((AntPathIgnore) ignore).getPath().equals(path)) {
+                return this;
+            }
+        }
+
+        ignores.add(new AntPathIgnore(path));
         ignoresArray = ignores.toArray(new RequestIgnore[ignores.size()]);
         return this;
     }
@@ -450,5 +523,27 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
             rememberMeSecret = config.ensureGetSecret();
         }
 
+        for (String path : getIgnorePaths()){
+            ignore(path);
+        }
+        
+    }
+
+    protected static final class AntPathIgnore implements RequestIgnore {
+
+        private final AntPathPattern pattern;
+
+        public AntPathIgnore(String path) {
+            this.pattern = new AntPathPattern(path);
+        }
+
+        public String getPath() {
+            return pattern.pattern();
+        }
+
+        @Override
+        public boolean matches(RequestBase request) {
+            return pattern.matches(request.getPath());
+        }
     }
 }

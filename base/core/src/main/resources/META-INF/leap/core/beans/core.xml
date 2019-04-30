@@ -16,12 +16,18 @@
     </bean>
     <bean type="leap.core.params.ParamsFactory" class="leap.core.params.DefaultParamsFactory" primary="true"/>
     <bean type="leap.core.variable.VariableEnvironment" class="leap.core.variable.DefaultVariableEnvironment" primary="true"/>
-
+    
+    <!-- injector -->
+    <bean type="leap.core.ioc.BeanInjector" class="leap.core.ioc.ClassesFieldInjector"/>
+    
     <!--variable-->
-    <bean name="now" type="leap.core.variable.Variable" class="leap.core.variable.NowVariable"/>
-    <bean name="timestamp" type="leap.core.variable.Variable" class="leap.core.variable.TimestampVariable"/>
-    <bean name="uuid" type="leap.core.variable.Variable" class="leap.core.variable.UUIDVariable"/>
-    <bean name="user" type="leap.core.variable.Variable" class="leap.core.variable.UserVariable"/>
+    <bean name="now"               type="leap.core.variable.Variable" class="leap.core.variable.NowVariable"/>
+    <bean name="timestamp"         type="leap.core.variable.Variable" class="leap.core.variable.TimestampVariable"/>
+    <bean name="currentTimeMillis" type="leap.core.variable.Variable" class="leap.core.variable.CurrentTimeMillisVariable"/>
+    <bean name="user"              type="leap.core.variable.Variable" class="leap.core.variable.UserVariable"/>
+    <bean name="uuid"              type="leap.core.variable.Variable" class="leap.core.variable.UUIDVariable"/>
+    <bean name="short_uuid"        type="leap.core.variable.Variable" class="leap.core.variable.ShortUUIDVariable"/>
+    <bean name="short_id"          type="leap.core.variable.Variable" class="leap.core.variable.ShortIDVariable"/>
 
     <bean type="leap.core.cache.CacheManager" class="leap.core.cache.DefaultCacheManager" primary="true">
         <register-bean-factory target-type="leap.core.cache.Cache"/>
@@ -35,7 +41,7 @@
 
     <!--jdbc-->
     <beans if-class-present="org.apache.tomcat.jdbc.pool.DataSource">
-        <bean name="tomcat-jdbc" type="leap.core.ds.DataSourceFactory" class="leap.core.ds.integration.TomcatDataSourceFactory"/>
+        <bean name="tomcat" type="leap.core.ds.DataSourceFactory" class="leap.core.ds.integration.TomcatDataSourceFactory"/>
     </beans>
     <bean name="jndi" type="leap.core.ds.DataSourceFactory" class="leap.core.ds.JndiDataSourceFactory"/>
 
@@ -53,6 +59,7 @@
     <bean name="bcrypt" type="leap.core.security.crypto.PasswordEncoder" class="leap.core.security.crypto.bcrypt.BCryptPasswordEncoder" primary="true"/>
 
     <!-- validations -->
+    <init class="leap.core.validation.MPropertyConfigurator"/>
     <bean type="leap.core.validation.ValidationManager" class="leap.core.validation.DefaultValidationManager" primary="true"/>
     <bean type="leap.core.validation.BeanValidator" 	class="leap.core.validation.DefaultBeanValidator" primary="true"/>
 

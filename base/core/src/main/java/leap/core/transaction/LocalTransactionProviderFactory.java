@@ -26,8 +26,8 @@ public class LocalTransactionProviderFactory implements TransactionProviderFacto
 	protected Isolation   defaultIsolation   = Isolation.DEFAULT;
 
 	@Override
-	public TransactionProvider getTransactionProvider(DataSource dataSource) {
-		LocalTransactionProvider tm = new LocalTransactionProvider(dataSource);
+	public TransactionProvider getTransactionProvider(DataSource dataSource, String name) {
+		LocalTransactionProvider tm = new LocalTransactionProvider(dataSource, name);
 		
 		tm.setDefaultPropagation(defaultPropagation);
 		tm.setDefaultIsolation(defaultIsolation);

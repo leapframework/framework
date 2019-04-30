@@ -18,16 +18,15 @@ package leap.oauth2.server.endpoint.token;
 import leap.core.annotation.Inject;
 import leap.core.security.UserPrincipal;
 import leap.lang.Strings;
+import leap.lang.http.HTTP;
 import leap.oauth2.server.OAuth2Errors;
 import leap.oauth2.server.OAuth2Params;
 import leap.oauth2.server.OAuth2AuthzServerConfig;
 import leap.oauth2.server.authc.AuthzAuthentication;
 import leap.oauth2.server.authc.SimpleAuthzAuthentication;
 import leap.oauth2.server.client.AuthzClient;
-import leap.oauth2.server.client.AuthzClientAuthenticationContext;
 import leap.oauth2.server.client.AuthzClientCredentials;
 import leap.oauth2.server.client.AuthzClientManager;
-import leap.oauth2.server.client.DefaultAuthzClientAuthenticationContext;
 import leap.oauth2.server.token.AuthzAccessToken;
 import leap.oauth2.server.token.AuthzRefreshToken;
 import leap.oauth2.server.token.AuthzTokenManager;
@@ -41,6 +40,7 @@ import leap.web.security.user.UserStore;
 
 import java.util.function.Consumer;
 
+import static leap.oauth2.server.OAuth2Errors.ERROR_TOKEN_EXPIRED;
 import static leap.oauth2.server.Oauth2MessageKey.*;
 
 /**
@@ -85,14 +85,15 @@ public class RefreshTokenGrantTypeHandler extends AbstractGrantTypeHandler imple
 		AuthzRefreshToken token = tokenManager.loadRefreshToken(refreshToken);
 		if(null == token) {
 			handleError(request,response,params,
-					getOauth2Error(key -> OAuth2Errors.invalidGrantError(request,key,"invalid refresh token"),ERROR_INVALID_GRANT_INVALID_REFRESH_TOKEN,refreshToken));
+					getOauth2Error(key -> OAuth2Errors.invalidTokenError(request,key,"invalid refresh token"),ERROR_INVALID_GRANT_INVALID_REFRESH_TOKEN,refreshToken));
 			return;
 		}
 		//Check expired?
 		if(token.isExpired()) {
 			tokenManager.removeRefreshToken(token);
+			
 			handleError(request,response,params,
-					getOauth2Error(key -> OAuth2Errors.invalidGrantError(request,key,"refresh token expired"),
+					getOauth2Error(key -> OAuth2Errors.oauth2Error(request, HTTP.SC_UNAUTHORIZED, ERROR_TOKEN_EXPIRED, key,"refresh token expired"),
 							ERROR_INVALID_GRANT_REFRESH_TOKEN_EXPIRED,refreshToken));
 			return;
 		}
@@ -106,7 +107,7 @@ public class RefreshTokenGrantTypeHandler extends AbstractGrantTypeHandler imple
 			if(null == ud || !ud.isEnabled()) {
 				tokenManager.removeRefreshToken(token);
 				handleError(request,response,params,
-						getOauth2Error(key -> OAuth2Errors.invalidGrantError(request,key,"invalid user"),INVALID_REQUEST_INVALID_USERNAME,token.getUserId()));
+						getOauth2Error(key -> OAuth2Errors.invalidTokenError(request,key,"invalid user"),INVALID_REQUEST_INVALID_USERNAME,token.getUserId()));
 				return;
 			}
 			user = ud;
@@ -123,16 +124,21 @@ public class RefreshTokenGrantTypeHandler extends AbstractGrantTypeHandler imple
 			String clientId =client.getId();
 			if(!Strings.equals(token.getClientId(),client.getId())){
 				handleError(request,response,params,
-						getOauth2Error(key -> OAuth2Errors.invalidGrantError(request,key,"this refresh token is not for client "+clientId),ERROR_INVALID_GRANT_INVALID_REFRESH_TOKEN,refreshToken));
+						getOauth2Error(key -> OAuth2Errors.invalidTokenError(request,key,"this refresh token is not for client "+clientId),ERROR_INVALID_GRANT_INVALID_REFRESH_TOKEN,refreshToken));
 				return;
 			}
 			
 			if(!client.isEnabled()) {
 				tokenManager.removeRefreshToken(token);
 				handleError(request,response,params,
-						getOauth2Error(key -> OAuth2Errors.invalidGrantError(request,key,"invalid client"),INVALID_REQUEST_INVALID_CLIENT,token.getClientId()));
+						getOauth2Error(key -> OAuth2Errors.invalidClientError(request,key,"invalid client"),INVALID_REQUEST_INVALID_CLIENT,token.getClientId()));
 				return;
 			}
+		}
+		if(null == client){
+			handleError(request,response,params,
+					getOauth2Error(key -> OAuth2Errors.invalidTokenError(request,key,"invalid client of refresh token"),ERROR_INVALID_GRANT_INVALID_REFRESH_TOKEN,token.getClientId()));
+			return;
 		}
 		UserDetails ud = null;
 		if(null != user){
@@ -141,7 +147,8 @@ public class RefreshTokenGrantTypeHandler extends AbstractGrantTypeHandler imple
 		AuthzAuthentication oauthAuthc = new SimpleAuthzAuthentication(params, client, ud);
 		
 		//Generates a new token.
-		callback.accept(tokenManager.createAccessToken(oauthAuthc, token));
+		AuthzAccessToken accessToken = tokenManager.createAccessToken(oauthAuthc, token);
+		callback.accept(accessToken);
 	}
 
 	protected AuthzClient authcClient(Request request, Response response, OAuth2Params params){

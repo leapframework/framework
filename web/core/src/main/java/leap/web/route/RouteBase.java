@@ -18,6 +18,8 @@ package leap.web.route;
 import leap.core.web.path.PathTemplate;
 import leap.web.action.Action;
 
+import java.util.Map;
+
 /**
  * The base interface of {@link Route} and {@link RouteBuilder}
  */
@@ -34,6 +36,11 @@ public interface RouteBase {
     Action getAction();
 
     /**
+     * Replaces the action.
+     */
+    void setAction(Action action);
+
+    /**
      * Return the controller of {@link Action} or <code>null</code> if no controller
      */
     default Object getController(){
@@ -45,5 +52,12 @@ public interface RouteBase {
             return action.getController();
         }
         return null;
+    }
+
+    /**
+     * Returns the path template defined in this routing rule use to match a request path.
+     */
+    default boolean match(String path, Map<String,String> variables) {
+        return getPathTemplate().match(path, variables);
     }
 }

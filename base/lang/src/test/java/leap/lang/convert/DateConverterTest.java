@@ -15,13 +15,20 @@
  */
 package leap.lang.convert;
 
+import java.sql.Time;
 import java.sql.Timestamp;
+import java.text.ParsePosition;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 import junit.framework.TestCase;
 import leap.lang.Dates;
 import leap.lang.time.DateFormats;
 
+import leap.lang.time.StopWatch;
 import org.junit.Test;
 
 public class DateConverterTest extends TestCase{
@@ -48,5 +55,42 @@ public class DateConverterTest extends TestCase{
         Timestamp timestamp = Converts.convert(-28800000, Timestamp.class);
         assertNotNull(timestamp);
     }
-	
+
+    @Test
+    public void testStringTimeToDate() {
+        Time d = Converts.convert("01:59:50", Time.class);
+        assertNotNull(d);
+
+        int count = 100000;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DateFormats.TIME_PATTERN).withZone(ZoneId.systemDefault());
+
+        StopWatch sw = StopWatch.startNew();
+        for(int i=0;i<count;i++) {
+            Converts.convert("01:59:50", Date.class);
+        }
+        System.out.println("Converts.convert : " + sw.getElapsedMilliseconds());
+
+        sw = StopWatch.startNew();
+        for(int i=0;i<count;i++) {
+            Dates.parse("01:59:50");
+        }
+        System.out.println("Dates.parse : " + sw.getElapsedMilliseconds());
+
+        sw = StopWatch.startNew();
+        for(int i=0;i<count;i++) {
+            formatter.parse("01:59:50");
+        }
+        System.out.println("Formatter.parse : " + sw.getElapsedMilliseconds());
+
+        assertEquals("01:59:50", Converts.toString(d));
+    }
+    @Test
+    public void testStringDateToDate(){
+	    String str = "1988-04-10 00:00:00";
+        LocalDateTime ldt = LocalDateTime.parse(str, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        Date date =  Converts.convert(str, Date.class);
+        LocalDateTime converted = LocalDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC+8"));
+        assertEquals(ldt,converted);
+    }
+
 }

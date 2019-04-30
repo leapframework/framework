@@ -122,7 +122,7 @@ public abstract class WebTestBase extends TestBase {
      * </pre>
      */
 	protected final THttpResponse get(String path) {
-		response = client().get(path(path));
+		response = useGet(path(path)).send();
 		request  = response.request();
 		return response;
 	}
@@ -131,7 +131,7 @@ public abstract class WebTestBase extends TestBase {
      * Sends a POST request to the given path and returns the {@link THttpResponse}.
      */
 	protected final THttpResponse post(String path) {
-		response = client().post(path(path));
+		response = usePost(path(path)).send();
 		request  = response.request();
 		return response;
 	}
@@ -161,7 +161,9 @@ public abstract class WebTestBase extends TestBase {
      * Sends a PUT request to the given path and returns the {@link THttpResponse}.
      */
     protected final THttpResponse put(String path) {
-        response = client().request(Method.PUT,path(path)).send();
+        THttpRequest re = client().request(Method.PUT,path(path));
+        beforeRequest(re);
+        response = re.send();
         request  = response.request();
         return response;
     }
@@ -170,7 +172,9 @@ public abstract class WebTestBase extends TestBase {
      * Sends a PATCH request to the given path and returns the {@link THttpResponse}.
      */
     protected final THttpResponse patch(String path) {
-        response = client().request(Method.PATCH,path(path)).send();
+        THttpRequest re = client().request(Method.PATCH,path(path));
+        beforeRequest(re);
+        response = re.send();
         request  = response.request();
         return response;
     }
@@ -179,7 +183,9 @@ public abstract class WebTestBase extends TestBase {
      * Sends a PATCH request to the given path and returns the {@link THttpResponse}.
      */
     protected final THttpResponse patchJson(String path, Object value) {
-        response = client().request(Method.PATCH,path(path)).setJson(value).send();
+        THttpRequest re = client().request(Method.PATCH,path(path)).setJson(value);
+        beforeRequest(re);
+        response = re.send();
         request  = response.request();
         return response;
     }
@@ -188,7 +194,9 @@ public abstract class WebTestBase extends TestBase {
      * Sends a HEAD request to the given path and returns the {@link THttpResponse}.
      */
     protected final THttpResponse head(String path) {
-        response = client().request(Method.HEAD,path(path)).send();
+        THttpRequest re = client().request(Method.HEAD,path(path));
+        beforeRequest(re);
+        response = re.send();
         request  = response.request();
         return response;
     }
@@ -197,7 +205,9 @@ public abstract class WebTestBase extends TestBase {
      * Sends a DELETE request to the given path and returns the {@link THttpResponse}.
      */
     protected final THttpResponse delete(String path) {
-        response = client().request(Method.DELETE,path(path)).send();
+        THttpRequest re = client().request(Method.DELETE,path(path));
+        beforeRequest(re);
+        response = re.send();
         request  = response.request();
         return response;
     }
@@ -206,7 +216,9 @@ public abstract class WebTestBase extends TestBase {
      * Sends a OPTIONS request to the given path and returns the {@link THttpResponse}.
      */
     protected final THttpResponse options(String path) {
-        response = client().request(Method.OPTIONS,path(path)).send();
+        THttpRequest re = client().request(Method.OPTIONS,path(path));
+        beforeRequest(re);
+        response = re.send();
         request  = response.request();
         return response;
     }
@@ -243,49 +255,63 @@ public abstract class WebTestBase extends TestBase {
      * Creates a new {@link THttpRequest} request using 'GET' method.
      */
     protected final THttpRequest useGet(String path) {
-        return client().request(Method.GET, path(path));
+        THttpRequest re = client().request(Method.GET, path(path));
+        beforeRequest(re);
+        return re;
     }
 
     /**
      * Creates a new {@link THttpRequest} request using 'POST' method.
      */
     protected final THttpRequest usePost(String path) {
-        return client().request(Method.POST, path(path));
+        THttpRequest re = client().request(Method.POST, path(path));
+        beforeRequest(re);
+        return re;
     }
 
     /**
      * Creates a new {@link THttpRequest} request using 'DELETE' method.
      */
     protected final THttpRequest useDelete(String path) {
-        return client().request(Method.DELETE, path(path));
+        THttpRequest re = client().request(Method.DELETE, path(path));
+        beforeRequest(re);
+        return re;
     }
 
     /**
      * Creates a new {@link THttpRequest} request using 'PUT' method.
      */
     protected final THttpRequest usePut(String path) {
-        return client().request(Method.PUT, path(path));
+        THttpRequest re = client().request(Method.PUT, path(path));
+        beforeRequest(re);
+        return re;
     }
 
     /**
      * Creates a new {@link THttpRequest} request using 'PATCH' method.
      */
     protected final THttpRequest usePatch(String path) {
-        return client().request(Method.PATCH, path(path));
+        THttpRequest re = client().request(Method.PATCH, path(path));
+        beforeRequest(re);
+        return re;
     }
 
     /**
      * Creates a new {@link THttpRequest} for sending the request with http {@link Method} later.
      */
     protected final THttpRequest request(Method method, String path) {
-        return client().request(method, path(path));
+        THttpRequest re = client().request(method, path(path));
+        beforeRequest(re);
+        return re;
     }
 
     /**
      * Sends an Ajax GET request to the given path and returns {@link THttpResponse}.
      */
     protected THttpResponse ajaxGet(String path) {
-        response = useGet(path).ajax().send();
+        THttpRequest re = useGet(path).ajax();
+        beforeRequest(re);
+        response = re.send();
         request = response.request();
         return response;
     }
@@ -294,7 +320,9 @@ public abstract class WebTestBase extends TestBase {
      * Sends an Ajax POST request to the given path and returns {@link THttpResponse}.
      */
     protected THttpResponse ajaxPost(String path) {
-        response = usePost(path).ajax().send();
+        THttpRequest re = usePost(path).ajax();
+        beforeRequest(re);
+        response = re.send();
         request = response.request();
         return response;
     }
@@ -309,5 +337,10 @@ public abstract class WebTestBase extends TestBase {
                 return contextPath + (Strings.isEmpty(path) ? "/" : path);
             }
         }
+    }
+
+    protected void beforeRequest(THttpRequest request) {
+        // do nothing
+        // for children classes to do some request common handling.
     }
 }

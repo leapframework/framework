@@ -15,10 +15,12 @@
  */
 package tests.core.el.function;
 
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 import leap.core.el.EL;
@@ -31,7 +33,22 @@ import leap.lang.New;
 import org.junit.Test;
 
 public class TimeFuncsTest extends AppTestBase {
-
+	
+	@Test
+	public void testFormatSqlTimestamp(){
+		LocalDateTime ldt = LocalDateTime.now();
+		Timestamp timestamp = java.sql.Timestamp.valueOf(ldt);
+		String date = Dates.format(timestamp);
+		assertEquals(ldt.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")),date);
+	}
+	@Test
+	public void testFormatSqlDate(){
+		LocalDate date = LocalDate.now();
+		java.sql.Date d = java.sql.Date.valueOf(date);
+		String f = Dates.format(d);
+		assertEquals(date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),f);
+	}
+	
 	@Test
 	public void testFormat() {
 		Date d = Dates.parse("2014-11-01 10:02:03");

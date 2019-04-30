@@ -15,39 +15,34 @@
  */
 package leap.core.i18n;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
 public class DefaultMessageContext implements MessageContext {
-	
-	private Set<String> 		 resourceUrls = new HashSet<>();
-	private Map<String, Message> messages     = new HashMap<>();
 
-    private boolean              originalDefaultOverride;
-    private boolean 			 defaultOverride;
-	
-	public DefaultMessageContext() {
-	    super();
+    private final Set<String> resourceUrls = new HashSet<>();
+
+    private boolean originalDefaultOverride;
+    private boolean defaultOverride;
+
+    private final Locale                      defaultLocale;
+    private final Map<String, Message>        messages;
+    private final Map<String, Message> defaultMessages;
+
+    public DefaultMessageContext(Locale defaultLocale, boolean defaultOverride, Map<String, Message> messages, Map<String, Message> defaultMessages) {
+        this.defaultLocale = defaultLocale;
+        this.defaultOverride = defaultOverride;
+        this.originalDefaultOverride = defaultOverride;
+        this.messages = messages;
+        this.defaultMessages = defaultMessages;
     }
-	
-	public DefaultMessageContext(boolean defaultOverride){
-		this.defaultOverride = defaultOverride;
-        this.originalDefaultOverride = defaultOverride;
-	}
-	
-	public DefaultMessageContext(boolean defaultOverride,Map<String, Message> messages){
-		this.defaultOverride = defaultOverride;
-        this.originalDefaultOverride = defaultOverride;
-		this.messages        = messages;
-	}
 
-	@Override
-	public boolean isDefaultOverride() {
-		return defaultOverride;
-	}
+    @Override
+    public boolean isDefaultOverride() {
+        return defaultOverride;
+    }
 
     @Override
     public void setDefaultOverride(boolean b) {
@@ -60,27 +55,36 @@ public class DefaultMessageContext implements MessageContext {
     }
 
     @Override
-	public boolean containsResourceUrl(String url) {
-		return resourceUrls.contains(url);
-	}
+    public boolean containsResourceUrl(String url) {
+        return resourceUrls.contains(url);
+    }
 
-	@Override
-	public void addResourceUrl(String url) {
-		resourceUrls.add(url);
-	}
+    @Override
+    public void addResourceUrl(String url) {
+        resourceUrls.add(url);
+    }
 
-	@Override
-	public Message tryGetMessage(Locale locale, String name) {
-		return messages.get(getKey(locale, name));
-	}
+    @Override
+    public Message tryGetMessage(Locale locale, String name) {
+        return messages.get(getKey(locale, name));
+    }
 
-	@Override
-	public void addMessage(Locale locale, String name, Message message) {
-		messages.put(getKey(locale, name), message);
-	}
-	
-	protected String getKey(Locale locale, String name){
-		return null == locale ? name : name + "_" + locale.toString();
-	}
+    @Override
+    public void addMessage(Locale locale, String name, Message message) {
+        messages.put(getKey(locale, name), message);
+
+        if (!defaultMessages.containsKey(name) ||
+                (isDefaultLocale(locale) && !isDefaultLocale(message.getLocale()))) {
+            defaultMessages.put(name, message);
+        }
+    }
+
+    protected boolean isDefaultLocale(Locale locale) {
+        return null == locale || locale.equals(defaultLocale);
+    }
+
+    protected String getKey(Locale locale, String name) {
+        return null == locale ? name : name + "_" + locale.toString();
+    }
 
 }

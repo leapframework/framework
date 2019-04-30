@@ -17,14 +17,16 @@ package leap.web.api.config;
 
 import leap.lang.Extensible;
 import leap.lang.http.MimeTypes;
+import leap.lang.meta.MComplexType;
 import leap.lang.naming.NamingStyle;
+import leap.web.api.Api;
 import leap.web.api.config.model.ModelConfig;
 import leap.web.api.config.model.OAuthConfig;
 import leap.web.api.config.model.ParamConfig;
 import leap.web.api.config.model.RestdConfig;
-import leap.web.api.meta.model.MApiPermission;
-import leap.web.api.meta.model.MApiResponse;
-import leap.web.api.meta.model.MApiResponseBuilder;
+import leap.web.api.meta.ApiMetadataBuilder;
+import leap.web.api.meta.model.*;
+import leap.web.api.mvc.ApiFailureHandler;
 import leap.web.route.Route;
 import leap.web.route.Routes;
 
@@ -34,9 +36,12 @@ public interface ApiConfigurator extends Extensible {
     String[] DEFAULT_PRODUCES = new String[]{MimeTypes.APPLICATION_JSON};
     String[] DEFAULT_CONSUMES = new String[]{MimeTypes.APPLICATION_JSON};
 
-    String DEFAULT_VERSION   = "1.0";
-    int    MAX_PAGE_SIZE     = 10000;
-    int    DEFAULT_PAGE_SIZE = 50;
+    String DEFAULT_VERSION                = "1.0";
+    int    MAX_PAGE_SIZE                  = 1000;
+    int    DEFAULT_PAGE_SIZE              = 50;
+    int    MAX_PAGE_SIZE_WITH_EXPAND_MANY = 100;
+    int    MAX_PAGE_SIZE_WITH_EXPAND_ONE  = 1000;
+    int    MAX_RECORDS_PER_EXPAND         = 1000;
 
     /**
      * Returns the configuration object.
@@ -81,7 +86,17 @@ public interface ApiConfigurator extends Extensible {
     /**
      * Adds a model config.
      */
-    ApiConfigurator addModel(ModelConfig model);
+    ApiConfigurator addModelConfig(ModelConfig mc);
+
+    /**
+     * Adds a model
+     */
+    ApiConfigurator addModel(MApiModelBuilder model);
+
+    /**
+     * Adds a complex type.
+     */
+    ApiConfigurator addComplexType(MComplexType ct);
 
     /**
      * Adds a parameter config.
@@ -130,6 +145,16 @@ public interface ApiConfigurator extends Extensible {
     ApiConfigurator setDefaultPageSize(int size);
 
     /**
+     * Sets the max expand.
+     */
+    ApiConfigurator setMaxPageSizeWithExpand(int size);
+
+    /**
+     * Sets the expand limit.
+     */
+    ApiConfigurator setMaxRecordsPerExpand(int limit);
+
+    /**
      * Sets all the api operations to default anonymous or not.
      */
     ApiConfigurator setDefaultAnonymous(boolean anonymous);
@@ -173,12 +198,30 @@ public interface ApiConfigurator extends Extensible {
     ApiConfigurator tryAddPermission(MApiPermission p);
 
     /**
-     * Adds a route in this api.
+     * Adds an operation route in this api.
      * <p>
      * <p/>
      * The permissions defined in the route will be added automatically.
      */
     ApiConfigurator addRoute(Route route);
+
+    /**
+     * Adds a dynamic route in this api.
+     * <p>
+     * <p/>
+     * The permissions defined in the route will be added automatically.
+     */
+    default ApiConfigurator addDynamicRoute(Route route) {
+        return addDynamicRoute(route, true);
+    }
+
+    /**
+     * Adds a dynamic route in this api.
+     *
+     * <p/>
+     * The permissions defined in the route will be added automatically.
+     */
+    ApiConfigurator addDynamicRoute(Route route, boolean isOperation);
 
     /**
      * Sets base package of this api
@@ -201,9 +244,9 @@ public interface ApiConfigurator extends Extensible {
     ApiConfigurator setRestdConfig(RestdConfig c);
 
     /**
-     * Sets the {@link Routes} for storing dynamic created routes.
+     * Sets the {@link Routes} for added api routes..
      */
-    ApiConfigurator setDynamicRoutes(Routes routes);
+    ApiConfigurator setContainerRoutes(Routes routes);
 
     /**
      * Enables restd.
@@ -214,4 +257,19 @@ public interface ApiConfigurator extends Extensible {
      * Returns the {@link RestdConfig} or null if restd is not enabled.
      */
     RestdConfig getRestdConfig();
+
+    /**
+     * Optional.
+     */
+    ApiMetadataBuilder getMetadata();
+
+    /**
+     * Sets {@link ApiMetadataBuilder}.
+     */
+    void setMetadata(ApiMetadataBuilder metadata);
+
+    /**
+     * Sets {@link ApiFailureHandler}.
+     */
+    void setFailureHandler(ApiFailureHandler failureHandler);
 }

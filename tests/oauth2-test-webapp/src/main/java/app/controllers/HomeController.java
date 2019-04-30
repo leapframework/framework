@@ -21,6 +21,7 @@ import leap.core.security.UserPrincipal;
 import leap.core.security.annotation.AllowAnonymous;
 import leap.lang.Strings;
 import leap.lang.http.HTTP;
+import leap.web.Request;
 import leap.web.ResponseEntity;
 
 public class HomeController {
@@ -42,5 +43,21 @@ public class HomeController {
         }
 
     }
-
+    @AllowAnonymous
+    public ResponseEntity ignoreAccessTokenResolved(Request request){
+        if(request.getUser().isAnonymous()){
+            return ResponseEntity.OK;
+        }else {
+            return ResponseEntity.of(HTTP.Status.FORBIDDEN);
+        }
+    }
+    
+    @AllowAnonymous
+    public ResponseEntity noIgnoreAccessTokenResolved(Request request){
+        if(request.getUser().isAnonymous()){
+            return ResponseEntity.of(HTTP.Status.FORBIDDEN);
+        }else {
+            return ResponseEntity.OK;
+        }
+    }
 }

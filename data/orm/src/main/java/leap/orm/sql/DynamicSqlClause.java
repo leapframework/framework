@@ -15,7 +15,6 @@
  */
 package leap.orm.sql;
 
-import com.sun.org.apache.regexp.internal.RE;
 import leap.core.params.ParamsFactory;
 import leap.db.Db;
 import leap.db.DbLimitQuery;
@@ -119,7 +118,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause,Sql
     @Override
     public SqlStatement createUpdateStatement(SqlContext context, Object p) {
         Params params = createParameters(context, p);
-        DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(params);
+        DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(context, params);
 
         return doCreateStatement(context, sqls, params, false);
     }
@@ -127,7 +126,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause,Sql
 	@Override
     public SqlStatement createQueryStatement(QueryContext context, Object p) {
         Params params = createParameters(context, p);
-        DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(params);
+        DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(context, params);
 
         if(sqls.sql.isSelect()) {
             Limit limit = context.getLimit();
@@ -169,7 +168,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause,Sql
 	@Override
     public SqlStatement createCountStatement(QueryContext context, Object p) {
         Params params = createParameters(context, p);
-        DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(params);
+        DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(context, params);
 
         createSqlForCount(sqls);
 		
@@ -182,7 +181,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause,Sql
 
 	@Override
     public BatchSqlStatement createBatchStatement(SqlContext context, Object[] params) {
-        DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(Params.empty());
+        DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(context, Params.empty());
 
         if(Strings.isNotBlank(context.getPrimaryEntityMapping().getDynamicTableName())) {
 
@@ -246,9 +245,10 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause,Sql
 				}
 			}
 
-			SqlSelect countSelect = new SqlSelect();
-
+            AstNode[] countNodes;
 			if(selects.size() == 1){
+                //remove order by
+                SqlSelect selectWithoutOrderBy = new SqlSelect();
 				SqlSelect select = (SqlSelect)sqls.sql.nodes()[0];
 				List<AstNode> nodes = new ArrayList<>();
 				for(AstNode node : select.getNodes()){
@@ -256,28 +256,32 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause,Sql
 						continue;
 					}
 
-					if(node instanceof SqlSelectList) {
-						nodes.add(new Text("count(*) "));
-					}else{
-						nodes.add(node);
-					}
+//					if(node instanceof SqlSelectList) {
+//						nodes.add(new Text("count(*) "));
+//					}else{
+//						nodes.add(node);
+//					}
+                    nodes.add(node);
 				}
 
-				countSelect.setDistinct(select.isDistinct());
-				countSelect.setTop(select.getTop());
-				countSelect.setAlias(select.getAlias());
-				countSelect.setNodes(nodes.toArray(new AstNode[nodes.size()]));
+                selectWithoutOrderBy.setDistinct(select.isDistinct());
+                selectWithoutOrderBy.setTop(select.getTop());
+                selectWithoutOrderBy.setAlias(select.getAlias());
+                selectWithoutOrderBy.setNodes(nodes.toArray(new AstNode[nodes.size()]));
 
+                countNodes = new AstNode[]{selectWithoutOrderBy};
 			}else{
-
-				List<AstNode> nodes = new ArrayList<>();
-				nodes.add(new SqlSelect());
-				nodes.add(new Text("SELECT count(*) FROM (\n\t\t"));
-				nodes.addAll(Arrays.asList(sqls.sql.nodes()));
-				nodes.add(new Text("\n\t\t) t"));
-				countSelect.setNodes(nodes.toArray(new AstNode[nodes.size()]));
-
+                countNodes = sqls.sql.nodes();
 			}
+
+            List<AstNode> nodes = new ArrayList<>();
+            nodes.add(new SqlSelect());
+            nodes.add(new Text("SELECT count(*) FROM (\n\t\t"));
+            nodes.addAll(Arrays.asList(countNodes));
+            nodes.add(new Text("\n\t\t) cnt"));
+
+            SqlSelect countSelect = new SqlSelect();
+            countSelect.setNodes(nodes.toArray(new AstNode[nodes.size()]));
 			sqls.sqlForCount = new Sql(sqls.sql.type(), new AstNode[]{countSelect});
 		}
 	}
@@ -312,10 +316,15 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause,Sql
 				SqlSelect newSelect = new SqlSelect();
 				newSelect.setDistinct(select.isDistinct());
 				newSelect.setTop(select.getTop());
+				newSelect.setSelectList(select.getSelectList());
                 newSelect.addSelectItemAliases(select.getSelectItemAliases());
 				newSelect.setAlias(select.getAlias());
 				newSelect.setNodes(nodes.toArray(new AstNode[nodes.size()]));
                 newSelect.setUnion(select.isUnion());
+                newSelect.setFrom(select.getFrom());
+                for(SqlTableSource ts : select.getTableSources()){
+                    newSelect.addTableSource(ts);
+                }
 				selects.add(newSelect);
 			}else {
 				selects.add(node);
@@ -495,7 +504,9 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause,Sql
                 Sql original = sqls.sql;
                 if(original.isSelect() && original.nodes()[0] instanceof SqlSelect) {
                     SqlSelect select = (SqlSelect)sql.nodes()[0];
-                    select.addSelectItemAliases(((SqlSelect)original.nodes()[0]).getSelectItemAliases());
+                    SqlSelect originalSelect = (SqlSelect)original.nodes()[0];
+                    select.setSelectList(originalSelect.getSelectList());
+                    select.addSelectItemAliases(originalSelect.getSelectItemAliases());
                 }
             }
 

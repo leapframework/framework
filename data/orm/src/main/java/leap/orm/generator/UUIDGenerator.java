@@ -29,7 +29,7 @@ import leap.orm.metadata.MetadataContext;
 @Configurable(prefix = "orm.uuid")
 public class UUIDGenerator extends AbstractExpression implements IdGenerator, ValueGenerator,Expression {
 
-    private int defaultColumnLength = 38;
+    private int defaultColumnLength = UUID.randomUUID().toString().length();
 
     @Override
     public Integer getDefaultColumnLength() {
@@ -43,7 +43,7 @@ public class UUIDGenerator extends AbstractExpression implements IdGenerator, Va
 
     @Override
     public void mapping(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder fmb) {
-		fmb.setValueGenerator(this);
+		fmb.setInsertValue(this);
     }
 	
 	@Override

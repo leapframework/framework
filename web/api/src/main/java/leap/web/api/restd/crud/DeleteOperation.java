@@ -17,71 +17,133 @@
 package leap.web.api.restd.crud;
 
 import leap.lang.Strings;
+import leap.lang.convert.Converts;
 import leap.orm.dao.Dao;
-import leap.web.App;
+import leap.web.Request;
 import leap.web.action.ActionParams;
 import leap.web.action.FuncActionBuilder;
-import leap.web.api.config.ApiConfig;
+import leap.web.api.Api;
 import leap.web.api.config.ApiConfigurator;
-import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.ApiResponse;
 import leap.web.api.mvc.params.DeleteOptions;
-import leap.web.api.orm.*;
-import leap.web.api.restd.RestdModel;
-import leap.web.api.restd.RestdProcessor;
+import leap.web.api.orm.DeleteOneResult;
+import leap.web.api.orm.ModelDeleteExecutor;
+import leap.web.api.orm.ModelExecutorContext;
+import leap.web.api.orm.SimpleModelExecutorContext;
+import leap.web.api.restd.CrudOperation;
+import leap.web.api.restd.CrudOperationBase;
 import leap.web.api.restd.RestdContext;
+import leap.web.api.restd.RestdModel;
+import leap.web.exception.BadRequestException;
+import leap.web.exception.NotFoundException;
 import leap.web.route.RouteBuilder;
+
+import java.util.function.Function;
 
 /**
  * Delete by id operation.
  */
-public class DeleteOperation extends CrudOperation implements RestdProcessor {
+public class DeleteOperation extends CrudOperationBase implements CrudOperation {
+
+    protected static final String NAME = "delete";
 
     @Override
-    public void preProcessModel(ApiConfigurator api, RestdContext context, RestdModel model) {
-        if(!context.getConfig().allowDeleteModel(model.getName())) {
+    public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model) {
+        if (!context.getConfig().allowDeleteModel(model.getName())) {
             return;
         }
 
-        String verb = "DELETE";
-        String path = fullModelPath(api, model) + "/{id}";
-        if(isOperationExists(context, verb, path)) {
-            return;
-        }
+        String path = fullModelPath(c, model) + getIdPath(model);
+        String name = Strings.lowerCamel(NAME, model.getName());
 
-        Dao               dao    = context.getDao();
-        FuncActionBuilder action = new FuncActionBuilder();
-        RouteBuilder      route  = rm.createRoute(verb, path);
-
-        action.setName(Strings.lowerCamel("delete", model.getName()));
-        action.setFunction((params) -> execute(api.config(), dao, model, params));
-
-        addIdArgument(action, model);
-        addArgument(action, DeleteOptions.class, "options");
-        addNoContentResponse(action, model);
-
-        configure(context, model, action);
-        route.setAction(action.build());
-
-        configure(context, model, route);
-        api.addRoute(rm.loadRoute(context.getRoutes(), route));
+        createCrudOperation(c, context, model, path, name, null);
     }
 
-    protected Object execute(ApiConfig ac, Dao dao, RestdModel model, ActionParams params) {
-        ApiMetadata amd = apis.tryGetMetadata(ac.getName());
-        MApiModel   am  = amd.getModel(model.getName());
+    public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model,
+                                    String path, String name, Callback callback) {
+        FuncActionBuilder action = new FuncActionBuilder(name);
+        RouteBuilder      route  = rm.createRoute("DELETE", path);
 
-        ModelExecutorContext context = new SimpleModelExecutorContext(ac, amd, am, dao, model.getEntityMapping());
-        ModelDeleteExecutor executor = mef.newDeleteExecutor(context);
+        if (null != callback) {
+            callback.preAddArguments(action);
+        }
 
-        Object        id      = params.get(0);
-        DeleteOptions options = params.get(1);
+        action.setFunction(createFunction(context, model, action.getArguments().size()));
 
-        if(executor.deleteOne(id, options).success) {
-            return ApiResponse.NO_CONTENT;
-        }else{
-            return ApiResponse.NOT_FOUND;
+        addIdArguments(context, action, model);
+        addOtherArguments(c, context, action, model);
+        if (null != callback) {
+            callback.postAddArguments(action);
+        }
+        addNoContentResponse(action, model);
+
+        preConfigure(context, model, action);
+        route.setAction(action.build());
+        setCrudOperation(route, NAME);
+        postConfigure(context, model, route);
+
+        if (isOperationExists(context, route)) {
+            return;
+        }
+
+        c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
+    }
+
+    protected void addOtherArguments(ApiConfigurator c, RestdContext context, FuncActionBuilder action, RestdModel model) {
+        addArgument(context, action, DeleteOptions.class, "options");
+    }
+
+    protected Function<ActionParams, Object> createFunction(RestdContext context, RestdModel model, int start) {
+        return new DeleteFunction(context.getApi(), context.getDao(), model, start, true);
+    }
+
+    protected class DeleteFunction extends CrudFunction {
+
+        private final boolean cascadeDelete;
+
+        public DeleteFunction(Api api, Dao dao, RestdModel model, int start, boolean cascadeDelete) {
+            super(api, dao, model, start);
+            this.cascadeDelete = cascadeDelete;
+        }
+
+        @Override
+        public Object apply(ActionParams params) {
+            MApiModel am = api.getMetadata().getModel(model.getName());
+
+            ModelExecutorContext context  = new SimpleModelExecutorContext(api, dao, am, em, params);
+            ModelDeleteExecutor  executor = newDeleteExecutor(context);
+
+            Object        id      = id(params);
+            DeleteOptions options = cascadeDelete ? getWithId(params, 0) : null;
+
+            if (!cascadeDelete) {
+                Request request = Request.tryGetCurrent();
+                String  param   = request.getParameter("cascade_delete");
+                if (!Strings.isEmpty(param) && Converts.toBoolean(param)) {
+                    throw new BadRequestException("Cascade delete not supported by this operation, check parameter 'cascade_delete'!");
+                }
+            }
+
+            DeleteOneResult result = executor.deleteOne(id, options);
+            if (null != result.entity) {
+                return ApiResponse.of(result.entity);
+            } else {
+                if (result.success) {
+                    return ApiResponse.NO_CONTENT;
+                } else {
+                    throw new NotFoundException(am.getName() + " '" + id.toString() + "' not found");
+                }
+            }
+        }
+
+        protected ModelDeleteExecutor newDeleteExecutor(ModelExecutorContext context) {
+            return mef.newDeleteExecutor(context);
+        }
+
+        @Override
+        public String toString() {
+            return "Function:" + "Delete " + model.getName() + "";
         }
     }
 }

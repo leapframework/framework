@@ -249,17 +249,19 @@ public abstract class AbstractCachingAssetSource implements AssetSource,AppConfi
 	protected final class ReloadTask implements Runnable {
 		@Override
         public void run() {
-			Map<Object, Asset> assets = getAssetCache().getAll();
-			
-			for(Asset asset : assets.values()){
+			Cache<Object, Asset> cache = getAssetCache();
+
+			cache.getAll().forEach((key, asset) -> {
 				try {
-	                if(asset.reload()){
-	                	log.info("Asset [{}] was reloaded",asset.getPath());
-	                }
-                } catch (Exception e) {
-                	log.warn("Error reloading asset [{}]",asset.getPath(),e);
-                }
-			}
+					if(asset.reload()){
+						log.info("Asset [{}] was reloaded",asset.getPath());
+					}else if(asset.isExpired()) {
+					    cache.remove(key);
+                    }
+				} catch (Exception e) {
+					log.warn("Error reloading asset [{}]",asset.getPath(),e);
+				}
+			});
 		}
 	}
 

@@ -30,10 +30,10 @@ import leap.lang.Readonly;
 import leap.orm.command.CommandFactory;
 import leap.orm.dao.Dao;
 import leap.orm.dao.DefaultDao;
+import leap.orm.dao.WrappedDao;
 import leap.orm.dmo.DefaultDmo;
 import leap.orm.dmo.Dmo;
 import leap.orm.event.EntityEventHandler;
-import leap.orm.linq.ConditionParser;
 import leap.orm.mapping.MappingStrategy;
 import leap.orm.metadata.MetadataContext;
 import leap.orm.metadata.OrmMetadataManager;
@@ -43,6 +43,7 @@ import leap.orm.query.QueryFactory;
 import leap.orm.reader.EntityReader;
 import leap.orm.reader.RowReader;
 import leap.orm.sql.SqlFactory;
+import leap.orm.validation.EntityValidator;
 
 import javax.sql.DataSource;
 
@@ -63,8 +64,8 @@ public class DefaultOrmContext implements OrmContext,BeanPrimaryAware,PostCreate
     protected @Inject @M QueryFactory       queryFactory;
     protected @Inject @M EntityReader       entityReader;
     protected @Inject @M RowReader          rowReader;
-    protected @Inject @M ConditionParser    conditionParser;
     protected @Inject @M OrmConfig          config;
+    protected @Inject @M EntityValidator    entityValidator;
     protected @Inject @M EntityEventHandler entityEventHandler;
 
     protected String name;
@@ -171,10 +172,6 @@ public class DefaultOrmContext implements OrmContext,BeanPrimaryAware,PostCreate
 		return queryFactory;
 	}
 
-	public ConditionParser getConditionParser() {
-		return conditionParser;
-	}
-
 	@Override
 	public NamingStrategy getNamingStrategy() {
 		return namingStrategy;
@@ -193,6 +190,11 @@ public class DefaultOrmContext implements OrmContext,BeanPrimaryAware,PostCreate
 	@Override
     public RowReader getRowReader() {
 	    return rowReader;
+    }
+
+    @Override
+    public EntityValidator getEntityValidator() {
+        return entityValidator;
     }
 
     @Override
@@ -237,7 +239,7 @@ public class DefaultOrmContext implements OrmContext,BeanPrimaryAware,PostCreate
     	}
 
         if(null == dao) {
-            dao = beanFactory.inject(new DefaultDao(this));
+            dao = new WrappedDao(beanFactory.inject(new DefaultDao(this)));
             beanFactory.addBean(Dao.class, dao, name, primary);
         }
 

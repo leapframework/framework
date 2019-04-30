@@ -29,6 +29,8 @@ public @interface Property {
 
     Bool required() default Bool.NONE;
 
+    Bool selectable() default Bool.NONE;
+
     Bool creatable() default Bool.NONE;
 
     Bool updatable() default Bool.NONE;

@@ -17,29 +17,35 @@
 package leap.web.action;
 
 import leap.lang.collection.SimpleCaseInsensitiveMap;
-import leap.lang.exception.ObjectNotFoundException;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class SimpleActionParams implements ActionParams {
 
-    protected final Argument[] arguments;
-    protected final Object[]   values;
+    protected final ActionContext context;
+    protected final Argument[]    arguments;
+    protected final Object[]      values;
 
     private final Map<String, Integer> nameIndexMap;
 
     private Map<String, Object> map;
 
-    public SimpleActionParams(Argument[] arguments, Object[] values) {
+    public SimpleActionParams(ActionContext context, Argument[] arguments, Object[] values) {
+        this.context = context;
         this.arguments = arguments;
         this.values = values;
 
         nameIndexMap = new SimpleCaseInsensitiveMap<>(values.length);
 
-        for(int i=0;i<arguments.length;i++) {
+        for (int i = 0; i < arguments.length; i++) {
             nameIndexMap.put(arguments[i].getName(), i);
         }
+    }
+
+    @Override
+    public ActionContext getContext() {
+        return context;
     }
 
     @Override
@@ -49,9 +55,9 @@ public class SimpleActionParams implements ActionParams {
 
     @Override
     public Map<String, Object> toMap() {
-        if(null == map) {
+        if (null == map) {
             map = new LinkedHashMap<>(values.length);
-            for(int i=0;i<arguments.length;i++) {
+            for (int i = 0; i < arguments.length; i++) {
                 map.put(arguments[i].getName(), values[i]);
             }
         }
@@ -64,14 +70,14 @@ public class SimpleActionParams implements ActionParams {
     }
 
     @Override
-    public <T> T get(String name)  {
+    public Object get(String name) {
         Integer index = nameIndexMap.get(name);
         return get(index);
     }
 
     @Override
     public <T> T get(int index) throws IndexOutOfBoundsException {
-        return (T)values[index];
+        return (T) values[index];
     }
 
 }

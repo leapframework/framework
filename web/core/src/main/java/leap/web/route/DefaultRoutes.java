@@ -17,11 +17,15 @@ package leap.web.route;
 
 import leap.core.annotation.Inject;
 import leap.core.web.path.JerseyUriTemplate;
+import leap.core.web.path.PathTemplate;
 import leap.core.web.path.PathTemplateFactory;
 import leap.lang.Args;
 import leap.lang.New;
-import leap.lang.collection.ArrayIterator;
+import leap.lang.Strings;
 import leap.lang.http.HTTP.Method;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
+import leap.lang.path.Paths;
 import leap.web.Handler;
 import leap.web.action.*;
 
@@ -31,98 +35,113 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
 
 public class DefaultRoutes implements Routes {
-	
-	protected @Inject PathTemplateFactory pathTemplateFactory;
-    protected @Inject ActionManager		  actionManager;
+
+    private static final Log log = LogFactory.get(DefaultRoute.class);
+
+    protected @Inject RouteManager        routeManager;
+    protected @Inject PathTemplateFactory pathTemplateFactory;
+    protected @Inject ActionManager       actionManager;
+    protected @Inject RoutesPrinter       routesPrinter;
 
     protected final List<Route> list = new CopyOnWriteArrayList<>();
-	
-	@Override
+
+    protected String pathPrefix = "";
+
+    public String getPathPrefix() {
+        return pathPrefix;
+    }
+
+    public void setPathPrefix(String pathPrefix) {
+        this.pathPrefix = null == pathPrefix ? "" : pathPrefix;
+    }
+
+    @Override
     public int size() {
-	    return list.size();
+        return list.size();
     }
 
-	@Override
+    @Override
     public boolean isEmpty() {
-	    return list.isEmpty();
+        return list.isEmpty();
     }
 
-	@Override
+    @Override
     public Iterator<Route> iterator() {
-	    return list.iterator();
+        return list.iterator();
     }
-	
-	@Override
+
+    @Override
     public RouteConfigurator create() {
-		return new DefaultRouteConfigurator((c) -> {
-			RouteBuilder rb = createRoute(c.getMethod(), c.getPath(), c.getHandler());
-			
-			rb.setSupportsMultipart(c.isSupportsMultipart());
-			rb.setCorsEnabled(c.getCorsEnabled());
-			rb.setCsrfEnabled(c.getCsrfEnabled());
-			rb.setHttpsOnly(c.getHttpsOnly());
-            rb.setAllowAnonymous(c.getAllowAnonymous());
-            rb.setAllowClientOnly(c.getAllowClientOnly());
-
-			Route r = rb.build();
-			
-			add(r);
-			
-			return r;
-		});
+        return new DefaultRouteConfigurator(this);
     }
 
-	@Override
+    @Override
+    public Routes addNested(Object source, String pathPrefix) {
+        final String basePath = getPathPrefix() + Paths.prefixWithAndSuffixWithoutSlash(pathPrefix);
+        final Routes routes   = routeManager.createRoutes(basePath);
+        final PathTemplate pathTemplate = pathTemplateFactory.createPathTemplate(basePath + "/{path:.*}");
+
+        SimpleNestedRoute route = new SimpleNestedRoute(source, "*", basePath, pathTemplate, routes);
+        add(route);
+        return routes;
+    }
+
+    @Override
     public Routes add(Method method, String path, Runnable handler) {
-		Args.notNull(handler, "handler");
-		return doAdd(method, path, () -> new RunnableAction(handler));
+        Args.notNull(handler, "handler");
+        return doAdd(method, path, () -> new RunnableAction(handler));
     }
-	
-	@Override
+
+    @Override
     public <T> Routes add(Method method, String path, Supplier<T> handler) {
-		Args.notNull(handler, "handler");
-		return doAdd(method, path, () -> new SupplierAction(handler));
+        Args.notNull(handler, "handler");
+        return doAdd(method, path, () -> new SupplierAction(handler));
     }
 
-	@Override
+    @Override
     public Routes add(Method method, String path, Handler handler) {
-		Args.notNull(handler, "handler");
-		return doAdd(method, path, () -> new HandlerAction(handler));
+        Args.notNull(handler, "handler");
+        return doAdd(method, path, () -> new HandlerAction(handler));
     }
-	
-	protected Routes doAdd(Method method, String path, Supplier<Action> action) {
-	    return add(createRoute(method, path, action).build());
-	}
-	
-	protected RouteBuilder createRoute(Method method, String path, Supplier<Action> action) {
-		return createRoute(method, path, action.get());
-	}
-	
-	protected RouteBuilder createRoute(Method method, String path, Action action) {
-		Args.notEmpty(path, "path");
-		
-		RouteBuilder r = new RouteBuilder();
-		
-		r.setPathTemplate(pathTemplateFactory.createPathTemplate(path));
-		r.setAction(action);
-		
-		if(null != method) {
-			r.setMethod(method.name());
-		}else{
-			r.setMethod("*");
-		}
-		
-		actionManager.prepareAction(r);
-		
-	    return r;
-	}
 
-	@Override
+    protected Routes doAdd(Method method, String path, Supplier<Action> action) {
+        return add(createRoute(method, path, action).build());
+    }
+
+    protected RouteBuilder createRoute(Method method, String path, Supplier<Action> action) {
+        return createRoute(method, path, action.get());
+    }
+
+    protected RouteBuilder createRoute(Method method, String path, Action action) {
+        Args.notEmpty(path, "path");
+
+        RouteBuilder r = new RouteBuilder();
+
+        r.setPathTemplate(pathTemplateFactory.createPathTemplate(pathPrefix + path));
+        r.setAction(action);
+
+        if (null != method) {
+            r.setMethod(method.name());
+        } else {
+            r.setMethod("*");
+        }
+
+        actionManager.prepareAction(r);
+
+        return r;
+    }
+
+    @Override
     public synchronized Routes add(Route route) {
-		Args.notNull(route,"route");
-		list.add(route);
+        Args.notNull(route, "route");
+        list.add(route);
         Collections.sort(list, Route.COMPARATOR);
-	    return this;
+        return this;
+    }
+
+    @Override
+    public boolean exists(Route route) {
+        return list.contains(route);
     }
 
     @Override
@@ -132,11 +151,11 @@ public class DefaultRoutes implements Routes {
 
     @Override
     public synchronized Routes addAll(Iterable<Route> routes) {
-		Args.notNull(routes,"routes");
-		for(Route route : routes){
-			add(route);
-		}
-		return this;
+        Args.notNull(routes, "routes");
+        for (Route route : routes) {
+            add(route);
+        }
+        return this;
     }
 
     @Override
@@ -145,72 +164,90 @@ public class DefaultRoutes implements Routes {
     }
 
     @Override
-    public Route match(String method, String path, Map<String,Object> inParameters,  Map<String, String> outVariables) {
-		List<Route> matchedRoutes = new ArrayList<>();
-		for(Route route : list){
-			if(null == method || route.getMethod().equals("*") || route.getMethod().equals(method)){
-				
-				if(!matchRequiredParameters(route.getRequiredParameters(), inParameters)){
-					continue;
-				}
-				
-				if(route.getPathTemplate().match(path, outVariables)){
-					matchedRoutes.add(route);
-				}
-			}
-		}
+    public Route match(String method, String path, Map<String, Object> in, Map<String, String> out) {
+        if(!Strings.isEmpty(pathPrefix) && !path.startsWith(pathPrefix)) {
+            path = pathPrefix + Paths.prefixWithSlash(path);
+        }
 
-		if(matchedRoutes.isEmpty()) {
+        List<Route> matchedRoutes = new ArrayList<>();
+        for (Route route : list) {
+            if (!route.isEnabled()) {
+                continue;
+            }
+
+            if (null == method || route.getMethod().equals("*") || route.getMethod().equals(method)) {
+
+                if (!matchRequiredParameters(route.getRequiredParameters(), in)) {
+                    continue;
+                }
+
+                if (route.match(path, out)) {
+
+                    if (route instanceof NestedRoute) {
+                        NestedRoute nestedRoute = (NestedRoute) route;
+                        route = nestedRoute.matchNested(method, path, in, out);
+                        if (null != route && !nestedRoute.isCheckAmbiguity()) {
+                            return route;
+                        }
+                    }
+
+                    if (null != route) {
+                        matchedRoutes.add(route);
+                    }
+                }
+            }
+        }
+
+        if (matchedRoutes.isEmpty()) {
             return null;
         }
 
-        Route route = null;
-
-		if(matchedRoutes.size() == 1) {
+        Route route;
+        if (matchedRoutes.size() == 1) {
             route = matchedRoutes.get(0);
-        }else{
+        } else {
             route = rematch(matchedRoutes);
+            // get the right path template variables.
+            out.clear();
+            route.getPathTemplate().match(path, out);
         }
 
-        if(route instanceof SubRoutes) {
-            route = ((SubRoutes) route).match(method, path, inParameters, outVariables);
-        }
-
-		return route;
+        return route;
     }
 
-	private Route rematch(List<Route> matchedRoutes) {
-		// find the route of the highest priority
-		return matchedRoutes.stream().min((r1, r2) -> {
-			JerseyUriTemplate t1 = new JerseyUriTemplate(r1.getPathTemplate().getTemplate());
-			JerseyUriTemplate t2 = new JerseyUriTemplate(r2.getPathTemplate().getTemplate());
-			int re = JerseyUriTemplate.COMPARATOR.compare(t1, t2);
-			if(0 == re){
-				throw new IllegalStateException("Ambiguous handler methods mapped for path " +
-						"'" + r1.getPathTemplate() + "' and '" + r2.getPathTemplate() + "'");
-			}
-			return re;
-		}).get();
-	}
+    private Route rematch(List<Route> matchedRoutes) {
+        // find the route of the highest priority
+        return matchedRoutes.stream().min((r1, r2) -> {
+            int re = r1.getPathTemplate().compareTo(r2.getPathTemplate());
+            if (0 == re && r1.isExecutable() == r2.isExecutable()) {
+                log.error("Found multi matched routes -> \n{}", routesPrinter.print(matchedRoutes));
+                throw new IllegalStateException("Ambiguous handler methods mapped for path " + "'"
+                        + r1.getPathTemplate()
+                        + "' and '"
+                        + r2.getPathTemplate() + "'");
+            }
+            return re;
+        }).get();
+    }
 
-	protected boolean matchRequiredParameters(Map<String, String> requiredParameters, Map<String, Object> inParameters) {
-		if(requiredParameters.isEmpty()){
-			return true;
-		}
-		
-		for(Entry<String, String> entry : requiredParameters.entrySet()){
-			
-			Object v = inParameters.get(entry.getKey());
-			
-			if(null == v || !(v instanceof String)){
-				return false;
-			}
-			
-			if(!((String)v).equals(entry.getValue())){
-				return false;
-			}
-		}
-		
-		return true;
-	}
+    protected boolean matchRequiredParameters(Map<String, String> requiredParameters, Map<String, Object> inParameters) {
+        if (requiredParameters.isEmpty()) {
+            return true;
+        }
+
+        for (Entry<String, String> entry : requiredParameters.entrySet()) {
+
+            Object v = inParameters.get(entry.getKey());
+
+            if (null == v || !(v instanceof String)) {
+                return false;
+            }
+
+            if (!((String) v).equals(entry.getValue())) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }

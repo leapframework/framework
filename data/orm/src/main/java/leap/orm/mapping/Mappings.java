@@ -15,33 +15,95 @@
  */
 package leap.orm.mapping;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
+import leap.lang.Beans;
 import leap.lang.Objects2;
 import leap.lang.Strings;
+import leap.lang.accessor.Getter;
+import leap.lang.beans.BeanType;
+import leap.lang.params.Params;
+import leap.orm.value.EntityWrapper;
 
 /**
  * Util class
  */
 public class Mappings {
+
+    public static Object getId(EntityMapping em, Object bean) {
+        BeanType bt = BeanType.of(bean.getClass());
+
+        String[] keyNames = em.getKeyFieldNames();
+        if(keyNames.length == 1){
+            return bt.tryGetProperty(bean, keyNames[0]);
+        }
+
+        if(keyNames.length == 0){
+            return null;
+        }
+
+        Map<String, Object> id = new LinkedHashMap<String, Object>();
+        for(int i=0;i<keyNames.length;i++){
+            id.put(keyNames[i], bt.tryGetProperty(bean, keyNames[i]));
+        }
+
+        return id;
+    }
 	
 	public static Object getId(EntityMapping em , Map<String, Object> attributes){
-		String[] keyNames = em.getKeyFieldNames();
-		if(keyNames.length == 1){
-			return attributes.get(keyNames[0]);
-		}
-		
-		if(keyNames.length == 0){
-			return null;
-		}
-		
-		Map<String, Object> id = new LinkedHashMap<String, Object>();
-		for(int i=0;i<keyNames.length;i++){
-			id.put(keyNames[i], attributes.get(keyNames[i]));
-		}
-		return id;
+        return getId(em, attributes::get);
 	}
+
+    public static Object getId(EntityMapping em, Params params) {
+        return getId(em, (Getter)params);
+    }
+
+    public static Object getId(EntityMapping em, EntityWrapper entity) {
+        return getId(em, (Getter)entity);
+    }
+
+    public static Object getId(EntityMapping em, Getter getter) {
+        String[] keyNames = em.getKeyFieldNames();
+        if(keyNames.length == 1){
+            return getter.get(keyNames[0]);
+        }
+
+        if(keyNames.length == 0){
+            return null;
+        }
+
+        Map<String, Object> id = new LinkedHashMap<String, Object>();
+        for(int i=0;i<keyNames.length;i++){
+            id.put(keyNames[i], getter.get(keyNames[i]));
+        }
+        return id;
+    }
+
+    public static Object[] getIdArgs(EntityMapping em, Object id) {
+        if(id instanceof Object[]) {
+            return (Object[])id;
+        }
+
+        if(id instanceof Collection) {
+            return ((Collection)id).toArray();
+        }
+
+        if(em.getKeyColumnNames().length > 1) {
+            Map map;
+            if(id instanceof Map) {
+                map = (Map)id;
+            }else {
+                map = Beans.toMap(id);
+            }
+            List<Object> args = new ArrayList<>();
+            for(String name : em.getKeyFieldNames()) {
+                args.add(map.get(name));
+            }
+            return args.toArray();
+        }else {
+            return new Object[]{id};
+        }
+    }
 	
 	public static String getIdToString(EntityMapping em , Map<String, Object> attributes){
 		String[] keyNames = em.getKeyFieldNames();

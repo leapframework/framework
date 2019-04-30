@@ -16,23 +16,23 @@
 package leap.web.security.path;
 
 import leap.core.security.Authentication;
-import leap.core.security.Authorization;
 import leap.lang.Args;
-import leap.lang.Arrays2;
+import leap.lang.Strings;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.path.PathPattern;
-import leap.web.Request;
+import leap.web.action.ActionContext;
 import leap.web.route.Route;
+import leap.web.security.SecuredObject;
+import leap.web.security.SecuredObjectBase;
+import leap.web.security.SecurityContextHolder;
 import leap.web.security.SecurityFailureHandler;
-import leap.web.security.authc.AuthenticationContext;
-import leap.web.security.authz.AuthorizationContext;
-import leap.web.security.permission.PermissionManager;
 
-public class DefaultSecuredPath implements SecuredPath {
+public class DefaultSecuredPath extends SecuredObjectBase implements SecuredPath {
 
 	private static final Log log = LogFactory.get(DefaultSecuredPath.class);
 
+	protected final Object                 source;
     protected final Route                  route;
     protected final PathPattern            pattern;
     protected final Boolean                allowAnonymous;
@@ -42,7 +42,8 @@ public class DefaultSecuredPath implements SecuredPath {
     protected final String[]               permissions;
     protected final String[]               roles;
 
-	public DefaultSecuredPath(Route route,
+	public DefaultSecuredPath(Object source,
+                              Route route,
                               PathPattern pattern,
                               Boolean allowAnonymous,
                               Boolean allowClientOnly,
@@ -51,6 +52,7 @@ public class DefaultSecuredPath implements SecuredPath {
                               String[] permissions,
                               String[] roles) {
 		Args.notNull(pattern,"path pattern");
+		this.source          = source;
         this.route           = route;
 		this.pattern         = pattern;
 	    this.allowAnonymous  = allowAnonymous;
@@ -59,6 +61,11 @@ public class DefaultSecuredPath implements SecuredPath {
         this.failureHandler  = failureHandler;
         this.permissions     = permissions;
         this.roles           = roles;
+    }
+
+    @Override
+    public Object getSource() {
+        return source;
     }
 
     @Override
@@ -112,13 +119,24 @@ public class DefaultSecuredPath implements SecuredPath {
      * Returns true if the path allows the authentication.
      */
 	@Override
-    public boolean checkAuthentication(Request request, AuthenticationContext context) {
+    public Boolean tryCheckAuthentication(SecurityContextHolder context) {
 		if(isAllowAnonymous()) {
 			return true;
 		}
 
         Authentication authc = context.getAuthentication();
-		
+
+        //check route's config
+        ActionContext ac = context.getActionContext();
+        if(null != ac && null != ac.getRoute()) {
+            SecuredRoute sr = new SecuredRoute(ac.getRoute());
+            context.setSecuredObject(sr);
+            Boolean result = sr.tryCheckAuthentication(context);
+            if(null != result) {
+                return result;
+            }
+        }
+
 		if(authc == null || !authc.isAuthenticated()){
             log.debug("path [{}] : not authenticated, deny the request.", pattern);
 			return false;
@@ -131,6 +149,7 @@ public class DefaultSecuredPath implements SecuredPath {
 		
         if (authc.isClientOnly() && !isAllowClientOnly()) {
             log.debug("path [{}] : client-only authentication not allowed.", pattern);
+            context.setDenyMessage("client only authentication not allowed");
             return false;
         }
 
@@ -141,51 +160,22 @@ public class DefaultSecuredPath implements SecuredPath {
      * Returns true if the path allows the authorization.
      */
     @Override
-    public boolean checkAuthorization(Request request, AuthorizationContext context) {
-        Authentication authc = context.getAuthentication();
-        Authorization  authz = context.getAuthorization();
-
+    public Boolean tryCheckAuthorization(SecurityContextHolder context) {
         //Check roles
-        if(roles.length > 0) {
-            boolean allow = false;
-            String[] grantedRoles = authc.getRoles();
-            if(null != grantedRoles && grantedRoles.length > 0) {
-                allow = Arrays2.containsAny(grantedRoles,roles);
-            }
-
-            if(!allow) {
-                allow = authz.hasAnyRole(roles);
-            }
-
-            if(!allow) {
-                return false;
-            }
+        if(!checkRoles(context, roles)) {
+            context.setDenyMessage("Roles [" + Strings.join(roles, ',') + "] required");
+            return false;
         }
 
         //Check permissions
-        if(permissions.length > 0) {
-            PermissionManager pm = context.getPermissionManager();
-
-            boolean allow = false;
-            String[] grantedPermissions = authc.getPermissions();
-            if(null != grantedPermissions && grantedPermissions.length > 0) {
-                allow = pm.checkPermissionImpliesAll(grantedPermissions,permissions);
-            }
-
-            if(!allow) {
-                allow = authz.hasAllPermission(permissions);
-            }
-
-            if(!allow) {
-                return false;
-            }
+        if(!checkPermissions(context, permissions)) {
+            context.setDenyMessage("Permissions [" + Strings.join(permissions, ',') + "] required");
+            return false;
         }
 
-        return true;
+        //check secured object
+        SecuredObject so = context.getSecuredObject();
+        return null == so ? true : so.checkAuthorization(context);
     }
 
-	@Override
-    public int compareTo(SecuredPath o) {
-	    return COMPARATOR.compare(this, o);
-    }
 }

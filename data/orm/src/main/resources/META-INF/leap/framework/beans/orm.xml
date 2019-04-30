@@ -5,7 +5,9 @@
     <bean type="leap.core.AppContextInitializable" class="leap.orm.OrmInit"/>
 
     <bean type="leap.orm.OrmRegistry" class="leap.orm.DefaultOrmRegistry" primary="true"/>
-    
+
+    <bean type="leap.orm.OrmContextInitializable" class="leap.orm.model.ModelRegistry"/>
+
     <!-- config -->
     <bean type="leap.orm.OrmConfig" class="leap.orm.DefaultOrmConfig" primary="true"/>
     
@@ -14,6 +16,7 @@
 
     <!-- injector -->
     <bean type="leap.core.ioc.BeanInjector" class="leap.orm.dao.DaoCommandInjector"/>
+    <bean type="leap.orm.dao.DaoCommandFactory" class="leap.orm.dao.SimpleDaoCommandFactory"/>
     
     <!-- domains -->
     <bean type="leap.orm.domain.Domains"       class="leap.orm.domain.DefaultDomains" primary="true"/>
@@ -30,9 +33,6 @@
 
     <!-- cannot change the order of following beans for type : MappingLoader -->
     <bean type="leap.orm.mapping.Mapper" class="leap.orm.mapping.ClassMapper"/>
-    <bean type="leap.orm.mapping.Mapper" class="leap.orm.model.ModelMapper">
-    	<additional-type-def type="leap.orm.OrmContextInitializable"/>
-    </bean>
     <bean type="leap.orm.mapping.Mapper" class="leap.orm.mapping.SchemaMapper"/>
     <bean type="leap.orm.mapping.Mapper" class="leap.orm.mapping.RelationMapper"/>
     <bean type="leap.orm.mapping.Mapper" class="leap.orm.mapping.config.ConfigMapper"/>
@@ -56,7 +56,9 @@
 	<bean type="leap.orm.sql.SqlReader"  class="leap.orm.sql.XmlSqlReader"/>
 
     <!-- sql languages -->
-    <bean name="dynamic" type="leap.orm.sql.SqlLanguage"  class="leap.orm.sql.DynamicSqlLanguage" primary="true"/>
+    <bean name="dynamic" type="leap.orm.sql.SqlLanguage"  class="leap.orm.sql.DynamicSqlLanguage" primary="true">
+        <additional-type-def type="leap.core.AppReloadListener"/>
+    </bean>
     
     <bean name="dynamic:smart" type="leap.orm.sql.SqlLanguage" class="leap.orm.sql.DynamicSqlLanguage">
         <property name="mode" value="smart"/>
@@ -81,7 +83,7 @@
     <!-- query -->
     <bean type="leap.orm.query.QueryFactory" class="leap.orm.query.DefaultQueryFactory" primary="true"/>
 	
-    <!-- id generators -->
+    <!-- generators -->
     <bean name="auto" type="leap.orm.generator.IdGenerator" class="leap.orm.generator.AutoIdGenerator" primary="true"/>
     <bean name="none" type="leap.orm.generator.IdGenerator" class="leap.orm.generator.NoneIdGenerator"/>
     <bean name="uuid" type="leap.orm.generator.IdGenerator" class="leap.orm.generator.UUIDGenerator">
@@ -90,8 +92,9 @@
     <bean name="short_uuid" type="leap.orm.generator.IdGenerator" class="leap.orm.generator.ShortUUIDGenerator">
         <additional-type-def type="leap.orm.generator.ValueGenerator" name="short_uuid"/>
     </bean>
-    <bean name="shortid" type="leap.orm.generator.IdGenerator" class="leap.orm.generator.ShortIDGenerator">
-        <additional-type-def type="leap.orm.generator.ValueGenerator" name="shortid"/>
+    <bean name="short_id" type="leap.orm.generator.IdGenerator" class="leap.orm.generator.ShortIDGenerator">
+        <additional-type-def type="leap.orm.generator.ValueGenerator" name="short_id"/>
+        <additional-type-def type="leap.orm.generator.IdGenerator"    name="shortid"/> <!-- for compatibility -->
     </bean>
     
     <!-- data factory beans -->
@@ -102,12 +105,6 @@
     <!-- validation -->
     <bean type="leap.orm.validation.EntityValidator" class="leap.orm.validation.DefaultEntityValidator" primary="true"/>
     
-    <!-- linq -->
-    <bean type="leap.orm.linq.ConditionParser" class="leap.orm.linq.jaque.JaqueConditionParser" primary="true"/>
-
-    <!-- sharding -->
-    <bean type="leap.orm.sharding.ShardingFactory" class="leap.orm.sharding.DefaultShardingFactory" primary="true"/>
-
     <!-- serialize -->
     <bean name="json"
           type="leap.orm.serialize.FieldSerializer"
@@ -116,5 +113,9 @@
     <!-- dyna -->
     <bean type="leap.orm.dyna.DynaOrmFactory"
           class="leap.orm.dyna.DefaultDynaOrmFactory" primary="true"/>
+
+    <!-- changes -->
+    <bean type="leap.orm.change.ChangeManager"
+          class="leap.orm.change.DefaultChangeManager" primary="true"/>
 
 </beans>

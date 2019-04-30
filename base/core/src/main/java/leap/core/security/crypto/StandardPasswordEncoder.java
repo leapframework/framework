@@ -68,6 +68,21 @@ public final class StandardPasswordEncoder implements PasswordEncoder {
         return matches(digested, digest(rawPassword, salt));
     }
 
+    @Override
+    public boolean isPlain(String s) {
+        if(null == s || s.isEmpty()) {
+            return true;
+        }
+
+        for(char c : s.toCharArray()) {
+            if(!Hex.isHexCharacter(c)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     // internal helpers
 
     private StandardPasswordEncoder(String algorithm, String secret) {

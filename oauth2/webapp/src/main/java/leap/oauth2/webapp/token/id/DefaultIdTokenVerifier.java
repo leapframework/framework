@@ -21,8 +21,8 @@ import leap.core.security.SimpleUserPrincipal;
 import leap.core.security.token.TokenVerifyException;
 import leap.core.security.token.jwt.JWT;
 import leap.core.security.token.jwt.MacSigner;
-import leap.oauth2.webapp.OAuth2Params;
 import leap.oauth2.webapp.OAuth2Config;
+import leap.oauth2.webapp.OAuth2Params;
 
 import java.util.Map;
 
@@ -37,17 +37,17 @@ public class DefaultIdTokenVerifier implements IdTokenVerifier {
         Map<String, Object> claims = signer.verify(token);
         SimpleIdToken idToken = new SimpleIdToken(token);
 
-        idToken.setClientId((String)claims.remove(JWT.CLAIM_AUDIENCE));
-        idToken.setUserId((String)claims.remove(JWT.CLAIM_SUBJECT));
+        idToken.setClientId((String)claims.get(JWT.CLAIM_AUDIENCE));
+        idToken.setUserId((String)claims.get(JWT.CLAIM_SUBJECT));
 
         SimpleUserPrincipal user = new SimpleUserPrincipal();
         user.setId(idToken.getUserId());
         user.setName((String)claims.remove("name"));
         user.setLoginName((String)claims.remove("login_name"));
-
-        //todo: more details user properties ?
+        user.setProperties(claims);
 
         idToken.setUserInfo(user);
+        idToken.setClaims(claims);
 
         return idToken;
     }

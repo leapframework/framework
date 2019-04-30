@@ -17,6 +17,8 @@ package leap.webunit.client;
 
 import leap.lang.http.*;
 import leap.lang.json.JSON;
+import leap.lang.json.JsonArray;
+import leap.lang.json.JsonObject;
 import leap.lang.json.JsonValue;
 import leap.lang.jsoup.nodes.Document;
 
@@ -53,6 +55,20 @@ public interface THttpResponse {
      * Returns true if the HTTP status is >= 300.
      */
     boolean isFailure();
+
+    /**
+     * Returns true if the HTTP status is 404.
+     */
+    default boolean isNotFound() {
+        return getStatus() == 404;
+    }
+
+    /**
+     * Returns true if the HTTP status is 400.
+     */
+    default boolean isBadRequest() {
+        return getStatus() == 400;
+    }
 
     /**
      * Returns the header value of {@link Headers#LOCATION}.
@@ -115,6 +131,14 @@ public interface THttpResponse {
      */
 	default JsonValue getJson() {
 		return JSON.parse(getContent());
+	}
+
+	default JsonArray asJsonArray() {
+		return getJson().asJsonArray();
+	}
+
+	default JsonObject asJsonObject() {
+		return getJson().asJsonObject();
 	}
 
     /**

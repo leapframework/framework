@@ -24,6 +24,7 @@ import leap.core.annotation.Inject;
 import leap.core.ioc.PostCreateBean;
 import leap.core.security.Authentication;
 import leap.core.security.Credentials;
+import leap.core.security.SimpleUserPrincipal;
 import leap.core.security.UserPrincipal;
 import leap.core.security.token.TokenCredentials;
 import leap.core.security.token.jwt.JWT;
@@ -66,14 +67,24 @@ public class JwtTokenAuthenticator extends UsernameBasedTokenAuthenticator imple
 			if(Strings.isEmpty(username)||Strings.isEmpty(jti)) {
 				return false;
 			}
-			
-			UserDetails details = resolveUserDetails(context, username, claims);
-			if(null == details) {
-				return false;
-			}
 
-			user.set(details);
-			return true;
+			if(sc.getUserStore() != null) {
+				UserDetails details = resolveUserDetails(context, username, claims);
+				if (null == details) {
+					return false;
+				}else {
+					user.set(details);
+					return true;
+				}
+			}else {
+                SimpleUserPrincipal principal = new SimpleUserPrincipal();
+                principal.setId(jti);
+                principal.setLoginName(username);
+                principal.setName(username);
+                principal.setProperties(claims);
+                user.set(principal);
+                return true;
+            }
 		}
 		
 		return false;

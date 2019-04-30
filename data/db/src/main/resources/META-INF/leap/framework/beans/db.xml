@@ -14,6 +14,6 @@
 	<bean name="PostgreSQL" type="leap.db.DbPlatform" class="leap.db.platform.postgresql.PostgreSQLPlatform"/>
 	
 	<!-- DataSource -->
-	<bean name="leap-cp" type="leap.core.ds.DataSourceFactory" class="leap.db.cp.PooledDataSourceFactory" primary="true"/>
+	<bean name="leap" type="leap.core.ds.DataSourceFactory" class="leap.db.cp.PooledDataSourceFactory" primary="true"/>
     
 </beans>

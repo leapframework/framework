@@ -4,13 +4,15 @@
 	xmlns:web="http://www.leapframework.org/schema/web/config"
 	xsi:schemaLocation="http://www.leapframework.org/schema/config http://www.leapframework.org/schema/config
 	http://www.leapframework.org/schema/web/config http://www.leapframework.org/schema/web/config">
-
+    
     <properties>
         <property name="jdbc.driverClassName">org.h2.Driver</property>
-        <property name="jdbc.url">jdbc:h2:./target/test;DB_CLOSE_ON_EXIT=FALSE</property>
+        <property name="jdbc.url">jdbc:h2:mem:test;DB_CLOSE_ON_EXIT=FALSE</property>
         <property name="jdbc.username">sa</property>
     </properties>
-
+    
+    
+    
     <property name="app.debugEnabled">true</property>
 
     <!--

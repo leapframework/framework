@@ -26,6 +26,7 @@ import leap.db.change.ColumnDefinitionChange;
 import leap.db.change.SchemaChangeContext;
 import leap.db.model.DbColumn;
 import leap.db.model.DbColumnBuilder;
+import leap.db.model.DbSchemaName;
 import leap.db.model.DbSchemaObjectName;
 import leap.db.platform.GenericDbDialect;
 import leap.lang.Collections2;
@@ -36,7 +37,7 @@ import leap.lang.value.Limit;
 public class MySql5Dialect extends GenericDbDialect {
 	
     /**
-     * the reserved sql keywords not defined in {@link SqlStandards#SQL92_RESERVED_WORDS}. <p/>
+     * the reserved sql keywords not defined in {@link leap.db.platform.GenericDbDialectBase#SQL92_RESERVED_WORDS}. <p/>
      * 
      * <p>
      * see：http://www.mysql.com/doc/en/Reserved_words.html.
@@ -80,7 +81,7 @@ public class MySql5Dialect extends GenericDbDialect {
 
 	@Override
     public String getDefaultSchemaName(Connection connection, DatabaseMetaData dm) throws SQLException {
-		return connection.getCatalog();
+        return connection.getCatalog();
     }
 
     @Override
@@ -112,6 +113,26 @@ public class MySql5Dialect extends GenericDbDialect {
         }
 
         return super.getColumnValueTypeKnown(rs, name, type);
+    }
+
+    @Override
+    protected String getColumnDatetimeDef(DbColumn column) {
+        return "datetime";
+    }
+
+    @Override
+    protected String getColumnDefaultDefinition(DbColumn column) {
+        if(Types.TIMESTAMP == column.getTypeCode()) {
+            if((!column.isNullable()) && !column.isDatetime() && Strings.isEmpty(column.getDefaultValue())) {
+                return "DEFAULT CURRENT_TIMESTAMP";
+            }
+        }
+        return super.getColumnDefaultDefinition(column);
+    }
+
+    @Override
+    public String qualifySchemaObjectName(String catalog, String schema, String name) {
+        return super.qualifySchemaObjectName(null, schema, name);
     }
 
     @Override
@@ -198,7 +219,7 @@ public class MySql5Dialect extends GenericDbDialect {
     protected void registerColumnTypes() {
 		//see http://dev.mysql.com/doc/refman/5.6/en/storage-requirements.html
 		
-        columnTypes.add(Types.BOOLEAN,       "bit",0,0,Types.BIT);
+        columnTypes.add(Types.BOOLEAN,       "boolean",0,0,Types.BIT);
         columnTypes.add(Types.BIT,           "bit");
         
         columnTypes.add(Types.TINYINT,       "tinyint");
@@ -227,10 +248,33 @@ public class MySql5Dialect extends GenericDbDialect {
         
         columnTypes.add(Types.DATE,          "date");
         columnTypes.add(Types.TIME,          "time");
-        columnTypes.add(Types.TIMESTAMP,     "datetime");
 
         columnTypes.add(Types.BLOB,          "blob");
         columnTypes.add(Types.CLOB,          "text");
+
+        //https://dev.mysql.com/doc/refman/5.6/en/timestamp-initialization.html
+        //Before 5.6.5, this is true only for TIMESTAMP, and for at most one TIMESTAMP column per table.
+        if(metadata.getProductMinorVersion() >= 6) {
+            //5.7.19-log
+            try {
+                String[] parts = Strings.split(metadata.getProductVersion(), ".");
+                if (parts.length >= 3) {
+                    String v = parts[2];
+                    int sep = v.indexOf('-');
+                    if(sep > 0) {
+                        v = v.substring(0, sep);
+                    }
+                    if(Integer.parseInt(v) >= 5) {
+                        columnTypes.add(Types.TIMESTAMP, "timestamp");
+                        return;
+                    }
+                }
+            }catch (Exception e) {
+                log.error("Unable the recognize the mysql version '" + metadata.getProductVersion() + "'", e);
+            }
+        }
+
+        columnTypes.add(Types.TIMESTAMP, "datetime");
     }
 
 	@Override

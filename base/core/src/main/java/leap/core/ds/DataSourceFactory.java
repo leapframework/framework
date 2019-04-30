@@ -28,7 +28,7 @@ public interface DataSourceFactory {
 	 * 
 	 * @throws NestedClassNotFoundException if the given 'driverClassName' property not found.
 	 */
-	DataSource tryCreateDataSource(DataSourceConfig props) throws NestedClassNotFoundException;
+	DataSource tryCreateDataSource(DataSourceProps props) throws NestedClassNotFoundException;
 	
 	/**
 	 * Destroy the given {@link DataSource}.

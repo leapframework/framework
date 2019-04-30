@@ -16,6 +16,7 @@
 package leap.db.change;
 
 import leap.db.model.DbColumn;
+import leap.db.model.DbTable;
 
 public class ColumnPropertyChange extends PropertyChange<DbColumn> {
 	
@@ -25,6 +26,8 @@ public class ColumnPropertyChange extends PropertyChange<DbColumn> {
 	public static final String UNIQUE    = "unique";
 	public static final String DEFAULT   = "default";
 	public static final String COMMENT   = "comment";
+
+	private DbTable table;
 	
 	public ColumnPropertyChange(DbColumn object, String property, Object oldValue, Object newValue) {
 	    super(object, property, oldValue, newValue);
@@ -57,5 +60,14 @@ public class ColumnPropertyChange extends PropertyChange<DbColumn> {
 	
 	public boolean isComment() {
 		return COMMENT.equalsIgnoreCase(property);
+	}
+
+	public DbTable getTable() {
+		return table;
+	}
+
+	public ColumnPropertyChange setTable(DbTable table) {
+		this.table = table;
+		return this;
 	}
 }

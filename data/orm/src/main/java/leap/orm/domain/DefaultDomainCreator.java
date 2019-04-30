@@ -26,7 +26,7 @@ import leap.orm.annotation.ADomain;
 public class DefaultDomainCreator implements DomainCreator {
     
     @Override
-    public FieldDomainBuilder tryCreateFieldDomainByAnnotation(DomainConfigContext context, Class<?> at) {
+    public DomainBuilder tryCreateFieldDomainByAnnotation(Domains context, Class<?> at) {
         ADomain fd = at.getAnnotation(ADomain.class);
         if(null != fd) {
             return createFieldDomainByAnnotation(context, at, fd);
@@ -35,31 +35,21 @@ public class DefaultDomainCreator implements DomainCreator {
     }
     
     @Override
-    public FieldDomainBuilder createFieldDomainByAnnotation(DomainConfigContext context, Class<?> at, ADomain fd) {
-        String  entityName        = null;
-        String  name              = Strings.firstNotEmpty(fd.name(),fd.annotationType().getSimpleName());
-        String  defaultColumnName = fd.column();
-        String  typeName          = fd.type().getTypeName();
-        Boolean nullable          = fd.nullable().getValue();
-        Integer length            = fd.length() <= 0 ? null : fd.length();
-        Integer precision         = fd.length() <= 0 ? null : fd.precision();
-        Integer scale             = fd.scale() < 0 ? null : fd.scale();
-        String  defaultValue      = fd.defaultValue();
-        Boolean insert            = fd.insert().getValue();
-        Boolean update            = fd.update().getValue();
-        String  insertValue       = fd.insertValue();
-        String  updateValue       = fd.updateValue();
-        Float sortOrder           = fd.order() == Ordered.MINIMUM_SORT_ORDER ? null : fd.order();
-        boolean override          = fd.override();
-        
-        EntityDomain entityDomain = null;
-        
-        if(!Strings.isEmpty(entityName)){
-            entityDomain = context.tryGetEntityDomain(entityName);
-            if(null == entityDomain){
-                throw new DomainConfigException("Entity domain '" + entityName + "' not found, check the annotation : " + at.getName());
-            }
-        }
+    public DomainBuilder createFieldDomainByAnnotation(Domains context, Class<?> at, ADomain ad) {
+        String  name              = Strings.firstNotEmpty(ad.name(), ad.annotationType().getSimpleName());
+        String  defaultColumnName = ad.column();
+        String  typeName          = ad.type().getTypeName();
+        Boolean nullable          = ad.nullable().getValue();
+        Integer length            = ad.length() <= 0 ? null : ad.length();
+        Integer precision         = ad.length() <= 0 ? null : ad.precision();
+        Integer scale             = ad.scale() < 0 ? null : ad.scale();
+        String  defaultValue      = ad.defaultValue();
+        Boolean insert            = ad.insert().getValue();
+        Boolean update            = ad.update().getValue();
+        String  insertValue       = ad.insertValue();
+        String  updateValue       = ad.updateValue();
+        Float sortOrder           = ad.order() == Ordered.MINIMUM_SORT_ORDER ? null : ad.order();
+        boolean override          = ad.override();
         
         //check name
         if(Strings.isEmpty(name)){
@@ -76,11 +66,10 @@ public class DefaultDomainCreator implements DomainCreator {
         
         //check is domain exists
         if(!override){
-            String qname = context.qualifyName(null == entityDomain ? null : entityDomain.getName(), name);
-            FieldDomain fieldDomain = context.tryGetFieldDomain(qname);
-            if(null != fieldDomain){
+            Domain domain = context.tryGetDomain(name);
+            if(null != domain){
                 throw new DomainConfigException(Strings.format(
-                        "Found duplicated field domain '" + name + "' in : {0},{1}",fieldDomain.getSource(), at.getName()));
+                        "Found duplicated field domain '" + name + "' in : {0},{1}", domain.getSource(), at.getName()));
             }
         }
         
@@ -95,8 +84,7 @@ public class DefaultDomainCreator implements DomainCreator {
             updateValueExpression = EL.tryCreateValueExpression(updateValue);
         }
         
-        FieldDomainBuilder domain = new FieldDomainBuilder(at)
-                                        .setEntityDomain(entityDomain)
+        DomainBuilder domain = new DomainBuilder(at)
                                         .setName(name)
                                         .setDefaultColumnName(defaultColumnName)
                                         .setType(type)
@@ -111,7 +99,7 @@ public class DefaultDomainCreator implements DomainCreator {
                                         .setUpdateValue(updateValueExpression)
                                         .setSortOrder(sortOrder);
         
-        if(Strings.isEmpty(fd.name())) {
+        if(Strings.isEmpty(ad.name())) {
             domain.setUnnamed(true);
         }
         

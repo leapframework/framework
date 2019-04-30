@@ -17,6 +17,7 @@ package leap.db.ddl;
 
 import leap.db.DbTestCase;
 import leap.db.change.SchemaChanges;
+import leap.db.model.DbColumn;
 import leap.db.model.DbColumnBuilder;
 import leap.db.model.DbTable;
 import leap.db.model.DbTableBuilder;
@@ -51,5 +52,25 @@ public class TableTest extends DbTestCase {
 		assertTrue(db.cmdDropTable(tableTobeCreate).execute().success());
 		assertFalse(db.checkTableExists(tableTobeCreate));
 	}
-	
+
+	/*
+	@Test
+    @Contextual
+	public void testColumnDefault() {
+	    DbTable table = new DbTableBuilder("test_column_default")
+                                .addPrimaryKey(DbColumnBuilder.guid("id"))
+	                            .addColumn(DbColumnBuilder.varchar("c1", 100).setDefaultValue("'a'"))
+                                .build();
+
+        if(db.checkTableExists(table)){
+            assertTrue(db.cmdDropTable(table).execute().success());
+        }
+
+        assertTrue(db.cmdCreateTable(table).execute().success());
+
+        DbTable tableCreated = db.getMetadata().tryGetTable(table.getName());
+        DbColumn c1 = tableCreated.findColumn("c1");
+        assertEquals("'a'", c1.getDefaultValue());
+    }
+    */
 }

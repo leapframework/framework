@@ -18,67 +18,105 @@ package leap.web.api.restd.crud;
 
 import leap.lang.Strings;
 import leap.orm.dao.Dao;
-import leap.web.App;
 import leap.web.action.ActionParams;
 import leap.web.action.FuncActionBuilder;
-import leap.web.api.config.ApiConfig;
+import leap.web.api.Api;
 import leap.web.api.config.ApiConfigurator;
-import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.ApiResponse;
-import leap.web.api.orm.*;
+import leap.web.api.orm.CreateOneResult;
+import leap.web.api.orm.ModelCreateExecutor;
+import leap.web.api.orm.ModelExecutorContext;
+import leap.web.api.orm.SimpleModelExecutorContext;
+import leap.web.api.restd.CrudOperation;
+import leap.web.api.restd.CrudOperationBase;
 import leap.web.api.restd.RestdContext;
 import leap.web.api.restd.RestdModel;
-import leap.web.api.restd.RestdProcessor;
 import leap.web.route.RouteBuilder;
 
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * Create a new record operation.
  */
-public class CreateOperation extends CrudOperation implements RestdProcessor {
+public class CreateOperation extends CrudOperationBase implements CrudOperation {
+
+    protected static final String NAME = "create";
 
     @Override
-    public void preProcessModel(ApiConfigurator api, RestdContext context, RestdModel model) {
-        if(!context.getConfig().allowCreateModel(model.getName())) {
+    public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model) {
+        if (!context.getConfig().allowCreateModel(model.getName())) {
             return;
         }
 
-        String verb = "POST";
-        String path = fullModelPath(api, model);
-        if(isOperationExists(context, verb, path)) {
-            return;
-        }
+        String path = fullModelPath(c, model);
+        String name = Strings.lowerCamel(NAME, model.getName());
 
-        Dao               dao    = context.getDao();
-        FuncActionBuilder action = new FuncActionBuilder();
-        RouteBuilder      route  = rm.createRoute(verb, path);
-
-        action.setName(Strings.lowerCamel("create", model.getName()));
-        action.setFunction((params) -> execute(api.config(), dao, model, params));
-        addModelArgument(action, model);
-        addModelResponse(action, model).setStatus(201);
-
-        configure(context, model, action);
-        route.setAction(action.build());
-
-        configure(context, model, route);
-        api.addRoute(rm.loadRoute(context.getRoutes(), route));
+        createCrudOperation(c, context, model, path, name, null);
     }
 
-    protected Object execute(ApiConfig ac, Dao dao, RestdModel model, ActionParams params) {
-        ApiMetadata amd = apis.tryGetMetadata(ac.getName());
-        MApiModel   am  = amd.getModel(model.getName());
+    public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model,
+                                    String path, String name, Callback callback) {
 
-        Map<String,Object> record = params.get(0);
+        FuncActionBuilder action = new FuncActionBuilder(name);
+        RouteBuilder      route  = rm.createRoute("POST", path);
 
-        ModelExecutorContext context = new SimpleModelExecutorContext(ac, amd, am, dao, model.getEntityMapping());
-        ModelCreateExecutor executor = mef.newCreateExecutor(context);
+        if (null != callback) {
+            callback.preAddArguments(action);
+        }
 
-        CreateOneResult result = executor.createOne(record);
+        action.setFunction(createFunction(context, model, action.getArguments().size()));
+        addModelArgumentForCreate(context, action, model);
+        if (null != callback) {
+            callback.postAddArguments(action);
+        }
+        addModelResponse(action, model).setStatus(201);
 
-        return ApiResponse.created(dao.find(model.getEntityMapping(), result.id));
+        preConfigure(context, model, action);
+        route.setAction(action.build());
+        setCrudOperation(route, NAME);
+
+        postConfigure(context, model, route);
+
+        if (isOperationExists(context, route)) {
+            return;
+        }
+
+        c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
+
+    }
+
+    protected Function<ActionParams, Object> createFunction(RestdContext context, RestdModel model, int start) {
+        return new CreateFunction(context.getApi(), context.getDao(), model, start);
+    }
+
+    protected class CreateFunction extends CrudFunction {
+        public CreateFunction(Api api, Dao dao, RestdModel model, int start) {
+            super(api, dao, model, start);
+        }
+
+        @Override
+        public Object apply(ActionParams params) {
+            MApiModel am = api.getMetadata().getModel(model.getName());
+
+            Map<String, Object> record = getWithoutId(params, 0);
+
+            ModelExecutorContext context  = new SimpleModelExecutorContext(api, dao, am, em, params);
+            ModelCreateExecutor  executor = newCreateExecutor(context);
+
+            CreateOneResult result = executor.createOne(record);
+            return ApiResponse.created(result.entity);
+        }
+
+        protected ModelCreateExecutor newCreateExecutor(ModelExecutorContext context) {
+            return mef.newCreateExecutor(context);
+        }
+
+        @Override
+        public String toString() {
+            return "Function:" + "Create " + model.getName() + "";
+        }
     }
 
 }

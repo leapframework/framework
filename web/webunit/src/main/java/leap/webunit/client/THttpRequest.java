@@ -48,6 +48,13 @@ public interface THttpRequest {
      * Sets the request method.
      */
     THttpRequest setMethod(Method method);
+
+    /**
+     * Same as {@link #setMethod(Method)}
+     */
+    default THttpRequest method(Method method) {
+        return setMethod(method);
+    }
 	
 	/**
 	 * Set the header.
@@ -58,6 +65,13 @@ public interface THttpRequest {
 	 * Adds a header.
 	 */
 	THttpRequest addHeader(String name, String value);
+
+    /**
+     * Same as {@link #setHeader(String, String)}
+     */
+	default THttpRequest header(String name, String value) {
+	    return setHeader(name, value);
+    }
 
 	/**
 	 * Sets the content-type header.
@@ -84,6 +98,13 @@ public interface THttpRequest {
      * Adda a query string param.
      */
     THttpRequest addQueryParam(String name, String value);
+
+    /**
+     * Same as {@link #addQueryParam(String, String)}.
+     */
+    default THttpRequest param(String name, String value) {
+       return addQueryParam(name, value);
+    }
     
     /**
      * Adds all the query params.
@@ -99,7 +120,14 @@ public interface THttpRequest {
         }
         return this;
     }
-    
+
+    /**
+     * Same as {@link #addQueryParams(Map)}
+     */
+    default THttpRequest params(Map params) {
+        return addQueryParams(params);
+    }
+
     /**
      * Adds a form param (name=value).
      * 
@@ -130,6 +158,13 @@ public interface THttpRequest {
         setContentType(ContentTypes.APPLICATION_JSON_UTF8);
         return setBody(JSON.stringify(value));
     }
+
+    /**
+     * Same as {@link #setJson(Object)}
+     */
+    default THttpRequest json(Object value) {
+       return setJson(value);
+    }
     
     /**
      * Returns the multipart reqeust.
@@ -144,9 +179,23 @@ public interface THttpRequest {
     }
 
     /**
+     * Same as {@link #setBody(String)}.
+     */
+    default THttpRequest body(String content) {
+        return setBody(content);
+    }
+
+    /**
      * Sets the request body
      */
     THttpRequest setBody(byte[] content);
+
+    /**
+     * Same as {@link #setBody(byte[])}
+     */
+    default THttpRequest body(byte[] content) {
+        return setBody(content);
+    }
 	
 	/**
 	 * Sends this request as ajax and returns the response.
@@ -167,6 +216,27 @@ public interface THttpRequest {
      */
     default THttpResponse post() {
         return setMethod(Method.POST).send();
+    }
+
+    /**
+     * Sends a PUT request.
+     */
+    default THttpResponse put() {
+        return setMethod(Method.PUT).send();
+    }
+
+    /**
+     * Sends a PATCH request.
+     */
+    default THttpResponse patch() {
+        return setMethod(Method.PATCH).send();
+    }
+
+    /**
+     * Sends a DELETE request.
+     */
+    default THttpResponse delete() {
+        return setMethod(Method.DELETE).send();
     }
     
     /**

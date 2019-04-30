@@ -81,4 +81,17 @@ public class SpelExpressionTest extends SpelTestCase {
 		eval("$name");
 		eval("_name");
 	}
+
+	@Test
+	public void testSpecialOperator() {
+        String s = "a";
+
+        Map<String, Object> vars = new HashMap<>();
+        vars.put("s", s);
+
+        assertEquals(Boolean.TRUE, SPEL.createExpression("s.contains('a')").getValue(vars));
+        assertEquals(Boolean.TRUE, SPEL.createExpression("s.startsWith('a')").getValue(vars));
+        assertEquals(Boolean.TRUE, SPEL.createExpression("s.endsWith('a')").getValue(vars));
+    }
+
 }

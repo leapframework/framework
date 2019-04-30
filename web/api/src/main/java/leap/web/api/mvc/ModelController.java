@@ -22,6 +22,7 @@ import leap.orm.OrmMetadata;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.query.CriteriaQuery;
+import leap.web.api.Api;
 import leap.web.api.annotation.ResourceWrapper;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.ApiMetadata;
@@ -55,11 +56,11 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
         return (Class<T>) Types.getActualTypeArgument(this.getClass().getGenericSuperclass());
     }
 
-    public void postApiInitialized(ApiConfig c, ApiMetadata m) {
-        this.ac  = c;
-        this.amd = m;
-        this.am  = m.getModel(modelClass);
-        this.mec = new SimpleModelExecutorContext(ac, amd, am, dao, em);
+    public void postApiInitialized(Api api) {
+        this.ac  = api.getConfig();
+        this.amd = api.getMetadata();
+        this.am  = api.getMetadata().getModel(modelClass);
+        this.mec = new SimpleModelExecutorContext(api, dao, am, em, null);
     }
 
     /**
@@ -157,7 +158,7 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
 
         QueryOneResult result = executor.queryOne(id, options);
 
-        return ApiResponse.of(result.record);
+        return ApiResponse.of(result.getRecord());
     }
 
     /**
@@ -177,8 +178,22 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
     /**
      * Query the model records with the {@link QueryOptions}.
      */
+    protected ApiResponse<List<T>> queryList(QueryOptions options, boolean filterByParams) {
+        return queryList(options, null, null, null, filterByParams);
+    }
+
+    /**
+     * Query the model records with the {@link QueryOptions}.
+     */
     protected ApiResponse<List<T>> queryList(QueryOptions options, Consumer<CriteriaQuery> callback){
         return queryList(options, null, null, callback);
+    }
+
+    /**
+     * Query the model records with the {@link QueryOptions}.
+     */
+    protected ApiResponse<List<T>> queryList(QueryOptions options, Consumer<CriteriaQuery> callback, boolean filterByParams){
+        return queryList(options, null, null, callback, filterByParams);
     }
 
     /**
@@ -191,8 +206,22 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
     /**
      * Query the model records with the {@link QueryOptions}.
      */
+    protected ApiResponse<List<T>> queryListWithExecutorCallback(QueryOptions options, Consumer<ModelQueryExecutor> callback, boolean filterByParams){
+        return queryList(options, null, callback, null, filterByParams);
+    }
+
+    /**
+     * Query the model records with the {@link QueryOptions}.
+     */
     protected ApiResponse<List<T>> queryList(QueryOptions options, Map<String, Object> filters){
         return queryList(options, filters, null, null);
+    }
+
+    /**
+     * Query the model records with the {@link QueryOptions}.
+     */
+    protected ApiResponse<List<T>> queryList(QueryOptions options, Map<String, Object> filters, boolean filterByParams){
+        return queryList(options, filters, null, null, filterByParams);
     }
 
     /**
@@ -202,18 +231,29 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
                                              Consumer<ModelQueryExecutor> executorCallback,
                                              Consumer<CriteriaQuery> queryCallback) {
 
+        return queryList(options, filters, executorCallback, queryCallback, true);
+    }
+
+    /**
+     * Query the model records with the {@link QueryOptions}.
+     */
+    protected ApiResponse<List<T>> queryList(QueryOptions options, Map<String, Object> filters,
+                                             Consumer<ModelQueryExecutor> executorCallback,
+                                             Consumer<CriteriaQuery> queryCallback,
+                                             boolean filterByParams) {
+
         ModelQueryExecutor executor = mef.newQueryExecutor(mec);
 
         if(null != executorCallback) {
             executorCallback.accept(executor);
         }
 
-        QueryListResult result = executor.queryList(options, filters, queryCallback);
+        QueryListResult result = executor.queryList(options, filters, queryCallback, filterByParams);
 
-        if (result.count == -1) {
-            return ApiResponse.of(result.list);
+        if (result.getCount() == -1) {
+            return ApiResponse.of(result.getList());
         } else {
-            return ApiResponse.of(result.list).setHeader("X-Total-Count", String.valueOf(result.count));
+            return ApiResponse.of(result.getList()).setHeader("X-Total-Count", String.valueOf(result.getCount()));
         }
     }
 

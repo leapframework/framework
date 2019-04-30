@@ -42,7 +42,6 @@ public class DefaultJdbcAuthzTokenStore extends AbstractJdbcAuthzStore implement
     protected SqlCommand cleanupAccessTokensCommand;
     protected SqlCommand cleanupRefreshTokensCommand;
 
-
     @Override
     public void saveAccessToken(AuthzAccessToken token) {
         dao.insert(createEntityFromAccessToken(token));
@@ -52,8 +51,6 @@ public class DefaultJdbcAuthzTokenStore extends AbstractJdbcAuthzStore implement
     public void saveRefreshToken(AuthzRefreshToken token) {
         dao.insert(createEnttiyFromRefreshToken(token));
     }
-
-
 
     @Override
     public AuthzAccessToken loadAccessToken(String accessToken) {
@@ -78,10 +75,6 @@ public class DefaultJdbcAuthzTokenStore extends AbstractJdbcAuthzStore implement
     public void removeRefreshToken(String refreshToken) {
         dao.delete(AuthzRefreshTokenEntity.class, refreshToken);
     }
-
-
-
-
 
     @Override
     public void cleanupTokens() {
@@ -173,8 +166,6 @@ public class DefaultJdbcAuthzTokenStore extends AbstractJdbcAuthzStore implement
         return token;
     }
 
-
-
     @Override
     protected void init(AppConfig config) {
         createEntityMapping(dmo, config.isDebug());
@@ -182,19 +173,24 @@ public class DefaultJdbcAuthzTokenStore extends AbstractJdbcAuthzStore implement
     }
 
     protected void createEntityMapping(Dmo dmo, boolean debug) {
-        CreateEntityCommand cmd1 = dmo.cmdCreateEntity(AuthzAccessTokenEntity.class);
-        CreateEntityCommand cmd2 = dmo.cmdCreateEntity(AuthzRefreshTokenEntity.class);
-        CreateEntityCommand cmd3 = dmo.cmdCreateEntity(AuthzLoginTokenEntity.class);
+        OrmMetadata md = dmo.getOrmContext().getMetadata();
 
-        if(debug) {
-            cmd1.setUpgradeTable(true);
-            cmd2.setUpgradeTable(true);
-            cmd3.setUpgradeTable(true);
+        if(null == md.tryGetEntityMapping(AuthzAccessTokenEntity.class)) {
+            CreateEntityCommand cmd = dmo.cmdCreateEntity(AuthzAccessTokenEntity.class);
+            cmd.setUpgradeTable(debug);
+            cmd.execute();
         }
 
-        cmd1.execute();
-        cmd2.execute();
-        cmd3.execute();
+        if(null == md.tryGetEntityMapping(AuthzRefreshTokenEntity.class)) {
+            CreateEntityCommand cmd = dmo.cmdCreateEntity(AuthzRefreshTokenEntity.class);
+            cmd.setUpgradeTable(debug);
+            cmd.execute();
+        }
+        if(null == md.tryGetEntityMapping(AuthzLoginTokenEntity.class)) {
+            CreateEntityCommand cmd = dmo.cmdCreateEntity(AuthzLoginTokenEntity.class);
+            cmd.setUpgradeTable(debug);
+            cmd.execute();
+        }
     }
 
     protected void resolveSqlCommands(Dao dao, OrmMetadata md) {

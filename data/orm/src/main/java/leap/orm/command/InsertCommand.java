@@ -20,7 +20,7 @@ import java.util.Map;
 /**
  * A command to persist a new record of entity.
  */
-public interface InsertCommand {
+public interface InsertCommand extends Executable{
 
     /**
      * Returns the passed in or generated id.

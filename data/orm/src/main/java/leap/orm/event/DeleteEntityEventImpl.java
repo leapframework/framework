@@ -25,6 +25,7 @@ public class DeleteEntityEventImpl extends EntityEventBase implements DeleteEnti
 
     public DeleteEntityEventImpl(OrmContext context, EntityMapping em, Object id) {
         super(context, em);
+        this.id = id;
     }
 
     @Override

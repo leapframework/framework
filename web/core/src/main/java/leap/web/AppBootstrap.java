@@ -111,7 +111,7 @@ public class AppBootstrap extends ServletContextInitializerBase implements Servl
 	}
 	
 	public AppConfig getAppConfig() {
-		return appContext.getConfig();
+		return null != appContext ? appContext.getConfig() : null;
 	}
 	
 	public BeanFactory getBeanFactory() {
@@ -122,7 +122,7 @@ public class AppBootstrap extends ServletContextInitializerBase implements Servl
 		try {
             this.servletContext = sc;
 
-            sc.setAttribute(AppBootstrap.class.getName(), this);
+            sc.setAttribute(BOOTSTRAP_ATTR_NAME, this);
 
 		    log.info("Booting app '{}'...", getAppDisplayName(sc));
 

@@ -18,12 +18,27 @@ package leap.lang;
 import java.util.function.Consumer;
 
 public class Out<T> implements Valued<T>,Consumer<T>,Result<T> {
+    private static final Out empty = new Out(){
+        public void accept(Object o) {}
+        public Out set(Object value) {return this;}
+        public Out ok(Object value) {return this;}
+    };
+
+    public static <T> Out<T> empty(){
+        return (Out<T>)empty;
+    }
 
     protected T value;
 
 	@Override
     public T get() {
         return value;
+    }
+
+    public T getAndReset() {
+        T r = value;
+        value = null;
+        return r;
     }
 
     @Override

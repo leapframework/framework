@@ -40,11 +40,11 @@ import java.util.List;
 import java.util.Map;
 
 public class DefaultDmo extends DmoBase {
-	
+
 	public DefaultDmo(){
 		super();
 	}
-	
+
 	public DefaultDmo(String name){
 		super(name);
 	}
@@ -53,23 +53,23 @@ public class DefaultDmo extends DmoBase {
         super(context.getName());
         this.ormContext = context;
     }
-	
+
 	@Override
     public List<DbSchema> getDbSchemas() {
 	    return createDbSchemas();
     }
-	
+
 	@Override
     public void truncate(Class<?> entityClass) {
 	    Args.notNull(entityClass,"entity class");
-	    
+
 	    EntityMapping em = em(entityClass);
-	    
+
 	    Confirm.checkConfirmed("Dmo.truncate","may lost all the data in table '" + em.getTableName() + "'");
-	    
+
 	    commandFactory().newTruncateEntityCommand(this, em).execute();
     }
-	
+
 	@Override
     public boolean createTableIfNotExists(Class<?> entityClass) {
 	    Args.notNull(entityClass, "entity class");
@@ -116,45 +116,56 @@ public class DefaultDmo extends DmoBase {
     public UpgradeSchemaCommand cmdUpgradeSchema() {
 		return commandFactory().newUpgradeSchemaCommand(this);
     }
-	
+
     protected List<DbSchema> createDbSchemas() {
     	Db db = ormContext.getDb();
-    	
+
     	List<EntityMapping>   entityMappings   = ormContext.getMetadata().getEntityMappingSnapshotList();
     	List<SequenceMapping> sequenceMappings = ormContext.getMetadata().getSequenceMappingSnapshotList();
-    	
+
 		DbSchemaBuilder 		     defaultSchema = new DbSchemaBuilder(db.getMetadata().getDefaultSchemaName());
 		Map<String, DbSchemaBuilder> extraSchemas  = null;
-		
+
 		//build tables
 		for(int i=0;i<entityMappings.size();i++){
-			EntityMapping em    = entityMappings.get(i);
+			EntityMapping em = entityMappings.get(i);
+			if(em.isRemote() || em.isNarrowEntity()){
+				continue;
+			}
 			DbTable       table = em.getTable();
-			
+            DbTable       secondaryTable = em.getSecondaryTable();
+
 			String schemaName = table.getSchema();
-			
+
 			if(Strings.isEmpty(schemaName)){
 				defaultSchema.addTable(table);
+                if(null != secondaryTable) {
+                    defaultSchema.addTable(secondaryTable);
+                }
 			}else{
 				if(null == extraSchemas){
 					extraSchemas = new HashMap<>();
 				}
-				
+
 				DbSchemaBuilder schema = extraSchemas.get(schemaName.toLowerCase());
 				if(null == schema){
 					schema = new DbSchemaBuilder(schemaName).setCatalog(table.getCatalog());
 					extraSchemas.put(schemaName.toLowerCase(), schema);
 				}
-				
+
 				schema.addTable(table);
+
+                if(null != secondaryTable) {
+                    schema.addTable(secondaryTable);
+                }
 			}
 		}
-		
+
 		//build sequences
 		for(int i=0;i<sequenceMappings.size();i++){
 			SequenceMapping sm  = sequenceMappings.get(i);
 			DbSequence      seq = sm.getSequence();
-			
+
 			String schemaName = seq.getSchema();
 			if(Strings.isEmpty(schemaName)){
 				defaultSchema.addSequence(seq);
@@ -167,28 +178,28 @@ public class DefaultDmo extends DmoBase {
 					schema = new DbSchemaBuilder(schemaName).setCatalog(seq.getCatalog());
 					extraSchemas.put(schemaName.toLowerCase(), schema);
 				}
-				
+
 				schema.addSequence(seq);
 			}
 		}
-		
+
 		List<DbSchema> schemas = new ArrayList<DbSchema>();
-		
+
 		schemas.add(defaultSchema.build());
-		
+
 		if(null != extraSchemas){
 			for(DbSchemaBuilder schema : extraSchemas.values()){
 				schemas.add(schema.build());
 			}
 		}
-		
+
 	    return schemas;
     }
-    
+
 	protected EntityMapping em(String name) throws MappingNotFoundException {
 		return metadata().getEntityMapping(name);
 	}
-	
+
 	protected EntityMapping em(Class<?> type) throws MappingNotFoundException {
 		return metadata().getEntityMapping(type);
 	}
@@ -196,11 +207,11 @@ public class DefaultDmo extends DmoBase {
 	@Override
     public String toString() {
 		ToStringBuilder tsb = new ToStringBuilder(this);
-		
+
 		if(null != ormContext){
 			tsb.append("dataSource",ormContext.getDataSource());
 		}
-		
+
 		return tsb.toString();
-	}    
+	}
 }

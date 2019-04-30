@@ -17,28 +17,35 @@
 package leap.web.api.restd;
 
 import leap.orm.dao.Dao;
+import leap.web.api.Api;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.config.model.RestdConfig;
 import leap.web.route.Routes;
 
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class SimpleRestdContext implements RestdContext {
 
-    protected ApiConfig       ac;
+    protected Api             api;
     protected RestdConfig     config;
     protected Dao             dao;
-    protected Set<RestdModel> models;
-    protected Routes          routes;
+    protected Set<RestdModel> models = new LinkedHashSet<>();
 
-    public SimpleRestdContext(ApiConfig ac, RestdConfig config) {
-        this.ac     = ac;
+    public SimpleRestdContext(Api api, RestdConfig config) {
+        this.api    = api;
         this.config = config;
     }
 
     @Override
+    public Api getApi() {
+        return api;
+    }
+
+    @Override
     public ApiConfig getApiConfig() {
-        return ac;
+        return api.getConfig();
     }
 
     @Override
@@ -66,10 +73,6 @@ public class SimpleRestdContext implements RestdContext {
 
     @Override
     public Routes getRoutes() {
-        return routes;
-    }
-
-    public void setRoutes(Routes routes) {
-        this.routes = routes;
+        return getApiConfig().getContainerRoutes();
     }
 }

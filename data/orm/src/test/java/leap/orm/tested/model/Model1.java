@@ -31,7 +31,7 @@ public class Model1 extends Model {
 	protected Timestamp creationTime;
 	
 	@MetaName(reserved=ReservedMetaFieldName.UPDATED_AT)
-	@Domain("updatedAt")
+	@Domain("orm.updatedAt")
 	protected Timestamp lastModified;
 
 	public Timestamp getCreationTime() {

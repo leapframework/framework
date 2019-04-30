@@ -63,6 +63,9 @@ public class ConfigDocProcessor implements ApiMetadataProcessor {
             ParamConfig wrapperParam = context.getConfig().getParam(p.getWrapperArgument().getType());
             if(null != wrapperParam) {
                 pc = wrapperParam.getWrappedParam(p.getArgument().getDeclaredName());
+                if(null == pc) {
+                    pc = wrapperParam.getWrappedParam(p.getName());
+                }
             }
         }
 
@@ -72,10 +75,14 @@ public class ConfigDocProcessor implements ApiMetadataProcessor {
     protected void processModel(ApiMetadataContext context, MApiModelBuilder m) {
         ModelConfig mc = null;
 
-        if(null != m.getJavaType()) {
-            mc = context.getConfig().getModel(m.getJavaType());
-        }else{
-            mc = context.getConfig().getModel(m.getName());
+        for(Class<?> javaType : m.getJavaTypes()) {
+            mc = context.getConfig().getModelConfig(javaType);
+            if(null != mc) {
+                break;
+            }
+        }
+        if(null == mc) {
+            mc = context.getConfig().getModelConfig(m.getName());
         }
 
         //configure the model properties.
@@ -93,10 +100,6 @@ public class ConfigDocProcessor implements ApiMetadataProcessor {
         if(null != described) {
             p.trySetSummary(described.getSummary());
             p.trySetDescription(described.getDescription());
-        }
-
-        if(!p.getName().equals(p.getTitle())) {
-            p.trySetDescription(p.getTitle());
         }
     }
 }

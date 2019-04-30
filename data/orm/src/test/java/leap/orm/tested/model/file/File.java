@@ -21,13 +21,17 @@ import leap.orm.model.Model;
 public class File extends Model {
 
 	protected String  id;
-	@Column("scope_id")
+
+    @Column("scope_id")
 	protected String  name;
-	protected Boolean deleted;
-	protected String  principalId;
+
+    protected Boolean deleted;
+
+    protected String  principalId;
 
 	@Column("dir_id")
 	protected String  directoryId;
+
 	@Column("name")
 	protected String scopeId;
 	

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans">
+
+    <bean type="leap.core.AppConfigSupport"   class="leap.spring.boot.LeapEnvSupport"    qualifier="pre" sort-order="0"/>
+    <bean type="leap.core.AppConfigSupport"   class="leap.spring.boot.LeapConfigSupport" qualifier="pre"/>
+    <bean type="leap.core.BeanFactorySupport" class="leap.spring.boot.LeapBeanSupport"/>
+
+    <bean type="leap.core.spring.PropertyResolver" class="leap.spring.boot.SpringPropertyResolver" primary="true" override="true">
+        <property name="mockResolver">
+            <bean class="leap.core.spring.MockSpringPropertyResolver"/>
+        </property>
+    </bean>
+    <bean type="leap.core.spring.ExpressionFactory" class="leap.spring.boot.spel.SpringExpressionFactory" primary="true" override="true"/>
+
+    <!-- spring transaction integration -->
+    <beans if-class-present="org.springframework.transaction.PlatformTransactionManager">
+        <bean type="leap.core.transaction.TransactionProviderFactory"
+              class="leap.spring.boot.LeapTransactionProviderFactory" primary="true" override="true"/>
+    </beans>
+</beans>

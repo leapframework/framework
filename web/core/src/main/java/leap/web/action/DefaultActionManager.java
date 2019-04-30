@@ -18,6 +18,7 @@ package leap.web.action;
 import leap.core.AppConfigException;
 import leap.core.annotation.Inject;
 import leap.core.validation.Validation;
+import leap.core.validation.ValidationException;
 import leap.lang.*;
 import leap.lang.convert.ConvertException;
 import leap.lang.http.HTTP;
@@ -53,6 +54,7 @@ public class DefaultActionManager implements ActionManager {
 	protected static final ResultProcessor NOP_RESULT_PROCESSOR = new AbstractResultProcessor() {
 		@Override
 		public void processReturnValue(ActionContext context, Object returnValue, Result result) throws Throwable {
+            result.setStatus(200);
 		}
 	};
 	
@@ -90,7 +92,7 @@ public class DefaultActionManager implements ActionManager {
     	eas.resultProcessor = getResultProcessor(route);
     	
     	//prepare formats
-    	eas.annotatedFormats = getAnnotatedFormats(route);
+    	eas.annotatedFormats = getSpecifiedFormats(route);
     	eas.supportedFormats = getSupportedFormats(route);
         eas.interceptors     = new ActionInterceptors(interceptors, route.getAction());
     }
@@ -99,10 +101,20 @@ public class DefaultActionManager implements ActionManager {
     public Object executeAction(ActionContext context, Validation validation) throws Throwable {
 		ExecutionAttributes eas = (ExecutionAttributes)context.getRoute().getExecutionAttributes();
 		DefaultActionExecution execution = new DefaultActionExecution(validation);
-		
+		context.setActionExecution(execution);
 		try {
             //resolve request format
             RequestFormat requestFormat = resolveRequestFormat(context, eas);
+
+            //pre-resolve argument interceptors
+            if (State.isIntercepted(eas.interceptors.preResolveActionParameters(context, validation))) {
+                execution.setState(Execution.ExecutionState.INTERCEPTED);
+                return null;
+            }
+            
+            //resolve argument values
+            Object[] args = resolveArgumentValues(context, validation, requestFormat, eas);
+            execution.setArgs(args);
 
             //pre-execute action interceptors
             if (State.isIntercepted(eas.interceptors.preExecuteAction(context, validation))) {
@@ -110,9 +122,6 @@ public class DefaultActionManager implements ActionManager {
                 return null;
             }
 
-            //resolve argument values
-            Object[] args = resolveArgumentValues(context, validation, requestFormat, eas);
-            execution.setArgs(args);
 
             //expose arguments as view data
             exposeArgumentsAsViewData(context.getResult().getViewData(), context, eas, execution);
@@ -153,16 +162,21 @@ public class DefaultActionManager implements ActionManager {
 		}catch(Throwable e){
             //Ignores successful response exception.
             if(e instanceof ResponseException) {
-                ResponseException re = (ResponseException)e;
+                ResponseException re = (ResponseException) e;
                 int s = re.getStatus();
                 execution.setStatus(HTTP.Status.valueOf(s));
                 if (s >= 200 && s <= 300) {
                     log.debug("Caught a ResponseException(status=2xx) while executing action, just throw it!");
                     throw e;
+                } else {
+                    log.info("Fail execute action {} : {}", context.getAction(), e.getMessage(), e);
                 }
+            } else if(e instanceof ValidationException) {
+                log.info("Action '{}' validate failed : {}", context.getAction(), e.getMessage(), e);
+            } else {
+                log.error("Action '{}' error : {}", context.getAction(), e.getMessage(), e);
             }
 
-            log.error("Failed to execute action {}, {}", context.getAction(), e.getMessage(), e);
 			execution.setState(Execution.ExecutionState.FAILURE);
 			execution.setException(e);
 
@@ -188,7 +202,7 @@ public class DefaultActionManager implements ActionManager {
                                     ActionExecution execution,
                                     ExecutionAttributes eas) throws Throwable {
         if(State.isIntercepted(eas.interceptors.onActionFailure(context, validation, execution))) {
-            log.info("Action error handled by interceptors");
+            log.debug("Action error handled by interceptors");
             return true;
         }
 
@@ -196,7 +210,7 @@ public class DefaultActionManager implements ActionManager {
         if(failureHandlers.length > 0) {
             for(FailureHandler h : failureHandlers) {
                 if(h.handleFailure(context, execution, context.getResult())) {
-                    log.info("Action handled by failure handler");
+                    log.debug("Action handled by failure handler");
                     return true;
                 }
             }
@@ -295,6 +309,14 @@ public class DefaultActionManager implements ActionManager {
                 continue;
             }
 
+            if(route.getPathTemplate().getTemplateVariables().contains(a.getName())) {
+                continue;
+            }
+
+            if(a.getType().equals(Object.class)) {
+                continue;
+            }
+
             TypeInfo ti = a.getTypeInfo();
             if(ti.isComplexType() || ti.isComplexElementType()){
                 candidates.add(a);
@@ -335,10 +357,14 @@ public class DefaultActionManager implements ActionManager {
                 }
 
 				ArgumentValidator[] validators = argument.getValidators();
+                Out<Object> out = new Out<>();
 				for(int j=0;j<validators.length;j++){
 					ArgumentValidator v = validators[j];
-                    if(!v.validate(validation, argument, value)) {
+                    if(!v.validate(validation, argument, value, out)) {
                         break;
+                    }
+                    if(out.isPresent()) {
+                        value = out.get();
                     }
 				}
 				
@@ -360,7 +386,7 @@ public class DefaultActionManager implements ActionManager {
 		//Get external processor.
 		ResultProcessor processor;
 		for(ResultProcessorProvider provider : resultProcessorProviders){
-			if((processor = provider.tryGetResultProcessor(action)) != null){
+			if((processor = provider.tryGetResultProcessor(app, route, action)) != null){
 				return processor;
 			}
 		}
@@ -445,11 +471,15 @@ public class DefaultActionManager implements ActionManager {
                 resolver = new JsonArgumentResolver(app,route,argument);
             }
         }
+
         if(null == resolver){
             TypeInfo typeInfo = argument.getTypeInfo();
             if(typeInfo.isCollectionType()){
                 //Collection type resolver
-                resolver = new CollectionArgumentResolver(app, route, argument);
+                RequestBodyArgumentResolver bodyResolver = rbaf.declared  ? null :
+                        new RequestBodyArgumentResolver(app, route.getAction(), argument);
+
+                resolver = new CollectionArgumentResolver(app, route, argument, bodyResolver);
             }else if(typeInfo.isSimpleType()) {
                 //Simple type resolver
                 resolver = new SimpleArgumentResolver(app, route, argument);
@@ -544,13 +574,18 @@ public class DefaultActionManager implements ActionManager {
 		}
 	}
 	
-	protected RequestFormat[] getAnnotatedFormats(RouteBuilder route) {
+	protected RequestFormat[] getSpecifiedFormats(RouteBuilder route) {
 		Action action = route.getAction();
+        RequestFormat[] formats = action.getConsumes();
+        if(null != formats && formats.length > 0) {
+            return formats;
+        }
+
 		Consumes consumes = action.searchAnnotation(Consumes.class);
 		if(null == consumes){
 			return null;
 		}
-		RequestFormat[] formats = new RequestFormat[consumes.value().length];
+		formats = new RequestFormat[consumes.value().length];
 		for(int i=0;i<formats.length;i++){
 			String name = consumes.value()[i];
 			formats[i] = formatManager.tryGetRequestFormat(name);

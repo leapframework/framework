@@ -54,6 +54,12 @@ public class Resources {
 		Resources.loader  = new DefaultResourceLoader(classLoader);
 		Resources.scanner = new DefaultResourceScanner(loader);
 	}
+
+    public static void setResourceLoader(ResourceLoader loader) {
+        Args.notNull(loader);
+        Resources.loader  = loader;
+        Resources.scanner = new DefaultResourceScanner(loader);
+    }
 	
 	public static String getContent(String resource){
 		Resource r = getResource(resource);
@@ -131,7 +137,7 @@ public class Resources {
 	 * 
 	 * @see ResourceScanner#scan(String)
 	 * 
-	 * @throws NestedIOException if an {@link IOException} throwed by underlying scanner.
+	 * @throws NestedIOException if an {@link IOException} thrown by underlying scanner.
 	 */
 	public static ResourceSet scan(String locationPattern) throws NestedIOException {
 		try {
@@ -195,6 +201,11 @@ public class Resources {
 	public static ResourceSet scan(Resource rootDirResource,String subPattern) throws NestedIOException{
 		Args.notNull(rootDirResource,"rootDirResource");
 		Args.notEmpty(subPattern, "subPattern");
+
+        if(!rootDirResource.exists()) {
+            return SimpleResourceSet.EMPTY;
+        }
+
 		try {
 	        return new SimpleResourceSet(scanner.scan(rootDirResource,subPattern));
         } catch (IOException e) {

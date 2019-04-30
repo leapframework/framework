@@ -22,7 +22,10 @@ import java.util.Map;
 
 public interface ModelUpdateExecutor {
 
+    UpdateOneResult replaceUpdateOne(Object id, Map<String, Object> record);
+
     UpdateOneResult partialUpdateOne(Object id, Partial partial);
 
     UpdateOneResult partialUpdateOne(Object id, Map<String,Object> properties);
+
 }

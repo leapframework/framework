@@ -374,6 +374,17 @@ public class Strings {
 	public static String[] split(String string) {
 		return splitWorker(string, -1, false, true, true);
 	}
+
+	public static String[] splitCommaOrWhitespaces(String s) {
+		if(null == s) {
+			return Arrays2.EMPTY_STRING_ARRAY;
+		}
+		if(s.indexOf(',') >= 0) {
+		    return Strings.split(s, ',');
+        }else {
+		    return Strings.splitWhitespaces(s);
+        }
+	}
 	
 	public static String[] splitWhitespaces(String s) {
 		if(null == s || s.length() == 0) {
@@ -1068,8 +1079,7 @@ public class Strings {
 			char p = buf.charAt(i-1);
 			if (
 				(Character.isLowerCase( p ) || Character.isDigit(p) ) &&
-				Character.isUpperCase( buf.charAt(i) ) &&
-				Character.isLowerCase( buf.charAt(i+1) )
+				Character.isUpperCase( buf.charAt(i))
 			) {
 				buf.insert(i++, c);
 			}
@@ -1155,6 +1165,18 @@ public class Strings {
 			}
 		}		
 		return false;
+	}
+
+	public static int indexOfWhitespace(String s) {
+		if(null == s || s.length() == 0) {
+			return Arrays2.INDEX_NOT_FOUND;
+		}
+		for(int i=0;i<s.length();i++) {
+			if(Character.isWhitespace(s.charAt(i))) {
+				return i;
+			}
+		}
+		return Arrays2.INDEX_NOT_FOUND;
 	}
 	
 	public static int indexOf(String string,String indexOf){

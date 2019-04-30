@@ -15,6 +15,8 @@
  */
 package leap.lang;
 
+import java.util.function.Supplier;
+
 public class Confirm {
 	
 	private static final ThreadLocal<Boolean> confirm = new ThreadLocal<Boolean>();
@@ -40,6 +42,15 @@ public class Confirm {
 			confirm.remove();
 		}
 	}
+
+    public static <T> T executeWithResult(Supplier<T> func) {
+        try{
+            confirm.set(Boolean.TRUE);
+            return func.get();
+        }finally{
+            confirm.remove();
+        }
+    }
 	
 	public static boolean isConfirmed() {
 		Boolean value = confirm.get();

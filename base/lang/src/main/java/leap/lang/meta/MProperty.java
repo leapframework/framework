@@ -23,6 +23,8 @@ public class MProperty extends ImmutableMNamedWithDesc {
 
     protected final MType        type;
     protected final BeanProperty beanProperty;
+    protected final boolean      identity;
+    protected final boolean      unique;
     protected final Boolean      required;
     protected final String       defaultValue;
     protected final String[]     enumValues;
@@ -31,6 +33,9 @@ public class MProperty extends ImmutableMNamedWithDesc {
     protected final Integer      precision;
     protected final Integer      scale;
     protected final boolean      discriminator;
+    protected final Boolean      selectable;
+    protected final Boolean      aggregatable;
+    protected final Boolean      groupable;
     protected final Boolean      creatable;
     protected final Boolean      updatable;
     protected final Boolean      sortable;
@@ -38,11 +43,12 @@ public class MProperty extends ImmutableMNamedWithDesc {
     protected final boolean      reference;
 
     public MProperty(String name, String title, String summary, String description,
-                     MType type, BeanProperty beanProperty,
+                     MType type, BeanProperty beanProperty, boolean identity, boolean unique,
                      Boolean required, String defaultValue, String[] enumValues,
                      boolean fixedLength,
                      Integer length, Integer precision, Integer scale,
                      boolean discriminator,
+                     Boolean selectable, Boolean aggregatable, Boolean groupable,
                      Boolean creatable, Boolean updatable, Boolean sortable, Boolean filterable,
                      boolean reference) {
         super(name, title, summary, description);
@@ -51,6 +57,8 @@ public class MProperty extends ImmutableMNamedWithDesc {
 
         this.type = type;
         this.beanProperty = beanProperty;
+        this.identity = identity;
+        this.unique = unique;
         this.required = required;
         this.defaultValue = Strings.trimToNull(defaultValue);
         this.fixedLength = fixedLength;
@@ -59,6 +67,9 @@ public class MProperty extends ImmutableMNamedWithDesc {
         this.precision = precision;
         this.scale = scale;
         this.discriminator = discriminator;
+        this.selectable = selectable;
+        this.aggregatable = aggregatable;
+        this.groupable = groupable;
         this.creatable = creatable;
         this.updatable = updatable;
         this.sortable = sortable;
@@ -75,6 +86,14 @@ public class MProperty extends ImmutableMNamedWithDesc {
      */
     public BeanProperty getBeanProperty() {
         return beanProperty;
+    }
+
+    public boolean isIdentity() {
+        return identity;
+    }
+
+    public boolean isUnique() {
+        return unique;
     }
 
     public Boolean getRequired() {
@@ -107,6 +126,18 @@ public class MProperty extends ImmutableMNamedWithDesc {
 
     public boolean isDiscriminator() {
         return discriminator;
+    }
+
+    public Boolean getSelectable() {
+        return selectable;
+    }
+
+    public Boolean getAggregatable() {
+        return aggregatable;
+    }
+
+    public Boolean getGroupable() {
+        return groupable;
     }
 
     public Boolean getCreatable() {

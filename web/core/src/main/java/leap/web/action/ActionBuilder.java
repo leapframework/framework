@@ -78,6 +78,6 @@ public interface ActionBuilder extends Buildable<Action> {
      * Returns true if the given annotation type exists in the action's annotations array.
      */
 	default boolean isAnnotationPresent(Class<? extends Annotation> t) {
-		return Classes.isAnnotatioinPresent(getAnnotations(), t);
+		return Classes.isAnnotationPresent(getAnnotations(), t);
 	}
 }

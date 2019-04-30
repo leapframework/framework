@@ -15,11 +15,7 @@
  */
 package leap.web.format;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-
 import leap.lang.Named;
-import leap.lang.annotation.Nullable;
 import leap.lang.http.MimeType;
 import leap.web.Content;
 import leap.web.action.Action;
@@ -30,6 +26,11 @@ public interface ResponseFormat extends Named {
 	String HTML = "html";
 	String JSON = "json";
 	String TEXT = "text";
+
+    /**
+     * Returns the primary mime type of this format.
+     */
+    MimeType getPrimaryMimeType();
 	
 	/**
 	 * Returns <code>true</code> if this format supports the given {@link Action}.

@@ -79,8 +79,8 @@ public class SimpleScalars implements Scalars {
 	}
 
 	@Override
-	public List<Object> list() {
-		return l;
+	public <T> List<T> list() {
+		return (List<T>)l;
 	}
 
 	@Override

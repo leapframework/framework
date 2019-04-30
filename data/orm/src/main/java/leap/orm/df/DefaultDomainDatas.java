@@ -35,7 +35,7 @@ import leap.lang.path.Paths;
 import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
 import leap.lang.resource.Resources;
-import leap.orm.domain.FieldDomain;
+import leap.orm.domain.Domain;
 
 public class DefaultDomainDatas implements DomainDatas,PostCreateBean {
 	
@@ -62,8 +62,8 @@ public class DefaultDomainDatas implements DomainDatas,PostCreateBean {
     }
 
 	@Override
-    public DomainData tryGetDomainData(FieldDomain domain) {
-	    return datas.get(Strings.lowerCase(domain.getQualifiedName()));
+    public DomainData tryGetDomainData(Domain domain) {
+	    return datas.get(Strings.lowerCase(domain.getName()));
     }
 
 	@Override

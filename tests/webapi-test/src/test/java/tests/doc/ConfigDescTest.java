@@ -30,7 +30,7 @@ public class ConfigDescTest extends ApiTestCase {
 
         MApiModel model = m.getModel("User");
 
-        assertEquals("登录账号", model.tryGetProperty("loginName").getDescription());
+        assertEquals("登录账号", model.tryGetProperty("loginName").getTitle());
     }
 
     @Test

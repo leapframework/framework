@@ -21,36 +21,45 @@ import leap.core.security.UserPrincipal;
 import leap.oauth2.webapp.token.Token;
 import leap.web.security.authc.AbstractAuthentication;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class SimpleOAuth2Authentication extends AbstractAuthentication implements Authentication, OAuth2Authentication {
-	
-    protected final Token           credentials;
-    protected final UserPrincipal   user;
-    protected final ClientPrincipal client;
 
-	public SimpleOAuth2Authentication(Token credentials, UserPrincipal user, ClientPrincipal client) {
+    protected final Map<String, Object> cacheAttributes = new HashMap<>();
+    protected final Token               credentials;
+    protected final UserPrincipal       user;
+    protected final ClientPrincipal     client;
+
+    public SimpleOAuth2Authentication(Token credentials, UserPrincipal user, ClientPrincipal client) {
         this.credentials = credentials;
-        this.user   = user;
+        this.user = user;
         this.client = client;
-	}
-
-	@Override
-	public boolean isAuthenticated() {
-		return true;
-	}
+    }
 
     @Override
-	public Token getCredentials() {
-		return credentials;
-	}
+    public boolean isCacheable() {
+        return true;
+    }
 
-	@Override
-	public UserPrincipal getUser() {
-		return user;
-	}
+    @Override
+    public Map<String, Object> getCacheAttributes() {
+        return cacheAttributes;
+    }
 
-	@Override
+    @Override
+    public Token getCredentials() {
+        return credentials;
+    }
+
+    @Override
+    public UserPrincipal getUser() {
+        return user;
+    }
+
+    @Override
     public ClientPrincipal getClient() {
-	    return client;
+        return client;
     }
 
 }

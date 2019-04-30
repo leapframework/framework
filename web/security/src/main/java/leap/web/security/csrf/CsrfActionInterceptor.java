@@ -57,6 +57,10 @@ public class CsrfActionInterceptor implements ActionInterceptor {
     }
 	
 	protected boolean isEnabled(ActionContext context) {
+		if(!securityConfig.isEnabled()) {
+			return false;
+		}
+
 		Route route = context.getRoute();
 		if(route.isCsrfEnabled()) {
 			return true;

@@ -16,11 +16,12 @@
 
 package leap.web.api.mvc;
 
+import leap.web.api.Api;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.ApiMetadata;
 
 public interface ApiInitializable {
 
-    void postApiInitialized(ApiConfig c, ApiMetadata m);
+    void postApiInitialized(Api api);
 
 }

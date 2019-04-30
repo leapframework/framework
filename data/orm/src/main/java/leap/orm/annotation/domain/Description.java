@@ -27,7 +27,7 @@ import leap.orm.annotation.meta.MetaName;
 
 @Target({ElementType.FIELD,ElementType.METHOD})
 @Retention(RUNTIME)
-@Domain("description")
+@Domain("orm.description")
 @MetaName(reserved=ReservedMetaFieldName.DESCRIPTION)
 public @interface Description {
 

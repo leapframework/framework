@@ -15,6 +15,7 @@
  */
 package leap.web.route;
 
+import leap.core.security.SimpleSecurity;
 import leap.core.web.path.PathTemplate;
 import leap.lang.Assert;
 import leap.lang.Buildable;
@@ -52,12 +53,15 @@ public class RouteBuilder extends ExtensibleBase implements RouteBase, Buildable
 	protected Map<String, String>  requiredParameters;
 	protected List<FailureHandler> failureHandlers = new ArrayList<>();
 
-    protected Boolean              httpsOnly;
-    protected Boolean              allowAnonymous;
-    protected Boolean              allowClientOnly;
-    protected Boolean              allowRememberMe;
-    protected String[]             permissions;
-    protected String[]             roles;
+    protected Boolean          enabled;
+    protected Boolean          executable;
+    protected Boolean          httpsOnly;
+    protected Boolean          allowAnonymous;
+    protected Boolean          allowClientOnly;
+    protected Boolean          allowRememberMe;
+    protected String[]         permissions;
+    protected String[]         roles;
+    protected SimpleSecurity[] securities;
 
     public RouteBuilder() {
 
@@ -74,7 +78,28 @@ public class RouteBuilder extends ExtensibleBase implements RouteBase, Buildable
         this.action       = action;
     }
 
-	public Object getSource() {
+    public boolean isDisabledExplicitly() {
+    	return null != enabled && !enabled;
+	}
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public RouteBuilder setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+        return this;
+    }
+
+    public Boolean getExecutable() {
+        return executable;
+    }
+
+    public void setExecutable(Boolean executable) {
+        this.executable = executable;
+    }
+
+    public Object getSource() {
 		return source;
 	}
 
@@ -105,9 +130,8 @@ public class RouteBuilder extends ExtensibleBase implements RouteBase, Buildable
 		return action;
 	}
 
-	public RouteBuilder setAction(Action action) {
+	public void setAction(Action action) {
 		this.action = action;
-		return this;
 	}
 
 	public Integer getSuccessStatus() {
@@ -290,6 +314,14 @@ public class RouteBuilder extends ExtensibleBase implements RouteBase, Buildable
         return this;
     }
 
+    public SimpleSecurity[] getSecurities() {
+        return securities;
+    }
+
+    public void setSecurities(SimpleSecurity[] securities) {
+        this.securities = securities;
+    }
+
     @Override
 	public Route build() {
 		Assert.notNull(action, "action cannot be null");
@@ -317,6 +349,14 @@ public class RouteBuilder extends ExtensibleBase implements RouteBase, Buildable
             							 failureHandlers.toArray(new FailureHandler[failureHandlers.size()]),
             							 requiredParameters);
 
+        if(null != enabled) {
+            route.setEnabled(enabled);
+        }
+
+        if(null != executable) {
+            route.setExecutable(executable);
+        }
+
         //success status.
         route.setSuccessStatus(successStatus);
 
@@ -333,6 +373,9 @@ public class RouteBuilder extends ExtensibleBase implements RouteBase, Buildable
 
         //roles
         route.setRoles(this.roles);
+
+        //securities
+        route.setSecurities(securities);
 
         //extensions.
         extensions.forEach((t,ex) -> route.setExtension(t, ex));

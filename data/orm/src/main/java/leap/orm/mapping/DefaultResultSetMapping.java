@@ -18,11 +18,7 @@ package leap.orm.mapping;
 import leap.lang.Strings;
 import leap.orm.OrmContext;
 import leap.orm.OrmMetadata;
-import leap.orm.query.EntityQuery;
-import leap.orm.sql.DynamicSql;
-import leap.orm.sql.DynamicSqlClause;
 import leap.orm.sql.Sql;
-import leap.orm.sql.SqlClause;
 import leap.orm.sql.SqlContext;
 import leap.orm.sql.ast.SqlSelect;
 
@@ -66,14 +62,9 @@ public class DefaultResultSetMapping implements ResultSetMapping {
 		this.columnCount    = md.getColumnCount();
 		this.columnMappings = new ResultColumnMapping[this.columnCount];
 		SqlSelect selectCmd = null;
-		if(ctx instanceof EntityQuery) {
-			SqlClause clause = ((EntityQuery) ctx).getSqlClause();
-			if (clause instanceof DynamicSqlClause) {
-				Sql sql = ((DynamicSqlClause) clause).getSql().parsed();
-				if (null != sql && sql.isSelect() && sql.nodes()[0] instanceof SqlSelect) {
-					selectCmd = (SqlSelect) sql.nodes()[0];
-				}
-			}
+        Sql sql = ctx.getQuerySql();
+		if(null != sql && sql.isSelect() && sql.nodes()[0] instanceof SqlSelect) {
+            selectCmd = (SqlSelect) sql.nodes()[0];
 		}
 		for(int i=1;i<=this.columnCount;i++){
 			ResultColumnMapping cm = new ResultColumnMapping();
@@ -83,8 +74,9 @@ public class DefaultResultSetMapping implements ResultSetMapping {
 			cm.setColumnType(md.getColumnType(i));
 
 			if(null != selectCmd && selectCmd.isSelectItemAlias(cm.getColumnLabel())){
-				cm.setAliasName(selectCmd.getSelectItemAlias(cm.getColumnLabel()));
-				cm.setAlias(true);
+                cm.setAliasName(selectCmd.getSelectItemAlias(cm.getColumnLabel()));
+                cm.setResultName(cm.getAliasName());
+                cm.setNormalizedName(normalizeName(cm.getAliasName()));
 			}
 			
 			FieldMapping fm = primaryEntityMapping.tryGetFieldMappingByColumn(cm.getColumnLabel());
@@ -92,13 +84,32 @@ public class DefaultResultSetMapping implements ResultSetMapping {
 			if(null != fm){
 				cm.setEntityMapping(primaryEntityMapping);
 				cm.setFieldMapping(fm);
-			}
+                if(null == cm.getResultName()) {
+                    cm.setResultName(fm.getFieldName());
+                    cm.setNormalizedName(fm.getFieldName());
+                }
+			}else {
+                if(null == cm.getResultName()) {
+                    String name = Strings.firstNotEmpty(cm.getColumnLabel(), cm.getColumnName());
+                    for(int j=0;j<name.length();j++) {
+                        char c = name.charAt(j);
+                        if(Character.isLetter(c)) {
+                            if(Character.isUpperCase(c)) {
+                                name = name.toLowerCase();
+                            }
+                            break;
+                        }
+                    }
+                    cm.setResultName(normalizeName(name));
+                    cm.setNormalizedName(cm.getResultName());
+                }
+            }
+
 			columnMappings[i-1] = cm;
 		}
 	}
 
-    protected boolean isEntityTable(EntityMapping em, String tableName) {
-        return Strings.isEmpty(tableName) || em.getTableName().equalsIgnoreCase(tableName) ||
-                (em.isSharding() && em.isShardingTable(tableName));
+    protected String normalizeName(String name) {
+        return Strings.lowerCamel(name, '_');
     }
 }

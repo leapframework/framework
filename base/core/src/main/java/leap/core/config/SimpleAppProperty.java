@@ -20,20 +20,26 @@ public class SimpleAppProperty implements AppProperty {
 
     private final Object  source;
     private final String  name;
+    private final boolean override;
     private final boolean system;
 
     private String value;
     private String unprocessedValue;
 
     public SimpleAppProperty(Object source, String name, String value) {
-        this(source, name, value, false);
+        this(source, name, value, false, false);
     }
 
-    public SimpleAppProperty(Object source, String name, String value, boolean system) {
+    public SimpleAppProperty(Object source, String name, String value, boolean override) {
+        this(source, name, value, override, false);
+    }
+
+    public SimpleAppProperty(Object source, String name, String value, boolean override, boolean system) {
         this.source = source;
         this.name   = name;
         this.value  = value;
         this.unprocessedValue = value;
+        this.override = override;
         this.system = system;
     }
 
@@ -66,6 +72,11 @@ public class SimpleAppProperty implements AppProperty {
     @Override
     public void updateProcessedValue(String value) {
         this.value = value;
+    }
+
+    @Override
+    public boolean isOverride() {
+        return override;
     }
 
     @Override

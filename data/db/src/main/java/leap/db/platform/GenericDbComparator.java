@@ -16,6 +16,7 @@
 package leap.db.platform;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -55,11 +56,7 @@ import leap.db.model.DbPrimaryKey;
 import leap.db.model.DbSchema;
 import leap.db.model.DbSequence;
 import leap.db.model.DbTable;
-import leap.lang.Args;
-import leap.lang.Arrays2;
-import leap.lang.Assert;
-import leap.lang.New;
-import leap.lang.Strings;
+import leap.lang.*;
 import leap.lang.logging.Log;
 
 public class GenericDbComparator implements DbComparator,DbAware {
@@ -112,9 +109,9 @@ public class GenericDbComparator implements DbComparator,DbAware {
 		log.debug("Comparing source schema '{}' to target schema '{}'",source,target);
 		
 		GenericSchemaChanges changes = db.createSchemaChanges();
-		
-		compareTables(changes, source.getTables(), target.getTables());
-		compareSequences(changes, source.getSequences(), target.getSequences());
+
+		compareTables(changes, Arrays2.sort(source.getTables()), Arrays2.sort(target.getTables()));
+		compareSequences(changes, Arrays2.sort(source.getSequences()), Arrays2.sort(target.getSequences()));
 		
 	    return changes;
     }
@@ -144,11 +141,15 @@ public class GenericDbComparator implements DbComparator,DbAware {
 		
 		//check for add or modify
 		for(DbTable sourceTable : sourceTables){
+            if(sourceTable.isView()) {
+                continue;
+            }
+
 			DbTable targetTable = findTable(targetTables,sourceTable.getName());
 			
 			if(null == targetTable){
 				changes.add(new AddTableChange(sourceTable));
-			}else{
+			}else if(!targetTable.isView()){
 				compareTable(changes,sourceTable,targetTable);
 			}
 		}
@@ -332,12 +333,12 @@ public class GenericDbComparator implements DbComparator,DbAware {
 			
 			//check for type changed
 			if(!Strings.equals(sourceTypeAndSize[0],targetTypeAndSize[0])){
-				changes.add(new ColumnPropertyChange(targetColumn, ColumnPropertyChange.TYPE, targetTypeAndSize[0], sourceTypeAndSize[0]));
+				changes.add(new ColumnPropertyChange(targetColumn, ColumnPropertyChange.TYPE, targetTypeAndSize[0], sourceTypeAndSize[0]).setTable(sourceTable));
 			}
 			
 			//check for size changed
 			if(!Strings.equals(sourceTypeAndSize[1],targetTypeAndSize[1])){
-				changes.add(new ColumnPropertyChange(targetColumn, ColumnPropertyChange.SIZE, targetTypeAndSize[1], sourceTypeAndSize[1]));
+				changes.add(new ColumnPropertyChange(targetColumn, ColumnPropertyChange.SIZE, targetTypeAndSize[1], sourceTypeAndSize[1]).setTable(sourceTable));
 			}
 		}
 	}
@@ -358,7 +359,7 @@ public class GenericDbComparator implements DbComparator,DbAware {
 					  targetColumn.getDefaultValue(),
 					  sourceColumn.getDefaultValue());
 			
-			changes.add(new ColumnPropertyChange(targetColumn, ColumnPropertyChange.DEFAULT, targetColumn.getDefaultValue(), sourceColumn.getDefaultValue()));
+			changes.add(new ColumnPropertyChange(targetColumn, ColumnPropertyChange.DEFAULT, targetColumn.getDefaultValue(), sourceColumn.getDefaultValue()).setTable(sourceTable));
 		}
 	}
 	
@@ -371,7 +372,7 @@ public class GenericDbComparator implements DbComparator,DbAware {
 					  targetColumn.isNullable() ? "null" : "not null",
 					  sourceColumn.isNullable() ? "null" : "not null");
 			
-			changes.add(new ColumnPropertyChange(targetColumn, ColumnPropertyChange.NULLABLE, targetColumn.isNullable(), sourceColumn.isNullable()));
+			changes.add(new ColumnPropertyChange(targetColumn, ColumnPropertyChange.NULLABLE, targetColumn.isNullable(), sourceColumn.isNullable()).setTable(sourceTable));
 		}
 	}
 	
@@ -384,7 +385,7 @@ public class GenericDbComparator implements DbComparator,DbAware {
 					  targetColumn.getComment(),
 					  sourceColumn.getComment());
 			
-			changes.add(new ColumnPropertyChange(targetColumn,ColumnPropertyChange.COMMENT, targetColumn.getComment(), sourceColumn.getComment()));
+			changes.add(new ColumnPropertyChange(targetColumn,ColumnPropertyChange.COMMENT, targetColumn.getComment(), sourceColumn.getComment()).setTable(sourceTable));
 		}
 	}
 	
@@ -397,7 +398,7 @@ public class GenericDbComparator implements DbComparator,DbAware {
 					  targetColumn.isUnique() ? "unique" : "",
 					  sourceColumn.isUnique() ? "unique" : "");
 			
-			changes.add(new ColumnPropertyChange(targetColumn, ColumnPropertyChange.UNIQUE, targetColumn.isUnique(), sourceColumn.isUnique()));
+			changes.add(new ColumnPropertyChange(targetColumn, ColumnPropertyChange.UNIQUE, targetColumn.isUnique(), sourceColumn.isUnique()).setTable(sourceTable));
 		}
 	}
 	

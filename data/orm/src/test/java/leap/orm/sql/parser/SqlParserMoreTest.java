@@ -93,6 +93,31 @@ public class SqlParserMoreTest extends SqlParserTestCase {
         
         split("select * from t {?limit :count; nullable:true}");
     }
+
+    @Test
+    public void testUnderscoreColumn() {
+        assertParse("select t._col from table t");
+    }
+
+    @Test
+    public void testSelectWhenColumn() {
+        Sql sql = assertParse("select when from t");
+
+        SqlSelect select = sql.findFirstNode(SqlSelect.class);
+        AstNode[] items  = select.getSelectList().getNodes();
+        assertEquals(2, items.length);
+
+        SqlObjectNameBase when = (SqlObjectNameBase)items[0];
+        assertEquals("when", when.getLastName());
+    }
+
+    @Test
+    public void testSelectWhenWhere() {
+        Sql sql = assertParse("select * from t where when = ?");
+
+        SqlObjectName when = sql.findFirstNode(SqlObjectName.class);
+        assertEquals("when", when.getLastName());
+    }
 	
 	@Test
 	@Contextual

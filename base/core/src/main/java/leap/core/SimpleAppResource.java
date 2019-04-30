@@ -60,4 +60,9 @@ public final class SimpleAppResource implements AppResource {
     public boolean isDefaultOverride() {
         return defaultOverride;
     }
+
+    @Override
+    public String toString() {
+        return resource.toString();
+    }
 }

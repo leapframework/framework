@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<apis xmlns="http://www.leapframework.org/schema/webapi">
+
+    <api name="metad" base-path="/api" restd-enabled="true" restd-data-source="db1">
+
+    </api>
+
+</apis>

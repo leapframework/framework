@@ -43,13 +43,9 @@ public abstract class RequestContext implements AttributeAccessor {
 		RequestContext current = threadlocal.get();
 		
 		if(null == current){
-			//Calling AppContext.current to force init standalone context.
-			AppContext.current();
-
 			if(null != standalone){
 				return standalone;
 			}
-			
 		}
 		
 		return current;

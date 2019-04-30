@@ -15,40 +15,72 @@
  */
 package leap.web.json;
 
-import java.io.IOException;
-import java.io.Writer;
-import java.util.function.Consumer;
-
+import leap.lang.Iterators;
 import leap.lang.Strings;
+import leap.lang.http.ContentTypes;
 import leap.lang.js.JS;
+import leap.lang.json.JSON;
+import leap.lang.json.JsonWriter;
 import leap.web.Request;
 import leap.web.Response;
 import leap.web.exception.BadRequestException;
 
+import java.io.IOException;
+import java.io.Writer;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.function.Consumer;
+
 public class Jsonp {
 
-	protected Jsonp() {
-		
-	}
+    protected Jsonp() {
+    }
 
-	public static void write(Request request, Response response, JsonConfig jc, Consumer<Writer> func) throws IOException {
-		Writer writer = response.getWriter();
-		
-		if(jc.isJsonpEnabled()){
-			String callback = request.getParameter(jc.getJsonpParameter());
-			if(!Strings.isEmpty(callback)){
-				if(!JS.isValidJavascriptFunction(callback)){
-					throw new BadRequestException("Invalid jsonp callback : " + callback);
-				}
-				writer.write(callback);
-				writer.write('(');
-				func.accept(writer);
-				writer.write(')');
-				return;
-			}
-		}
-		
-		func.accept(writer);
-	}
-	
+    public static void write(Request request, Response response, JsonConfig jc, Consumer<Writer> func) throws IOException {
+        Writer writer = response.getWriter();
+
+        if (jc.isJsonpEnabled()) {
+            String callback = request.getParameter(jc.getJsonpParameter());
+            if (!Strings.isEmpty(callback)) {
+                if (!JS.isValidJavascriptFunction(callback)) {
+                    throw new BadRequestException("Invalid jsonp callback : " + callback);
+                }
+                response.setContentType(ContentTypes.APPLICATION_JAVASCRIPT_UTF8);
+                // for compatible jquery jsonp, header and data must be in one json
+                JsonWriter jw = JSON.createWriter(writer);
+                writer.write(callback);
+                writer.write('(');
+                jw.startObject().property("data", w -> func.accept(writer)).property("headers", w -> {
+                    jw.startObject();
+                    response.getHeaderNames().forEach(s -> {
+                        Iterator<String> iterator = jc.getJsonpAllowResponseHeaders().iterator();
+                        boolean allow = Iterators.any(iterator, allowHeader -> {
+                            if ("*".equals(allowHeader)) {
+                                return true;
+                            } else {
+                                return Strings.equals(s, allowHeader);
+                            }
+                        });
+                        if (allow) {
+                            Collection<String> h = response.getHeaders(s);
+                            if (!h.isEmpty()) {
+                                if (h.size() == 1) {
+                                    jw.property(s, h.iterator().next());
+                                } else {
+                                    jw.array(h.iterator());
+                                }
+                            }
+                        }
+                    });
+                    jw.endObject();
+                }).endObject();
+                writer.write(')');
+                return;
+            }
+        }
+
+        func.accept(writer);
+    }
+
 }
