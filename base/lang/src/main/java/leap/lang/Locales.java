@@ -24,6 +24,21 @@ import leap.lang.path.Paths;
 public class Locales {
 	
 	public static final Locale DEFAULT_LOCALE = Locale.getDefault();
+
+	/**
+	 * Returns <code>null</code> if empty or invalid locale format.
+	 */
+	public static Locale tryForName(String localName) {
+		if(Strings.isEmpty(localName)) {
+			return null;
+		}else {
+			try {
+				return forName(localName);
+			}catch (Exception e) {
+				return null;
+			}
+		}
+	}
 	
     /**
      * <p>Converts a String to a Locale.</p>
