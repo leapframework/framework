@@ -78,6 +78,22 @@ public class BatchTest extends OrmTestCase {
 	}
 
 	@Test
+	public void testBatchInsertWithNullValueAtFirstRow() {
+		deleteAll(Owner.class);
+
+		Owner o1 = new Owner();
+		o1.setFirstName("a");
+		o1.setLastName("b");
+
+		Owner o2 = new Owner();
+		o2.setFirstName("c");
+		o2.setLastName("d");
+		o2.setAddress("addr");
+
+		assertSuccess(Owner.createAll(new Object[]{o1,o2}));
+	}
+
+	@Test
 	public void testBatchUpdate() {
 		deleteAll(Owner.class);
 
