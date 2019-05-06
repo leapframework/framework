@@ -28,11 +28,11 @@ public final class Message {
     private final Locale              locale;
     private final CompositeExpression expression;
 
-    protected Message(Object source, Locale locale, String string) {
+    public Message(Object source, Locale locale, String string) {
         this(source, locale, new CompositeExpression(string));
     }
 
-    protected Message(Object source, Locale locale, CompositeExpression expression) {
+    public Message(Object source, Locale locale, CompositeExpression expression) {
         this.source = source;
         this.locale = locale;
         this.expression = expression;
