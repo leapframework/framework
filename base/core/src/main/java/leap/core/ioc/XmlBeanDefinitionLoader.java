@@ -439,16 +439,24 @@ class XmlBeanDefinitionLoader {
             return null;
         }
 
-        BeanDefinitionBase bean = new BeanDefinitionBase(reader.getSource());
+        BeanDefinitionBase bean = proxy ? new ProxyBeanDefinition(reader.getSource()) : new BeanDefinitionBase(reader.getSource());
 
-        bean.setNamespace(proxy ? reader.getAttribute(TARGET_NAMESPACE_ATTRIBUTE) : reader.getAttribute(NAMESPACE_ATTRIBUTE));
-        bean.setId(proxy ? reader.getAttribute(TARGET_ID_ATTRIBUTE) : reader.getAttribute(ID_ATTRIBUTE));
-        bean.setName(proxy ? reader.getAttribute(TARGET_NAME_ATTRIBUTE) : reader.getAttribute(NAME_ATTRIBUTE));
+        bean.setNamespace(reader.getAttribute(NAMESPACE_ATTRIBUTE));
+        bean.setId(reader.getAttribute(ID_ATTRIBUTE));
+        bean.setName(reader.getAttribute(NAME_ATTRIBUTE));
 
-        String beanClassName = proxy ? reader.getRequiredAttribute(PROXY_CLASS_ATTRIBUTE) : reader.getRequiredAttribute(CLASS_ATTRIBUTE);
+        String beanClassName;
+        if(proxy) {
+            beanClassName = reader.getAttribute(PROXY_CLASS_ATTRIBUTE);
+            if(Strings.isEmpty(beanClassName)){
+                beanClassName = reader.getRequiredAttribute(CLASS_ATTRIBUTE);
+            }
+        }else {
+            beanClassName = reader.getRequiredAttribute(CLASS_ATTRIBUTE);
+        }
         String initMethodName = reader.getAttribute(INIT_METHOD_ATTRIBUTE);
         String destroyMethodName = reader.getAttribute(DESTROY_METHOD_ATTRIBUTE);
-        String typeClassName = proxy ? reader.getRequiredAttribute(TARGET_TYPE_ATTRIBUTE) : reader.getAttribute(TYPE_ATTRIBUTE);
+        String typeClassName = reader.getAttribute(TYPE_ATTRIBUTE);
         String qualifierName = reader.getAttribute(QUALIFIER_ATTRIBUTE);
         Float sortOrder = reader.getFloatAttribute(SORT_ORDER_ATTRIBUTE);
         boolean override = reader.getBooleanAttribute(OVERRIDE_ATTRIBUTE, context.defaultOverride);
@@ -497,21 +505,31 @@ class XmlBeanDefinitionLoader {
             bean.setType(bean.getBeanClass());
         }
 
-
         if (proxy) {
+            String targetTypeName = reader.getRequiredAttribute(TARGET_TYPE_ATTRIBUTE);
+            Class<?> targetType = tryForName(targetTypeName);
+            if (null == targetType) {
+                throw new BeanDefinitionException("bean's target-type class '" + targetTypeName + "' not found, source : " + reader.getSource());
+            }
             if (!ProxyBean.class.isAssignableFrom(bean.getBeanClass())) {
-                if (null == ReflectClass.of(bean.getBeanClass()).getConstructor(bean.getType())) {
+                if (null == ReflectClass.of(bean.getBeanClass()).getConstructor(targetType)) {
                     throw new BeanDefinitionException("Bean proxy class'" + bean.getBeanClass() +
                             "' must be sub-class of '" + ProxyBean.class +
-                            "' or has a constructor with the parameter type '" + bean.getType() +
+                            "' or has a constructor with the parameter type '" + targetType +
                             "' , source : " + reader.getSource());
                 }
             }
+            ProxyBeanDefinition pbd = (ProxyBeanDefinition)bean;
+            pbd.setTargetType(targetType);
+            pbd.setTargetNamespace(reader.getAttribute(TARGET_NAMESPACE_ATTRIBUTE));
+            pbd.setTargetId(reader.getAttribute(TARGET_ID_ATTRIBUTE));
+            pbd.setTargetName(reader.getAttribute(TARGET_NAME_ATTRIBUTE));
+            pbd.setTargetPrimary(boolAttribute(reader, TARGET_PRIMARY_ATTRIBUTE, false));
         }
 
         bean.setSingleton(reader.getBooleanAttribute(SINGLETON_ATTRIBUTE, true));
         bean.setLazyInit(boolAttribute(reader, LAZY_INIT_ATTRIBUTE, context.defaultLazyInit));
-        bean.setPrimary(boolAttribute(reader, proxy ? TARGET_PRIMARY_ATTRIBUTE : PRIMARY_ATTRIBUTE, false));
+        bean.setPrimary(boolAttribute(reader, PRIMARY_ATTRIBUTE, false));
         bean.setOverride(override);
         bean.setOverrideAnnotation(overrideAnnotation);
         bean.setDefaultOverride(defaultOverride);
@@ -547,21 +565,19 @@ class XmlBeanDefinitionLoader {
         while (reader.nextWhileNotEnd(proxy ? BEAN_PROXY_ELEMENT : BEAN_ELEMENT)) {
             if (reader.isStartElement()) {
 
-                if (!proxy) {
-                    if (reader.isStartElement(ADDITIONAL_TYPE_DEF_ELEMENT)) {
-                        readBeanTypeDef(container, reader, context, bean);
-                        continue;
-                    }
+                if (reader.isStartElement(ADDITIONAL_TYPE_DEF_ELEMENT)) {
+                    readBeanTypeDef(container, reader, context, bean);
+                    continue;
+                }
 
-                    if (reader.isStartElement(REGISTER_BEAN_FACTORY_ELEMENT)) {
-                        readBeanFactoryDef(container, reader, context, bean);
-                        continue;
-                    }
+                if (reader.isStartElement(REGISTER_BEAN_FACTORY_ELEMENT)) {
+                    readBeanFactoryDef(container, reader, context, bean);
+                    continue;
+                }
 
-                    if (reader.isStartElement(QUALIFIER_ELEMENT)) {
-                        bean.addQualifier(reader.resolveRequiredAttribute(VALUE_ATTRIBUTE));
-                        continue;
-                    }
+                if (reader.isStartElement(QUALIFIER_ELEMENT)) {
+                    bean.addQualifier(reader.resolveRequiredAttribute(VALUE_ATTRIBUTE));
+                    continue;
                 }
 
                 if(reader.isStartElement(FACTORY)) {
