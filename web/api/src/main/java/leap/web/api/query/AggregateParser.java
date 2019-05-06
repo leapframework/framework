@@ -18,7 +18,6 @@ package leap.web.api.query;
 
 import leap.lang.Strings;
 import leap.web.exception.BadRequestException;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -35,8 +34,9 @@ public class AggregateParser {
         funcs.add("count");
     }
 
-    public static Aggregate[] parse(String expr) {
-        List<Aggregate> aggregates = new ArrayList<>();
+    public static Aggregate parse(String expr) {
+        List<Aggregate.Item> items = new ArrayList<>();
+        Aggregate.Item item;
 
         if(!Strings.isEmpty(expr)) {
             String[] parts = Strings.split(expr, ',');
@@ -69,11 +69,12 @@ public class AggregateParser {
                 String rest  = index1 == part.length() - 1 ? "" : part.substring(index1 + 1).trim();
                 String alias = alias(rest, field, func);
 
-                aggregates.add(new Aggregate(field, func, alias));
+                item = new Aggregate.Item(field, func, alias);
+                items.add(item);
             }
         }
 
-        return aggregates.toArray(new Aggregate[aggregates.size()]);
+        return new Aggregate(items.toArray(new Aggregate.Item[items.size()]));
     }
 
     private static String alias(String rest, String field, String func) {

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2018 the original author or authors.
+ *  Copyright 2019 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -18,11 +18,11 @@ package leap.web.api.query;
 
 import leap.lang.Strings;
 
-public class Aggregate {
+public class GroupBy {
 
-    private final Aggregate.Item[] items;
+    private final GroupBy.Item[] items;
 
-    Aggregate(Item[] items) {
+    GroupBy(Item[] items) {
         this.items = items;
     }
 
@@ -31,7 +31,7 @@ public class Aggregate {
     }
 
     public boolean aliasContain(String expr) {
-        for (Aggregate.Item item : items) {
+        for (GroupBy.Item item : items) {
             if (Strings.isNotEmpty(item.alias) && item.alias().equals(expr)) {
                 return true;
             }
@@ -39,30 +39,38 @@ public class Aggregate {
         return false;
     }
 
-
     public static final class Item {
 
-        private String field;
-        private String function;
+        private String joinAlias;
+        private String name;
         private String alias;
 
-        public Item(String field, String function, String alias) {
-            this.field = field;
-            this.function = function;
+        public Item(String name) {
+            this.name = name;
+        }
+
+        public Item(String name, String alias) {
+            this.name  = name;
             this.alias = alias;
         }
 
-        public String field() {
-            return field;
+        public Item(String name, String alias, String joinAlias) {
+            this.joinAlias = joinAlias;
+            this.name = name;
+            this.alias = alias;
         }
 
-        public String function() {
-            return function;
+        public String joinAlias() {
+            return joinAlias;
+        }
+
+        public String name() {
+            return name;
         }
 
         public String alias() {
             return alias;
         }
-    }
 
+    }
 }
