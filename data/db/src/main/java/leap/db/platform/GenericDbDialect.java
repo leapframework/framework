@@ -150,11 +150,25 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
             if (isKeyword(identifier)) {
                 return doQuoteIdentifier(identifier);
             } else {
-                return identifier;
+                return quoteIfSpecial(identifier);
             }
         } else {
             return doQuoteIdentifier(identifier);
         }
+    }
+
+    protected String quoteIfSpecial(String word) {
+        boolean special = false;
+        for(char c : word.toCharArray()) {
+            if(c == '_') {
+                continue;
+            }
+            if(!(Character.isLetter(c) || Character.isDigit(c))) {
+                special = true;
+                break;
+            }
+        }
+        return special ? doQuoteIdentifier(word) : word;
     }
 
     @Override
