@@ -65,6 +65,7 @@ public class ColumnTest extends DbTestCase {
 		assertEquals(col2.getComment(),c2.getComment());
 	}
 
+	/*
 	@Test
 	@Contextual("mysql")
 	public void testAddColumnWithSpecialSchemaName() {
@@ -74,4 +75,5 @@ public class ColumnTest extends DbTestCase {
 		String sql = dialect.getCreateColumnSqls(name, c.build()).get(0);
 		assertTrue(sql.contains("`test-schema`.test"));
 	}
+	*/
 }
