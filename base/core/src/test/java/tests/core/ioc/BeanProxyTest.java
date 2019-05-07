@@ -18,6 +18,7 @@ package tests.core.ioc;
 
 import leap.core.annotation.Inject;
 import org.junit.Test;
+import tested.beans.proxy.TAddiType;
 import tested.beans.proxy.TBeanProxy;
 import tested.beans.proxy.TBeanType;
 import tested.beans.proxy.TBeanType1;
@@ -25,20 +26,28 @@ import tests.core.CoreTestCase;
 
 public class BeanProxyTest extends CoreTestCase {
 
-    private @Inject                        TBeanType bean;
+    //primary
+    private @Inject TBeanType bean;
+
+    //id
     private @Inject(id = "testProxyBean1") TBeanType idBean1;
     private @Inject(id = "testProxyBean2") TBeanType idBean2;
-    private @Inject(name = "bean1")        TBeanType nameBean1;
-    private @Inject(name = "bean2")        TBeanType nameBean2;
+
+    //name
+    private @Inject(name = "bean1") TBeanType nameBean1;
+    private @Inject(name = "bean2") TBeanType nameBean2;
 
     private @Inject(name = "bean1") TBeanType1 nameBean11;
     private @Inject(name = "bean2") TBeanType1 nameBean12;
 
+    //addi type
+    private @Inject TAddiType   addiBean;
+    private @Inject TAddiType[] addiBeans;
+
     @Test
     public void testPrimaryBeanProxy() {
         assertEquals("proxy", bean.getTestValue());
-
-        TBeanProxy proxy = (TBeanProxy)bean;
+        TBeanProxy proxy = (TBeanProxy) bean;
         assertNotNull(proxy.getTargetBean());
     }
 
@@ -51,12 +60,21 @@ public class BeanProxyTest extends CoreTestCase {
     @Test
     public void testNamedBeanProxy() {
         assertEquals("proxy", nameBean1.getTestValue());
-        assertEquals("impl",  nameBean2.getTestValue());
+        assertEquals("impl", nameBean2.getTestValue());
     }
 
     @Test
     public void testTypedBeanProxy() {
         assertEquals(2, nameBean11.getCount());
         assertEquals(1, nameBean12.getCount());
+    }
+
+    @Test
+    public void testProxyWithAdditionalType() {
+        assertNotNull(addiBean);
+        assertEquals(1, addiBeans.length);
+
+        assertSame(addiBean, addiBeans[0]);
+        assertSame(bean, addiBean);
     }
 }

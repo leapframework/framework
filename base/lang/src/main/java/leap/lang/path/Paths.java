@@ -220,6 +220,23 @@ public class Paths {
     public static String getDirPathWithoutPrefix(String filepath) {
         return doGetPath(filepath, 1);
     }
+
+    /**
+     * Returns the dir name of the file.
+     *
+     * <pre>
+     *     a/b/c.txt -> b
+     * </pre>
+     */
+    public static String getDirName(String filepath) {
+        String dirPath = Paths.suffixWithoutSlash(getDirPath(normalize(filepath)));
+        int lastIndex = dirPath.lastIndexOf('/');
+        if(lastIndex >= 0) {
+            return dirPath.substring(lastIndex+1);
+        }else {
+            return dirPath;
+        }
+    }
     
     /**
      * Gets the prefix from a full filename, such as <code>C:/</code>

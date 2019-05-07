@@ -200,18 +200,12 @@
         <xsd:complexType>
             <xsd:complexContent>
                 <xsd:extension base="identifiedType">
-                    <xsd:choice minOccurs="0" maxOccurs="unbounded">
-                        <xsd:element ref="constructor-arg"/>
-                        <xsd:element ref="property"/>
-                        <xsd:element ref="invoke"/>
-                    </xsd:choice>
-                    <xsd:attribute name="proxy-class" type="xsd:string"/>
+					<xsd:group ref="beanElements" />
                     <xsd:attribute name="target-type" use="required"/>
                     <xsd:attribute name="target-primary" type="xsd:boolean" use="optional"/>
                     <xsd:attribute name="target-name" use="optional"/>
                     <xsd:attribute name="target-id" use="optional"/>
-                    <xsd:attribute name="override" type="xsd:boolean" use="optional" default="false"/>
-                    <xsd:attribute name="default-override" type="xsd:boolean" use="optional" default="false"/>
+					<xsd:attributeGroup ref="beanAttributes" />
                     <xsd:attributeGroup ref="ifAttributesWithPrefix"/>
                 </xsd:extension>
             </xsd:complexContent>

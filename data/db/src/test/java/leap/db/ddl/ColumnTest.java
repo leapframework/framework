@@ -18,10 +18,7 @@ package leap.db.ddl;
 import leap.db.DbTestCase;
 import leap.db.change.ColumnDefinitionChange;
 import leap.db.change.SchemaChanges;
-import leap.db.model.DbColumn;
-import leap.db.model.DbColumnBuilder;
-import leap.db.model.DbTable;
-import leap.db.model.DbTableBuilder;
+import leap.db.model.*;
 import leap.db.platform.oracle.OraclePlatform;
 import leap.junit.contexual.Contextual;
 
@@ -67,5 +64,16 @@ public class ColumnTest extends DbTestCase {
 		DbColumn c2 = db.getMetadata().tryGetTable(t1).findColumn(col2.getName());
 		assertEquals(col2.getComment(),c2.getComment());
 	}
-	
+
+	/*
+	@Test
+	@Contextual("mysql")
+	public void testAddColumnWithSpecialSchemaName() {
+		DbSchemaObjectName name = new DbSchemaObjectName("", "test-schema", "test");
+		DbColumnBuilder c = DbColumnBuilder.varchar("col1", 100).setComment("comm");
+
+		String sql = dialect.getCreateColumnSqls(name, c.build()).get(0);
+		assertTrue(sql.contains("`test-schema`.test"));
+	}
+	*/
 }

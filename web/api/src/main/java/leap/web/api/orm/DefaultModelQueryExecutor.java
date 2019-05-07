@@ -51,7 +51,6 @@ import leap.web.api.query.*;
 import leap.web.api.remote.RestQueryListResult;
 import leap.web.api.remote.RestResource;
 import leap.web.exception.BadRequestException;
-
 import java.lang.reflect.Array;
 import java.util.*;
 import java.util.function.Consumer;
@@ -286,7 +285,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             }
         }
 
-        applyOrderBy(query, options.getResolvedOrderBy(), joinModels);
+        applyOrderBy(query, options, joinModels);
         applySelectOrAggregates(query, options, joinModels);
         applyFilters(context, query, options.getParams(), options, joinModels, filters, filterByParams);
 
@@ -791,7 +790,9 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
     }
 
-    protected void applyOrderBy(CriteriaQuery query, OrderBy orderBy, JoinModels joinModels) {
+    protected void applyOrderBy(CriteriaQuery query, QueryOptions options, JoinModels joinModels) {
+        OrderBy orderBy = options.getResolvedOrderBy();
+
         if (null == orderBy) {
             return;
         }
@@ -801,13 +802,11 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         StringBuilder s = new StringBuilder();
 
         for (int i = 0; i < items.length; i++) {
-
             if (i > 0) {
                 s.append(',');
             }
 
             OrderBy.Item item = items[i];
-
             MApiModel model;
 
             if (item.hasAlias() && !item.alias().equalsIgnoreCase(query.alias())) {
@@ -820,16 +819,28 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                 model = am;
             }
 
-            String       name = item.name();
-            MApiProperty ap   = model.tryGetProperty(name);
+            String       name    = item.name();
+            MApiProperty ap      = model.tryGetProperty(name);
+            boolean      isAlias = false;
+
             if (null == ap) {
-                throw new BadRequestException("Property '" + name + "' not exists in model '" + model.getName() + "'");
-            }
-            if (ap.isNotSortableExplicitly()) {
+                if (null != options.getResolvedSelect() && options.getResolvedSelect().aliasContain(name)) {
+                    isAlias = true;
+                } else if (null != options.getResolvedGroupBy() && options.getResolvedGroupBy().aliasContain(name)) {
+                    isAlias = true;
+                } else if (null != options.getResolvedAggregate() && options.getResolvedAggregate().aliasContain(name)){
+                    isAlias = true;
+                }
+                if (!isAlias) {
+                    throw new BadRequestException("Property '" + name + "' not exists in model '" + model.getName() + "'");
+                }
+            } else if (ap.isNotSortableExplicitly()) {
                 throw new BadRequestException("Property '" + name + "' is not sortable in model '" + model.getName() + "'");
             }
 
-            if (item.hasAlias()) {
+            if (isAlias) {
+                s.append(item.name());
+            } else if (item.hasAlias()) {
                 s.append(item.alias()).append('.').append(item.name());
             } else if (Strings.isNotEmpty(query.alias())) {
                 s.append(query.alias()).append('.').append(item.name());
@@ -950,72 +961,57 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                 }
             }
         } else {
-            String[] names = Strings.split(select, ',');
-            for (String name : names) {
-                if (name.equals("*")) {
-                    for (MApiProperty p : am.getProperties()) {
-                        if (p.isReference()) {
-                            continue;
+            Select.Item[] selectItems;
+            if (options instanceof QueryOptions) {
+                selectItems = ((QueryOptions) options).getResolvedSelect().items();
+            } else {
+                selectItems = SelectParser.parse(options.getSelect()).items();
+            }
+            for (Select.Item selectItem : selectItems) {
+                if (Strings.isEmpty(selectItem.joinAlias())) {
+                    if (selectItem.name().equals("*")) {
+                        for (MApiProperty p : am.getProperties()) {
+                            if (p.isReference()) {
+                                continue;
+                            }
+                            if (p.isSelectableExplicitly()) {
+                                items.add(p.getName());
+                            }
                         }
-                        if (p.isSelectableExplicitly()) {
+                        continue;
+                    } else {
+                        MApiProperty p = am.tryGetProperty(selectItem.name());
+                        if (null == p) {
+                            throw new BadRequestException("Property '" + selectItem.name() + "' not exists, check the 'select' query param");
+                        }
+                        if (!p.isSelectableExplicitly()) {
+                            throw new BadRequestException("Property '" + selectItem.name() + "' is not selectable");
+                        }
+                        if (Strings.isEmpty(selectItem.alias())) {
                             items.add(p.getName());
+                        } else {
+                            items.add(p.getName() + " as " + selectItem.alias());
                         }
                     }
-                    continue;
-                }
-
-                String[] parts = Strings.splitWhitespaces(name);
-                if (parts.length > 2) {
-                    throw new BadRequestException("Invalid select item '" + name + "'");
-                }
-
-                String alias = null;
-                if (parts.length == 2) {
-                    name = parts[0];
-                    alias = parts[1];
-                }
-                parts = Strings.split(name, '.');
-                if (parts.length > 2) {
-                    throw new BadRequestException("Invalid select item '" + name + "'");
-                }
-                if (parts.length == 2) {
-                    String joinAlias = parts[0];
-                    String joinField = parts[1];
-
-                    ModelAndMapping join = joins.get(joinAlias);
+                } else if (Strings.isNotEmpty(selectItem.joinAlias())) {
+                    ModelAndMapping join = joins.get(selectItem.joinAlias());
                     if (null == join) {
-                        throw new BadRequestException("The join alias '" + joinAlias + "' not exists, check '" + name + "'");
+                        throw new BadRequestException("The join alias '" + selectItem.joinAlias() + "' not exists, check '" + selectItem.joinAlias() + "." + selectItem.name() + "'");
                     }
-
-                    MApiProperty p = join.model.tryGetProperty(joinField);
+                    MApiProperty p = join.model.tryGetProperty(selectItem.name());
                     if (null == p) {
-                        throw new BadRequestException("Join property '" + name + "' not exists, check the 'select' query param");
+                        throw new BadRequestException("Join property '" + selectItem.joinAlias() + "." + selectItem.name() + "' not exists, check the 'select' query param");
                     }
-
                     if (!p.isSelectableExplicitly()) {
-                        throw new BadRequestException("Join Property '" + name + "' is not selectable");
+                        throw new BadRequestException("Join Property '" + selectItem.joinAlias() + "." + selectItem.name() + "' is not selectable");
                     }
-
                     FieldMapping fm = join.mapping.getFieldMapping(p.getName());
 
-                    if (Strings.isEmpty(alias)) {
-                        items.add(joinAlias + "." + fm.getColumnName());
+                    if (Strings.isEmpty(selectItem.alias())) {
+                        items.add(selectItem.joinAlias() + "." + fm.getColumnName());
                     } else {
-                        items.add(joinAlias + "." + fm.getColumnName() + " " + alias);
+                        items.add(selectItem.joinAlias() + "." + fm.getColumnName() + " " + selectItem.alias());
                     }
-                } else {
-                    if (!Strings.isEmpty(alias)) {
-                        throw new BadRequestException("Select item of primary entity does not supports alias, check '" + name + "'");
-                    }
-
-                    MApiProperty p = am.tryGetProperty(name);
-                    if (null == p) {
-                        throw new BadRequestException("Property '" + name + "' not exists, check the 'select' query param");
-                    }
-                    if (!p.isSelectableExplicitly()) {
-                        throw new BadRequestException("Property '" + name + "' is not selectable");
-                    }
-                    items.add(p.getName());
                 }
             }
         }
@@ -1044,68 +1040,75 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                 throw new BadRequestException("Must use groupby with aggregates");
             }
 
+            GroupBy.Item[] items = options.getResolvedGroupBy().items();
             StringBuilder groupBy = new StringBuilder();
 
-            String[] items = Strings.split(options.getGroupBy(), ',');
             for (int i = 0; i < items.length; i++) {
                 if (i > 0) {
                     groupBy.append(',');
                 }
-                String item = items[i];
-                String name = item;
-                String expr = em.getGroupByExprs().get(item);
+
+                GroupBy.Item item = items[i];
+
+                String expr = em.getGroupByExprs().get(item.name());
                 if (null != expr) {
-                    select.add("(" + expr + ") as " + name);
+                    if (Strings.isEmpty(item.alias())) {
+                        select.add("(" + expr + ") as " + item.name());
+                    } else {
+                        select.add("(" + expr + ") as " + item.alias());
+                    }
                     groupBy.append("(" + expr + ")");
                 } else {
                     MApiModel m;
 
-                    String alias    = null;
-                    int    dotIndex = name.indexOf('.');
-                    if (dotIndex > 0) {
-                        alias = name.substring(0, dotIndex);
-                        name = name.substring(dotIndex + 1);
-                        ModelAndMapping join = joins.get(alias);
+                    if (Strings.isNotEmpty(item.joinAlias())) {
+                        ModelAndMapping join = joins.get(item.joinAlias());
                         if (null == join) {
-                            throw new BadRequestException("Can't found join alias '" + alias + "', check group by");
+                            throw new BadRequestException("Can't found join alias '" + item.joinAlias() + "', check group by");
                         }
                         m = join.model;
                     } else {
                         m = am;
                     }
 
-                    MApiProperty p = m.tryGetProperty(name);
+                    MApiProperty p = m.tryGetProperty(item.name());
                     if (null == p) {
-                        throw new BadRequestException("Property '" + m.getName() + "." + name + "' not exists, check the 'groupby'");
+                        throw new BadRequestException("Property '" + m.getName() + "." + item.name() + "' not exists, check the 'groupby'");
                     }
                     if (!p.isSelectableExplicitly()) {
-                        throw new BadRequestException("Property '" + m.getName() + "." + name + "' is not groupable");
-                    }
-                    if (null != alias) {
-                        select.add(alias + "." + p.getName());
-                    } else {
-                        select.add(p.getName());
+                        throw new BadRequestException("Property '" + m.getName() + "." + item.name() + "' is not groupable");
                     }
 
-                    groupBy.append(item);
+                    StringBuffer sql = new StringBuffer();
+                    if (null != item.joinAlias()) {
+                        sql.append(item.joinAlias() + "." + p.getName());
+                    } else {
+                        sql.append(p.getName());
+                    }
+                    if (null != item.alias()) {
+                        sql.append(" as " + item.alias());
+                        groupBy.append(item.alias());
+                    } else {
+                        groupBy.append(item.name());
+                    }
+                    select.add(sql.toString());
                 }
             }
             query.groupBy(groupBy.toString());
         }
 
-        Aggregate[] aggregates = AggregateParser.parse(options.getAggregates());
-        for (Aggregate aggregate : aggregates) {
-            if (aggregate.getField().equals("*")) {
-                select.add(aggregate.getFunction() + "(" + aggregate.getField() + ") as " + aggregate.getAlias());
+        for (Aggregate.Item item : options.getResolvedAggregate().items()) {
+            if (item.field().equals("*")) {
+                select.add(item.function() + "(" + item.field() + ") as " + item.alias());
             } else {
-                MApiProperty p = am.tryGetProperty(aggregate.getField());
+                MApiProperty p = am.tryGetProperty(item.field());
                 if (null == p) {
-                    throw new BadRequestException("Property '" + aggregate.getField() + "' not exists, check the 'aggregates' param");
+                    throw new BadRequestException("Property '" + item.field() + "' not exists, check the 'aggregates' param");
                 }
                 if (!p.isAggregatableExplicitly()) {
-                    throw new BadRequestException("Property '" + aggregate.getField() + "' is not aggregatable");
+                    throw new BadRequestException("Property '" + item.field() + "' is not aggregatable");
                 }
-                select.add(aggregate.getFunction() + "(" + query.alias() + "." + aggregate.getField() + ") as " + aggregate.getAlias());
+                select.add(item.function() + "(" + query.alias() + "." + item.field() + ") as " + item.alias());
             }
         }
 
@@ -1258,11 +1261,13 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                         }
 
                         //env
-                        if (value.endsWith("()")) {
-                            String valueExpr = "#{env." + value.substring(0, value.length() - 2) + "}";
-                            applyFieldFilterExpr(expr, alias, modelAndProp.field, valueExpr, sqlOperator);
-                        } else if (op == ScelToken.IN) {
+                        if (op == ScelToken.IN) {
                             applyFieldFilterIn(expr, alias, modelAndProp.field, nodes[i].values());
+                        } else if (value.endsWith("()") && value.length() > 2) {
+                            String envName = value.substring(0, value.length() - 2);
+                            //todo: check env is valid or allowed?
+                            String valueExpr = "#{env." + envName + "}";
+                            applyFieldFilterExpr(expr, alias, modelAndProp.field, valueExpr, sqlOperator);
                         } else {
                             applyFieldFilter(expr, alias, modelAndProp.field, value, sqlOperator);
                         }

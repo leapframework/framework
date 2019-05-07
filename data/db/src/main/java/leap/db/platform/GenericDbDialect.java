@@ -147,7 +147,7 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
         }
 
         if (quoteKeywordOnly) {
-            if (isKeyword(identifier)) {
+            if (isKeyword(identifier) || shouldQuoteIdentifier(identifier)) {
                 return doQuoteIdentifier(identifier);
             } else {
                 return identifier;
@@ -157,22 +157,28 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
         }
     }
 
+    protected boolean shouldQuoteIdentifier(String word) {
+        return false;
+    }
+
     @Override
     public String qualifySchemaObjectName(String catalog, String schema, String name) {
         Args.notEmpty(name, "name");
 
         StringBuilder sb = new StringBuilder();
 
-        if (!Strings.isEmpty(catalog)) {
-            sb.append(quoteIdentifier(catalog)).append('.');
+        if(isQualifyFullSchemaObjectName()) {
+            if (!Strings.isEmpty(catalog)) {
+                sb.append(quoteIdentifier(catalog)).append('.');
 
-            if (Strings.isEmpty(schema)) {
-                throw new IllegalStateException("schema must not be empty if the catalog is not empty");
+                if (Strings.isEmpty(schema)) {
+                    throw new IllegalStateException("schema must not be empty if the catalog is not empty");
+                }
+
+                sb.append(quoteIdentifier(schema)).append('.');
+            } else if (!Strings.isEmpty(schema)) {
+                sb.append(quoteIdentifier(schema)).append('.');
             }
-
-            sb.append(quoteIdentifier(schema)).append('.');
-        } else if (!Strings.isEmpty(schema)) {
-            sb.append(quoteIdentifier(schema)).append('.');
         }
 
         sb.append(quoteIdentifier(name));
@@ -190,6 +196,10 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
         }
 
         return qualifySchemaObjectName(schemaObjectName.getCatalog(), schemaObjectName.getSchema(), name);
+    }
+
+    protected boolean isQualifyFullSchemaObjectName() {
+        return false;
     }
 
     @Override

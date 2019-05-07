@@ -1200,43 +1200,16 @@ public class BeanContainer implements BeanFactory {
         }
     }
 
-    protected Object doCreateProxy(BeanDefinitionBase pd, Class<?> type, Object bean) {
-
-        Object proxy;
-
-        if (ProxyBean.class.isAssignableFrom(pd.getBeanClass())) {
-            proxy = doCreateBeanOnly(pd);
-            ((ProxyBean) proxy).setTargetBean(bean);
-        } else {
-            ReflectConstructor c = ReflectClass.of(pd.getBeanClass()).getConstructor(type);
-            if (null == c) {
-                throw new BeanCreationException("Can't create proxy '" + pd.getBeanClass() + "', No valid constructor");
-            }
-
-            proxy = c.newInstance(bean);
-
-            beforeBeanCreation(pd);
-
-            processBeanCreation(pd, proxy);
-
-            afterBeanCreation(pd);
-
-            pd.setInited(true);
-        }
-
-        return proxy;
-    }
-
     protected Object doCreateBean(BeanDefinitionBase bd) {
 
         Object bean = doCreateBeanOnly(bd);
 
         BeanDefinitionBase pd = findProxy(bd);
         if (null != pd) {
-            Object proxyBean = doCreateProxy(pd, bd.getType(), bean);
+            Object proxyBean = doGetProxy(pd, bd.getType(), bean);
 
-            if (!isTypedProxy(pd)) {
-                pd = findTypedProxy(bd);
+            if (!isTypeProxy(pd)) {
+                pd = findTypeProxy(bd);
                 if (null != pd) {
                     Object typedProxyBean = doCreateProxy(pd, bd.getType(), proxyBean);
                     proxyBean = typedProxyBean;
@@ -1253,7 +1226,45 @@ public class BeanContainer implements BeanFactory {
         return bean;
     }
 
+    protected Object doGetProxy(BeanDefinitionBase pd, Class<?> type, Object bean) {
+        //don't cache the instance for type proxy
+        if (!isTypeProxy(pd) && pd.isSingleton()) {
+            Object instance = pd.getInstance();
+            if (null == instance) {
+                synchronized (pd.getSingletonLock()) {
+                    if (null == (instance = pd.getInstance())) {
+                        instance = doCreateProxy(pd, type, bean);
+                    }
+                }
+            }
+            return instance;
+        } else {
+            return doCreateProxy(pd, type, bean);
+        }
+    }
+
+    protected Object doCreateProxy(BeanDefinitionBase pd, Class<?> type, Object bean) {
+        Object proxy;
+
+        if (ProxyBean.class.isAssignableFrom(pd.getBeanClass())) {
+            proxy = doCreateBeanOnly(pd);
+            ((ProxyBean) proxy).setTargetBean(bean);
+        } else {
+            ReflectConstructor c = ReflectClass.of(pd.getBeanClass()).getConstructor(type);
+            if (null == c) {
+                throw new BeanCreationException("Can't create proxy '" + pd.getBeanClass() + "', No valid constructor");
+            }
+            proxy = doCreateBeanOnly(pd, () -> c.newInstance(bean));
+        }
+
+        return proxy;
+    }
+
     protected Object doCreateBeanOnly(BeanDefinitionBase bd) {
+        return doCreateBeanOnly(bd, null);
+    }
+
+    protected Object doCreateBeanOnly(BeanDefinitionBase bd, Supplier<Object> factory) {
         if (initializing) {
             throw new IllegalStateException("Cannot get bean when this container is initializing");
         }
@@ -1272,7 +1283,7 @@ public class BeanContainer implements BeanFactory {
 
         beforeBeanCreation(bd);
 
-        bean = doBeanCreation(bd);
+        bean = doBeanCreation(bd, factory);
 
         afterBeanCreation(bd);
 
@@ -1282,6 +1293,15 @@ public class BeanContainer implements BeanFactory {
     }
 
     protected BeanDefinitionBase findProxy(BeanDefinitionBase bd) {
+        BeanDefinitionBase pd = doFindProxy(bd);
+        if(null != pd) {
+            return ((ProxyBeanDefinition.TargetBeanDefinition)pd).getProxy();
+        }else {
+            return null;
+        }
+    }
+
+    protected BeanDefinitionBase doFindProxy(BeanDefinitionBase bd) {
         BeanDefinitionBase pd;
 
         //find by id.
@@ -1308,15 +1328,15 @@ public class BeanContainer implements BeanFactory {
             }
         }
 
-        //find typed proxy.
-        return findTypedProxy(bd);
+        //find type proxy.
+        return findTypeProxy(bd);
     }
 
-    protected BeanDefinitionBase findTypedProxy(BeanDefinitionBase bd) {
+    protected BeanDefinitionBase findTypeProxy(BeanDefinitionBase bd) {
         Set<BeanDefinitionBase> pds = bpds.beanTypeDefinitions.get(bd.getType());
         if (null != pds) {
             for (BeanDefinitionBase pd : pds) {
-                if (isTypedProxy(pd)) {
+                if (isTypeProxy(pd)) {
                     return pd;
                 }
             }
@@ -1324,21 +1344,38 @@ public class BeanContainer implements BeanFactory {
         return null;
     }
 
-    protected boolean isTypedProxy(BeanDefinitionBase pd) {
-        if (!pd.isPrimary() && Strings.isEmpty(pd.getName()) && Strings.isEmpty(pd.getId())) {
+    /**
+     * Is proxy of all beans of some type.
+     */
+    protected boolean isTypeProxy(BeanDefinitionBase pd) {
+        BeanDefinitionBase target;
+        if(pd instanceof ProxyBeanDefinition) {
+            target = ((ProxyBeanDefinition) pd).getTarget();
+        }else {
+            target = pd;
+        }
+
+        if (!target.isPrimary() && Strings.isEmpty(target.getName()) && Strings.isEmpty(target.getId())) {
             return true;
         }
+
         return false;
     }
 
     protected Object doBeanCreation(BeanDefinitionBase bd) {
+        return doBeanCreation(bd, null);
+    }
+
+    protected Object doBeanCreation(BeanDefinitionBase bd, Supplier<Object> factory) {
         log.trace("Creating bean {}", bd);
 
         Object            bean;
         FactoryDefinition fd = bd.getFactoryDefinition();
         ValueDefinition   vd = bd.getValueDefinition();
 
-        if (null != fd) {
+        if(null != factory) {
+            bean = factory.get();
+        }else if (null != fd) {
             bean = doResolveValueFromFactory(bd, fd);
         } else if (null != vd) {
             bean = doResolveValue(bd, vd, null);
@@ -2154,12 +2191,11 @@ public class BeanContainer implements BeanFactory {
     }
 
     protected void addBeanDefinition(BeanDefinitionBase bd, boolean proxy) throws BeanDefinitionException {
-        BeanDefinitionsImpl bds = this.bds;
-        if (proxy) {
-            bds = this.bpds;
-        }
-
         bds.add(bd);
+        if(proxy) {
+            ProxyBeanDefinition pdb = (ProxyBeanDefinition)bd;
+            bpds.add(pdb.getTarget());
+        }
     }
 
     protected void addBeanList(BeanListDefinition bld) {
@@ -2558,12 +2594,12 @@ public class BeanContainer implements BeanFactory {
                 beanTypeDefinitions.put(beanType, typeSet);
             }
 
-            if (proxy && isTypedProxy(bd)) {
+            if (proxy && isTypeProxy(bd)) {
 
                 BeanDefinitionBase typedProxy = null;
 
                 for (BeanDefinitionBase d : typeSet) {
-                    if (isTypedProxy(d)) {
+                    if (isTypeProxy(d)) {
                         if (bd.isOverride()) {
                             typedProxy = d;
                             break;

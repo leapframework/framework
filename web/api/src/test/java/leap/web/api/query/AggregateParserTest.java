@@ -49,31 +49,31 @@ public class AggregateParserTest extends TestBase {
 
     @Test
     public void testMulti() {
-        Aggregate[] aggs = AggregateParser.parse("sum(a), avg(b)");
-        assertAggregate(aggs[0]);
-        assertAggregate(aggs[1], "bAvg", "avg", "b");
+        Aggregate aggs = AggregateParser.parse("sum(a), avg(b)");
+        assertAggregate(aggs.items()[0]);
+        assertAggregate(aggs.items()[1], "bAvg", "avg", "b");
 
         aggs = AggregateParser.parse("sum(a) aa, avg(b) as b");
-        assertAggregate(aggs[0], "aa");
-        assertAggregate(aggs[1], "b", "avg", "b");
+        assertAggregate(aggs.items()[0], "aa");
+        assertAggregate(aggs.items()[1], "b", "avg", "b");
     }
 
-    private static void assertAggregate(Aggregate agg) {
-        assertAggregate(agg, "aSum");
+    private static void assertAggregate(Aggregate.Item item) {
+        assertAggregate(item, "aSum");
     }
 
-    private static void assertAggregate(Aggregate agg, String alias) {
-        assertAggregate(agg, alias, "sum", "a");
+    private static void assertAggregate(Aggregate.Item item, String alias) {
+        assertAggregate(item, alias, "sum", "a");
     }
 
-    private static void assertAggregate(Aggregate agg, String alias, String func, String field) {
-        assertEquals(field, agg.getField());
-        assertEquals(func, agg.getFunction());
-        assertEquals(alias, agg.getAlias());
+    private static void assertAggregate(Aggregate.Item item, String alias, String func, String field) {
+        assertEquals(field, item.field());
+        assertEquals(func, item.function());
+        assertEquals(alias, item.alias());
     }
 
-    private static Aggregate parseSingle(String expr) {
-        return AggregateParser.parse(expr)[0];
+    private static Aggregate.Item parseSingle(String expr) {
+        return AggregateParser.parse(expr).items()[0];
     }
 
     private static void assertInvalidExpr(String expr) {

@@ -54,6 +54,18 @@ public class QueryOptions extends QueryOptionsBase {
 
     @NonParam
     @JsonIgnore
+    protected Aggregate resolvedAggregate;
+
+    @NonParam
+    @JsonIgnore
+    protected GroupBy resolvedGroupBy;
+
+    @NonParam
+    @JsonIgnore
+    protected Select resolvedSelect;
+
+    @NonParam
+    @JsonIgnore
     protected Join[] resolvedJoins;
 
     @NonParam
@@ -223,6 +235,39 @@ public class QueryOptions extends QueryOptionsBase {
 
     public void setResolvedOrderBy(OrderBy resolvedOrderBy) {
         this.resolvedOrderBy = resolvedOrderBy;
+    }
+
+    public GroupBy getResolvedGroupBy() {
+        if (null == resolvedGroupBy && Strings.isNotEmpty(groupBy)) {
+            resolvedGroupBy = GroupByParser.parse(groupBy);
+        }
+        return resolvedGroupBy;
+    }
+
+    public void setResolvedGroupBy(GroupBy resolvedGroupBy) {
+        this.resolvedGroupBy = resolvedGroupBy;
+    }
+
+    public Aggregate getResolvedAggregate() {
+        if (null == resolvedAggregate && Strings.isNotEmpty(aggregates)) {
+            resolvedAggregate = AggregateParser.parse(aggregates);
+        }
+        return resolvedAggregate;
+    }
+
+    public void setResolvedAggregate(Aggregate resolvedAggregate) {
+        this.resolvedAggregate = resolvedAggregate;
+    }
+
+    public Select getResolvedSelect() {
+        if (null == resolvedSelect && Strings.isNotEmpty(select)) {
+            resolvedSelect = SelectParser.parse(select);
+        }
+        return resolvedSelect;
+    }
+
+    public void setResolvedSelect(Select resolvedSelect) {
+        this.resolvedSelect = resolvedSelect;
     }
 
     public Join[] getResolvedJoins() {
