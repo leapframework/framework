@@ -68,7 +68,7 @@ public class WebConfiguration {
         r.setFilter(filter);
         r.addUrlPatterns("/*");
         r.setName("app-filter");
-        r.setOrder(Ordered.LOWEST_PRECEDENCE);
+        r.setOrder(0);
 
         if(!Strings.isEmpty(leap.spring.boot.Global.bp)) {
             r.addInitParameter(AppConfig.INIT_PROPERTY_BASE_PACKAGE, leap.spring.boot.Global.bp);
