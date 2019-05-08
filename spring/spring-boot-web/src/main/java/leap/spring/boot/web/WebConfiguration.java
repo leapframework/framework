@@ -66,6 +66,7 @@ public class WebConfiguration {
             }
         };
     }
+
     @Bean
     @Lazy(false)
     public AppFilter filterBean(Environment env) {
@@ -99,10 +100,8 @@ public class WebConfiguration {
     }
 
     @Bean
-    public ServletRegistrationBean bootFilter() {
-        ServletRegistrationBean r = new ServletRegistrationBean();
-        r.setServlet(new BootServlet());
-        //r.addUrlMappings("/servlet-for-boot");
+    public ServletRegistrationBean bootServlet() {
+        ServletRegistrationBean r = new ServletRegistrationBean(new BootServlet(), false);
         r.setName("boot-servlet");
         r.setOrder(Ordered.LOWEST_PRECEDENCE);
         r.setLoadOnStartup(1);
@@ -121,7 +120,6 @@ public class WebConfiguration {
     }
 
     public static class BootServlet extends GenericServlet {
-
         @Override
         public void init(ServletConfig config) throws ServletException {
             if (null != AppContext.getStandalone()) {
@@ -134,7 +132,6 @@ public class WebConfiguration {
         public void service(ServletRequest req, ServletResponse res) {
             throw new UnsupportedOperationException();
         }
-
     }
 
 }

@@ -35,4 +35,9 @@ public class SimpleTest extends AbstractTest {
         assertEquals("2", state.get("p"));
     }
 
+    @Test
+    public void testBootServlet() {
+        client.get("/not_found").assertNotFound();
+    }
+
 }
