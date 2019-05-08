@@ -445,7 +445,7 @@ public class AppResources {
             loadServletContextResources((ServletContext)context, searchPath, pathPrefix);
         }
     }
-
+    
     private void loadServletContextResources(ServletContext sc, String searchPath, String pathPrefix) {
         Set<String> paths = sc.getResourcePaths(searchPath);
         if(paths != null){
