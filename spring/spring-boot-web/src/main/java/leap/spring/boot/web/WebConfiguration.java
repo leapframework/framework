@@ -27,6 +27,7 @@ import leap.lang.logging.LogFactory;
 import leap.lang.reflect.ReflectClass;
 import leap.spring.boot.Global;
 import leap.web.AppFilter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -46,7 +47,7 @@ public class WebConfiguration {
     private static final Log log = LogFactory.get(WebConfiguration.class);
 
     private static AppFilter filter;
-
+    
     static {
         Global.leap = new Global.LeapContext() {
             @Override
@@ -65,7 +66,6 @@ public class WebConfiguration {
             }
         };
     }
-
     @Bean
     @Lazy(false)
     public AppFilter filterBean(Environment env) {
@@ -79,7 +79,8 @@ public class WebConfiguration {
     }
 
     @Bean
-    public FilterRegistrationBean appFilter(AppFilter filter) {
+    @ConfigurationProperties(prefix = "leap.filter")
+    public FilterRegistrationBean appFilter(AppFilter filter,Environment env) {
         FilterRegistrationBean r = new FilterRegistrationBean();
         r.setFilter(filter);
         r.addUrlPatterns("/*");
@@ -93,9 +94,7 @@ public class WebConfiguration {
         if (!Strings.isEmpty(leap.spring.boot.Global.profile)) {
             r.addInitParameter(AppConfig.INIT_PROPERTY_PROFILE, leap.spring.boot.Global.profile);
         }
-
         log.debug("Register app filter, base-package : {}, profile : {}", Global.bp, Global.profile);
-
         return r;
     }
 
