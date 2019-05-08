@@ -52,33 +52,32 @@ public class WebConfiguration {
         Global.leap = new Global.LeapContext() {
             @Override
             public AppConfig config() {
-                return null == filter?null:filter.config();
+                return null == filter ? null : filter.config();
             }
 
             @Override
             public BeanFactory factory() {
-                return null == filter?null:filter.factory();
+                return null == filter ? null : filter.factory();
             }
 
             @Override
             public AppContext context() {
-                return null == filter?null:filter.context();
+                return null == filter ? null : filter.context();
             }
         };
     }
-    
     @Bean
     @Lazy(false)
-    public AppFilter filterBean(Environment env){
-        String clsName =  env.getProperty("leap.filter.className", AppFilter.class.getName());
-        Class<?> cls = Classes.forName(clsName);
-        if (!AppFilter.class.isAssignableFrom(cls)){
+    public AppFilter filterBean(Environment env) {
+        String   clsName = env.getProperty("leap.filter.className", AppFilter.class.getName());
+        Class<?> cls     = Classes.forName(clsName);
+        if (!AppFilter.class.isAssignableFrom(cls)) {
             throw new AppConfigException(clsName + " is not sub class of " + AppFilter.class.getName());
         }
         filter = ReflectClass.of(cls).newInstance();
         return filter;
     }
-    
+
     @Bean
     @ConfigurationProperties(prefix = "leap.filter")
     public FilterRegistrationBean appFilter(AppFilter filter,Environment env) {
@@ -87,18 +86,18 @@ public class WebConfiguration {
         r.addUrlPatterns("/*");
         r.setName("app-filter");
         r.setOrder(Ordered.LOWEST_PRECEDENCE);
-        
-        if(!Strings.isEmpty(leap.spring.boot.Global.bp)) {
+
+        if (!Strings.isEmpty(leap.spring.boot.Global.bp)) {
             r.addInitParameter(AppConfig.INIT_PROPERTY_BASE_PACKAGE, leap.spring.boot.Global.bp);
         }
 
-        if(!Strings.isEmpty(leap.spring.boot.Global.profile)) {
+        if (!Strings.isEmpty(leap.spring.boot.Global.profile)) {
             r.addInitParameter(AppConfig.INIT_PROPERTY_PROFILE, leap.spring.boot.Global.profile);
         }
         log.debug("Register app filter, base-package : {}, profile : {}", Global.bp, Global.profile);
         return r;
     }
-    
+
     @Bean
     public ServletRegistrationBean bootFilter() {
         ServletRegistrationBean r = new ServletRegistrationBean();
@@ -109,7 +108,7 @@ public class WebConfiguration {
         r.setLoadOnStartup(1);
         return r;
     }
-    
+
     @Bean
     public WebMvcConfigurerAdapter webMvcConfigurer() {
         return new WebMvcConfigurerAdapter() {
@@ -122,10 +121,10 @@ public class WebConfiguration {
     }
 
     public static class BootServlet extends GenericServlet {
-        
+
         @Override
         public void init(ServletConfig config) throws ServletException {
-            if(null != AppContext.getStandalone()) {
+            if (null != AppContext.getStandalone()) {
                 throw new IllegalStateException("Found duplicated standalone context");
             }
             AppContext.setStandalone(filter.bootstrap().getAppContext());

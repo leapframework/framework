@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import java.io.*;
 
-public class RequestWrapper extends HttpServletRequestWrapper {
+class RequestWrapper extends HttpServletRequestWrapper {
 
     private HttpServletRequest request;
     private byte[]             bytes;
