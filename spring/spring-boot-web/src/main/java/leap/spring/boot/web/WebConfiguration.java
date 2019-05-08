@@ -102,7 +102,7 @@ public class WebConfiguration {
     public ServletRegistrationBean bootFilter() {
         ServletRegistrationBean r = new ServletRegistrationBean();
         r.setServlet(new BootServlet());
-        r.addUrlMappings("/servlet-for-boot");
+        //r.addUrlMappings("/servlet-for-boot");
         r.setName("boot-servlet");
         r.setOrder(Ordered.LOWEST_PRECEDENCE);
         r.setLoadOnStartup(1);
