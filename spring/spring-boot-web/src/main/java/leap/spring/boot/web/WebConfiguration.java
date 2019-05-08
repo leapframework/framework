@@ -17,23 +17,27 @@
 package leap.spring.boot.web;
 
 import leap.core.AppConfig;
+import leap.core.AppConfigException;
 import leap.core.AppContext;
 import leap.core.BeanFactory;
+import leap.lang.Classes;
 import leap.lang.Strings;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.lang.reflect.ReflectClass;
 import leap.spring.boot.Global;
 import leap.web.AppFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.Ordered;
+import org.springframework.core.env.Environment;
 import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
+import javax.servlet.*;
 import java.util.List;
 
 @Configuration
@@ -41,45 +45,68 @@ public class WebConfiguration {
 
     private static final Log log = LogFactory.get(WebConfiguration.class);
 
-    static AppFilter filter = new BootFilter();
+    private static AppFilter filter;
 
     static {
         Global.leap = new Global.LeapContext() {
             @Override
             public AppConfig config() {
-                return filter.config();
+                return null == filter ? null : filter.config();
             }
 
             @Override
             public BeanFactory factory() {
-                return filter.factory();
+                return null == filter ? null : filter.factory();
             }
 
             @Override
             public AppContext context() {
-                return filter.context();
+                return null == filter ? null : filter.context();
             }
         };
     }
 
     @Bean
-    public FilterRegistrationBean appFilter() {
+    @Lazy(false)
+    public AppFilter filterBean(Environment env) {
+        String   clsName = env.getProperty("leap.filter.className", AppFilter.class.getName());
+        Class<?> cls     = Classes.forName(clsName);
+        if (!AppFilter.class.isAssignableFrom(cls)) {
+            throw new AppConfigException(clsName + " is not sub class of " + AppFilter.class.getName());
+        }
+        filter = ReflectClass.of(cls).newInstance();
+        return filter;
+    }
+
+    @Bean
+    public FilterRegistrationBean appFilter(AppFilter filter) {
         FilterRegistrationBean r = new FilterRegistrationBean();
         r.setFilter(filter);
         r.addUrlPatterns("/*");
         r.setName("app-filter");
         r.setOrder(0);
 
-        if(!Strings.isEmpty(leap.spring.boot.Global.bp)) {
+        if (!Strings.isEmpty(leap.spring.boot.Global.bp)) {
             r.addInitParameter(AppConfig.INIT_PROPERTY_BASE_PACKAGE, leap.spring.boot.Global.bp);
         }
 
-        if(!Strings.isEmpty(leap.spring.boot.Global.profile)) {
+        if (!Strings.isEmpty(leap.spring.boot.Global.profile)) {
             r.addInitParameter(AppConfig.INIT_PROPERTY_PROFILE, leap.spring.boot.Global.profile);
         }
 
         log.debug("Register app filter, base-package : {}, profile : {}", Global.bp, Global.profile);
 
+        return r;
+    }
+
+    @Bean
+    public ServletRegistrationBean bootFilter() {
+        ServletRegistrationBean r = new ServletRegistrationBean();
+        r.setServlet(new BootServlet());
+        r.addUrlMappings("/servlet-for-boot");
+        r.setName("boot-servlet");
+        r.setOrder(0);
+        r.setLoadOnStartup(1);
         return r;
     }
 
@@ -94,15 +121,21 @@ public class WebConfiguration {
         };
     }
 
-    public static class BootFilter extends AppFilter {
+    public static class BootServlet extends GenericServlet {
+
         @Override
-        public void init(FilterConfig config) throws ServletException {
-            super.init(config);
-            if(null != AppContext.getStandalone()) {
+        public void init(ServletConfig config) throws ServletException {
+            if (null != AppContext.getStandalone()) {
                 throw new IllegalStateException("Found duplicated standalone context");
             }
-            AppContext.setStandalone(bootstrap.getAppContext());
+            AppContext.setStandalone(filter.bootstrap().getAppContext());
         }
+
+        @Override
+        public void service(ServletRequest req, ServletResponse res) {
+            throw new UnsupportedOperationException();
+        }
+
     }
 
 }
