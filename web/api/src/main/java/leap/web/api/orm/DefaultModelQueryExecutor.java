@@ -1089,7 +1089,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                         sql.append(" as " + item.alias());
                         groupBy.append(item.alias());
                     } else {
-                        groupBy.append(item.name());
+                        groupBy.append(sql);
                     }
                     select.add(sql.toString());
                 }
