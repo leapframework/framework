@@ -242,9 +242,6 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
         query.params(allParams);
 
-        long         count = -1;
-        List<Record> list;
-
         Join[] joins = options.getResolvedJoins();
         if (null != joins && joins.length > 0) {
             Set<String> relations = new HashSet<>();
@@ -293,15 +290,18 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             callback.accept(query);
         }
 
-        em.addContextListeners(listeners);
-        try {
+        final QueryOptions finalOptions = options;
+        return em.withContextListeners(listeners, () -> dao.withEvents(() -> {
+            long         count = -1;
+            List<Record> list;
+
             ex.preQueryList(context, query);
             if (null != ex.handler) {
                 ex.handler.preQueryList(context, query);
             }
 
-            PageResult page = query.pageResult(options.getPage(ac.getDefaultPageSize()));
-            list = ex.executeQueryList(context, options, query);
+            PageResult page = query.pageResult(finalOptions.getPage(ac.getDefaultPageSize()));
+            list = ex.executeQueryList(context, finalOptions, query);
             if (null == list) {
                 list = page.list();
             }
@@ -312,7 +312,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
             List<ExpandError> expandErrors = new ArrayList<>();
             if (!list.isEmpty()) {
-                Expand[] expands = ExpandParser.parse(options.getExpand());
+                Expand[] expands = ExpandParser.parse(finalOptions.getExpand());
                 if (expands.length > 0) {
                     ResolvedExpand[] resolvedExpands = resolveExpands(expands);
 
@@ -341,16 +341,14 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                 }
             }
 
-            if (options.isTotal()) {
+            if (finalOptions.isTotal()) {
                 count = query.count();
             }
 
             Object entity = ex.processQueryListResult(context, page, count, list);
 
             return new QueryListResult(list, count, entity, expandErrors);
-        }finally {
-            em.clearContextListeners();
-        }
+        }));
     }
 
     @Override
