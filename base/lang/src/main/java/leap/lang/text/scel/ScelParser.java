@@ -236,11 +236,14 @@ public class ScelParser extends AbstractStringParser {
     }
 
     private void scanInValues(List<ScelNode> values, boolean close) {
+        Boolean comma = null;
+
         for (; ; ) {
             skipWhitespaces();
 
             if (ch == ',') {
                 nextChar();
+                comma = true;
                 continue;
             }
 
@@ -255,7 +258,13 @@ public class ScelParser extends AbstractStringParser {
                 break;
             }
 
-            values.add(scanInValueNode(close));
+            if (null == comma || comma) {
+                values.add(scanInValueNode(close));
+            } else {
+                break;
+            }
+
+            comma = false;
         }
     }
 
@@ -291,6 +300,10 @@ public class ScelParser extends AbstractStringParser {
                 }
 
                 if(eof()) {
+                    break;
+                }
+
+                if (Character.isWhitespace(ch)) {
                     break;
                 }
             }else {

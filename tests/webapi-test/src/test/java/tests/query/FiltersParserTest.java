@@ -28,51 +28,51 @@ public class FiltersParserTest extends TestBase {
 
     @Test
     public void testSimpleParseExprs() {
-        assertParse("a eq 10");
-        assertParse("( a eq 10 )");
-        assertParse("a eq 's s'");
+        assertParse(3, "a eq 10");
+        assertParse(5, "( a eq 10 )");
+        assertParse(3, "a eq 's s'");
 
-        assertParse("a : 10");
+        assertParse(3, "a : 10");
         assertParse("a :10", "a : 10");
         assertParse("a:10", "a : 10");
         assertParse("a: 10", "a : 10");
-        assertParse("( a : 10 )");
+        assertParse(5, "( a : 10 )");
     }
 
     @Test
     public void testComplexParseExprs() {
-        assertParse("a not null and c ge 10");
-        assertParse("a is null and c ge 10");
-        assertParse("a eq b and c ge 10");
-        assertParse("a eq b , c ge 10");
-        assertParse("a : b , c : 10");
-        assertParse("( a eq b ) and ( c ge 10 )");
-
-        assertParse("( a eq b ) and ( c ge 10 ) or d like 'ddd'");
-        assertParse("( a eq b ) and ( c ge 10 ) or ( d like 'ddd' )");
-        assertParse("( a eq b ) and ( c ge 10 ) or ( d like 'ddd' ) and ( ( a eq b ) and ( c ge 10 ) or ( d like 'ddd' ) )");
+        assertParse(7, "a not null and c ge 10");
+        assertParse(7, "a is null and c ge 10");
+        assertParse(7, "a eq b and c ge 10");
+        assertParse(7, "a eq b , c ge 10");
+        assertParse(7, "a : b , c : 10");
+        assertParse(11, "( a eq b ) and ( c ge 10 )");
+        assertParse(15, "( a eq b ) and ( c ge 10 ) or d like 'ddd'");
+        assertParse(17, "( a eq b ) and ( c ge 10 ) or ( d like 'ddd' )");
+        assertParse(37, "( a eq b ) and ( c ge 10 ) or ( d like 'ddd' ) and ( ( a eq b ) and ( c ge 10 ) or ( d like 'ddd' ) )");
     }
 
     @Test
     public void testIn() {
-        assertParse("( v in 1 )");
-        assertParse("( v in (1) )");
-        assertParse("( ( v in (1) ) )");
-        assertParse("name in ',a'");
-        assertParse("name in ,'a'");
-        assertParse("name in 1,2");
-        assertParse("name in 1, 2");
-        assertParse("name in 1 , 2");
-        assertParse("name in '1' , 2");
-        assertParse("name in ('1' , 2)");
+        assertParse(5, "( v in 1 )");
+        assertParse(5, "( v in (1) )");
+        assertParse(7, "( ( v in (1) ) )");
+        assertParse(3, "name in ',a'");
+        assertParse(3, "name in ,'a'");
+        assertParse(3, "name in 1,2");
+        assertParse(3, "name in 1, 2");
+        assertParse(3, "name in 1 , 2");
+        assertParse(3, "name in '1' , 2");
+        assertParse(3, "name in ('1' , 2)");
+        assertParse(7, "name in 1,2 and id eq admin");
 
         ScelExpr expr = FiltersParser.parse("name in a,b");
         ScelNode node = expr.nodes()[2];
         assertEquals(2, node.values().size());
     }
 
-    private void assertParse(String expr) {
-        assertEquals(expr, FiltersParser.parse(expr).toString());
+    private void assertParse(int length, String expr) {
+        assertEquals(length, FiltersParser.parse(expr).nodes().length);
     }
 
     private void assertParse(String expr, String expected) {
