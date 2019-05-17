@@ -244,7 +244,7 @@ public class DbTableBuilder implements Buildable<DbTable>,JsonParsable {
             throw new IllegalStateException("Duplicated primary key '" + columnName + "'");
         }
 
-        if(index < 0){
+        if(index < 0 || index > primaryKeyColumnNames.size()){
             primaryKeyColumnNames.add(columnName);
         }else{
             primaryKeyColumnNames.add(index, columnName);

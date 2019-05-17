@@ -53,6 +53,15 @@ public class TableTest extends DbTestCase {
 		assertFalse(db.checkTableExists(tableTobeCreate));
 	}
 
+	@Test
+	public void testDbTableBuildPrimaryKey() {
+		DbTableBuilder t = new DbTableBuilder();
+		t.addColumn(new DbColumnBuilder("a"));
+		t.addColumn(new DbColumnBuilder("b"));
+		t.addPrimaryKeyColumnName("a", 1);
+		t.addPrimaryKeyColumnName("b", 5);
+	}
+
 	/*
 	@Test
     @Contextual
