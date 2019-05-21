@@ -2061,7 +2061,7 @@ public class Strings {
 		int start = 0;
 		int end = lcText.indexOf(lcOldString, start);
 		if (end == -1) {
-			return lcText;
+			return text;
 		}
 		int replLength = lcOldString.length();
 		int increase = newString.length() - replLength;
