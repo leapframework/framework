@@ -90,6 +90,16 @@ public class SqlResolverTest extends OrmTestCase {
 	}
 
 	@Test
+	public void testQuotedText() {
+		assertEquals("select id from Person", resolve("select id from ```Person```"));
+		assertEquals("select id from Person p", resolve("select id from ```Person``` p"));
+		assertEquals("select id id0, id_ from person_ p", resolve("select ```id``` id0, id from Person p"));
+
+		assertEquals("select id_ from person_ p join table() p1 on p.id_ = p1.id",
+			 resolve("select id from Person p join ```table()``` p1 on p.id = p1.id"));
+	}
+
+	@Test
 	public void testComplexSelectItem() {
 		assertEquals("select (round(age_)), name_ from person_", resolve("select (round(age)), name from person"));
 		assertEquals("select (round(p.age_)), name_ from person_ p", resolve("select (round(p.age)), name from person p"));

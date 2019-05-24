@@ -131,7 +131,8 @@ public enum Token {
 	EXPR_PLACEHOLDER,   // #{expr}
 	
 	DYNAMIC, //{? .. }
-	
+    QUOTED_TEXT, //```...```
+
 	AT_IF("@IF"),
 	AT_ELSEIF("@ELSEIF"),
 	AT_ELSE("@ELSE"),

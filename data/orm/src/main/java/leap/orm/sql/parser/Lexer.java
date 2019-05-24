@@ -140,6 +140,10 @@ public class Lexer {
 	public final char peekChar(){
 		return charAt(pos + 1);
 	}
+
+	public final char peekChar(int next){
+		return charAt(pos + next);
+	}
 	
 	public final char peekCharSkipWhitespaces(){
 		int  i=pos;
@@ -543,6 +547,16 @@ public class Lexer {
 					}
 					continue;
 				case '`':
+					char next1Char = peekChar(1);
+					if(next1Char == '`') {
+						char next2Char = peekChar(2);
+						if(next2Char == '`') {
+							startToken(Token.QUOTED_TEXT);
+							nextChars(3);
+							scanQuotedText();
+							return;
+						}
+					}
 				case '"':
 					startToken(Token.QUOTED_IDENTIFIER);
 					scanQuotedIdentifier();
@@ -926,6 +940,22 @@ public class Lexer {
 		}
 		
 		return false;
+	}
+
+	protected final void scanQuotedText() {
+		startLiteral();
+		for(;;) {
+			if(ch == '`' && peekChar(1) == '`' && peekChar(2) == '`') {
+				endLiteral();
+				nextChars(2);
+				break;
+			}
+			if(ch == EOI) {
+				reportError("Illegal raw text, must be closed by '```' at {0}", describePosition());
+			}
+			nextChar();
+		}
+		nextChar();
 	}
 	
 	public final void scanQuotedIdentifier(){

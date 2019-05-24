@@ -157,7 +157,8 @@ public class SqlResolver {
 		}else if(tableSource instanceof SqlSelect){
 			return resolveColumnFromSubQuery((SqlSelect)tableSource,name);
 		}else{
-			throw new IllegalStateException("Unsupported table source '" + tableSource.getClass().getName() + "'");
+			return false;
+			//throw new IllegalStateException("Unsupported table source '" + tableSource.getClass().getName() + "'");
 		}
 	}
 	

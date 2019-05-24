@@ -52,10 +52,10 @@ abstract class SqlQueryParser extends SqlParser {
     }
 
     protected SqlTableSource parseTableSource(SqlQuery query) {
-        if(lexer.token() == Token.LPAREN){
+        if(lexer.token() == Token.LPAREN) {
             acceptText();
 
-            if(lexer.token() == Token.SELECT){
+            if (lexer.token() == Token.SELECT) {
                 SqlSelect fromSelect = new SqlSelectParser(this).parseSelectBody();
 
                 parseUnion();
@@ -65,7 +65,7 @@ abstract class SqlQueryParser extends SqlParser {
                 query.addTableSource(fromSelect);
 
                 return fromSelect;
-            }else{
+            } else {
                 parseFromItem(query);
 
                 parseUnion();
@@ -74,17 +74,24 @@ abstract class SqlQueryParser extends SqlParser {
 
                 if (null == query.getFrom() && query.getTableSources().size() == 1) {
                     SqlTableSource ts = query.getTableSources().get(0);
-                    if(ts instanceof SqlSelect) {
-                        SqlSelect ss = (SqlSelect)ts;
+                    if (ts instanceof SqlSelect) {
+                        SqlSelect ss = (SqlSelect) ts;
                         ss.setAlias(parseTableAlias());
                     }
-                }else if(query.getFrom() instanceof SqlSelect) {
-                    SqlSelect ss = (SqlSelect)query.getFrom();
+                } else if (query.getFrom() instanceof SqlSelect) {
+                    SqlSelect ss = (SqlSelect) query.getFrom();
                     ss.setAlias(parseTableAlias());
                 }
 
                 return null;
             }
+        }else if(lexer.token() == Token.QUOTED_TEXT) {
+            QuotedText node = new QuotedText(lexer.literal());
+            acceptNode(node);
+            UnkownTableSource ts = new UnkownTableSource(node);
+            ts.setAlias(parseTableAlias());
+            query.addTableSource(ts);
+            return ts;
         }else {
             return parseTableNameSource(query);
         }

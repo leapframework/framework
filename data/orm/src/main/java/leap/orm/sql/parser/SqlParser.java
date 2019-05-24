@@ -428,9 +428,12 @@ public class SqlParser extends SqlParserBase {
 	//parse non sql tokens
 	protected boolean parseSpecialToken(){
 		Token token = lexer.token();
-		if(token == Token.DYNAMIC){
+		if(token == Token.DYNAMIC) {
 			// {? .. }
 			parseDynamicClause();
+			return true;
+		}else if(token == Token.QUOTED_TEXT) {
+			acceptNode(new QuotedText(lexer.literal()));
 			return true;
 		}else if(token == Token.COLON_PLACEHOLDER){
 			// :name
