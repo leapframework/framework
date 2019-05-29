@@ -119,7 +119,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
         ModelExecutionContext context = new DefaultModelExecutionContext(this.context);
 
-        return em.withContextListeners(listeners, () -> dao.withEvents(() -> {
+        return em.withContextListeners(listeners, () -> {
             if (null != ex.handler) {
                 ex.handler.processQueryOneOptions(context, id, options);
             }
@@ -136,7 +136,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                 if (null != ex.handler) {
                     ex.handler.preQueryOne(context, id, query);
                 }
-                record = query.firstOrNull();
+                record = dao.withEvents(() -> query.firstOrNull());
             }
 
             List<ExpandError> expandErrors = expandOne(record, options);
@@ -148,7 +148,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             Object entity = ex.processQueryOneRecord(context, id, record);
 
             return new QueryOneResult(record, entity, expandErrors);
-        }));
+        });
     }
 
     protected Record queryOneByHandler(ModelExecutionContext context, Object id, QueryOptionsBase options) {
@@ -291,7 +291,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
 
         final QueryOptions finalOptions = options;
-        return em.withContextListeners(listeners, () -> dao.withEvents(() -> {
+        return em.withContextListeners(listeners, () -> {
             long         count = -1;
             List<Record> list;
 
@@ -303,7 +303,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             PageResult page = query.pageResult(finalOptions.getPage(ac.getDefaultPageSize()));
             list = ex.executeQueryList(context, finalOptions, query);
             if (null == list) {
-                list = page.list();
+                list = dao.withEvents(() -> page.list());
             }
 
             if (null != ex.handler) {
@@ -348,7 +348,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             Object entity = ex.processQueryListResult(context, page, count, list);
 
             return new QueryListResult(list, count, entity, expandErrors);
-        }));
+        });
     }
 
     @Override
