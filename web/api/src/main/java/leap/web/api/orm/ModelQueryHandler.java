@@ -63,4 +63,8 @@ public interface ModelQueryHandler {
 
     }
 
+    default void preCount(ModelExecutionContext context, CriteriaQuery<Record> query) {
+
+    }
+
 }

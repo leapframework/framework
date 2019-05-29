@@ -366,6 +366,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         queryOptions.setFilters(options.getFilters());
 
         applyFilters(context, query, null, queryOptions, null, null);
+        applyCount(context, query);
 
         if (callback != null) {
             callback.accept(query);
@@ -1112,6 +1113,14 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
         query.select(select.toArray(new String[select.size()]));
     }
+
+    protected void applyCount(ModelExecutionContext context, CriteriaQuery query) {
+        if (null != ex.handler) {
+            ex.handler.preCount(context, query);
+        }
+        ex.preCount(context, query);
+    }
+
 
     protected void applyFilters(ModelExecutionContext context, CriteriaQuery query, Params params,
                                 QueryOptions options, JoinModels jms, Map<String, Object> fields) {

@@ -50,4 +50,8 @@ public interface ModelQueryInterceptor extends ModelFindInterceptor {
     default Object processQueryListResult(ModelExecutionContext context, PageResult page, long totalCount, List<Record> records) {
         return null;
     }
+
+    default boolean preCount(ModelExecutionContext context, CriteriaQuery query) {
+        return false;
+    }
 }

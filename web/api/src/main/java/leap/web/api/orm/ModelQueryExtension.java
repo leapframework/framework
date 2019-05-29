@@ -133,4 +133,14 @@ public class ModelQueryExtension implements ModelQueryInterceptor {
         }
         return null;
     }
+
+    @Override
+    public boolean preCount(ModelExecutionContext context, CriteriaQuery query) {
+        for(ModelQueryInterceptor interceptor : interceptors) {
+            if(interceptor.preCount(context, query)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
