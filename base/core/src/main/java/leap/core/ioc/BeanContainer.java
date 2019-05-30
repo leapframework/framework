@@ -24,10 +24,7 @@ import leap.core.validation.annotations.NotNull;
 import leap.core.web.ServletContextAware;
 import leap.lang.Comparators;
 import leap.lang.*;
-import leap.lang.annotation.Destroy;
-import leap.lang.annotation.Init;
-import leap.lang.annotation.Internal;
-import leap.lang.annotation.Nullable;
+import leap.lang.annotation.*;
 import leap.lang.beans.*;
 import leap.lang.convert.Converts;
 import leap.lang.logging.Log;
@@ -43,6 +40,7 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.Supplier;
@@ -358,6 +356,7 @@ public class BeanContainer implements BeanFactory {
         bd.setSingleton(true);
         bd.setSingletonInstance(bean);
         bd.setPrimary(primary);
+        bd.setSortOrder(getSortOrder(bean, BeanDefinition.DEFAULT_SORT_ORDER).floatValue());
 
         return bd;
     }
@@ -669,6 +668,9 @@ public class BeanContainer implements BeanFactory {
         boolean cache = true;
         if (null == beans) {
             beans = new ArrayList<>();
+
+            List<OrderedBean<T>> beansWithOrder = new ArrayList<>();
+
             BeanListDefinition bld = beanListDefinitions.get(key);
             if (null != bld) {
                 for (ValueDefinition vd : bld.getValues()) {
@@ -681,7 +683,8 @@ public class BeanContainer implements BeanFactory {
                     if (!type.isAssignableFrom(bean.getClass())) {
                         throw new BeanDefinitionException("The bean list's element must be instance of '" + type.getName() + "' in '" + bld.getSource() + "'");
                     }
-                    beans.add((T) bean);
+                    //beans.add((T) bean);
+                    beansWithOrder.add(new OrderedBean(bean, getSortOrder(bean, BeanDefinition.DEFAULT_SORT_ORDER)));
                 }
             } else {
                 Map<T, BeanDefinition> bds = getBeansWithDefinition(type);
@@ -695,10 +698,11 @@ public class BeanContainer implements BeanFactory {
 
                     if (hasQualifier) {
                         if (null == qualifier || bd.getQualifiers().contains(qualifier)) {
-                            beans.add(entry.getKey());
+                            //beans.add(entry.getKey());
+                            beansWithOrder.add(new OrderedBean<>(entry.getKey(), entry.getValue().getSortOrder()));
                         }
                     } else {
-                        beans.add(entry.getKey());
+                        beansWithOrder.add(new OrderedBean<>(entry.getKey(), entry.getValue().getSortOrder()));
                     }
                 }
             }
@@ -707,18 +711,65 @@ public class BeanContainer implements BeanFactory {
                 List<T> list = (List<T>) support.getBeans(type);
                 if (null != list) {
                     for (T t : list) {
-                        if (!beans.contains(t)) {
-                            beans.add(t);
+                        if (!contains(beansWithOrder,t)) {
+                            beansWithOrder.add(new OrderedBean<>(t, getSortOrder(t, BeanDefinition.DEFAULT_SORT_ORDER)));
                         }
                     }
                 }
             }
 
+            Collections.sort(beansWithOrder, (o1, o2) -> o1.order.doubleValue() >= o2.order.doubleValue() ? 1 : -1);
+            for(OrderedBean<T> ob : beansWithOrder) {
+                beans.add(ob.bean);
+            }
             if (cache) {
                 typedBeansMap.put(key, beans);
             }
         }
         return beans;
+    }
+
+    protected Number getSortOrder(Object bean, Number defaultOrder) {
+        if(bean instanceof Ordered) {
+            return ((Ordered) bean).getSortOrder();
+        }
+
+        Annotation order = bean.getClass().getAnnotation(Order.class);
+        if(null != order) {
+            return ((Order) order).value();
+        }
+
+        for(Annotation a : bean.getClass().getAnnotations()) {
+            if(a.annotationType().getSimpleName().equals("Order")){
+                try {
+                    Method method = a.annotationType().getMethod("value");
+                    if(null != method && (Integer.TYPE == method.getReturnType() || Float.TYPE == method.getReturnType())){
+                        return (Number)method.invoke(a);
+                    }
+                }catch (Exception e) {
+                }
+            }
+        }
+
+        return defaultOrder;
+    }
+
+    protected <T> boolean contains(List<OrderedBean<T>> beans, Object bean) {
+        for(OrderedBean orderedBean : beans) {
+            if(orderedBean.bean == bean) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected static class OrderedBean<T> {
+        protected final T      bean;
+        protected final Number order;
+        public OrderedBean(T bean, Number order) {
+            this.bean = bean;
+            this.order = order;
+        }
     }
 
     @Override

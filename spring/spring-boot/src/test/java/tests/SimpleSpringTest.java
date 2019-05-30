@@ -75,6 +75,7 @@ public class SimpleSpringTest extends AbstractTest {
     public void testLeapInjectList() {
         List<ListType> beans = leapBean.getBeans();
         assertEquals(2, beans.size());
+        assertTrue(beans.get(0) instanceof SpringBean);
     }
 
     @Test

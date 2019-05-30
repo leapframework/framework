@@ -17,7 +17,9 @@ package app.beans;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.core.annotation.Order;
 
+@Order(0)
 public class SpringBean implements ListType{
 
     @Autowired
