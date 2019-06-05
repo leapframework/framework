@@ -21,6 +21,7 @@ import leap.web.Request;
 import leap.web.api.mvc.params.QueryOptions;
 import leap.web.api.mvc.params.QueryOptionsBase;
 import leap.web.api.remote.json.TypeReference;
+import leap.web.exception.UnauthorizedException;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -108,6 +109,9 @@ public abstract class AbstractRestResource implements RestResource {
         HttpResponse response = request.send();
         if (response.getStatus() == HTTP.SC_UNAUTHORIZED && at != null) {
             at = tokenFetcher.refreshAccessToken(at);
+            if(null == at) {
+                throw new RestResourceInvokeException(response);
+            }
             request.setHeader(Headers.AUTHORIZATION, OAuth2Constants.BEARER + " " + at.getToken());
             response = request.send();
         }
