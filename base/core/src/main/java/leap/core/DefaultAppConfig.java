@@ -105,6 +105,9 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     }
 
     protected void loadProperty(String name, String value) {
+        if(null == value) {
+            return;
+        }
 
         //array property
         if(name.endsWith("[]")) {
