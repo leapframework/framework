@@ -21,6 +21,7 @@ import leap.lang.Strings;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.path.Paths;
+import leap.lang.reflect.Reflection;
 import leap.lang.resource.Resource;
 import leap.lang.resource.Resources;
 import org.springframework.boot.SpringApplication;
@@ -35,6 +36,7 @@ import org.springframework.core.env.PropertySource;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -109,8 +111,17 @@ public class SpringEnvPostProcessor implements EnvironmentPostProcessor {
             }
         }
 
-        PropertySource propertySource =
-                loader.load(resource.getDescription(), new SpringResource(resource), null);
+        PropertySource propertySource;
+        Method         load = Reflection.getMethod(loader.getClass(), "load");
+        try {
+            if (SpringBootUtils.is1x()) {
+                propertySource = (PropertySource) load.invoke(loader, resource.getDescription(), new SpringResource(resource), null);
+            } else {
+                propertySource = (PropertySource) load.invoke(loader, resource.getDescription(), new SpringResource(resource));
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
 
         if (null == propertySource) {
             return;

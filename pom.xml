@@ -423,6 +423,7 @@
         <module>spring/spring-boot</module>
         <module>spring/spring-boot-orm</module>
         <module>spring/spring-boot-web</module>
+		<module>spring/test-spring-boot2</module>
         <module>spring/test-spring-boot-orm</module>
         <module>spring/test-spring-boot-web</module>
 		<module>spring/test-spring-boot-webapp</module>

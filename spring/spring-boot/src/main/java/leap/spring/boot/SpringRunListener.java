@@ -111,8 +111,13 @@ public class SpringRunListener implements SpringApplicationRunListener {
         Global.context = context;
     }
 
-    @Override
+    //spring-boot 1.5
     public void finished(ConfigurableApplicationContext context, Throwable exception) {}
+
+    //spring-boot 2.0
+    public void started(ConfigurableApplicationContext context) { }
+    public void running(ConfigurableApplicationContext context) { }
+    public void failed(ConfigurableApplicationContext context, Throwable exception) {}
 
     private static void addBasePackages(Set<String> bps, EntityScan a) {
         if(null == a) {
