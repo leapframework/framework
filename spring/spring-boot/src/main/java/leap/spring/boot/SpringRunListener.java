@@ -24,6 +24,7 @@ import leap.lang.Strings;
 import leap.lang.extension.ExProperties;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.lang.reflect.Reflection;
 import leap.lang.resource.Resource;
 import leap.lang.resource.Resources;
 import org.springframework.boot.SpringApplication;
@@ -45,8 +46,15 @@ public class SpringRunListener implements SpringApplicationRunListener {
 
         Set<String> bps = new LinkedHashSet<>();
 
-        if(application.getSources().size() == 1) {
-            Object source = application.getSources().iterator().next();
+        final Set<Object> sources;
+        if(SpringBootUtils.is1x()) {
+            sources = application.getSources();
+        }else {
+            sources = (Set)Reflection.invokeMethod(Reflection.getMethod(SpringApplication.class, "getAllSources"),
+                                                    application);
+        }
+        if(sources.size() == 1) {
+            Object source = sources.iterator().next();
             if(source instanceof Class) {
                 Class<?> c = (Class)source;
                 Global.bp = Classes.getPackageName(c);

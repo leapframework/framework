@@ -28,11 +28,6 @@ public class Application {
     }
 
     @Bean
-    public HomeController homeController() {
-        return new HomeController();
-    }
-
-    @Bean
     public TestFilter testFilter() {
         return new TestFilter();
     }
