@@ -117,7 +117,11 @@ public class SpringEnvPostProcessor implements EnvironmentPostProcessor {
             if (SpringBootUtils.is1x()) {
                 propertySource = (PropertySource) load.invoke(loader, resource.getDescription(), new SpringResource(resource), null);
             } else {
-                propertySource = (PropertySource) load.invoke(loader, resource.getDescription(), new SpringResource(resource));
+                List<PropertySource> list = (List<PropertySource>) load.invoke(loader, resource.getDescription(), new SpringResource(resource));
+                if(null != list && list.size() > 1) {
+                    log.error("Load multi {} property sources, must be zero or one", list.size());
+                }
+                propertySource = null == list || list.isEmpty() ? null : list.get(0);
             }
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
