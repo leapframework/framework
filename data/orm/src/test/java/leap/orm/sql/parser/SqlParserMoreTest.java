@@ -118,7 +118,18 @@ public class SqlParserMoreTest extends SqlParserTestCase {
         SqlObjectName when = sql.findFirstNode(SqlObjectName.class);
         assertEquals("when", when.getLastName());
     }
-	
+
+	@Test
+	public void testSelectItem() {
+		Sql sql = sql("select count(*) from t");
+		SqlSelect select = sql.findFirstNode(SqlSelect.class);
+		assertEquals(1, select.getSelectList().getNodes().length);
+
+		sql = sql("select count(1) a from t");
+		select = sql.findFirstNode(SqlSelect.class);
+		assertTrue(select.getSelectItemAliases().containsKey("a"));
+	}
+
 	@Test
 	@Contextual
 	public void testBug(){

@@ -230,13 +230,17 @@ class SqlSelectParser extends SqlQueryParser {
 			acceptNode(new SqlAllColumns());
 			return;
 		}
-		
+
 		if(parseSpecialToken()){
 			parseSelectItemAlias(select);
 			return;
 		}
 
-		if(lexer.token() == Token.LPAREN){
+		//todo: hard code count(..)
+		if(lexer.token() == Token.COUNT && lexer.peekCharSkipWhitespaces() == '(') {
+			acceptText();
+			new SqlExprParser(this).parseExpr();
+		}else if(lexer.token() == Token.LPAREN){
 			acceptText();
  			while(lexer.token() != Token.RPAREN && lexer.token() != Token.FROM){
 				//select item : subquery

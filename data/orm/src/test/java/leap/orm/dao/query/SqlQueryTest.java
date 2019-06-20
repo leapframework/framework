@@ -37,4 +37,9 @@ public class SqlQueryTest extends OrmTestCase {
         assertEquals("a", record.getString("myFirstName"));
     }
 
+    @Test
+    @Contextual("h2")
+    public void testCountQueryWithCountColumn() {
+        dao.createSqlQuery("select count(*) from TestCountColumn").scalar().getInteger();
+    }
 }
