@@ -1275,6 +1275,10 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                             //todo: check env is valid or allowed?
                             String valueExpr = "#{env." + envName + "}";
                             applyFieldFilterExpr(expr, alias, modelAndProp.field, valueExpr, sqlOperator);
+                        }else if(value.startsWith("env.")) {
+                            //todo: check env is valid or allowed?
+                            String valueExpr = "#{" + value + "}";
+                            applyFieldFilterExpr(expr, alias, modelAndProp.field, valueExpr, sqlOperator);
                         } else {
                             applyFieldFilter(expr, alias, modelAndProp.field, value, sqlOperator);
                         }
