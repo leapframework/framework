@@ -50,7 +50,7 @@ public abstract class AbstractJwtSigner extends AbstractTokenSigner implements J
 		}
 		
 		//Set expiration time.
-		if(!claims.containsKey(JWT.CLAIM_EXPIRATION_TIME)) {
+		if((expiresInSecond == null || expiresInSecond != -1) && !claims.containsKey(JWT.CLAIM_EXPIRATION_TIME)) {
 			claims.put(JWT.CLAIM_EXPIRATION_TIME, getExpirationTimeInSecond(expiresInSecond));
 		}
 		
