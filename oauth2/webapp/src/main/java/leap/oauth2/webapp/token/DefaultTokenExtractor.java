@@ -16,6 +16,7 @@
 package leap.oauth2.webapp.token;
 
 import leap.lang.Strings;
+import leap.lang.codec.Base64;
 import leap.lang.http.Headers;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -80,6 +81,15 @@ public class DefaultTokenExtractor implements TokenExtractor {
 					authHeaderValue = authHeaderValue.substring(0, commaIndex);
 				}
 				return authHeaderValue;
+			}else if(value.startsWith("Basic ")) {
+				String usernameAndPassword = Base64.decode(value.substring(6));
+				int index = usernameAndPassword.indexOf(':');
+				if(index > 0) {
+					String username = usernameAndPassword.substring(0, index);
+					if(username.equals("oauth2")) {
+						return usernameAndPassword.substring(index+1);
+					}
+				}
 			}
 		}
 
