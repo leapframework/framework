@@ -36,6 +36,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.Environment;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import javax.servlet.*;
@@ -115,6 +116,12 @@ public class WebConfiguration {
             public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
                 converters.add(0, new JsonMessageConverter());
                 super.extendMessageConverters(converters);
+            }
+
+            @Override
+            public void addInterceptors(InterceptorRegistry registry) {
+                registry.addInterceptor(new SpringRequestInterceptor());
+                super.addInterceptors(registry);
             }
         };
     }

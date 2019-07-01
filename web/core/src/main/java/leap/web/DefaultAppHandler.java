@@ -75,7 +75,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 
     protected LocaleResolver localeResolver;
     protected int maxExecutionCount = 10;
-    
+
     protected ServerInfo serverInfo;
 
     @Override
@@ -86,13 +86,15 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 
     @Override
     public void prepareRequest(final Request request, final Response response) throws Throwable {
+        request.getServletRequest().setAttribute(Request.class.getName(), request);
+
         //debug
         debugDetector.detectDebugStatus(request);
-        
+
         if(null == serverInfo){
             initServerInfoAndNotifyListener(request,response);
         }
-        
+
         //set locale
         if (null != localeResolver) {
             request.setLocale(localeResolver.resolveLocale(request));
@@ -239,6 +241,10 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
                                 handled = true;
                             } else {
                                 handled = handleNoAction(request, response, router, path);
+                            }
+
+                            if(handled) {
+                                webConfig.getCorsHandler().postHandle(request, response);
                             }
                         } else {
                             return false;
@@ -455,7 +461,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
                     //TODO : https only exception.
                     throw new BadRequestException("The request must be https");
                 }
-                
+
                 // handle cors request.
                 // support multipart cors
                 if (route.isCorsEnabled() || (webConfig.isCorsEnabled() && !route.isCorsDisabled())) {
@@ -464,7 +470,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
                         return ROUTE_STATE_HANDLED;
                     }
                 }
-                
+
                 if (route.supportsMultipart() && request.isMultipart()) {
                     log.debug("Found multipart request and action");
                     MultipartContext.setMultipartAction(request.getServletRequest(), ac);
