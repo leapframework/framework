@@ -48,6 +48,7 @@ class DefaultRoute extends ExtensibleBase implements Sourced, Route {
     protected Action           action;
     protected Integer          successStatus;
     protected Boolean          corsEnabled;
+    protected String[]         corsExposeHeaders;
     protected Boolean          csrfEnabled;
     protected Boolean          supportsMultipart;
     protected boolean          acceptValidationError;
@@ -254,6 +255,16 @@ class DefaultRoute extends ExtensibleBase implements Sourced, Route {
 		if(null != enabled) {
 			corsEnabled = enabled;
 		}
+    }
+
+    @Override
+    public String[] getCorsExposeHeaders() {
+        return corsExposeHeaders;
+    }
+
+    @Override
+    public void setCorsExposeHeaders(String... headers) {
+        corsExposeHeaders = headers;
     }
 	
 	@Override

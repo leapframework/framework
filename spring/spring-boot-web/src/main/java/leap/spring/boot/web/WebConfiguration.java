@@ -120,7 +120,7 @@ public class WebConfiguration {
 
             @Override
             public void addInterceptors(InterceptorRegistry registry) {
-                registry.addInterceptor(new SpringRequestInterceptor());
+                //todo: registry.addInterceptor(new SpringRequestInterceptor());
                 super.addInterceptors(registry);
             }
         };

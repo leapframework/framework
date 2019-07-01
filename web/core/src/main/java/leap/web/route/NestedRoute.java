@@ -82,6 +82,16 @@ public interface NestedRoute extends Route {
     }
 
     @Override
+    default String[] getCorsExposeHeaders() {
+        return null;
+    }
+
+    @Override
+    default void setCorsExposeHeaders(String... headers) {
+
+    }
+
+    @Override
     default RequestFormat getRequestFormat() {
         return null;
     }

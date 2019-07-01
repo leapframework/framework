@@ -16,8 +16,6 @@
 
 package leap.spring.boot.web;
 
-import leap.web.Request;
-import leap.web.cors.CorsHandler;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
@@ -27,16 +25,8 @@ import javax.servlet.http.HttpServletResponse;
 public class SpringRequestInterceptor extends HandlerInterceptorAdapter {
 
     @Override
-    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
-        Request req = (Request) request.getAttribute(Request.class.getName());
-        if (null == req) {
-            return;
-        }
+    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView mv) throws Exception {
 
-        //handle cors
-        if(null == response.getHeader(CorsHandler.RESPONSE_HEADER_ACCESS_CONTROL_EXPOSE_HEADERS)) {
-            req.app().getWebConfig().getCorsHandler().postHandle(req, req.response());
-        }
     }
 
 }

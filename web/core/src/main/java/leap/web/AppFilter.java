@@ -28,6 +28,7 @@ import leap.lang.logging.LogFactory;
 import leap.lang.servlet.Servlets;
 import leap.web.assets.AssetHandler;
 import leap.web.config.WebConfig;
+import leap.web.cors.CorsServletResponseWrapper;
 import leap.web.exception.ResponseException;
 
 import javax.servlet.Filter;
@@ -114,8 +115,10 @@ public class AppFilter implements Filter {
         }
 
         final RequestWrapper requestWrapper = req instanceof RequestWrapper ? (RequestWrapper)req : new RequestWrapper(httpReq);
+        final CorsServletResponseWrapper responseWrapper = resp instanceof CorsServletResponseWrapper ?
+				(CorsServletResponseWrapper)resp : new CorsServletResponseWrapper((HttpServletResponse)resp);
 
-		final DefaultResponse response = createResponse((HttpServletResponse)resp);
+		final DefaultResponse response = createResponse(responseWrapper);
 		final DefaultRequest  request  = createRequest(requestWrapper, response);
 		
 		response.setRequest(request);

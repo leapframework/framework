@@ -16,37 +16,37 @@
 package leap.web.cors;
 
 public interface CorsConfig {
-	
-	String CONFIX_PREFIX = "webmvc.cors";
 
-	boolean isAllowAnyOrigin();
+    String CONFIG_PREFIX = "webmvc.cors";
 
-	boolean isAllowAnyMethod();
+    boolean isAllowAnyOrigin();
 
-	boolean isAllowAnyHeader();
+    boolean isAllowAnyMethod();
 
-	String[] getAllowedOrigins();
+    boolean isAllowAnyHeader();
 
-	String[] getAllowedMethods();
+    String[] getAllowedOrigins();
 
-	String[] getAllowedHeaders();
+    String[] getAllowedMethods();
 
-	String[] getExposedHeaders();
+    String[] getAllowedHeaders();
 
-	boolean isSupportsCredentials();
+    String[] getExposedHeaders();
 
-	int getPreflightMaxAge();
+    boolean isSupportsCredentials();
 
-	boolean isOriginAllowed(String origin);
+    int getPreflightMaxAge();
 
-	boolean isMethodAllowed(String method);
+    boolean isOriginAllowed(String origin);
 
-	boolean isHeaderAllowedIgnoreCase(String header);
+    boolean isMethodAllowed(String method);
+
+    boolean isHeaderAllowedIgnoreCase(String header);
 
     boolean isExposeAnyHeaders();
 
-	boolean hasExposedHeaders();
+    boolean hasExposedHeaders();
 
-	String getExposedHeadersValue();
+    String getExposedHeadersValue();
 
 }

@@ -197,11 +197,16 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
                     router = new SimpleRouter(app.routes(), null);
                 }
                 DefaultActionContext ac = newActionContext(request, response);
+
                 //resolve action path
                 String path = resolveActionPath(request, response, router, ac);
+
                 // resolve route
                 Route route = resolveRoute(request,response,router,ac);
-                ac.setRoute(route);
+                if(null != route) {
+                    ac.setRoute(route);
+                    request.setActionContext(ac);
+                }
 
                 //handle by interceptors
                 handled = State.isIntercepted(interceptors.preHandleRequest(request, response,ac));
@@ -642,8 +647,6 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 
     protected void executeAndRenderAction(Request request, Response response, ActionContext ac,
                                           Result result) throws Throwable {
-        request.setActionContext(ac);
-
         if (result.increaseAndGetExecutionCount() > maxExecutionCount) {
             throw new ResultException("Max execution count " + maxExecutionCount + " reached, may be cyclic executing");
         }

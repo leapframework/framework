@@ -21,6 +21,8 @@ import leap.web.Response;
 
 public interface CorsHandler {
 
+    String REQUEST_ATTRIBUTE_EXPOSE_HEADERS = CorsHandler.class.getName() + "$EXPOSE_HEADERS";
+
 	String REQUEST_HEADER_ORIGIN 						 = "Origin";
     String REQUEST_HEADER_ACCESS_CONTROL_REQUEST_METHOD  = "Access-Control-Request-Method";
     String REQUEST_HEADER_ACCESS_CONTROL_REQUEST_HEADERS = "Access-Control-Request-Headers";    
@@ -45,5 +47,8 @@ public interface CorsHandler {
     /**
      * Post handles the request.
      */
-    void postHandle(Request request, Response response);
+    @Deprecated
+    default void postHandle(Request request, Response response) {
+
+    }
 }

@@ -1,6 +1,7 @@
 package leap.web.route;
 
 import leap.core.security.SimpleSecurity;
+import leap.lang.Arrays2;
 import leap.lang.Extensible;
 import leap.lang.Sourced;
 import leap.web.action.FailureHandler;
@@ -172,6 +173,23 @@ public interface Route extends RouteBase, Sourced, Extensible {
 	 * Do nothing if <code>null</code>.
 	 */
 	void setCorsEnabled(Boolean enabled);
+
+	/**
+	 * Returns the names of header {@link leap.web.cors.CorsHandler#RESPONSE_HEADER_ACCESS_CONTROL_EXPOSE_HEADERS}.
+	 */
+	String[] getCorsExposeHeaders();
+
+	/**
+	 * Set the names of header {@link leap.web.cors.CorsHandler#RESPONSE_HEADER_ACCESS_CONTROL_EXPOSE_HEADERS}.
+	 */
+	void setCorsExposeHeaders(String... headers);
+
+	/**
+	 * Add the names of header {@link leap.web.cors.CorsHandler#RESPONSE_HEADER_ACCESS_CONTROL_EXPOSE_HEADERS}.
+	 */
+	default void addCorsExposeHeaders(String... headers) {
+		setCorsExposeHeaders(Arrays2.concat(getCorsExposeHeaders(), headers));
+	}
 	
 	/**
 	 * Sets the <code>supportMultipart</code> property.

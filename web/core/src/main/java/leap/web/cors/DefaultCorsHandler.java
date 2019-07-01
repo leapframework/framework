@@ -21,7 +21,12 @@ import leap.lang.http.HTTP;
 import leap.lang.intercepting.State;
 import leap.web.Request;
 import leap.web.Response;
+import leap.web.action.ActionContext;
 
+import javax.servlet.ServletResponse;
+import javax.servlet.ServletResponseWrapper;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -30,10 +35,8 @@ import java.util.Set;
  */
 public class DefaultCorsHandler implements CorsHandler {
 
-    private static final String EXPOSE_ANY_HEADERS_ATTR = CorsHandler.class.getName() + "$EXPOSE_ANY_HEADERS";
-
-    private static final Set<String> CORS_RESPONSE_HEADERS   = new HashSet<>();
-    private static final Set<String> SIMPLE_RESPONSE_HEADERS = new HashSet<>();
+    static final Set<String> CORS_RESPONSE_HEADERS   = new HashSet<>();
+    static final Set<String> SIMPLE_RESPONSE_HEADERS = new HashSet<>();
     static {
         CORS_RESPONSE_HEADERS.add(RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_CREDENTIALS);
         CORS_RESPONSE_HEADERS.add(RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_HEADERS);
@@ -78,30 +81,6 @@ public class DefaultCorsHandler implements CorsHandler {
 		return doProcess(request, response, conf, request.getHeader(REQUEST_HEADER_ORIGIN));
 	}
 
-    @Override
-    public void postHandle(Request request, Response response) {
-        if(null != request.getAttribute(EXPOSE_ANY_HEADERS_ATTR)) {
-            StringBuilder exposeHeaders = new StringBuilder();
-
-            for(String header : response.getHeaderNames()) {
-                if(CORS_RESPONSE_HEADERS.contains(header)) {
-                    continue;
-                }
-                if(SIMPLE_RESPONSE_HEADERS.contains(header.toLowerCase())){
-                    continue;
-                }
-
-                if(exposeHeaders.length() > 0) {
-                    exposeHeaders.append(',');
-                }
-
-                exposeHeaders.append(header);
-            }
-
-            response.setHeader(RESPONSE_HEADER_ACCESS_CONTROL_EXPOSE_HEADERS, exposeHeaders.toString());
-        }
-    }
-
     protected State doProcess(Request request, Response response, CorsConfig conf, String origin) throws Throwable {
 		//HTTP method
 		String method = request.getRawMethod();
@@ -141,13 +120,50 @@ public class DefaultCorsHandler implements CorsHandler {
 		 	If the list of exposed headers is not empty add one or more Access-Control-Expose-Headers headers, 
 		 	with as values the header field names given in the list of exposed headers.
 		 */
-        if(conf.isExposeAnyHeaders()) {
-            request.setAttribute(EXPOSE_ANY_HEADERS_ATTR, Boolean.TRUE);
-        }else if(conf.hasExposedHeaders()) {
-			response.addHeader(RESPONSE_HEADER_ACCESS_CONTROL_EXPOSE_HEADERS, conf.getExposedHeadersValue());
+		String exposeHeadersValue = getExposeHeadersValue(request);
+		if(!Strings.isEmpty(exposeHeadersValue)) {
+			response.addHeader(RESPONSE_HEADER_ACCESS_CONTROL_EXPOSE_HEADERS, getExposeHeadersValue(request));
+		}else if(conf.isExposeAnyHeaders()) {
+			CorsServletResponseWrapper corsResponseWrapper =
+					getCorsServletResponseWrapper(response.getServletResponse());
+			if(null != corsResponseWrapper) {
+				corsResponseWrapper.setExposeAndHeaders(true);
+			}
 		}
-		
+
 		return State.CONTINUE;
+	}
+
+	protected CorsServletResponseWrapper getCorsServletResponseWrapper(ServletResponse response) {
+    	if(response instanceof CorsServletResponseWrapper) {
+    		return (CorsServletResponseWrapper)response;
+		}else if(response instanceof ServletResponseWrapper) {
+    		return getCorsServletResponseWrapper(((ServletResponseWrapper) response).getResponse());
+		}
+    	return null;
+	}
+
+	protected String getExposeHeadersValue(Request request) {
+		String requestExposeHeaders = Strings.join(getRequestExposeHeaders(request), ',');
+		String configExposeHeaders = conf.getExposedHeadersValue();
+
+		if(Strings.isEmpty(configExposeHeaders)) {
+			return requestExposeHeaders;
+		}else if(Strings.isEmpty(requestExposeHeaders)){
+			return configExposeHeaders;
+		}else {
+			return configExposeHeaders + "," + requestExposeHeaders;
+		}
+	}
+
+	protected String[] getRequestExposeHeaders(Request request) {
+		ActionContext actionContext = request.getActionContext();
+		if(null != actionContext && null != actionContext.getRoute()
+				&& null != actionContext.getRoute().getCorsExposeHeaders()) {
+			return actionContext.getRoute().getCorsExposeHeaders();
+		}
+
+		return (String[])request.getAttribute(CorsHandler.REQUEST_ATTRIBUTE_EXPOSE_HEADERS);
 	}
 	
 	protected State doProcessPreflight(Request request, Response response, CorsConfig conf, String origin, 

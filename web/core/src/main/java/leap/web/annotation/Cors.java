@@ -30,5 +30,15 @@ public @interface Cors {
 	 * Enables or Disables CORS.
 	 */
 	boolean value() default true;
-	
+
+	/**
+	 * Same as {@link #value()}.
+	 */
+	boolean enabled() default true;
+
+	/**
+	 * Expose header names.
+	 */
+	String[] exposeHeaders() default {};
+
 }

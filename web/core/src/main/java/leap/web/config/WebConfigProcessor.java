@@ -173,7 +173,7 @@ public class WebConfigProcessor implements AppConfigProcessor {
 				String name  = attrs.next();
 				String value = reader.resolveAttribute(name);
 				
-				context.putProperty(WebConfigProcessor.class, CorsConfig.CONFIX_PREFIX + "." + name, value);
+				context.putProperty(WebConfigProcessor.class, CorsConfig.CONFIG_PREFIX + "." + name, value);
 			}while(attrs.hasNext());
 		}
 	}

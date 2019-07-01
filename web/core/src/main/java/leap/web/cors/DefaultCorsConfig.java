@@ -21,7 +21,7 @@ import leap.lang.Arrays2;
 import leap.lang.Strings;
 
 
-@Configurable(prefix=CorsConfig.CONFIX_PREFIX)
+@Configurable(prefix=CorsConfig.CONFIG_PREFIX)
 public class DefaultCorsConfig implements CorsConfig, CorsConfigurator {
 	public static final String CONF_ALLOWED_ORIGINS      = "allowed-origins";
 	public static final String CONF_ALLOWED_METHODS      = "allowed-methods";
