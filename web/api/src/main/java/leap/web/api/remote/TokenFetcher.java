@@ -37,6 +37,10 @@ public class TokenFetcher extends DefaultCodeVerifier {
             return null;
         }
 
+        if(null == config.getTokenUrl()) {
+            return null;
+        }
+
         if (null == clientAccessToken) {
             newClientAccessToken();
         } else if (clientAccessToken.isExpired()) {

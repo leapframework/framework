@@ -402,6 +402,9 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         opts.setLimit(ac.getMaxRecordsPerExpand() + 1);
 
         RestResource resource = restResourceFactory.createResource(dao.getOrmContext(), expand.tem);
+        if(expand.tem.getRemoteSettings().isExpandCanNewAccessToken()) {
+            resource.setCanNewAccessToken(true);
+        }
 
         //根据不同类型的关系，计算引用的源字段、被引用字段
         String localFieldName;
@@ -629,6 +632,9 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         String        idFieldName = targetEm.getKeyFieldNames()[0];
 
         RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), targetEm);
+        if(targetEm.getRemoteSettings().isExpandCanNewAccessToken()) {
+            restResource.setCanNewAccessToken(true);
+        }
 
         List<Map> totalExpanded = new ArrayList<>();
         for (List<Object> partOfIds : split(ids, 50)) {

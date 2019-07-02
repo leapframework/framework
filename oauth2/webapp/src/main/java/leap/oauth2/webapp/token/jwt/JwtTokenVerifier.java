@@ -91,6 +91,12 @@ public class JwtTokenVerifier implements TokenVerifier {
         tokenInfo.setScope((String)jwtDetail.get("scope"));
         tokenInfo.setClientId((String)jwtDetail.get("client_id"));
 
+        /* todo:
+        if(Strings.isEmpty(tokenInfo.getClientId())) {
+            tokenInfo.setClientId((String)jwtDetail.get(JWT.CLAIM_AUDIENCE));
+        }
+        */
+
         tokenInfo.setCreated(System.currentTimeMillis());
         Object exp = jwtDetail.get(JWT.CLAIM_EXPIRATION_TIME);
         if (null != exp && exp instanceof Number) {
