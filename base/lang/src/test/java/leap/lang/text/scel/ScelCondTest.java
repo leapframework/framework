@@ -72,6 +72,12 @@ public class ScelCondTest extends TestBase {
 
         expr = ScelParser.parse("a in ('1','2')");
         assertEquals("a in ('1','2')", expr.toString());
+
+        expr = ScelParser.parse("a not in (1,2)");
+        assertEquals("a not in (1,2)", expr.toString());
+
+        expr = ScelParser.parse("a not in ('1','2')");
+        assertEquals("a not in ('1','2')", expr.toString());
     }
 
     @Test

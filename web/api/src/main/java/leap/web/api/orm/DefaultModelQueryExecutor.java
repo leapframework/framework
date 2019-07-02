@@ -1283,8 +1283,8 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                         }
 
                         //env
-                        if (op == ScelToken.IN) {
-                            applyFieldFilterIn(expr, alias, modelAndProp.field, nodes[i].values());
+                        if (op == ScelToken.IN || op == ScelToken.NOT_IN) {
+                            applyFieldFilterIn(expr, alias, modelAndProp.field, nodes[i].values(), sqlOperator);
                         } else if (value.endsWith("()") && value.length() > 2) {
                             String envName = value.substring(0, value.length() - 2);
                             //todo: check env is valid or allowed?
@@ -1380,8 +1380,8 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         expr.arg(Converts.convert(values, Array.newInstance(((FieldMapping) fm).getJavaType(), 0).getClass()));
     }
 
-    protected void applyFieldFilterIn(WhereBuilder.Expr expr, String alias, FieldMapping fm, List<ScelNode> values) {
-        expr.append(alias).append('.').append(fm.getFieldName()).append(' ').append("in").append(" ?");
+    protected void applyFieldFilterIn(WhereBuilder.Expr expr, String alias, FieldMapping fm, List<ScelNode> values, String sqlOperator) {
+        expr.append(alias).append('.').append(fm.getFieldName()).append(' ').append(sqlOperator).append(" ?");
 
         final Class<?> type = ((FieldMapping) fm).getJavaType();
 
@@ -1430,6 +1430,10 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
         if (op == ScelToken.IN) {
             return "in";
+        }
+
+        if (op == ScelToken.NOT_IN) {
+            return "not in";
         }
 
         if (op == ScelToken.LIKE || op == ScelToken.CO || op == ScelToken.SW || op == ScelToken.EW) {

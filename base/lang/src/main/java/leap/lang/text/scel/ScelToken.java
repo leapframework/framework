@@ -26,6 +26,7 @@ public enum ScelToken {
 
     LIKE,
     IN,
+    NOT_IN,
     EQ,
     GT,
     LT,

@@ -174,12 +174,17 @@ public class ScelParser extends AbstractStringParser {
         }
 
         if (token == ScelToken.NOT) {
-            nodes.add(new ScelNode(ScelToken.IS_NOT, op));
             String s = nextLiteral();
-            if (!s.equalsIgnoreCase("null")) {
-                error("Expected 'null' but '" + s + "'");
+            if (OPS.get(s.toUpperCase()) == ScelToken.IN) {
+                nodes.add(new ScelNode(ScelToken.NOT_IN, op + " " + s));
+                scanInValue();
+            } else {
+                nodes.add(new ScelNode(ScelToken.IS_NOT, op));
+                if (!s.equalsIgnoreCase("null")) {
+                    error("Expected 'null' but '" + s + "'");
+                }
+                nodes.add(new ScelNode(ScelToken.NULL, s));
             }
-            nodes.add(new ScelNode(ScelToken.NULL, s));
             return false;
         } else if (token == ScelToken.IS) {
             String s = nextLiteral();
