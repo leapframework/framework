@@ -48,6 +48,7 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
     protected boolean             remote;
     protected RemoteSettings      remoteSettings;
     protected Map<String, String> groupByExprs = new SimpleCaseInsensitiveMap<>();
+    protected Map<String, String> selectExprs = new SimpleCaseInsensitiveMap<>();
 
     protected List<FieldMappingBuilder>     fieldMappings      = new ArrayList<>();
     protected EntityExecutionInterceptor    insertInterceptor;
@@ -297,6 +298,18 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
 
     public void setGroupByExprs(Map<String, String> groupByExprs) {
         this.groupByExprs = groupByExprs;
+    }
+
+    public void addSelectExpr(String name, String expr) {
+        selectExprs.put(name, expr);
+    }
+
+    public Map<String, String> getSelectExprs() {
+        return selectExprs;
+    }
+
+    public void setSelectExprs(Map<String, String> selectExprs) {
+        this.selectExprs = selectExprs;
     }
 
     public boolean mayBeJoinEntityOf(EntityMappingBuilder e1, EntityMappingBuilder e2) {
@@ -614,7 +627,7 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
                         Builders.buildArray(relationProperties, new RelationProperty[0]),
                         autoCreateTable, queryFilterEnabled == null ? false : queryFilterEnabled,
                         autoValidate,
-                        remote, remoteSettings, groupByExprs,
+                        remote, remoteSettings, groupByExprs, selectExprs,
                         listeners.build());
 
         em.getExtensions().putAll(extensions);

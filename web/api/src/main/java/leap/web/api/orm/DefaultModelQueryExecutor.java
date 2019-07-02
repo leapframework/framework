@@ -985,17 +985,26 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                         }
                         continue;
                     } else {
-                        MApiProperty p = am.tryGetProperty(selectItem.name());
-                        if (null == p) {
-                            throw new BadRequestException("Property '" + selectItem.name() + "' not exists, check the 'select' query param");
-                        }
-                        if (!p.isSelectableExplicitly()) {
-                            throw new BadRequestException("Property '" + selectItem.name() + "' is not selectable");
-                        }
-                        if (Strings.isEmpty(selectItem.alias())) {
-                            items.add(p.getName());
+                        String expr = em.getSelectExprs().get(selectItem.name());
+                        if (null != expr) {
+                            if (Strings.isEmpty(selectItem.alias())) {
+                                items.add("(" + expr + ") as " + selectItem.name());
+                            } else {
+                                items.add("(" + expr + ") as " + selectItem.alias());
+                            }
                         } else {
-                            items.add(p.getName() + " as " + selectItem.alias());
+                            MApiProperty p = am.tryGetProperty(selectItem.name());
+                            if (null == p) {
+                                throw new BadRequestException("Property '" + selectItem.name() + "' not exists, check the 'select' query param");
+                            }
+                            if (!p.isSelectableExplicitly()) {
+                                throw new BadRequestException("Property '" + selectItem.name() + "' is not selectable");
+                            }
+                            if (Strings.isEmpty(selectItem.alias())) {
+                                items.add(p.getName());
+                            } else {
+                                items.add(p.getName() + " as " + selectItem.alias());
+                            }
                         }
                     }
                 } else if (Strings.isNotEmpty(selectItem.joinAlias())) {
