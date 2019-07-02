@@ -14,6 +14,19 @@ import java.util.stream.Collectors;
 public interface RestResource {
 
     /**
+     * Sets can create new access token if no token found.
+     */
+    void setCanNewAccessToken(boolean b);
+
+    /**
+     * Returns <code>true</code> if can new access token if no token found.
+     *
+     * <p/>
+     * Default is <code>false</code>.
+     */
+    boolean isCanNewAccessToken();
+
+    /**
      * Creates a record for remote resource.
      */
     <T> T insert(Class<T> resultClass, Object obj);

@@ -38,8 +38,19 @@ public abstract class AbstractRestResource implements RestResource {
     protected @Inject HttpClient   httpClient;
     protected @Inject TokenFetcher tokenFetcher;
 
+    private boolean canNewAccessToken;
     private Consumer<HttpRequest>  preSendHandler;
     private Consumer<HttpResponse> postSendHandler;
+
+    @Override
+    public boolean isCanNewAccessToken() {
+        return canNewAccessToken;
+    }
+
+    @Override
+    public void setCanNewAccessToken(boolean canNewAccessToken) {
+        this.canNewAccessToken = canNewAccessToken;
+    }
 
     public void setHttpClient(HttpClient httpClient) {
         this.httpClient = httpClient;
@@ -72,7 +83,7 @@ public abstract class AbstractRestResource implements RestResource {
         if (request == null) {
             return null;
         }
-        AccessToken at = tokenFetcher.getAccessToken(request);
+        AccessToken at = tokenFetcher.getAccessToken(request, canNewAccessToken);
         return at;
     }
 

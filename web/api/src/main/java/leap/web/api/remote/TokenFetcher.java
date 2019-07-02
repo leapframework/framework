@@ -11,36 +11,68 @@ import leap.oauth2.webapp.token.TokenExtractor;
 import leap.oauth2.webapp.token.at.AccessToken;
 import leap.oauth2.webapp.token.at.SimpleAccessToken;
 import leap.web.Request;
-import net.jodah.expiringmap.ExpiringMap;
-
-import java.util.concurrent.TimeUnit;
 
 public class TokenFetcher extends DefaultCodeVerifier {
 
     @Inject
     protected TokenExtractor tokenExtractor;
 
-    final static ExpiringMap<String, MappedAccessToken> tokenMappings =
-            ExpiringMap.builder().maxSize(5000).expiration(10, TimeUnit.HOURS).build();
+    //    final static ExpiringMap<String, MappedAccessToken> tokenMappings =
+    //            ExpiringMap.builder().maxSize(5000).expiration(10, TimeUnit.HOURS).build();
 
-    public AccessToken getAccessToken(Request request) {
+    private volatile AccessToken clientAccessToken;
+
+    public AccessToken getAccessToken(Request request, boolean canNewAccessToken) {
         AccessToken at = TokenContext.getAccessToken();
         if (at != null) {
             return at;
         }
+
         Token token = tokenExtractor.extractTokenFromRequest(request);
-        if (token == null) {
+        if (token != null) {
+            return new SimpleAccessToken(token.getToken());
+        }
+
+        if (!canNewAccessToken) {
             return null;
         }
-        return new SimpleAccessToken(token.getToken());
 
-        /* todo: re-new access token use backend client credentials?
-        String clientAt = token.getToken();
-        at = mapToSelfToken(clientAt);
-        return at;
-        */
+        if (null == clientAccessToken) {
+            newClientAccessToken();
+        } else if (clientAccessToken.isExpired()) {
+            refreshAccessToken(clientAccessToken);
+        }
+        return clientAccessToken;
     }
 
+    private AccessToken newClientAccessToken() {
+        if (null == config.getTokenUrl()) {
+            throw new IllegalStateException("The tokenUrl must be configured");
+        }
+
+        HttpRequest request = httpClient.request(config.getTokenUrl())
+                .addQueryParam("grant_type", "client_credentials")
+                .setMethod(HTTP.Method.POST);
+
+        clientAccessToken = fetchAccessToken(request);
+        return clientAccessToken;
+    }
+
+    public AccessToken refreshAccessToken(AccessToken old) {
+        if (Strings.isEmpty(old.getRefreshToken())) {
+            return newClientAccessToken();
+        }
+
+        HttpRequest request = httpClient.request(config.getTokenUrl())
+                .addQueryParam("grant_type", "refresh_token")
+                .addQueryParam("refresh_token", old.getRefreshToken())
+                .setMethod(HTTP.Method.POST);
+
+        clientAccessToken = fetchAccessToken(request);
+        return clientAccessToken;
+    }
+
+    /*
     private MappedAccessToken mapToSelfToken(String clientAt) {
         MappedAccessToken token = tokenMappings.get(clientAt);
         if (token != null) {
@@ -97,5 +129,6 @@ public class TokenFetcher extends DefaultCodeVerifier {
         }
         return newAt;
     }
+    */
 
 }
