@@ -26,8 +26,9 @@ import leap.web.Response;
 
 import java.util.Map;
 
-public final class ApiError implements JsonStringable, Renderable {
+public class ApiError implements JsonStringable, Renderable {
     protected Integer             status;
+    protected String              source;
     protected String              code;
     protected String              error;
     protected String              message;
@@ -56,6 +57,7 @@ public final class ApiError implements JsonStringable, Renderable {
     public void toJson(JsonWriter w) {
         w.startObject()
                 .propertyOptional("status", status)
+                .propertyOptional("source", source)
                 .propertyOptional("code", code)
                 .property("error", Strings.isEmpty(error) ? "error" : error)
                 .property("message", message)
@@ -85,6 +87,14 @@ public final class ApiError implements JsonStringable, Renderable {
 
     public void setStatus(Integer status) {
         this.status = status;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
     }
 
     public String getCode() {
