@@ -20,6 +20,7 @@ import leap.lang.Args;
 import leap.lang.Arrays2;
 import leap.lang.New;
 import leap.lang.Strings;
+import leap.lang.convert.Converts;
 import leap.lang.json.JsonWriter;
 import leap.lang.meta.*;
 import leap.web.Request;
@@ -29,8 +30,8 @@ import leap.web.api.meta.model.*;
 import leap.web.api.meta.model.MApiParameter.Location;
 import leap.web.api.spec.ApiSpecContext;
 import leap.web.api.spec.JsonSpecWriter;
-
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import static leap.lang.Strings.nullToEmpty;
@@ -222,6 +223,31 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
             extension.getAttributes().forEach((name, value) -> {
                 if(null != value) {
                     w.property("x-" + name, value);
+                }
+            });
+        }
+    }
+
+    private void writeModelExtension(WriteContext context, ApiMetadata m, JsonWriter w, MApiExtension extension) {
+        if(null != extension) {
+            extension.getAttributes().forEach((name, value) -> {
+                if(null != value) {
+                    if (name.equals("relations")) {
+                        Map relations = Converts.convert(value, Map.class);
+                        if (!relations.isEmpty()) {
+                            w.property("x-relations", () -> {
+                                w.startObject();
+                                MApiProperty p;
+                                for (Object relation : relations.values()) {
+                                    p = Converts.convert(relation, MApiPropertyBuilder.class).build();
+                                    writeModelProperty(context, m, w, p);
+                                }
+                                w.endObject();
+                            });
+                        }
+                    } else {
+                        w.property("x-" + name, value);
+                    }
                 }
             });
         }
@@ -534,7 +560,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
             w.property(X_ENTITY, true);
         }
 
-        writeExtension(w, model.getExtension());
+        writeModelExtension(context, m, w, model.getExtension());
 
         w.propertyOptional(TITLE, model.getTitle());
         w.propertyOptional(SUMMARY, model.getSummary());
@@ -589,41 +615,45 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
             w.startObject();
 
             for(MApiProperty p : model.getProperties()) {
-                w.property(propertyName(p.getName()), () -> {
-                    w.startObject();
+                writeModelProperty(context, m, w, p);
+            }
 
-                    w.propertyOptional(TITLE, p.getTitle());
-                    w.property(DESCRIPTION, Strings.nullToEmpty(Strings.firstNotEmpty(p.getDescription(),p.getSummary())));
-                    writeParameterType(context, m, w, p);
+            w.endObject();
+        });
+    }
 
-                    if(p.isReadonly()) {
-                        w.property(READONLY, true);
-                    }
+    protected void writeModelProperty(WriteContext context, ApiMetadata m, JsonWriter w, MApiProperty p) {
+        w.property(propertyName(p.getName()), () -> {
+            w.startObject();
 
-                    writeExtension(w, p.getExtension());
+            w.propertyOptional(TITLE, p.getTitle());
+            w.property(DESCRIPTION, Strings.nullToEmpty(Strings.firstNotEmpty(p.getDescription(),p.getSummary())));
+            writeParameterType(context, m, w, p);
 
-                    if(p.isIdentity()) {
-                        w.property(X_IDENTITY, true);
-                    }
+            if(p.isReadonly()) {
+                w.property(READONLY, true);
+            }
 
-                    if(p.isUnique()) {
-                        w.property(X_UNIQUE, true);
-                    }
+            writeExtension(w, p.getExtension());
 
-                    w.propertyOptional(X_SELECTABLE, p.getSelectable());
-                    w.propertyOptional(X_AGGREGATABLE, p.getAggregatable());
-                    w.propertyOptional(X_GROUPABLE,  p.getGroupable());
-                    w.propertyOptional(X_CREATABLE,  p.getCreatable());
-                    w.propertyOptional(X_UPDATABLE,  p.getUpdatable());
-                    w.propertyOptional(X_SORTABLE,   p.getSortable());
-                    w.propertyOptional(X_FILTERABLE, p.getFilterable());
+            if(p.isIdentity()) {
+                w.property(X_IDENTITY, true);
+            }
 
-                    if(p.isReference()) {
-                        w.propertyOptional(X_EXPANDABLE, p.getExpandable());
-                    }
+            if(p.isUnique()) {
+                w.property(X_UNIQUE, true);
+            }
 
-                    w.endObject();
-                });
+            w.propertyOptional(X_SELECTABLE, p.getSelectable());
+            w.propertyOptional(X_AGGREGATABLE, p.getAggregatable());
+            w.propertyOptional(X_GROUPABLE,  p.getGroupable());
+            w.propertyOptional(X_CREATABLE,  p.getCreatable());
+            w.propertyOptional(X_UPDATABLE,  p.getUpdatable());
+            w.propertyOptional(X_SORTABLE,   p.getSortable());
+            w.propertyOptional(X_FILTERABLE, p.getFilterable());
+
+            if(p.isReference()) {
+                w.propertyOptional(X_EXPANDABLE, p.getExpandable());
             }
 
             w.endObject();
