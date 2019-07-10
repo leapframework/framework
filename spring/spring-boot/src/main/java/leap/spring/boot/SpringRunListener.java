@@ -167,10 +167,18 @@ public class SpringRunListener implements SpringApplicationRunListener {
                         if(className.startsWith(frameworkPackage) || className.startsWith(Global.SPRING_PACKAGE_PREFIX)) {
                             continue;
                         }
-                        Class<?> c = Classes.tryForName(className);
+                        Class<?> c;
+                        try {
+                            c = Classes.tryForName(className);
+                        }catch (Exception e) {
+                            continue;
+                        }
                         if(null != c) {
-                            bps.add(ClassUtils.getPackageName(c));
-                            addBasePackages(bps, c);
+                            try {
+                                c.getAnnotation(EntityScan.class);
+                                bps.add(ClassUtils.getPackageName(c));
+                                addBasePackages(bps, c);
+                            }catch (ArrayStoreException e) { }
                         }
                     }
                 }
