@@ -111,6 +111,7 @@ public class EntityMapping extends ExtensibleBase {
     protected final RemoteSettings      remoteSettings;
     protected final Map<String, String> groupByExprs;
     protected final Map<String, String> selectExprs;
+    protected final Map<String, String> orderByExprs;
 
     private final Map<String, FieldMapping>    columnNameToFields;
     private final Map<String, FieldMapping>    fieldNameToFields;
@@ -131,7 +132,7 @@ public class EntityMapping extends ExtensibleBase {
                          RelationProperty[] relationProperties,
                          boolean autoCreateTable,
                          boolean queryFilterEnabled, boolean autoValidate, boolean remote, RemoteSettings remoteSettings,
-                         Map<String, String> groupByExprs, Map<String, String> selectExprs,
+                         Map<String, String> groupByExprs, Map<String, String> selectExprs, Map<String, String> orderByExprs,
                          EntityListeners listeners) {
 
         Args.notEmpty(entityName, "entity name");
@@ -183,6 +184,7 @@ public class EntityMapping extends ExtensibleBase {
         this.remoteSettings = remoteSettings;
         this.groupByExprs = null == groupByExprs ? Collections.emptyMap() : Collections.unmodifiableMap(groupByExprs);
         this.selectExprs = null == selectExprs ? Collections.emptyMap() : Collections.unmodifiableMap(selectExprs);
+        this.orderByExprs = null == orderByExprs ? Collections.emptyMap() : Collections.unmodifiableMap(orderByExprs);
 
         this.selfReferencingRelations = evalSelfReferencingRelations();
         this.selfReferencing = selfReferencingRelations.length > 0;
@@ -605,6 +607,10 @@ public class EntityMapping extends ExtensibleBase {
 
     public Map<String, String> getSelectExprs() {
         return selectExprs;
+    }
+
+    public Map<String, String> getOrderByExprs() {
+        return orderByExprs;
     }
 
     public EntityListeners getListeners() {

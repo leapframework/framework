@@ -812,46 +812,53 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             }
 
             OrderBy.Item item = items[i];
-            MApiModel model;
 
-            if (item.hasAlias() && !item.alias().equalsIgnoreCase(query.alias())) {
-                ModelAndMapping jm = joinModels.get(item.alias());
-                if (null == jm) {
-                    throw new BadRequestException("Can't found join alias '" + item.alias() + "', check order by");
-                }
-                model = jm.model;
+            String expr = em.getOrderByExprs().get(item.name());
+            if (null != expr) {
+                s.append(expr);
             } else {
-                model = am;
-            }
+                MApiModel model;
 
-            String       name    = item.name();
-            MApiProperty ap      = model.tryGetProperty(name);
-            boolean      isAlias = false;
-
-            if (null == ap) {
-                if (null != options.getResolvedSelect() && options.getResolvedSelect().aliasContain(name)) {
-                    isAlias = true;
-                } else if (null != options.getResolvedGroupBy() && options.getResolvedGroupBy().aliasContain(name)) {
-                    isAlias = true;
-                } else if (null != options.getResolvedAggregate() && options.getResolvedAggregate().aliasContain(name)){
-                    isAlias = true;
+                if (item.hasAlias() && !item.alias().equalsIgnoreCase(query.alias())) {
+                    ModelAndMapping jm = joinModels.get(item.alias());
+                    if (null == jm) {
+                        throw new BadRequestException("Can't found join alias '" + item.alias() + "', check order by");
+                    }
+                    model = jm.model;
+                } else {
+                    model = am;
                 }
-                if (!isAlias) {
-                    throw new BadRequestException("Property '" + name + "' not exists in model '" + model.getName() + "'");
+
+                String       name    = item.name();
+                MApiProperty ap      = model.tryGetProperty(name);
+                boolean      isAlias = false;
+
+                if (null == ap) {
+                    if (null != options.getResolvedSelect() && options.getResolvedSelect().aliasContain(name)) {
+                        isAlias = true;
+                    } else if (null != options.getResolvedGroupBy() && options.getResolvedGroupBy().aliasContain(name)) {
+                        isAlias = true;
+                    } else if (null != options.getResolvedAggregate() && options.getResolvedAggregate().aliasContain(name)){
+                        isAlias = true;
+                    }
+                    if (!isAlias) {
+                        throw new BadRequestException("Property '" + name + "' not exists in model '" + model.getName() + "'");
+                    }
+                } else if (ap.isNotSortableExplicitly()) {
+                    throw new BadRequestException("Property '" + name + "' is not sortable in model '" + model.getName() + "'");
                 }
-            } else if (ap.isNotSortableExplicitly()) {
-                throw new BadRequestException("Property '" + name + "' is not sortable in model '" + model.getName() + "'");
+
+                if (isAlias) {
+                    s.append(item.name());
+                } else if (item.hasAlias()) {
+                    s.append(item.alias()).append('.').append(item.name());
+                } else if (Strings.isNotEmpty(query.alias())) {
+                    s.append(query.alias()).append('.').append(item.name());
+                } else {
+                    s.append(item.name());
+                }
             }
 
-            if (isAlias) {
-                s.append(item.name());
-            } else if (item.hasAlias()) {
-                s.append(item.alias()).append('.').append(item.name());
-            } else if (Strings.isNotEmpty(query.alias())) {
-                s.append(query.alias()).append('.').append(item.name());
-            } else {
-                s.append(item.name());
-            }
             if (!item.isAscending()) {
                 s.append(" desc");
             }
