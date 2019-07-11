@@ -116,6 +116,10 @@ public class JwtTokenVerifier implements TokenVerifier {
             jwtDetail = verifier.verify(token);
         }
 
+        return createTokenInfo(jwtDetail);
+    }
+
+    protected TokenInfo createTokenInfo(Map<String, Object> jwtDetail) {
         SimpleTokenInfo tokenInfo = new SimpleTokenInfo();
 
         String userId   = (String)jwtDetail.get(JWT.CLAIM_SUBJECT);
@@ -139,5 +143,4 @@ public class JwtTokenVerifier implements TokenVerifier {
         tokenInfo.setClaims(jwtDetail);
         return tokenInfo;
     }
-
 }

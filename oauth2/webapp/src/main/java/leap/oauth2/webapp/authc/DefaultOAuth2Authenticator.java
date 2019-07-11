@@ -132,7 +132,7 @@ public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCrea
 
         if (null != user && isUserDetailsLookupEnabled()) {
             user = lookupUserDetails(user);
-        } else if (!Strings.isEmpty(userId)) {
+        } else if (null == user && !Strings.isEmpty(userId)) {
             //user info lookup
             log.debug("lookup user info at oauth2 server");
             user = userInfoLookup.lookupUserInfo(at.getToken(), userId);
