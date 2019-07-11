@@ -52,6 +52,7 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Ap
     protected String  tokenInfoUrl;
     protected String  userInfoUrl;
     protected String  publicKeyUrl;
+    protected String  jwksUrl;
     protected String  logoutUrl;
     protected String  clientId;
     protected String  clientSecret;
@@ -256,6 +257,15 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Ap
     public OAuth2Configurator setPublicKeyUrl(String url) {
         this.publicKeyUrl = url;
         return this;
+    }
+
+    @Override
+    public String getJwksUrl() {
+        return jwksUrl;
+    }
+
+    public void setJwksUrl(String jwksUrl) {
+        this.jwksUrl = jwksUrl;
     }
 
     @Override

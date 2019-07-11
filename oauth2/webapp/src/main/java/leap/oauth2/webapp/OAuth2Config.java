@@ -92,6 +92,11 @@ public interface OAuth2Config {
     String getPublicKeyUrl();
 
     /**
+     * todo: doc
+     */
+    String getJwksUrl();
+
+    /**
      * Returns the url of oauth2 server' logout endpoint.
      */
     String getLogoutUrl();

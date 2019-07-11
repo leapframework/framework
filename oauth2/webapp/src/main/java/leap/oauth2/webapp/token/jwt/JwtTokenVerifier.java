@@ -35,8 +35,12 @@ import leap.oauth2.webapp.token.Token;
 import leap.oauth2.webapp.token.TokenInfo;
 import leap.oauth2.webapp.token.TokenVerifier;
 import leap.web.security.SecurityConfig;
+import org.jose4j.jwk.JsonWebKey;
+import org.jose4j.jwk.JsonWebKeySet;
+import org.jose4j.lang.JoseException;
 
 import java.security.interfaces.RSAPublicKey;
+import java.util.List;
 import java.util.Map;
 
 public class JwtTokenVerifier implements TokenVerifier {
@@ -52,26 +56,54 @@ public class JwtTokenVerifier implements TokenVerifier {
     @Override
     public TokenInfo verifyToken(Token token) throws TokenVerifyException {
         if(null == verifier) {
-            if(Strings.isEmpty(config.getPublicKeyUrl())) {
-                throw new AppConfigException("publicKeyUrl must be configured");
-            }
-            refreshJwtVerifier();
+            refreshJwtVerifier(token.getToken());
         }
-
         return verify(verifier, token.getToken());
     }
 
-    protected void refreshJwtVerifier() {
-        log.info("Fetching public key from server, url '{}' ...", config.getPublicKeyUrl());
-        HttpResponse response = httpClient.request(config.getPublicKeyUrl()).get();
+    protected void refreshJwtVerifier(String token) {
+        if(!Strings.isEmpty(config.getJwksUrl())) {
+            refreshJwtVerifierFromJwks(token, config.getJwksUrl());
+        }else {
+            if(Strings.isEmpty(config.getPublicKeyUrl())) {
+                throw new AppConfigException("publicKeyUrl must be configured");
+            }
+
+            log.info("Fetching public key from server, url '{}' ...", config.getPublicKeyUrl());
+            HttpResponse response = httpClient.request(config.getPublicKeyUrl()).get();
+            if(!response.isOk()) {
+                throw new OAuth2InternalServerException("Error fetching public key from server, status " + response.getStatus() + "");
+            }
+
+            String       encoded   = response.getString();
+            RSAPublicKey publicKey = RSA.decodePublicKey(encoded);
+            verifier = new RsaVerifier(publicKey);
+        }
+    }
+
+    protected void refreshJwtVerifierFromJwks(String token, String jwksUrl) {
+        log.info("Fetching jwks from url '{}' ...", jwksUrl);
+        HttpResponse response = httpClient.request(jwksUrl).get();
         if(!response.isOk()) {
-            throw new OAuth2InternalServerException("Error fetching public key from server, status " + response.getStatus() + "");
+            throw new OAuth2InternalServerException("Error fetching jwks from server, status " + response.getStatus() + "");
         }
 
-        String       encoded   = response.getString();
-        RSAPublicKey publicKey = RSA.decodePublicKey(encoded);
+        try {
+            final List<JsonWebKey> jwks = new JsonWebKeySet(response.getString()).getJsonWebKeys();
+            if(jwks.size() != 1) {
+                throw new OAuth2InternalServerException("Mulit jwks " + jwks.size() + " not supported");
+            }
 
-        verifier = new RsaVerifier(publicKey);
+            JsonWebKey jwk = jwks.get(0);
+
+            if(!(jwk.getKey() instanceof RSAPublicKey)) {
+                throw new OAuth2InternalServerException("Non RSA public key '" + jwk.getKey() + "' not supported");
+            }
+
+            verifier = new RsaVerifier((RSAPublicKey) jwk.getKey());
+        }catch (JoseException e) {
+            throw new OAuth2InternalServerException("Invalid jwks : " + e.getMessage());
+        }
     }
 
     protected TokenInfo verify(JwtVerifier verifier, String token) throws TokenVerifyException {
@@ -80,7 +112,7 @@ public class JwtTokenVerifier implements TokenVerifier {
         try {
             jwtDetail = verifier.verify(token);
         }catch (TokenVerifyException e) {
-            refreshJwtVerifier();
+            refreshJwtVerifier(token);
             jwtDetail = verifier.verify(token);
         }
 
