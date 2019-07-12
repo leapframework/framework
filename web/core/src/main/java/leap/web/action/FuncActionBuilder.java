@@ -20,7 +20,6 @@ import leap.lang.Assert;
 import leap.lang.Buildable;
 import leap.lang.Builders;
 import leap.lang.ExtensibleBase;
-import leap.lang.asm.tree.analysis.Frame;
 import leap.lang.exception.ObjectExistsException;
 import leap.web.format.RequestFormat;
 import leap.web.format.ResponseFormat;
@@ -33,9 +32,10 @@ public class FuncActionBuilder extends ExtensibleBase implements Buildable<FuncA
 
     protected String                         name;
     protected Class<?>                       returnType;
-    protected List<ArgumentBuilder>          arguments = new ArrayList<>();
-    protected List<RequestFormat>            consumes = new ArrayList<>();
-    protected List<ResponseFormat>           produces = new ArrayList<>();
+    protected List<ArgumentBuilder>          arguments    = new ArrayList<>();
+    protected List<RequestFormat>            consumes     = new ArrayList<>();
+    protected List<ResponseFormat>           produces     = new ArrayList<>();
+    protected List<ActionInterceptor>        interceptors = new ArrayList<>();
     protected Function<ActionParams, Object> function;
 
     public FuncActionBuilder() {
@@ -66,11 +66,11 @@ public class FuncActionBuilder extends ExtensibleBase implements Buildable<FuncA
         return arguments;
     }
 
-    public FuncActionBuilder addArgument(ArgumentBuilder argument) throws ObjectExistsException{
+    public FuncActionBuilder addArgument(ArgumentBuilder argument) throws ObjectExistsException {
         Assert.notNull(argument);
 
-        for(ArgumentBuilder exists : arguments) {
-            if(exists.getName().equalsIgnoreCase(argument.getName())) {
+        for (ArgumentBuilder exists : arguments) {
+            if (exists.getName().equalsIgnoreCase(argument.getName())) {
                 throw new ObjectExistsException("The argument '" + argument.getName() + "' already exists!");
             }
         }
@@ -103,6 +103,18 @@ public class FuncActionBuilder extends ExtensibleBase implements Buildable<FuncA
         this.produces = produces;
     }
 
+    public void addInterceptor(ActionInterceptor interceptor) {
+        interceptors.add(interceptor);
+    }
+
+    public List<ActionInterceptor> getInterceptors() {
+        return interceptors;
+    }
+
+    public void setInterceptors(List<ActionInterceptor> interceptors) {
+        this.interceptors = interceptors;
+    }
+
     public Function<ActionParams, Object> getFunction() {
         return function;
     }
@@ -114,10 +126,11 @@ public class FuncActionBuilder extends ExtensibleBase implements Buildable<FuncA
     @Override
     public FuncAction build() {
         FuncAction action = new FuncAction(name, returnType,
-                                           Builders.buildArray(arguments,new Argument[arguments.size()]),
-                                           consumes.toArray(Action.EMPTY_CONSUMES),
-                                           produces.toArray(Action.EMPTY_PRODUCES),
-                                           function);
+                Builders.buildArray(arguments, new Argument[arguments.size()]),
+                consumes.toArray(Action.EMPTY_CONSUMES),
+                produces.toArray(Action.EMPTY_PRODUCES),
+                produces.toArray(Action.EMPTY_INTERCEPTORS),
+                function);
 
         extensions.forEach(action::setExtension);
 

@@ -31,10 +31,12 @@ public class FuncAction extends ExtensibleBase implements Action {
     protected final Argument[]                     arguments;
     protected final RequestFormat[]                consumes;
     protected final ResponseFormat[]               produces;
+    protected final ActionInterceptor[]            interceptors;
     protected final Function<ActionParams, Object> function;
 
     public FuncAction(String name, Class<?> returnType, Argument[] arguments,
-                      RequestFormat[] consumes, ResponseFormat[] produces, Function<ActionParams, Object> function) {
+                      RequestFormat[] consumes, ResponseFormat[] produces,
+                      ActionInterceptor[] interceptors, Function<ActionParams, Object> function) {
         Args.notNull(arguments);
         Args.notNull(function);
         this.name       = name == null ? function.toString() : name;
@@ -42,6 +44,7 @@ public class FuncAction extends ExtensibleBase implements Action {
         this.arguments = arguments;
         this.consumes  = consumes;
         this.produces = produces;
+        this.interceptors = interceptors;
         this.function = function;
     }
 
@@ -68,6 +71,11 @@ public class FuncAction extends ExtensibleBase implements Action {
     @Override
     public ResponseFormat[] getProduces() {
         return produces;
+    }
+
+    @Override
+    public ActionInterceptor[] getInterceptors() {
+        return interceptors;
     }
 
     @Override
