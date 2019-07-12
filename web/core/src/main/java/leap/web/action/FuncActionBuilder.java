@@ -129,7 +129,7 @@ public class FuncActionBuilder extends ExtensibleBase implements Buildable<FuncA
                 Builders.buildArray(arguments, new Argument[arguments.size()]),
                 consumes.toArray(Action.EMPTY_CONSUMES),
                 produces.toArray(Action.EMPTY_PRODUCES),
-                produces.toArray(Action.EMPTY_INTERCEPTORS),
+                interceptors.toArray(Action.EMPTY_INTERCEPTORS),
                 function);
 
         extensions.forEach(action::setExtension);
