@@ -35,7 +35,6 @@ public class DefaultActionContext extends MapAttributeAccessor implements Action
 	protected String			  method;
 	protected String			  path;
 	protected Route				  route;
-	protected Action	          action;
 	protected ActionExecution     execution;
 	protected Map<String, String> pathParameters;
 	protected RequestFormat		  requestFormat;
@@ -43,6 +42,7 @@ public class DefaultActionContext extends MapAttributeAccessor implements Action
 	protected Boolean             acceptValidationError;
 	
 	private Map<String, Object> mergedParameters;
+	private Map<String, Object> mergedParametersWithArgs;
 
 	public DefaultActionContext(Request request,Response response) {
 		this.request  = request;
@@ -154,4 +154,25 @@ public class DefaultActionContext extends MapAttributeAccessor implements Action
 		}
 	    return mergedParameters;
     }
+
+	@Override
+	public Map<String, Object> getMergedParametersWithArgs() {
+		if(null == mergedParametersWithArgs) {
+			Action action = getAction();
+
+			if(action.getArguments().length == 0) {
+				return getMergedParameters();
+			}
+
+			if(null == execution) {
+				throw new IllegalStateException("Action args has not been resolved");
+			}
+
+			mergedParametersWithArgs = new LinkedHashMap<>(getMergedParameters());
+			for(int i=0;i<action.getArguments().length;i++) {
+				mergedParametersWithArgs.put(action.getArguments()[i].getName(), execution.getArgs()[i]);
+			}
+		}
+		return mergedParametersWithArgs;
+	}
 }

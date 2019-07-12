@@ -91,6 +91,11 @@ public interface ActionContext extends AttributeAccessor {
 	Map<String, Object> getMergedParameters();
 
 	/**
+	 * Returns the parameters from {@link #getMergedParameters()} and the resolved arguments of action.
+	 */
+	Map<String, Object> getMergedParametersWithArgs();
+
+	/**
 	 * Returns the requested format or <code>null</code>.
 	 * 
 	 * <p>
