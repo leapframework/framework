@@ -110,6 +110,9 @@ public class DefaultTokenInfoLookup implements TokenInfoLookup {
         info.setScope((String)map.get("scope"));
         info.setClaims(map);
 
+        return info;
+
+        /*
         String username = (String)map.get("username");
         if(null != username) {
             SimpleUserPrincipal user = new SimpleUserPrincipal();
@@ -128,5 +131,6 @@ public class DefaultTokenInfoLookup implements TokenInfoLookup {
         }
 
         return info;
+        */
     }
 }
