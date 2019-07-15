@@ -16,24 +16,12 @@
 
 package leap.core.security;
 
-import java.util.Map;
-
 public class AuthenticationWrapper implements Authentication {
 
     protected final Authentication wrapped;
 
     public AuthenticationWrapper(Authentication wrapped) {
         this.wrapped = wrapped;
-    }
-
-    @Override
-    public boolean isCacheable() {
-        return wrapped.isCacheable();
-    }
-
-    @Override
-    public Map<String, Object> getCacheAttributes() {
-        return wrapped.getCacheAttributes();
     }
 
     @Override

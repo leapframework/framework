@@ -15,35 +15,19 @@
  */
 package leap.core.security;
 
-import java.util.Map;
-
 public interface Authentication {
 
     /**
-     * Returns true if this authentication can be cached.
+     * Returns <code>true</code> if the authentication is authenticated.
      */
-    default boolean isCacheable() {
-        return false;
+    default boolean isAuthenticated() {
+        return isUserAuthenticated() || isClientAuthenticated();
     }
 
     /**
-     * Returns the cache attributes if cacheable.
+     * Returns <code>true</code> if the authentication is authenticated from remember-me store.
      */
-    default Map<String, Object> getCacheAttributes() {
-        return null;
-    }
-
-	/**
-	 * Returns <code>true</code> if the authentication is authenticated.
-     */
-	default boolean isAuthenticated() {
-        return isUserAuthenticated() || isClientAuthenticated();
-    }
-	
-	/**
-	 * Returns <code>true</code> if the authentication is authenticated from remember-me store.
-	 */
-	default boolean isRememberMe() {
+    default boolean isRememberMe() {
         return false;
     }
 
@@ -59,16 +43,16 @@ public interface Authentication {
      */
     void setToken(String token) throws IllegalStateException;
 
-	/**
-	 * Required. Returns the authentication credentials.
-	 */
-	Object getCredentials();
-	
-	/**
-	 * Optional. Returns the user principal.
-	 */
-	UserPrincipal getUser();
-	
+    /**
+     * Required. Returns the authentication credentials.
+     */
+    Object getCredentials();
+
+    /**
+     * Optional. Returns the user principal.
+     */
+    UserPrincipal getUser();
+
     /**
      * Optional. Returns the client principal.
      */
@@ -79,7 +63,7 @@ public interface Authentication {
     /**
      * Returns the granted permissions.
      */
-	String[] getPermissions();
+    String[] getPermissions();
 
     /**
      * Sets the granted permissions.
@@ -89,7 +73,7 @@ public interface Authentication {
     /**
      * Same as {@link #getPermissions()}
      */
-    default String[] getScopes(){
+    default String[] getScopes() {
         return getPermissions();
     }
 
@@ -113,8 +97,8 @@ public interface Authentication {
     /**
      * Returns the granted security rules.
      */
-    default String[] getRules(){
-       return null;
+    default String[] getRules() {
+        return null;
     }
 
     /**
@@ -159,12 +143,12 @@ public interface Authentication {
         return null != getClient() && !getClient().isAnonymous();
     }
 
-	/**
-	 * Returns <code>true</code> if the authentication only contains client, no user.
+    /**
+     * Returns <code>true</code> if the authentication only contains client, no user.
      */
-	default boolean isClientOnly() {
-		return hasClient() && (getUser() == null || getUser().isAnonymous());
-	}
+    default boolean isClientOnly() {
+        return hasClient() && (getUser() == null || getUser().isAnonymous());
+    }
 
     /**
      * Returns <code>true</code> if the user is authenticated and not remember-me.

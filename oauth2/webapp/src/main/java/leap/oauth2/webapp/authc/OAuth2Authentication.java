@@ -33,4 +33,8 @@ public interface OAuth2Authentication extends Authentication {
         return null;
     }
 
+    /**
+     * Returns a new {@link OAuth2Authentication}.
+     */
+    OAuth2Authentication newAuthentication();
 }

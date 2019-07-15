@@ -46,10 +46,10 @@ import java.util.Optional;
  * Default implementation of {@link OAuth2Authenticator}.
  */
 public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCreateBean {
-    public static final String TOKENINFO_ATTR_NAME = DefaultOAuth2Authenticator.class.getName()+"$tokeninfo";
-    
+    public static final String TOKENINFO_ATTR_NAME = DefaultOAuth2Authenticator.class.getName() + "$tokeninfo";
+
     private static final Log log = LogFactory.get(DefaultOAuth2Authenticator.class);
-    
+
     protected @Inject OAuth2Config      config;
     protected @Inject TokenInfoLookup   tokenInfoLookup;
     protected @Inject UserInfoLookup    userInfoLookup;
@@ -96,7 +96,7 @@ public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCrea
                 log.debug("Returns the cached authentication of access token : {}", at.getToken());
                 Optional.ofNullable(Request.tryGetCurrent())
                         .ifPresent(request -> request.setAttribute(TOKENINFO_ATTR_NAME, cached.tokenInfo));
-                return cached.authentication;
+                return cached.newAuthentication();
             }
         }
 
@@ -140,7 +140,7 @@ public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCrea
                 log.error("User info not exists in oauth2 server, user id -> {}, access token -> {}", userId, at.getToken());
                 throw new UserNotFoundException();
             }
-            if(isUserDetailsLookupEnabled()) {
+            if (isUserDetailsLookupEnabled()) {
                 user = lookupUserDetails(user);
             }
         }
@@ -153,7 +153,7 @@ public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCrea
         if (null != tokenInfo.getScope()) {
             authc.setPermissions(Strings.split(tokenInfo.getScope(), ',', ' '));
         }
-        
+
         cacheAuthentication(at, tokenInfo, authc);
         Optional.ofNullable(Request.tryGetCurrent())
                 .ifPresent(request -> request.setAttribute(TOKENINFO_ATTR_NAME, tokenInfo));
@@ -191,10 +191,9 @@ public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCrea
     }
 
     protected static final class CachedAuthentication {
-        public final TokenInfo            tokenInfo;
-        public final OAuth2Authentication authentication;
-
-        private final TimeExpirableMs expirable;
+        private final TokenInfo            tokenInfo;
+        private final OAuth2Authentication authentication;
+        private final TimeExpirableMs      expirable;
 
         public CachedAuthentication(TokenInfo info, OAuth2Authentication a, int expiresInMs) {
             this.tokenInfo = info;
@@ -208,6 +207,10 @@ public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCrea
 
         public boolean isCacheExpired() {
             return expirable.isExpired();
+        }
+
+        public OAuth2Authentication newAuthentication() {
+            return authentication.newAuthentication();
         }
     }
 }
