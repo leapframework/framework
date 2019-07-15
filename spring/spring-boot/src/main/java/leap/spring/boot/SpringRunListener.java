@@ -42,6 +42,11 @@ public class SpringRunListener implements SpringApplicationRunListener {
     private static final Log log = LogFactory.get(SpringRunListener.class);
 
     public SpringRunListener(SpringApplication application, String[] args) {
+        if(Global.bp != null) {
+            //spring cloud will invoke the run listener again.
+            return;
+        }
+
         log.debug("Init run listener from main : {}", application.getMainApplicationClass());
 
         Set<String> bps = new LinkedHashSet<>();
