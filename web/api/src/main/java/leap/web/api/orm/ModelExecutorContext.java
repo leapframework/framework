@@ -16,6 +16,7 @@
 
 package leap.web.api.orm;
 
+import leap.lang.accessor.AttributeAccessor;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
 import leap.web.action.ActionContext;
@@ -25,7 +26,14 @@ import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.remote.RestResourceFactory;
 
-public interface ModelExecutorContext {
+import java.util.Map;
+
+public interface ModelExecutorContext extends AttributeAccessor {
+
+    /**
+     * Returns all the attributes.
+     */
+    Map<String, Object> getAttributes();
 
     /**
      * Required.

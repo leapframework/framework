@@ -31,6 +31,7 @@ public class DefaultModelExecutionContext extends MapAttributeAccessor implement
 
     DefaultModelExecutionContext(ModelExecutorContext context) {
         this.context = context;
+        this.attributes.putAll(context.getAttributes());
     }
 
     @Override

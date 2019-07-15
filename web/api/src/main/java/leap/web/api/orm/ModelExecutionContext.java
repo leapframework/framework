@@ -16,8 +16,6 @@
 
 package leap.web.api.orm;
 
-import leap.lang.accessor.AttributeAccessor;
-
-public interface ModelExecutionContext extends ModelExecutorContext, AttributeAccessor {
+public interface ModelExecutionContext extends ModelExecutorContext {
 
 }

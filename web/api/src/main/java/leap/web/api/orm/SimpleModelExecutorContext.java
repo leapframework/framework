@@ -16,6 +16,7 @@
 
 package leap.web.api.orm;
 
+import leap.lang.accessor.MapAttributeAccessor;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
 import leap.web.action.ActionParams;
@@ -25,7 +26,9 @@ import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.remote.RestResourceFactory;
 
-public class SimpleModelExecutorContext implements ModelExecutorContext {
+import java.util.Map;
+
+public class SimpleModelExecutorContext extends MapAttributeAccessor implements ModelExecutorContext {
 
     protected ApiConfig           ac;
     protected ApiMetadata         amd;
@@ -50,6 +53,12 @@ public class SimpleModelExecutorContext implements ModelExecutorContext {
         this.dao = dao;
         this.entityMapping = em;
         this.actionParams = params;
+    }
+
+    public void setAtttributes(Map<String, Object> m) {
+        if(null != m) {
+            attributes.putAll(m);
+        }
     }
 
     @Override
