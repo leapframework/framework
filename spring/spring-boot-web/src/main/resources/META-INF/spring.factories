@@ -1,1 +1,2 @@
+org.springframework.boot.SpringApplicationRunListener=leap.spring.boot.web.BootstrapRunListener
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=leap.spring.boot.web.WebConfiguration

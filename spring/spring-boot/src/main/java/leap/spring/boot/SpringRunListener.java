@@ -32,12 +32,13 @@ import org.springframework.boot.SpringApplicationRunListener;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.util.ClassUtils;
 
 import java.util.*;
 
-public class SpringRunListener implements SpringApplicationRunListener {
+public class SpringRunListener implements SpringApplicationRunListener, Ordered {
 
     private static final Log log = LogFactory.get(SpringRunListener.class);
 
@@ -79,6 +80,11 @@ public class SpringRunListener implements SpringApplicationRunListener {
 
         Global.bps = bps.toArray(new String[0]);
         log.info("Base package : {}", Global.bp);
+    }
+
+    @Override
+    public int getOrder() {
+        return HIGHEST_PRECEDENCE + 100;
     }
 
     @Override

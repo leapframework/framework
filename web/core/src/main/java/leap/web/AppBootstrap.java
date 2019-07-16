@@ -70,19 +70,26 @@ public class AppBootstrap extends ServletContextInitializerBase implements Servl
 		return c;
 	}
 
+	public static boolean isInitialized(ServletContext sc) {
+    	return null != tryGet(sc);
+	}
+
+	public void initialize(ServletContext sc) {
+		try {
+			bootApplication(sc, Servlets.getInitParamsMap(sc));
+
+			startApplication();
+
+			selfStarted = true;
+		} catch (ServletException e) {
+			throw new AppInitException("Error booting app, " + e.getMessage(), e);
+		}
+	}
+
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
         ServletContext sc = sce.getServletContext();
-
-        try {
-            bootApplication(sc, Servlets.getInitParamsMap(sc));
-
-            startApplication();
-
-            selfStarted = true;
-        } catch (ServletException e) {
-            throw new AppInitException("Error booting app, " + e.getMessage(), e);
-        }
+        initialize(sc);
 	}
 
 	@Override
