@@ -26,11 +26,19 @@ import org.springframework.boot.SpringApplicationRunListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 
-public class BootstrapRunListener implements SpringApplicationRunListener, Ordered {
+public class BootstrapRunListener implements SpringApplicationRunListener, Ordered, WebApplicationInitializer {
+
+    private static ServletContext sc;
+
+    public BootstrapRunListener() {
+
+    }
 
     public BootstrapRunListener(SpringApplication application, String[] args) {
 
@@ -38,6 +46,11 @@ public class BootstrapRunListener implements SpringApplicationRunListener, Order
 
     public int getOrder() {
         return HIGHEST_PRECEDENCE + 101;
+    }
+
+    @Override
+    public void onStartup(ServletContext servletContext) throws ServletException {
+        sc = servletContext;
     }
 
     public void starting() {
@@ -53,7 +66,9 @@ public class BootstrapRunListener implements SpringApplicationRunListener, Order
     }
 
     public void contextLoaded(ConfigurableApplicationContext context) {
-
+        if(null != sc) {
+            boot(sc);
+        }
     }
 
     //spring-boot 1.5
@@ -62,35 +77,32 @@ public class BootstrapRunListener implements SpringApplicationRunListener, Order
     }
 
     //spring-boot 2.0
-    public void started(ConfigurableApplicationContext context) {
-        if(context instanceof WebApplicationContext) {
-            ServletContext sc = ((WebApplicationContext) context).getServletContext();
-            if(AppBootstrap.isInitialized(sc)) {
-                return;
-            }
-
-            final AppBootstrap bootstrap = new AppBootstrap();
-            bootstrap.initialize(sc);
-
-            Global.leap = new Global.LeapContext() {
-                @Override
-                public AppConfig config() {
-                    return bootstrap.getAppConfig();
-                }
-
-                @Override
-                public BeanFactory factory() {
-                    return bootstrap.getBeanFactory();
-                }
-
-                @Override
-                public AppContext context() {
-                    return bootstrap.getAppContext();
-                }
-            };
-        }
-    }
+    public void started(ConfigurableApplicationContext context) { }
     public void running(ConfigurableApplicationContext context) { }
     public void failed(ConfigurableApplicationContext context, Throwable exception) {}
 
+    protected void boot(ServletContext sc) {
+        if(AppBootstrap.isInitialized(sc)) {
+            return;
+        }
+
+        final AppBootstrap bootstrap = new AppBootstrap();
+        Global.leap = new Global.LeapContext() {
+            @Override
+            public AppConfig config() {
+                return bootstrap.getAppConfig();
+            }
+
+            @Override
+            public BeanFactory factory() {
+                return bootstrap.getBeanFactory();
+            }
+
+            @Override
+            public AppContext context() {
+                return bootstrap.getAppContext();
+            }
+        };
+        bootstrap.initialize(sc);
+    }
 }

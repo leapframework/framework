@@ -53,7 +53,7 @@ public class LeapBeanSupport implements BeanFactorySupport {
 
     @Override
     public <T> T tryGetBean(String id) throws BeanException {
-        if(Global.context == null) {
+        if(!Global.isSpringReady()) {
             return null;
         }
 
@@ -78,6 +78,10 @@ public class LeapBeanSupport implements BeanFactorySupport {
             return (T)((AbstractApplicationContext)Global.context).getBeanFactory();
         }
 
+        if(!Global.isSpringReady()) {
+            return null;
+        }
+
         try {
             return shouldReturn(Global.context.getBean(type));
         }catch (NoSuchBeanDefinitionException e) {
@@ -87,7 +91,7 @@ public class LeapBeanSupport implements BeanFactorySupport {
 
     @Override
     public <T> T tryGetBean(Class<? super T> type, String name) throws BeanException {
-        if(Global.context == null) {
+        if(!Global.isSpringReady()) {
             return null;
         }
 
@@ -106,7 +110,7 @@ public class LeapBeanSupport implements BeanFactorySupport {
 
     @Override
     public <T> Map<String, T> getNamedBeans(Class<? super T> type) {
-        if(Global.context == null) {
+        if(!Global.isSpringReady()) {
             return null;
         }
         Map<String, T> namedBeans = (Map<String,T>)Global.context.getBeansOfType(type);
@@ -127,7 +131,7 @@ public class LeapBeanSupport implements BeanFactorySupport {
 
     @Override
     public <T> List<T> getBeans(Class<T> type) {
-        if(Global.context == null) {
+        if(!Global.isSpringReady()) {
             return null;
         }
 

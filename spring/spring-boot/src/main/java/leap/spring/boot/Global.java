@@ -21,6 +21,7 @@ import leap.core.AppContext;
 import leap.core.BeanFactory;
 import leap.lang.Factory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
 
 public class Global {
@@ -39,6 +40,27 @@ public class Global {
         AppConfig   config();
         BeanFactory factory();
         AppContext  context();
+    }
+
+    private static Boolean springReady = null;
+
+    public static boolean isSpringReady() {
+        if(null != springReady) {
+            return springReady;
+        }
+
+        if(null == context) {
+            return false;
+        }
+
+        if(context instanceof ConfigurableApplicationContext) {
+            if(((ConfigurableApplicationContext) context).isActive()) {
+                springReady = true;
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public static AppContext context() {

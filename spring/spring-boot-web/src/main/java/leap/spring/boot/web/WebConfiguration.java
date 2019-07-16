@@ -50,22 +50,24 @@ public class WebConfiguration {
     private static AppFilter filter;
     
     static {
-        Global.leap = new Global.LeapContext() {
-            @Override
-            public AppConfig config() {
-                return null == filter ? null : filter.config();
-            }
+        if(null == Global.leap) {
+            Global.leap = new Global.LeapContext() {
+                @Override
+                public AppConfig config() {
+                    return null == filter ? null : filter.config();
+                }
 
-            @Override
-            public BeanFactory factory() {
-                return null == filter ? null : filter.factory();
-            }
+                @Override
+                public BeanFactory factory() {
+                    return null == filter ? null : filter.factory();
+                }
 
-            @Override
-            public AppContext context() {
-                return null == filter ? null : filter.context();
-            }
-        };
+                @Override
+                public AppContext context() {
+                    return null == filter ? null : filter.context();
+                }
+            };
+        }
     }
 
     @Bean
@@ -132,7 +134,7 @@ public class WebConfiguration {
             if (null != AppContext.getStandalone()) {
                 throw new IllegalStateException("Found duplicated standalone context");
             }
-            AppContext.setStandalone(filter.bootstrap().getAppContext());
+            AppContext.setStandalone(Global.context());
         }
 
         @Override
