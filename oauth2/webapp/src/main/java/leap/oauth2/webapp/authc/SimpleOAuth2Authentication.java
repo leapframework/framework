@@ -50,6 +50,13 @@ public class SimpleOAuth2Authentication extends AbstractAuthentication implement
 
     @Override
     public OAuth2Authentication newAuthentication() {
-        return new SimpleOAuth2Authentication(credentials, user, client);
+        SimpleOAuth2Authentication authc = new SimpleOAuth2Authentication(credentials, user, client);
+        authc.setPermissions(permissions);
+        authc.setRoles(roles);
+        authc.setAccessMode(accessMode);
+        authc.setToken(token);
+        authc.setRememberMe(rememberMe);
+        authc.setRules(rules);
+        return authc;
     }
 }
