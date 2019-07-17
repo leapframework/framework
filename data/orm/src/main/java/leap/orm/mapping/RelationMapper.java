@@ -263,6 +263,10 @@ public class RelationMapper implements Mapper {
     protected void autoCreateManyToManyJoinFields(EntityMappingBuilder entity, EntityMappingBuilder target,
                                                   EntityMappingBuilder join, RelationMappingBuilder rmb) {
 
+	    if(target.isNarrow()) {
+	        return;
+        }
+
 	    List<FieldMappingBuilder> keyFields = join.getIdFieldMappings();
 	    if(null == keyFields || keyFields.isEmpty()) {
 	        throw new MetadataException("Primary key fields must be exists at join entity '" + join.getEntityName() + "'");
@@ -272,8 +276,10 @@ public class RelationMapper implements Mapper {
 
 	    //find id join fields.
         if(keyFields.size() == totalFields) {
+            final String entityName = entity.isNarrow() ? entity.getWideEntityName() : entity.getEntityName();
+
             RelationMappingBuilder rm1 =
-                    join.findIdRelationByTargetFields(entity.getEntityName(), entity.getIdFieldNames());
+                    join.findIdRelationByTargetFields(entityName, entity.getIdFieldNames());
 
             RelationMappingBuilder rm2 =
                     join.findIdRelationByTargetFields(target.getEntityName(), target.getIdFieldNames());
@@ -288,8 +294,10 @@ public class RelationMapper implements Mapper {
             //find unique join fields.
             for(UniqueKeyBuilder key : join.getKeys()) {
                 if(key.getFields().size() == totalFields) {
+                    final String entityName = entity.isNarrow() ? entity.getWideEntityName() : entity.getEntityName();
+
                     RelationMappingBuilder rm1 =
-                            join.findUniqueRelationByTargetFields(key.getName(), entity.getEntityName(), entity.getIdFieldNames());
+                            join.findUniqueRelationByTargetFields(key.getName(), entityName, entity.getIdFieldNames());
 
                     RelationMappingBuilder rm2 =
                             join.findUniqueRelationByTargetFields(key.getName(), target.getEntityName(), target.getIdFieldNames());

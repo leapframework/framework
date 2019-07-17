@@ -281,6 +281,10 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
         this.autoValidate = autoValidate;
     }
 
+    public boolean isNarrow() {
+        return !Strings.isEmpty(wideEntityName);
+    }
+
     public boolean isRemote() {
         return remote;
     }
