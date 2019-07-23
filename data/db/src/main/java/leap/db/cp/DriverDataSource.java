@@ -68,7 +68,6 @@ public final class DriverDataSource implements DataSource {
 			if (password != null) {
 				driverProperties.put(PASSWORD_PROPERTY, driverProperties.getProperty(PASSWORD_PROPERTY, password));
 			}
-			this.driverClassName = driverClassName;
 			preGetDriver();
 			if (driverClassName != null) {
 				try {
@@ -97,6 +96,11 @@ public final class DriverDataSource implements DataSource {
 			} else {
 				driver = DriverManager.getDriver(jdbcUrl);
 			}
+			if (null != driver && Strings.isEmpty(driverClassName)){
+				this.driverClassName = driver.getClass().getName();
+			}else {
+				this.driverClassName = driverClassName;
+			}
 		} catch (SQLException e) {
 			throw new NestedSQLException("Unable to get driver for JDBC URL " + jdbcUrl, e);
 		}
@@ -104,9 +108,9 @@ public final class DriverDataSource implements DataSource {
 
 	@Override
 	public Connection getConnection() throws SQLException {
-        log.debug("{} : Connecting...", jdbcUrl);
+        log.debug("{} : Connecting...", driverClassName);
         Connection conn = driver.connect(jdbcUrl, driverProperties);
-        log.debug("{} : Connected!!!", jdbcUrl);
+        log.debug("{} : Connected!!!", driverClassName);
 		return conn;
 	}
 
