@@ -104,9 +104,9 @@ public final class DriverDataSource implements DataSource {
 
 	@Override
 	public Connection getConnection() throws SQLException {
-        log.debug("{} : Connecting...", driverClassName);
+        log.debug("{} : Connecting...", jdbcUrl);
         Connection conn = driver.connect(jdbcUrl, driverProperties);
-        log.debug("{} : Connected!!!", driverClassName);
+        log.debug("{} : Connected!!!", jdbcUrl);
 		return conn;
 	}
 
