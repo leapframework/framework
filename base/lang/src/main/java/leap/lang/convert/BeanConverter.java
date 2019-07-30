@@ -53,6 +53,13 @@ public class BeanConverter extends AbstractConverter<Object> {
             return true;
         }
 
+        if (value instanceof Boolean && BooleanParsable.class.isAssignableFrom(targetType)) {
+            Object bean = Reflection.newInstance(targetType);
+            ((BooleanParsable) bean).parseBoolean((Boolean) value);
+            out.set(bean);
+            return true;
+        }
+
         if (value instanceof CharSequence && StringParsable.class.isAssignableFrom(targetType)) {
             Object bean = Reflection.newInstance(targetType);
             ((StringParsable) bean).parseString(value.toString());
