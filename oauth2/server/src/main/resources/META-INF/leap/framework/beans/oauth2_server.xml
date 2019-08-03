@@ -69,7 +69,15 @@
 
         <additional-type-def type="leap.oauth2.server.token.AuthzRefreshTokenGenerator" name="uuid" primary="true"/>
     </bean>
+    
+    <!-- jwks endpoint -->
+    <bean name="jwkEndpoint" type="leap.web.Endpoint" class="leap.oauth2.server.endpoint.JwkEndpoint"/>
+    <bean name="jwksEndpoint" type="leap.web.Endpoint" class="leap.oauth2.server.endpoint.JwksEndpoint"/>
 
+    <bean name="defaultJwks" type="leap.oauth2.server.endpoint.jwks.JwksToken" class="leap.oauth2.server.endpoint.jwks.DefaultJwksToken" primary="true"/>
+    <bean name="oauth2PublicKey" type="leap.oauth2.server.endpoint.jwks.JwkToken" class="leap.oauth2.server.endpoint.jwks.OAuth2RSAJwkToken"/>
+    
+    
     <!-- oauth2 standard endpoints -->
     <bean name="tokenEndpoint" type="leap.web.Endpoint"
           class="leap.oauth2.server.endpoint.TokenEndpoint"/>

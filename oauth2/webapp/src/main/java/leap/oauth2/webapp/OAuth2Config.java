@@ -130,4 +130,11 @@ public interface OAuth2Config {
      * Returns the request of ignore access token resolved. 
      */
     RequestIgnore[] getIgnores();
+
+    /**
+     * return kid of jwks when server return mulit jwks
+     */
+    default String getJwksKeyId(){
+        return "oauth2_authorize_server_public_key";
+    };
 }
