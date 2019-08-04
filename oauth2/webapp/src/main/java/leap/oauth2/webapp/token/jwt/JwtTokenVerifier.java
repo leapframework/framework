@@ -139,7 +139,7 @@ public class JwtTokenVerifier implements TokenVerifier {
         map.put(ALGORITHM_PARAMETER, jwk.getAlgorithm());
         map.put(KEY_OPERATIONS, jwk.getKeyOps());
         map.put("key", Base64.encode(jwk.getKey().getEncoded()));
-        return map
+        return map;
     }
     
     protected TokenInfo verify(JwtVerifier verifier, String token) throws TokenVerifyException {

@@ -9,31 +9,5 @@
         <property name="enabled" value="true"/>
     </properties>
 
-    <properties prefix="oauth2.as">
-
-        <property name="privateKeyStr">
-            MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAMMBI6MhZ7EumdeI
-            k0kXakvo3M98GgXS0oSva20CQn/t/e5QeGPY0iFDTVa706Md9eMK9BJcxaqpzX47
-            0bVTAHZeyVtY3ARkUzCZB0/lWV4ZsktHfA6XcjN2CCTEEnVD2tdSVW2yUr8Kwy2T
-            CRASDR5kMfVV4leooGUSGw1yRggZAgMBAAECgYEAkTsC+JaDbHEhgGUmFFSNBPXr
-            pdduZhHqWYlv/2KkdjSgXuGtl+c+MCm4qrT+XMiOfUaGGjrfuEf4VGBmwZ2MhE8p
-            DuHYzJo4qxbEPYMkx5Ka4bT5LqHZTkcPJATFPySrbHrtztOeDj4XnCh6zjM0zJ5Y
-            /52ogeS1NrqonBqiupECQQDhAaoKceuovr12dwFS3K5LDX+nlJRIcfpIzejsUkbE
-            FyO1o9mjfkh+lWSpp8yFxCC8dUfHT9STr0hyFqegPElFAkEA3d2FlGztMG4rq6YZ
-            ISsxRBH3kpvfxY1tQx91PRIqaJGBvcxVg92zPGYf5KYxyIifkMmF4tOH1SRTiPK7
-            6i5uxQJAZDiAi8x4Qh5Ld6PENCtVetqVXIhij+4spBcLQ4/WM2t3HWXQ//C0y6Ux
-            RBwYjhBw4GCAyzc0oV92rlKG8WlI3QJAbz4PKCillM7onpwdpX/ep97KX3xAavFK
-            g4lWY1SkZuHuR5gYmJGkuPgLrb2W4JGAUDx7IQwm4zvflp7+kaDOcQJAQl/Reuou
-            yna44mbvMCLWuW4tA04NH/RNXwTtesFsvwcJYtXlLid2ifIadRMGdzs9bGCNF0Kb
-            rG8n6FjfxjWLXA==
-        </property>
-
-        <property name="publicKeyStr">
-            MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDDASOjIWexLpnXiJNJF2pL6NzP
-            fBoF0tKEr2ttAkJ/7f3uUHhj2NIhQ01Wu9OjHfXjCvQSXMWqqc1+O9G1UwB2Xslb
-            WNwEZFMwmQdP5VleGbJLR3wOl3IzdggkxBJ1Q9rXUlVtslK/CsMtkwkQEg0eZDH1
-            VeJXqKBlEhsNckYIGQIDAQAB
-        </property>
-    </properties>
 
 </config>
