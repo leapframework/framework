@@ -79,9 +79,11 @@ public class OAuth2RSAJwkToken implements JwkToken, PostCreateBean {
 
     @Override
     public void postCreate(BeanFactory factory) throws Throwable {
-        pk = Base64.encode(oac.getPublicKey().getEncoded());
-        publicKey = RSA.decodePublicKey(pk);
-        n = Base64.encode(publicKey.getModulus().toByteArray());
-        e = Base64.encode(publicKey.getPublicExponent().toByteArray());
+        if (null != oac.getPublicKey()){
+            pk = Base64.encode(oac.getPublicKey().getEncoded());
+            publicKey = RSA.decodePublicKey(pk);
+            n = Base64.encode(publicKey.getModulus().toByteArray());
+            e = Base64.encode(publicKey.getPublicExponent().toByteArray());
+        }
     }
 }
