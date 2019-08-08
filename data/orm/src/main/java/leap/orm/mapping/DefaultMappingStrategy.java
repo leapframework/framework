@@ -120,7 +120,6 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 	 */
 	protected boolean isContextModelWhenNoCrossContext(OrmContext context, Class<?> cls){
 		String  ds        = context.getName();
-		boolean isDefault = DataSourceManager.DEFAULT_DATASOURCE_NAME.equals(ds);
 		boolean annotated = Classes.isAnnotationPresent(cls, DataSource.class);
 
 		if(null != modelsConfigs){
@@ -167,10 +166,12 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 					}).findFirst();
 
 			if(ormConfig.isPresent()){
+				OrmModelsConfig msc = ormConfig.get();
+				boolean isDefault = DataSourceManager.DEFAULT_DATASOURCE_NAME.equals(msc.getDataSource());
 				if(isDefault && context.isPrimary()) {
 					return true;
 				}else {
-					return Strings.equalsIgnoreCase(ormConfig.get().getDataSource(),ds);
+					return Strings.equalsIgnoreCase(msc.getDataSource(),ds);
 				}
 			}else {
 				if(annotated){
