@@ -41,6 +41,7 @@ public class DefaultOrmDynaContext implements DynaOrmContext {
     protected final Db          db;
     protected final OrmMetadata metadata;
 
+    protected boolean            primary;
     protected String             name;
     protected AppContext         appContext;
     protected OrmConfig          config;
@@ -62,6 +63,14 @@ public class DefaultOrmDynaContext implements DynaOrmContext {
         this.name     = name;
         this.db       = db;
         this.metadata = md;
+    }
+
+    public boolean isPrimary() {
+        return primary;
+    }
+
+    public void setPrimary(boolean primary) {
+        this.primary = primary;
     }
 
     @Override

@@ -33,6 +33,11 @@ import javax.sql.DataSource;
 public interface OrmContext extends MetadataContext, Named {
 
     /**
+     * Returns <code>true</code> if context is the default.
+     */
+    boolean isPrimary();
+
+    /**
      * Required. Returns the {@link OrmConfig}.
      */
 	OrmConfig getConfig();

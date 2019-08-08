@@ -82,7 +82,12 @@ public class DefaultOrmContext implements OrmContext,BeanPrimaryAware,PostCreate
 		this.setDataSource(dataSource);
 	}
 
-    @Override
+	@Override
+	public boolean isPrimary() {
+		return primary;
+	}
+
+	@Override
     public void setBeanPrimary(boolean primary) {
         this.primary = primary;
     }
