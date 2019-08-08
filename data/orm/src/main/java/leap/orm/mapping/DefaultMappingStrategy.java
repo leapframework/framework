@@ -197,7 +197,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 		String ds = context.getName();
 		boolean annotated = Classes.isAnnotationPresent(cls, DataSource.class);
 		if(null != modelsConfigs) {
-			OrmModelsConfig models = modelsConfigs.getModelsConfig(ds);
+			OrmModelsConfig models = modelsConfigs.getModelsConfig(ds, context.isPrimary());
 			if(null != models && models.contains(cls)) {
 				return true;
 			}
@@ -452,8 +452,15 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 	public EntityMappingBuilder createEntityMappingByClass(Class<?> entityType, String dataSourceName) {
 		final OrmMetadata metadata = metadataManager.createMetadata();
 		final String name = Strings.isEmpty(dataSourceName) ? DataSourceManager.DEFAULT_DATASOURCE_NAME : dataSourceName;
+		final boolean isDefault = DataSourceManager.DEFAULT_DATASOURCE_NAME.equals(name);
 
 		final MetadataContext context = new MetadataContext() {
+
+			@Override
+			public boolean isPrimary() {
+				return isDefault;
+			}
+
 			@Override
 			public String getName() {
 				return name;

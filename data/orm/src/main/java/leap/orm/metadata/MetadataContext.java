@@ -24,6 +24,8 @@ import leap.orm.naming.NamingStrategy;
 
 public interface MetadataContext {
 
+	boolean isPrimary();
+
     String getName();
 
 	Db getDb();

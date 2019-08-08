@@ -102,7 +102,7 @@ public class OrmConfigProcessor implements AppConfigProcessor {
 		
 		String datasource = reader.resolveAttribute(DATASOURCE,Orm.DEFAULT_NAME);
 
-		OrmModelsConfig models = mc.getModelsConfig(datasource);
+		OrmModelsConfig models = mc.getModelsConfig(datasource, false);
 		if(null == models) {
 			models = new OrmModelsConfig();
 			models.setDataSource(datasource);

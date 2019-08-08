@@ -32,6 +32,11 @@ public interface MappingConfigContext extends MetadataContext {
 	OrmContext getOrmContext();
 
     @Override
+    default boolean isPrimary() {
+        return getOrmContext().isPrimary();
+    }
+
+    @Override
     default String getName() {
         return getOrmContext().getName();
     }

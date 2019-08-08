@@ -15,46 +15,56 @@
  */
 package leap.orm.config;
 
+import leap.orm.Orm;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public class OrmModelsConfigs {
-	
-	//private OrmModelsConfig 			global;
-	private Map<String,OrmModelsConfig> modelsMap = new HashMap<String, OrmModelsConfig>();
-	
-	/*
-	public OrmModelsConfig getGlobal() {
-		return global;
-	}
-	
-	public void setGlobal(OrmModelsConfig global) {
-		this.global = global;
-	}
-	*/
-	public void addModels(String name, OrmModelsConfig models) {
-		modelsMap.put(name, models);
-	}
-	
-	public Map<String, OrmModelsConfig> getModelsConfigMap() {
-		return modelsMap;
-	}
-	
-	public OrmModelsConfig getModelsConfig(String name) {
-		return modelsMap.get(name);
-	}
+
+    //private OrmModelsConfig 			global;
+    private Map<String, OrmModelsConfig> modelsMap = new HashMap<String, OrmModelsConfig>();
+
+    /*
+    public OrmModelsConfig getGlobal() {
+        return global;
+    }
+
+    public void setGlobal(OrmModelsConfig global) {
+        this.global = global;
+    }
+    */
+    public void addModels(String name, OrmModelsConfig models) {
+        modelsMap.put(name, models);
+    }
+
+    public Map<String, OrmModelsConfig> getModelsConfigMap() {
+        return modelsMap;
+    }
+
+    public OrmModelsConfig getModelsConfig(String name) {
+        return getModelsConfig(name, false);
+    }
+
+    public OrmModelsConfig getModelsConfig(String name, boolean primary) {
+        OrmModelsConfig config = modelsMap.get(name);
+        if (null == config && primary) {
+            config = modelsMap.get(Orm.DEFAULT_NAME);
+        }
+        return config;
+    }
 
     public void removeBasePackage(String p) {
-        for(OrmModelsConfig c : modelsMap.values()) {
-            if(c.removeBasePackage(p) != null){
+        for (OrmModelsConfig c : modelsMap.values()) {
+            if (c.removeBasePackage(p) != null) {
                 return;
             }
         }
     }
 
     public void removeClassName(String cn) {
-        for(OrmModelsConfig c : modelsMap.values()) {
-            if(c.removeClass(cn) != null){
+        for (OrmModelsConfig c : modelsMap.values()) {
+            if (c.removeClass(cn) != null) {
                 return;
             }
         }

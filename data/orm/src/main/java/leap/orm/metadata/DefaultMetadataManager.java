@@ -279,6 +279,11 @@ public class DefaultMetadataManager implements OrmMetadataManager {
 		}
 
         @Override
+        public boolean isPrimary() {
+            return ormContext.isPrimary();
+        }
+
+        @Override
         public String getName() {
             return ormContext.getName();
         }

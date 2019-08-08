@@ -183,7 +183,12 @@ public class DefaultCreateEntityCommand extends AbstractDmoCommand implements Cr
             this.embs.put(cls, emb);
         }
 
-        @Override
+		@Override
+		public boolean isPrimary() {
+			return oc.isPrimary();
+		}
+
+		@Override
         public OrmContext getOrmContext() {
             return oc;
         }
