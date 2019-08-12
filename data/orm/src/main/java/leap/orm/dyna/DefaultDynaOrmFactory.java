@@ -45,6 +45,7 @@ import leap.orm.sql.SqlMetadata;
 import leap.orm.validation.EntityValidator;
 
 import javax.sql.DataSource;
+import java.util.Collection;
 
 public class DefaultDynaOrmFactory implements DynaOrmFactory {
 
@@ -116,16 +117,12 @@ public class DefaultDynaOrmFactory implements DynaOrmFactory {
         if(!register) {
             return createDynaContext(name, ds);
         }
-
-        DynaOrmContext context = createDynaContext(name, ds);
-
         if(registry.findContext(name) != null) {
         	//registry.removeContext(name);
             throw new ObjectExistsException("The context '" + name + "' already exists in registry!");
         }
-
+        DynaOrmContext context = createDynaContext(name, ds);
         registry.registerContext(context);
-
         return context;
     }
 
@@ -137,7 +134,17 @@ public class DefaultDynaOrmFactory implements DynaOrmFactory {
         }
     }
 
-	@Override
+    @Override
+    public void destroyAllDynaContext() {
+        Collection<OrmContext> contexts = registry.contexts();
+        for (OrmContext context : contexts) {
+            if (context instanceof DefaultOrmDynaContext) {
+                registry.removeContext(context.getName());
+            }
+        }
+    }
+
+    @Override
 	public DynaOrmContext existDynaContext(String name) {
 		DynaOrmContext registered =(DynaOrmContext) registry.findContext(name);
 		 return registered;

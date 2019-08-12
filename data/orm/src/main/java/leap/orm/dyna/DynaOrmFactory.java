@@ -67,6 +67,14 @@ public interface DynaOrmFactory {
     void destroyDynaContext(DynaOrmContext context);
 
     /**
+     * Destory all context, clearing all resources.
+     *
+     * <p/>
+     * Notice: The {@link DataSource} will not be destroyed.
+     */
+    void destroyAllDynaContext();
+
+    /**
      * check the context is exists
      * @param name
      * @return
