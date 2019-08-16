@@ -50,7 +50,7 @@ public class SpringConfiguration {
     }
 
     @Bean
-    public static BeanFactoryPostProcessor beanFactoryPostProcessor() {
+    public static BeanFactoryPostProcessor leapBeanFactoryPostProcessor() {
         return springBeanFactory -> {
             if(springBeanFactory instanceof DefaultListableBeanFactory) {
                 DefaultListableBeanFactory dbf = ((DefaultListableBeanFactory) springBeanFactory);
@@ -62,12 +62,12 @@ public class SpringConfiguration {
     }
 
     @Bean
-    public InstantiationAwareBeanPostProcessor beanPostProcessor() {
+    public InstantiationAwareBeanPostProcessor leapBeanPostProcessor() {
         return new SpringBeanPostProcessor();
     }
 
     @Bean
-    public EnvironmentPostProcessor environmentPostProcessor() {
+    public EnvironmentPostProcessor leapEnvironmentPostProcessor() {
         return new SpringEnvPostProcessor();
     }
 }

@@ -50,7 +50,7 @@ public class BootstrapRunListener implements SpringApplicationRunListener, Order
 
     @Override
     public void onStartup(ServletContext servletContext) throws ServletException {
-        sc = servletContext;
+        WebConfiguration.startedServletContext = servletContext;
     }
 
     public void starting() {
@@ -66,9 +66,7 @@ public class BootstrapRunListener implements SpringApplicationRunListener, Order
     }
 
     public void contextLoaded(ConfigurableApplicationContext context) {
-        if(null != sc) {
-            boot(sc);
-        }
+
     }
 
     //spring-boot 1.5

@@ -26,7 +26,10 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.reflect.ReflectClass;
 import leap.spring.boot.Global;
+import leap.web.AppBootstrap;
 import leap.web.AppFilter;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
@@ -47,10 +50,11 @@ public class WebConfiguration {
 
     private static final Log log = LogFactory.get(WebConfiguration.class);
 
-    private static AppFilter filter;
-    
+    static AppFilter      filter;
+    static ServletContext startedServletContext;
+
     static {
-        if(null == Global.leap) {
+        if (null == Global.leap) {
             Global.leap = new Global.LeapContext() {
                 @Override
                 public AppConfig config() {
@@ -84,7 +88,7 @@ public class WebConfiguration {
 
     @Bean
     @ConfigurationProperties(prefix = "leap.filter")
-    public FilterRegistrationBean appFilter(AppFilter filter,Environment env) {
+    public FilterRegistrationBean appFilter(AppFilter filter, Environment env) {
         FilterRegistrationBean r = new FilterRegistrationBean();
         r.setFilter(filter);
         r.addUrlPatterns("/*");
@@ -128,9 +132,59 @@ public class WebConfiguration {
         };
     }
 
+    private static boolean booted;
+
+    @Bean
+    public BeanPostProcessor leapBootingBeanPostProcessor() {
+        return new BeanPostProcessor() {
+            @Override
+            public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+                if (null != startedServletContext && !booted) {
+                    boot(startedServletContext);
+                    booted = true;
+                }
+                return bean;
+            }
+
+            @Override
+            public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+                return bean;
+            }
+        };
+    }
+
+    protected static void boot(ServletContext sc) {
+        if (AppBootstrap.isInitialized(sc)) {
+            return;
+        }
+
+        final AppBootstrap bootstrap = new AppBootstrap();
+        Global.leap = new Global.LeapContext() {
+            @Override
+            public AppConfig config() {
+                return bootstrap.getAppConfig();
+            }
+
+            @Override
+            public BeanFactory factory() {
+                return bootstrap.getBeanFactory();
+            }
+
+            @Override
+            public AppContext context() {
+                return bootstrap.getAppContext();
+            }
+        };
+        bootstrap.initialize(sc);
+        AppContext.setStandalone(bootstrap.getAppContext());
+    }
+
     public static class BootServlet extends GenericServlet {
         @Override
         public void init(ServletConfig config) throws ServletException {
+            if (booted) {
+                return;
+            }
             if (null != AppContext.getStandalone()) {
                 throw new IllegalStateException("Found duplicated standalone context");
             }
@@ -142,5 +196,4 @@ public class WebConfiguration {
             throw new UnsupportedOperationException();
         }
     }
-
 }
