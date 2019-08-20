@@ -32,6 +32,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static leap.lang.http.MimeTypes.APPLICATION_JSON_UTF8;
+
 public class Jsonp {
 
     protected Jsonp() {
@@ -79,7 +81,7 @@ public class Jsonp {
                 return;
             }
         }
-
+        response.setContentType(APPLICATION_JSON_UTF8);
         func.accept(writer);
     }
 
