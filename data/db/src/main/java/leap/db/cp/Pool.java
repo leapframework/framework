@@ -17,6 +17,7 @@ package leap.db.cp;
 
 import leap.lang.Args;
 import leap.lang.Classes;
+import leap.lang.SimpleThreadFactory;
 import leap.lang.Strings;
 import leap.lang.jdbc.JDBC;
 import leap.lang.logging.Log;
@@ -56,7 +57,8 @@ class Pool {
 	
 	private volatile String  name;
 	private volatile boolean closed = false;
-	
+	private boolean initializing = true;
+
 	public Pool(PoolProperties props) throws SQLException {
 		Args.notNull(props,"pool properties");
 		props.validate();
@@ -150,7 +152,30 @@ class Pool {
 			conn = syncPool.borrowConnection(maxWait);
 			if(null != conn) {
 				log.trace("[{}] A connection was borrowed from pool, setup and return.", getName());
-				setupConnectionOnBorrow(conn);
+
+				if(initializing) {
+					if(config.isInitializationFailRetry()) {
+						final long retryInterval = config.getInitializationFailRetryIntervalMs();
+						int retries = 1;
+						for (; ; ) {
+							try {
+								setupConnectionOnBorrow(conn);
+								break;
+							} catch (SQLException e) {
+								log.error("Initializing failed '{}', retry {}", e.getMessage(), retries++);
+								if(log.isDebugEnabled()) {
+									log.debug(e);
+								}
+								Thread.sleep(retryInterval);
+							}
+						}
+					}else {
+						setupConnectionOnBorrow(conn);
+					}
+					initializing = false;
+				}else {
+					setupConnectionOnBorrow(conn);
+				}
 				return conn;
 			}
 		}catch(InterruptedException e) {

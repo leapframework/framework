@@ -18,7 +18,10 @@
 
 package tests.cp;
 
+import leap.db.cp.PoolProperties;
+import leap.db.cp.PooledDataSource;
 import leap.lang.Threads;
+import org.h2.tools.Server;
 import org.junit.Test;
 import tests.cp.mock.MockConnection;
 
@@ -26,6 +29,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
 
 public class PoolTest extends PoolTestBase {
 
@@ -68,5 +72,30 @@ public class PoolTest extends PoolTestBase {
 
         ds.close();
         assertEquals(0, ms.getNrOfOpeningConnections());
+    }
+
+    @Test
+    public void testInitializationFailRetry() throws SQLException {
+        PoolProperties properties = new PoolProperties();
+        properties.setJdbcUrl("jdbc:h2:tcp://localhost/mem:test");
+        properties.setDriverClassName("org.h2.Driver");
+        properties.setUsername("root");
+        properties.setPassword("1");
+        properties.setInitializationFailRetry(true);
+
+        Executors.newCachedThreadPool().submit(() -> {
+            Threads.sleep(2000);
+            try {
+                System.out.println("Start tcp server");
+                Server.createTcpServer(new String[]{}).start();
+            }catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        PooledDataSource ds = new PooledDataSource(properties);
+        try(Connection conn = ds.getConnection()) {
+
+        }
     }
 }
