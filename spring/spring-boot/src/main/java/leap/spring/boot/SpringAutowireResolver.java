@@ -21,16 +21,20 @@ import leap.lang.Factory;
 import leap.lang.Objects2;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.QualifierAnnotationAutowireCandidateResolver;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.DependencyDescriptor;
 import org.springframework.beans.factory.support.AutowireCandidateResolver;
+import org.springframework.context.annotation.ContextAnnotationAutowireCandidateResolver;
 
 import javax.sql.DataSource;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Collection;
 
-final class SpringAutowireResolver implements AutowireCandidateResolver {
+final class SpringAutowireResolver extends ContextAnnotationAutowireCandidateResolver implements AutowireCandidateResolver {
 
     private static final Log log = LogFactory.get(SpringAutowireResolver.class);
 
@@ -51,6 +55,24 @@ final class SpringAutowireResolver implements AutowireCandidateResolver {
     @Override
     public Object getLazyResolutionProxyIfNecessary(DependencyDescriptor descriptor, String beanName) {
         return null != original ? original.getLazyResolutionProxyIfNecessary(descriptor, beanName) : null;
+    }
+
+    //spring 5.0
+    public boolean isRequired(DependencyDescriptor descriptor) {
+        if(null != original && original instanceof QualifierAnnotationAutowireCandidateResolver) {
+            return ((QualifierAnnotationAutowireCandidateResolver) original).isRequired(descriptor);
+        }
+        return super.isRequired(descriptor);
+    }
+
+    //spring 5.0
+    public boolean hasQualifier(DependencyDescriptor descriptor) {
+        for (Annotation ann : descriptor.getAnnotations()) {
+            if (isQualifier(ann.annotationType())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
