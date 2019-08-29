@@ -38,4 +38,7 @@ public interface TimeExpirable extends Expirable {
      */
     long getCreated();
     
+    default boolean isExpired() {
+        return getExpiresInFormNow() > 0;
+    }
 }
