@@ -771,9 +771,17 @@ public abstract class Model implements Getter,ValidatableBean,JsonStringable {
      * @throws RecordNotSavedException if the record not updated.
      */
     public final <T extends Model> T update() throws RecordNotSavedException{
-    	if(!tryUpdate()) {
-    		throw new RecordNotSavedException("Record not updated");
-    	}
+        _init();
+
+        Object id = id();
+        if(null == id){
+            throw new IllegalStateException("Cannot update, id is null");
+        }
+        if(!doUpdate(id)) {
+            if(!dao.exists(em.getEntityName(), id)) {
+                throw new RecordNotSavedException("Record not updated");
+            }
+        }
     	return (T)this;
     }
     
