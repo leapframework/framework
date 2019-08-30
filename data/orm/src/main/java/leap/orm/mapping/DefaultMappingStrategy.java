@@ -54,6 +54,7 @@ import leap.orm.metadata.OrmMetadataManager;
 import leap.orm.model.Model;
 import leap.orm.naming.NamingStrategy;
 import leap.orm.serialize.FieldSerializer;
+import leap.orm.sql.SqlMappings;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
@@ -77,6 +78,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
     protected @Inject PostDeleteListener[] postDeleteListeners;
     protected @Inject PostLoadListener[]   postLoadListeners;
     protected @Inject OrmConfig			   ormConfig;
+	protected @Inject SqlMappings		   sqlMappings;
     protected @Inject NamingStrategy       namingStrategy;
     protected @Inject OrmMetadataManager   metadataManager;
     protected @Inject AppContext		   appContext;
@@ -474,6 +476,11 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 			@Override
 			public OrmConfig getConfig() {
 				return ormConfig;
+			}
+
+			@Override
+			public SqlMappings getSqlMappings() {
+				return sqlMappings;
 			}
 
 			@Override

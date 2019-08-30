@@ -32,6 +32,7 @@ import leap.orm.query.QueryFactory;
 import leap.orm.reader.EntityReader;
 import leap.orm.reader.RowReader;
 import leap.orm.sql.SqlFactory;
+import leap.orm.sql.SqlMappings;
 import leap.orm.validation.EntityValidator;
 
 import javax.sql.DataSource;
@@ -45,6 +46,7 @@ public class DefaultOrmDynaContext implements DynaOrmContext {
     protected String             name;
     protected AppContext         appContext;
     protected OrmConfig          config;
+    protected SqlMappings        sqlMappings;
     protected Dao                dao;
     protected Dmo                dmo;
     protected OrmMetadataManager metadataManager;
@@ -86,6 +88,11 @@ public class DefaultOrmDynaContext implements DynaOrmContext {
     @Override
     public OrmConfig getConfig() {
         return config;
+    }
+
+    @Override
+    public SqlMappings getSqlMappings() {
+        return sqlMappings;
     }
 
     @Override
@@ -176,6 +183,9 @@ public class DefaultOrmDynaContext implements DynaOrmContext {
         this.config = config;
     }
 
+    public void setSqlMappings(SqlMappings sqlMappings) {
+        this.sqlMappings = sqlMappings;
+    }
 
     public void setDao(Dao dao) {
         this.dao = dao;

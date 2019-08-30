@@ -21,6 +21,7 @@ import leap.orm.OrmConfig;
 import leap.orm.OrmMetadata;
 import leap.orm.mapping.MappingStrategy;
 import leap.orm.naming.NamingStrategy;
+import leap.orm.sql.SqlMappings;
 
 public interface MetadataContext {
 
@@ -31,6 +32,8 @@ public interface MetadataContext {
 	Db getDb();
 	
 	OrmConfig getConfig();
+
+	SqlMappings getSqlMappings();
 	
 	AppContext getAppContext();
 	

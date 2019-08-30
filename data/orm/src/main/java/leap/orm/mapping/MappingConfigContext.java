@@ -23,6 +23,7 @@ import leap.orm.OrmMetadata;
 import leap.orm.metadata.MetadataContext;
 import leap.orm.metadata.OrmMetadataManager;
 import leap.orm.naming.NamingStrategy;
+import leap.orm.sql.SqlMappings;
 
 public interface MappingConfigContext extends MetadataContext {
 
@@ -49,6 +50,11 @@ public interface MappingConfigContext extends MetadataContext {
     @Override
     default OrmConfig getConfig() {
         return getOrmContext().getConfig();
+    }
+
+    @Override
+    default SqlMappings getSqlMappings() {
+        return getOrmContext().getSqlMappings();
     }
 
     @Override

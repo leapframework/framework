@@ -41,6 +41,7 @@ import leap.orm.query.QueryFactory;
 import leap.orm.reader.EntityReader;
 import leap.orm.reader.RowReader;
 import leap.orm.sql.SqlFactory;
+import leap.orm.sql.SqlMappings;
 import leap.orm.sql.SqlMetadata;
 import leap.orm.validation.EntityValidator;
 
@@ -52,6 +53,7 @@ public class DefaultDynaOrmFactory implements DynaOrmFactory {
     protected @Inject BeanFactory        bf;
     protected @Inject AppContext         appContext;
     protected @Inject OrmConfig          config;
+    protected @Inject SqlMappings        sqlMappings;
     protected @Inject OrmRegistry        registry;
     protected @Inject OrmMetadataManager omm;
     protected @Inject MappingStrategy    mappingStrategy;
@@ -91,6 +93,7 @@ public class DefaultDynaOrmFactory implements DynaOrmFactory {
 
         context.setAppContext(appContext);
         context.setConfig(config);
+        context.setSqlMappings(sqlMappings);
         context.setMetadataManager(omm);
         context.setMappingStrategy(mappingStrategy);
         context.setNamingStrategy(namingStrategy);

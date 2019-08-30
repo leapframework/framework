@@ -43,6 +43,7 @@ import leap.orm.query.QueryFactory;
 import leap.orm.reader.EntityReader;
 import leap.orm.reader.RowReader;
 import leap.orm.sql.SqlFactory;
+import leap.orm.sql.SqlMappings;
 import leap.orm.validation.EntityValidator;
 
 import javax.sql.DataSource;
@@ -65,6 +66,7 @@ public class DefaultOrmContext implements OrmContext,BeanPrimaryAware,PostCreate
     protected @Inject @M EntityReader       entityReader;
     protected @Inject @M RowReader          rowReader;
     protected @Inject @M OrmConfig          config;
+    protected @Inject @M SqlMappings        sqlMappings;
     protected @Inject @M EntityValidator    entityValidator;
     protected @Inject @M EntityEventHandler entityEventHandler;
 
@@ -100,6 +102,11 @@ public class DefaultOrmContext implements OrmContext,BeanPrimaryAware,PostCreate
 	public void setConfig(OrmConfig config) {
 		_readonly.check();
 		this.config = config;
+	}
+
+	@Override
+	public SqlMappings getSqlMappings() {
+		return sqlMappings;
 	}
 
 	@Override

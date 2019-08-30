@@ -10,6 +10,8 @@
 
     <!-- config -->
     <bean type="leap.orm.OrmConfig" class="leap.orm.DefaultOrmConfig" primary="true"/>
+
+    <bean type="leap.orm.sql.SqlMappings" class="leap.orm.sql.DefaultSqlMappings" primary="true"/>
     
     <!-- factory -->
     <bean type="leap.orm.OrmFactory" class="leap.orm.DefaultOrmFactory" primary="true"/>
@@ -54,6 +56,7 @@
     <bean type="leap.orm.sql.SqlFactory" class="leap.orm.sql.DefaultSqlFactory" primary="true"/>
 	<bean type="leap.orm.sql.SqlSource"  class="leap.orm.sql.ClasspathSqlSource"/>
 	<bean type="leap.orm.sql.SqlReader"  class="leap.orm.sql.XmlSqlReader"/>
+    <bean type="leap.orm.sql.SqlInterceptor" class="leap.orm.sql.SqlFunctionMappingInterceptor"/>
 
     <!-- sql languages -->
     <bean name="dynamic" type="leap.orm.sql.SqlLanguage"  class="leap.orm.sql.DynamicSqlLanguage" primary="true">

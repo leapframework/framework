@@ -22,6 +22,7 @@ import leap.core.annotation.Inject;
 import leap.core.cache.Cache;
 import leap.core.cache.SimpleLRUCache;
 import leap.core.el.ExpressionLanguage;
+import leap.lang.Strings;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.orm.metadata.MetadataContext;
@@ -32,15 +33,16 @@ import leap.orm.sql.parser.SqlParser;
 import java.util.ArrayList;
 import java.util.List;
 
-@Configurable(prefix="orm.dynamicSQL")
-public class DynamicSqlLanguage implements SqlLanguage,AppReloadListener {
-	
-	private static final Log log = LogFactory.get(DynamicSqlLanguage.class);
-	
-	protected Boolean                    smart;
-	protected @Inject ExpressionLanguage expressionLanguage;
-	
-	private Cache<String, List<Sql>> cache = new SimpleLRUCache<>();
+@Configurable(prefix = "orm.dynamicSQL")
+public class DynamicSqlLanguage implements SqlLanguage, AppReloadListener {
+
+    private static final Log log = LogFactory.get(DynamicSqlLanguage.class);
+
+    protected         Boolean            smart;
+    protected @Inject ExpressionLanguage expressionLanguage;
+    protected @Inject SqlInterceptor[]   sqlInterceptors;
+
+    private Cache<String, List<Sql>> cache = new SimpleLRUCache<>();
 
     private Cache<String, List<DynamicSql.ExecutionSqls>> executionCache = new SimpleLRUCache<>();
 
@@ -52,27 +54,27 @@ public class DynamicSqlLanguage implements SqlLanguage,AppReloadListener {
     }
 
     @ConfigProperty
-	public void setMode(String mode) {
-	    if("simple".equals(mode)) {
-	        smart = false;
-	    }else if("smart".equals(mode)) {
-	        smart = true;
-	    }else{
-	        throw new IllegalArgumentException("The mode must be 'simple' or 'smart'");
-	    }
-	}
+    public void setMode(String mode) {
+        if ("simple".equals(mode)) {
+            smart = false;
+        } else if ("smart".equals(mode)) {
+            smart = true;
+        } else {
+            throw new IllegalArgumentException("The mode must be 'simple' or 'smart'");
+        }
+    }
 
-	public boolean isSimple() {
-	    return !smart();
-	}
-	
+    public boolean isSimple() {
+        return !smart();
+    }
+
     public ExpressionLanguage getExpressionLanguage() {
-		return expressionLanguage;
-	}
+        return expressionLanguage;
+    }
 
-	public void setExpressionLanguage(ExpressionLanguage expressionLanguage) {
-		this.expressionLanguage = expressionLanguage;
-	}
+    public void setExpressionLanguage(ExpressionLanguage expressionLanguage) {
+        this.expressionLanguage = expressionLanguage;
+    }
 
     @Override
     public List<SqlClause> parseClauses(MetadataContext context, String text, Options options) throws SqlClauseException {
@@ -80,7 +82,7 @@ public class DynamicSqlLanguage implements SqlLanguage,AppReloadListener {
 
         List<SqlClause> clauses = new ArrayList<>();
 
-        for(Sql sql : sqls){
+        for (Sql sql : sqls) {
             clauses.add(new DynamicSqlClause(this, new DynamicSql(this, context, sql, options)));
         }
 
@@ -96,7 +98,7 @@ public class DynamicSqlLanguage implements SqlLanguage,AppReloadListener {
     public DynamicSql.ExecutionSqls parseExecutionSqls(MetadataContext context, String sql, Options options) {
         List<DynamicSql.ExecutionSqls> sqls = doParseExecutionSqls(context, sql, options);
 
-        if(sqls.size() > 1) {
+        if (sqls.size() > 1) {
             throw new IllegalStateException("Parsing multi sqls");
         }
 
@@ -108,40 +110,40 @@ public class DynamicSqlLanguage implements SqlLanguage,AppReloadListener {
 
         List<DynamicSql.ExecutionSqls> sqls = executionCache.get(key);
 
-        if(null == sqls) {
+        if (null == sqls) {
             log.trace("Parsing sql :\n {}", text);
             sqls = new ArrayList<>();
 
             List<Sql> rawSqls = createParser(text).sqls();
-            for(Sql sql : rawSqls) {
+            for (Sql sql : rawSqls) {
                 sql.prepare(context);
             }
 
-            if(smart()) {
+            if (smart()) {
                 List<Sql> resolvedSqls = createParser(text).sqls();
-                for(Sql sql : resolvedSqls) {
+                for (Sql sql : resolvedSqls) {
                     sql.prepare(context);
                 }
 
-                for(int i=0;i<resolvedSqls.size();i++) {
+                for (int i = 0; i < resolvedSqls.size(); i++) {
                     Sql s = resolvedSqls.get(i);
 
-                    s = new SqlResolver(context,s).resolve();
+                    s = new SqlResolver(context, s).resolve();
 
-                    if(null == options.getFilterColumnEnabled() || options.getFilterColumnEnabled()) {
+                    if (null == options.getFilterColumnEnabled() || options.getFilterColumnEnabled()) {
                         processWhereFields(context, s);
                     }
 
-                    if(null == options.getQueryFilterEnabled() || options.getQueryFilterEnabled()) {
+                    if (null == options.getQueryFilterEnabled() || options.getQueryFilterEnabled()) {
                         processQueryFilter(context, s);
                     }
 
-                    sqls.add(new DynamicSql.ExecutionSqls(rawSqls.get(i),s));
+                    sqls.add(new DynamicSql.ExecutionSqls(rawSqls.get(i), s));
                 }
 
-            }else{
-                for(Sql s : rawSqls) {
-                    sqls.add(new DynamicSql.ExecutionSqls(s,s));
+            } else {
+                for (Sql s : rawSqls) {
+                    sqls.add(new DynamicSql.ExecutionSqls(s, s));
                 }
             }
 
@@ -149,49 +151,57 @@ public class DynamicSqlLanguage implements SqlLanguage,AppReloadListener {
         }
         return sqls;
     }
-	
-	protected List<Sql> doParseDynaSql(MetadataContext context, String text) {
+
+    protected List<Sql> doParseDynaSql(MetadataContext context, String text) {
         String key = context.getName() + "___" + text;
 
-		List<Sql> sqls = cache.get(key);
+        List<Sql> sqls = cache.get(key);
 
-		if(null == sqls) {
-			log.trace("Parsing dyna sql :\n {}", text);
+        if (null == sqls) {
+            log.trace("Parsing dyna sql :\n {}", text);
+
+            for(SqlInterceptor interceptor : sqlInterceptors) {
+                String newSql = interceptor.preParsingSql(context, text);
+                if(!Strings.isEmpty(newSql) && !newSql.equals(text)) {
+                    log.debug("SQL changed by '{}' : {}", interceptor, newSql);
+                    text = newSql;
+                }
+            }
 
             SqlParser parser = new SqlParser(new Lexer(text, ParseLevel.DYNA), expressionLanguage);
             sqls = parser.sqls();
-            for(Sql sql : sqls) {
+            for (Sql sql : sqls) {
                 sql.prepare(context);
             }
 
-			cache.put(key, sqls);
-		}
+            cache.put(key, sqls);
+        }
 
-		return sqls;
-	}
+        return sqls;
+    }
 
-	protected SqlParser createParser(String text){
-		if(smart()){
-			return new SqlParser(new Lexer(text, ParseLevel.MORE),expressionLanguage);
-		}else{
-			return new SqlParser(new Lexer(text, ParseLevel.BASE),expressionLanguage);
-		}
-	}
+    protected SqlParser createParser(String text) {
+        if (smart()) {
+            return new SqlParser(new Lexer(text, ParseLevel.MORE), expressionLanguage);
+        } else {
+            return new SqlParser(new Lexer(text, ParseLevel.BASE), expressionLanguage);
+        }
+    }
 
     protected void processWhereFields(MetadataContext context, Sql sql) {
         new SqlFilterColumnProcessor(context, sql).process();
     }
 
     protected void processQueryFilter(MetadataContext context, Sql sql) {
-        if(context.getConfig().isQueryFilterEnabled()) {
+        if (context.getConfig().isQueryFilterEnabled()) {
             new SqlQueryFilterProcessor(context, sql).process();
         }
     }
-	
-	protected boolean smart() {
-	    if(null == smart) {
-	        smart = true;
-	    }
-	    return smart;
-	}
+
+    protected boolean smart() {
+        if (null == smart) {
+            smart = true;
+        }
+        return smart;
+    }
 }
