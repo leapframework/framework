@@ -71,6 +71,9 @@ public class BootstrapRunListener implements SpringApplicationRunListener, Order
 
     //spring-boot 1.5
     public void finished(ConfigurableApplicationContext context, Throwable exception) {
+        if(null != context.getParent()) {
+            return;
+        }
         started(context);
     }
 

@@ -122,11 +122,17 @@ public class SpringRunListener implements SpringApplicationRunListener, Ordered 
 
     @Override
     public void contextPrepared(ConfigurableApplicationContext context) {
+        if(null != context.getParent()) {
+            return;
+        }
         Resources.setResourceLoader(new LeapResourceLoader(context));
     }
 
     @Override
     public void contextLoaded(ConfigurableApplicationContext context) {
+        if(null != context.getParent()) {
+            return;
+        }
         Global.context = context;
     }
 
