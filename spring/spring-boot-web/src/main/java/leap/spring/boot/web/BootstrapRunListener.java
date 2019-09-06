@@ -19,10 +19,13 @@ package leap.spring.boot.web;
 import leap.core.AppConfig;
 import leap.core.AppContext;
 import leap.core.BeanFactory;
+import leap.lang.resource.Resources;
 import leap.spring.boot.Global;
+import leap.spring.boot.LeapResourceLoader;
 import leap.web.AppBootstrap;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringApplicationRunListener;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -62,18 +65,19 @@ public class BootstrapRunListener implements SpringApplicationRunListener, Order
     }
 
     public void contextPrepared(ConfigurableApplicationContext context) {
-
+        if(isRealContext(context)) {
+            Resources.setResourceLoader(new LeapResourceLoader(context));
+        }
     }
 
     public void contextLoaded(ConfigurableApplicationContext context) {
-
+        if(isRealContext(context)) {
+            Global.context = context;
+        }
     }
 
     //spring-boot 1.5
     public void finished(ConfigurableApplicationContext context, Throwable exception) {
-        if(null != context.getParent()) {
-            return;
-        }
         started(context);
     }
 
@@ -81,6 +85,17 @@ public class BootstrapRunListener implements SpringApplicationRunListener, Order
     public void started(ConfigurableApplicationContext context) { }
     public void running(ConfigurableApplicationContext context) { }
     public void failed(ConfigurableApplicationContext context, Throwable exception) {}
+
+    protected boolean isRealContext(ApplicationContext context) {
+        boolean web = context instanceof WebApplicationContext;
+        if(!web) {
+            return false;
+        }
+        if(null != context.getParent() && context.getParent() instanceof WebApplicationContext) {
+            return false;
+        }
+        return true;
+    }
 
     protected void boot(ServletContext sc) {
         if(AppBootstrap.isInitialized(sc)) {
