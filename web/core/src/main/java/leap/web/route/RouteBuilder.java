@@ -42,6 +42,7 @@ public class RouteBuilder extends ExtensibleBase implements RouteBase, Buildable
 	protected Integer			   successStatus;
 	protected Boolean			   corsEnabled;
 	protected String[]			   corsExposeHeaders;
+	protected Boolean			   securityDisabled;
 	protected Boolean			   csrfEnabled;
 	protected Boolean			   supportsMultipart;
 	protected Boolean              acceptValidationError;
@@ -157,7 +158,16 @@ public class RouteBuilder extends ExtensibleBase implements RouteBase, Buildable
     	this.corsExposeHeaders = headers;
 		return this;
 	}
-	
+
+	public Boolean getSecurityDisabled() {
+		return securityDisabled;
+	}
+
+	public RouteBuilder setSecurityDisabled(Boolean securityDisabled) {
+		this.securityDisabled = securityDisabled;
+		return this;
+	}
+
 	public Boolean getCsrfEnabled() {
 		return csrfEnabled;
 	}
@@ -362,6 +372,10 @@ public class RouteBuilder extends ExtensibleBase implements RouteBase, Buildable
         if(null != executable) {
             route.setExecutable(executable);
         }
+
+        if(null != securityDisabled) {
+        	route.setSecurityDisabled(securityDisabled);
+		}
 
         //success status.
         route.setSuccessStatus(successStatus);

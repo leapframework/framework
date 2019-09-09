@@ -128,7 +128,7 @@ public class DefaultSecuredPath extends SecuredObjectBase implements SecuredPath
 
         //check route's config
         ActionContext ac = context.getActionContext();
-        if(null != ac && null != ac.getRoute()) {
+        if(null != ac && null != ac.getRoute() && !ac.getRoute().isSecurityDisabled()) {
             SecuredRoute sr = new SecuredRoute(ac.getRoute());
             context.setSecuredObject(sr);
             Boolean result = sr.tryCheckAuthentication(context);

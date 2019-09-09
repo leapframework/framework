@@ -72,6 +72,16 @@ public interface NestedRoute extends Route {
     }
 
     @Override
+    default boolean isSecurityDisabled() {
+        return false;
+    }
+
+    @Override
+    default void setSecurityDisabled(Boolean disabled) {
+
+    }
+
+    @Override
     default boolean isCorsEnabled() {
         return false;
     }

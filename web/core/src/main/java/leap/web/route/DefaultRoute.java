@@ -49,6 +49,7 @@ class DefaultRoute extends ExtensibleBase implements Sourced, Route {
     protected Integer          successStatus;
     protected Boolean          corsEnabled;
     protected String[]         corsExposeHeaders;
+    protected Boolean          securityDisabled;
     protected Boolean          csrfEnabled;
     protected Boolean          supportsMultipart;
     protected boolean          acceptValidationError;
@@ -298,6 +299,16 @@ class DefaultRoute extends ExtensibleBase implements Sourced, Route {
 
     public void setAllowClientOnly(Boolean allowClientOnly) {
         this.allowClientOnly = allowClientOnly;
+    }
+
+    @Override
+    public boolean isSecurityDisabled() {
+        return null != securityDisabled && securityDisabled;
+    }
+
+    @Override
+    public void setSecurityDisabled(Boolean disabled) {
+        this.securityDisabled = disabled;
     }
 
     @Override

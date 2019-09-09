@@ -255,6 +255,19 @@ public interface Route extends RouteBase, Sourced, Extensible {
      * Sets the security.
      */
     void setSecurities(SimpleSecurity[] securities);
+
+	/**
+	 * Returns true if the route disables web security explicitly.
+	 *
+	 * <p/>
+	 * Default is false.
+	 */
+	boolean isSecurityDisabled();
+
+	/**
+	 * Disables the security or not.
+	 */
+	void setSecurityDisabled(Boolean disabled);
 	
 	/**
 	 * Returns <code>true</code> if the route enables csrf support explicitly.
