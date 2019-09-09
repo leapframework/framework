@@ -186,8 +186,24 @@ public class DefaultRoutes implements Routes {
                     if (route instanceof NestedRoute) {
                         NestedRoute nestedRoute = (NestedRoute) route;
                         route = nestedRoute.matchNested(method, path, in, out);
-                        if (null != route && !nestedRoute.isCheckAmbiguity()) {
-                            return route;
+                        if (null != route) {
+                            if(!matchedRoutes.isEmpty()) {
+                                boolean ignore = false;
+                                for(Route matchedRoute : matchedRoutes) {
+                                    int re = matchedRoute.getPathTemplate().compareTo(route.getPathTemplate());
+                                    if(re < 0) {
+                                        ignore = true;
+                                        break;
+                                    }
+                                }
+                                if(ignore) {
+                                    continue;
+                                }
+                            }
+
+                            if(!nestedRoute.isCheckAmbiguity()) {
+                                return route;
+                            }
                         }
                     }
 
