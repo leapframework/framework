@@ -34,4 +34,10 @@ public class FiltersParser extends ScelParser {
         throw new BadRequestException(message + ", " + describePosition());
     }
 
+    public static ScelExpr parse(String expr, Boolean allowSingleExpr) {
+        ScelParser scelParser = new ScelParser(expr);
+        scelParser.setAllowSingleExpr(allowSingleExpr);
+        return scelParser.expr();
+    }
+
 }

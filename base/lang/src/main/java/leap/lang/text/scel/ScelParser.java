@@ -43,6 +43,8 @@ public class ScelParser extends AbstractStringParser {
         OPS.put(s, token);
     }
 
+    private boolean allowSingleExpr = false;
+
     static {
         op(ScelToken.LIKE);
         op(ScelToken.IS);
@@ -119,10 +121,15 @@ public class ScelParser extends AbstractStringParser {
                     }
 
                     if (scanName()) {
-                        if (scanOperator()) {
-                            scanValue();
+                        Boolean scan = scanOperator();
+                        if (null == scan) {
+                            andOr = false;
+                        } else {
+                            if (scan) {
+                                scanValue();
+                            }
+                            andOr = true;
                         }
-                        andOr = true;
                     }
             }
         }
@@ -153,12 +160,17 @@ public class ScelParser extends AbstractStringParser {
         return true;
     }
 
-    private boolean scanOperator() {
+    private Boolean scanOperator() {
         skipWhitespaces();
 
-        if (eof()) {
-            error("Expected operator, but eof");
+        if (allowSingleExpr && eof()) {
+            return null;
+        } else {
+            if (eof()) {
+                error("Expected operator, but eof");
+            }
         }
+
 
         if (ch == ':') {
             nodes.add(EQ);
@@ -168,11 +180,32 @@ public class ScelParser extends AbstractStringParser {
 
         String op = nextLiteral();
 
+        if (!preProcessOp(op)) {
+            return null;
+        }
+
         ScelToken token = OPS.get(op.toUpperCase());
         if (null == token) {
             error("Invalid operator '" + op + "'");
         }
 
+        return processOperator(token, op);
+    }
+
+    protected boolean preProcessOp(String op) {
+        if (allowSingleExpr) {
+            if (op.equalsIgnoreCase("and")) {
+                nodes.add(new ScelNode(ScelToken.AND, op));
+                return false;
+            } else if (op.equalsIgnoreCase("or")) {
+                nodes.add(new ScelNode(ScelToken.OR, op));
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean processOperator(ScelToken token, String op) {
         if (token == ScelToken.NOT) {
             String s = nextLiteral();
             if (OPS.get(s.toUpperCase()) == ScelToken.IN) {
@@ -480,4 +513,7 @@ public class ScelParser extends AbstractStringParser {
         return s;
     }
 
+    public void setAllowSingleExpr(boolean allowSingleExpr) {
+        this.allowSingleExpr = allowSingleExpr;
+    }
 }

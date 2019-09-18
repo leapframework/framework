@@ -50,6 +50,8 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
     protected Map<String, String> groupByExprs = new SimpleCaseInsensitiveMap<>();
     protected Map<String, String> selectExprs = new SimpleCaseInsensitiveMap<>();
     protected Map<String, String> orderByExprs = new SimpleCaseInsensitiveMap<>();
+    protected Map<String, String> filtersExprs = new SimpleCaseInsensitiveMap<>();
+    protected Map<String, String> aggregatesExprs = new SimpleCaseInsensitiveMap<>();
 
     protected List<FieldMappingBuilder>     fieldMappings      = new ArrayList<>();
     protected EntityExecutionInterceptor    insertInterceptor;
@@ -327,6 +329,30 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
 
     public void setOrderByExprs(Map<String, String> orderByExprs) {
         this.orderByExprs = orderByExprs;
+    }
+
+    public void addFiltersExpr(String name, String expr) {
+        filtersExprs.put(name, expr);
+    }
+
+    public Map<String, String> getFiltersExprs() {
+        return filtersExprs;
+    }
+
+    public void setFiltersExprs(Map<String, String> filtersExprs) {
+        this.filtersExprs = filtersExprs;
+    }
+
+    public void addAggregatesExpr(String name, String expr) {
+        aggregatesExprs.put(name, expr);
+    }
+
+    public Map<String, String> getAggregatesExprs() {
+        return aggregatesExprs;
+    }
+
+    public void setAggregatesExprs(Map<String, String> aggregatesExprs) {
+        this.aggregatesExprs = aggregatesExprs;
     }
 
     public boolean mayBeJoinEntityOf(EntityMappingBuilder e1, EntityMappingBuilder e2) {
@@ -644,7 +670,7 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
                         Builders.buildArray(relationProperties, new RelationProperty[0]),
                         autoCreateTable, queryFilterEnabled == null ? false : queryFilterEnabled,
                         autoValidate,
-                        remote, remoteSettings, groupByExprs, selectExprs, orderByExprs,
+                        remote, remoteSettings, groupByExprs, selectExprs, orderByExprs, filtersExprs, aggregatesExprs,
                         listeners.build());
 
         em.getExtensions().putAll(extensions);

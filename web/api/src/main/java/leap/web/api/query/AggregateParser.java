@@ -34,7 +34,15 @@ public class AggregateParser {
         funcs.add("count");
     }
 
+    public static Aggregate parse(String expr, Boolean allowSingleExpr) {
+        return processParse(expr, allowSingleExpr);
+    }
+
     public static Aggregate parse(String expr) {
+        return processParse(expr, false);
+    }
+
+    private static Aggregate processParse(String expr, Boolean allowSingleExpr) {
         List<Aggregate.Item> items = new ArrayList<>();
         Aggregate.Item item;
 
@@ -43,8 +51,13 @@ public class AggregateParser {
 
             for(String part : parts) {
                 int index0 = part.indexOf('(');
-                if(index0 <= 0) {
+
+                if (!allowSingleExpr && index0 <= 0) {
                     invalidExpr(expr);
+                } else if (allowSingleExpr && index0 <= 0) {
+                    item = new Aggregate.Item(part, null, null);
+                    items.add(item);
+                    continue;
                 }
 
                 int index1 = part.indexOf(')', index0);
@@ -57,19 +70,19 @@ public class AggregateParser {
                     throw new BadRequestException("Unsupported aggregation function '" + func + "'");
                 }
 
-                String field = part.substring(index0+1, index1).trim();
-                if(Strings.isEmpty(field)) {
+                String name = part.substring(index0+1, index1).trim();
+                if(Strings.isEmpty(name)) {
                     invalidExpr(expr);
                 }
 
-                if(func.equalsIgnoreCase("count") && !"*".equals(field)) {
-                    throw new BadRequestException("Expected 'count(*)', actual '" + func + "(" + field + ")'");
+                if(func.equalsIgnoreCase("count") && !"*".equals(name)) {
+                    throw new BadRequestException("Expected 'count(*)', actual '" + func + "(" + name + ")'");
                 }
 
                 String rest  = index1 == part.length() - 1 ? "" : part.substring(index1 + 1).trim();
-                String alias = alias(rest, field, func);
+                String alias = alias(rest, name, func);
 
-                item = new Aggregate.Item(field, func, alias);
+                item = new Aggregate.Item(name, func, alias);
                 items.add(item);
             }
         }

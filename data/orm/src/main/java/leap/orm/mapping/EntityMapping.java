@@ -112,6 +112,8 @@ public class EntityMapping extends ExtensibleBase {
     protected final Map<String, String> groupByExprs;
     protected final Map<String, String> selectExprs;
     protected final Map<String, String> orderByExprs;
+    protected final Map<String, String> filtersExprs;
+    protected final Map<String, String> aggregatesExprs;
 
     private final Map<String, FieldMapping>    columnNameToFields;
     private final Map<String, FieldMapping>    fieldNameToFields;
@@ -133,6 +135,7 @@ public class EntityMapping extends ExtensibleBase {
                          boolean autoCreateTable,
                          boolean queryFilterEnabled, boolean autoValidate, boolean remote, RemoteSettings remoteSettings,
                          Map<String, String> groupByExprs, Map<String, String> selectExprs, Map<String, String> orderByExprs,
+                         Map<String, String> filtersExprs, Map<String, String> aggregatesExprs,
                          EntityListeners listeners) {
 
         Args.notEmpty(entityName, "entity name");
@@ -185,6 +188,8 @@ public class EntityMapping extends ExtensibleBase {
         this.groupByExprs = null == groupByExprs ? Collections.emptyMap() : Collections.unmodifiableMap(groupByExprs);
         this.selectExprs = null == selectExprs ? Collections.emptyMap() : Collections.unmodifiableMap(selectExprs);
         this.orderByExprs = null == orderByExprs ? Collections.emptyMap() : Collections.unmodifiableMap(orderByExprs);
+        this.filtersExprs = null == filtersExprs ? Collections.emptyMap() : Collections.unmodifiableMap(filtersExprs);
+        this.aggregatesExprs = null == aggregatesExprs ? Collections.emptyMap() : Collections.unmodifiableMap(aggregatesExprs);
 
         this.selfReferencingRelations = evalSelfReferencingRelations();
         this.selfReferencing = selfReferencingRelations.length > 0;
@@ -611,6 +616,14 @@ public class EntityMapping extends ExtensibleBase {
 
     public Map<String, String> getOrderByExprs() {
         return orderByExprs;
+    }
+
+    public Map<String, String> getFiltersExprs() {
+        return filtersExprs;
+    }
+
+    public Map<String, String> getAggregatesExprs() {
+        return aggregatesExprs;
     }
 
     public EntityListeners getListeners() {

@@ -42,18 +42,18 @@ public class Aggregate {
 
     public static final class Item {
 
-        private String field;
+        private String name;
         private String function;
         private String alias;
 
-        public Item(String field, String function, String alias) {
-            this.field = field;
+        public Item(String name, String function, String alias) {
+            this.name = name;
             this.function = function;
             this.alias = alias;
         }
 
-        public String field() {
-            return field;
+        public String name() {
+            return name;
         }
 
         public String function() {

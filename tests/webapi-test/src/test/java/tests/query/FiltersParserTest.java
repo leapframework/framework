@@ -27,6 +27,12 @@ import org.junit.Test;
 public class FiltersParserTest extends TestBase {
 
     @Test
+    public void testInvalidExpr() {
+        assertInvalidExpr("default0");
+        assertEquals("default0", FiltersParser.parse("default0", true).nodes()[0].literal());
+    }
+
+    @Test
     public void testSimpleParseExprs() {
         assertParse(3, "a eq 10");
         assertParse(5, "( a eq 10 )");
@@ -77,6 +83,15 @@ public class FiltersParserTest extends TestBase {
 
     private void assertParse(String expr, String expected) {
         assertEquals(expected, FiltersParser.parse(expr).toString());
+    }
+
+    private static void assertInvalidExpr(String expr) {
+        try{
+            FiltersParser.parse(expr);
+            fail("Should throw IllegalStateException");
+        }catch (IllegalStateException e) {
+
+        }
     }
 
 }

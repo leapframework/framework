@@ -67,7 +67,7 @@ public class AggregateParserTest extends TestBase {
     }
 
     private static void assertAggregate(Aggregate.Item item, String alias, String func, String field) {
-        assertEquals(field, item.field());
+        assertEquals(field, item.name());
         assertEquals(func, item.function());
         assertEquals(alias, item.alias());
     }

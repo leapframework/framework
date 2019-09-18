@@ -219,6 +219,9 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                                                 QueryOptions options,
                                                 Map<String, Object> filters,
                                                 Consumer<CriteriaQuery> callback, boolean filterByParams) {
+        // todo: remove to jmms
+        options.setAllowSingleExpr(true);
+
         ModelExecutionContext context = new DefaultModelExecutionContext(this.context);
         if (null == options) {
             options = new QueryOptions();
@@ -1119,17 +1122,25 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
 
         for (Aggregate.Item item : options.getResolvedAggregate().items()) {
-            if (item.field().equals("*")) {
-                select.add(item.function() + "(" + item.field() + ") as " + item.alias());
+            String expr = em.getAggregatesExprs().get(item.name());
+            if (Strings.isEmpty(expr)) {
+                if (Strings.isEmpty(item.function())) {
+                    throw new BadRequestException("Not find aggregation function in '" + item.name() + "'");
+                }
+                if (item.name().equals("*")) {
+                    select.add(item.function() + "(" + item.name() + ") as " + item.alias());
+                } else {
+                    MApiProperty p = am.tryGetProperty(item.name());
+                    if (null == p) {
+                        throw new BadRequestException("Property '" + item.name() + "' not exists, check the 'aggregates' param");
+                    }
+                    if (!p.isAggregatableExplicitly()) {
+                        throw new BadRequestException("Property '" + item.name() + "' is not aggregatable");
+                    }
+                    select.add(item.function() + "(" + query.alias() + "." + item.name() + ") as " + item.alias());
+                }
             } else {
-                MApiProperty p = am.tryGetProperty(item.field());
-                if (null == p) {
-                    throw new BadRequestException("Property '" + item.field() + "' not exists, check the 'aggregates' param");
-                }
-                if (!p.isAggregatableExplicitly()) {
-                    throw new BadRequestException("Property '" + item.field() + "' is not aggregatable");
-                }
-                select.add(item.function() + "(" + query.alias() + "." + item.field() + ") as " + item.alias());
+                select.add(expr + " as " + item.name());
             }
         }
 
@@ -1258,51 +1269,61 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
                         ScelName nameNode = (ScelName) nodes[i];
 
-                        String    alias = nameNode.alias();
+
                         String    name  = nameNode.literal();
-                        ScelToken op    = nodes[++i].token();
-                        String    value = nodes[++i].literal();
+                        String filtersExpr = em.getFiltersExprs().get(name);
+                        if (!Strings.isEmpty(filtersExpr)) {
+                            expr.append(filtersExpr);
+                        } else {
+                            String    alias = nameNode.alias();
+                            ScelToken op    = nodes[++i].token();
+                            String    value = nodes[++i].literal();
 
-                        if (null != alias) {
-                            if (null == jms || !jms.contains(alias)) {
-                                throw new BadRequestException("Unknown alias '" + alias + "' at property '" + nameNode.toString() + "'");
+                            if (null == op && Strings.isEmpty(value)) {
+                                throw new BadRequestException("Invalid filter expr in '" + name + "'");
                             }
-                        } else {
-                            alias = query.alias();
-                        }
 
-                        ModelAndProp modelAndProp = lookupModelAndProp(jms, alias, name);
-                        checkProperty(modelAndProp, name);
+                            if (null != alias) {
+                                if (null == jms || !jms.contains(alias)) {
+                                    throw new BadRequestException("Unknown alias '" + alias + "' at property '" + nameNode.toString() + "'");
+                                }
+                            } else {
+                                alias = query.alias();
+                            }
 
-                        String sqlOperator = toSqlOperator(op);
+                            ModelAndProp modelAndProp = lookupModelAndProp(jms, alias, name);
+                            checkProperty(modelAndProp, name);
 
-                        if (op == ScelToken.IS || op == ScelToken.IS_NOT) {
-                            expr.append(alias).append('.').append(name).append(' ').append(sqlOperator);
-                            continue;
-                        }
+                            String sqlOperator = toSqlOperator(op);
 
-                        if (op == ScelToken.SW) {
-                            value = "%" + value;
-                        } else if (op == ScelToken.EW) {
-                            value = value + "%";
-                        } else if (op == ScelToken.CO) {
-                            value = "%" + value + "%";
-                        }
+                            if (op == ScelToken.IS || op == ScelToken.IS_NOT) {
+                                expr.append(alias).append('.').append(name).append(' ').append(sqlOperator);
+                                continue;
+                            }
 
-                        //env
-                        if (op == ScelToken.IN || op == ScelToken.NOT_IN) {
-                            applyFieldFilterIn(expr, alias, modelAndProp.field, nodes[i].values(), sqlOperator);
-                        } else if (value.endsWith("()") && value.length() > 2) {
-                            String envName = value.substring(0, value.length() - 2);
-                            //todo: check env is valid or allowed?
-                            String valueExpr = "#{env." + envName + "}";
-                            applyFieldFilterExpr(expr, alias, modelAndProp.field, valueExpr, sqlOperator);
-                        }else if(value.startsWith("env.")) {
-                            //todo: check env is valid or allowed?
-                            String valueExpr = "#{" + value + "}";
-                            applyFieldFilterExpr(expr, alias, modelAndProp.field, valueExpr, sqlOperator);
-                        } else {
-                            applyFieldFilter(expr, alias, modelAndProp.field, value, sqlOperator);
+                            if (op == ScelToken.SW) {
+                                value = "%" + value;
+                            } else if (op == ScelToken.EW) {
+                                value = value + "%";
+                            } else if (op == ScelToken.CO) {
+                                value = "%" + value + "%";
+                            }
+
+                            //env
+                            if (op == ScelToken.IN || op == ScelToken.NOT_IN) {
+                                applyFieldFilterIn(expr, alias, modelAndProp.field, nodes[i].values(), sqlOperator);
+                            } else if (value.endsWith("()") && value.length() > 2) {
+                                String envName = value.substring(0, value.length() - 2);
+                                //todo: check env is valid or allowed?
+                                String valueExpr = "#{env." + envName + "}";
+                                applyFieldFilterExpr(expr, alias, modelAndProp.field, valueExpr, sqlOperator);
+                            }else if(value.startsWith("env.")) {
+                                //todo: check env is valid or allowed?
+                                String valueExpr = "#{" + value + "}";
+                                applyFieldFilterExpr(expr, alias, modelAndProp.field, valueExpr, sqlOperator);
+                            } else {
+                                applyFieldFilter(expr, alias, modelAndProp.field, value, sqlOperator);
+                            }
                         }
                     }
                 });

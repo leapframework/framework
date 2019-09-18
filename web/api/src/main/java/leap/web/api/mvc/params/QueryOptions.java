@@ -72,6 +72,18 @@ public class QueryOptions extends QueryOptionsBase {
     @JsonIgnore
     protected Map<String, Object> queryParams;
 
+    @NonParam
+    @JsonIgnore
+    protected Boolean allowSingleExpr;
+
+    public boolean getAllowSingleExpr() {
+        return (null == allowSingleExpr)?false:allowSingleExpr;
+    }
+
+    public void setAllowSingleExpr(boolean allowSingleExpr) {
+        this.allowSingleExpr = allowSingleExpr;
+    }
+
     public Integer getPageSize() {
         return pageSize;
     }
@@ -214,7 +226,7 @@ public class QueryOptions extends QueryOptionsBase {
     public ScelExpr getResolvedFilters() {
         if (null == resolvedFilters && !Strings.isEmpty(filters)) {
             try {
-                resolvedFilters = FiltersParser.parse(filters);
+                resolvedFilters = FiltersParser.parse(filters, getAllowSingleExpr());
             } catch (Exception e) {
                 throw new BadRequestException("Invalid filter expr '" + filters + "', " + e.getMessage(), e);
             }
@@ -250,7 +262,7 @@ public class QueryOptions extends QueryOptionsBase {
 
     public Aggregate getResolvedAggregate() {
         if (null == resolvedAggregate && Strings.isNotEmpty(aggregates)) {
-            resolvedAggregate = AggregateParser.parse(aggregates);
+            resolvedAggregate = AggregateParser.parse(aggregates, getAllowSingleExpr());
         }
         return resolvedAggregate;
     }
