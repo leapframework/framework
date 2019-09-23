@@ -52,7 +52,7 @@ public class SqlFunctionMappingInterceptor implements SqlInterceptor {
     }
 
     protected String replaceMappingFunction(String sql, String name, String mappingTo) {
-        int index = Strings.indexOfIgnoreCase(sql, name);
+        int index = indexOfIgnoreCaseFunction(sql, name, null);
         if(index >= 0) {
             do {
                 int start = index + name.length();
@@ -70,14 +70,33 @@ public class SqlFunctionMappingInterceptor implements SqlInterceptor {
                 }
 
                 if(match) {
-                    sql = sql.substring(0, index) + mappingTo + sql.substring(index+name.length());
+                    sql = sql.substring(0, index) + mappingTo + sql.substring(index + name.length());
                 }
 
-                index = Strings.indexOfIgnoreCase(sql, name, index);
+                index = indexOfIgnoreCaseFunction(sql, name, index + mappingTo.length());
 
-            }while (index >=0);
+            }while (index >=0 && index < sql.length());
         }
 
         return sql;
     }
+
+    protected int indexOfIgnoreCaseFunction(String sql, String name, Integer index) {
+        if (null == index) {
+            index = 0;
+        }
+        index = Strings.indexOfIgnoreCase(sql, name, index);
+        if (index <= 0) {
+            return index;
+        }
+        do {
+            char c = sql.charAt(index - 1);
+            if (c == ' ' || c == ',') {
+                return index;
+            }
+            index += name.length();
+        } while (index >= 0 && index < sql.length());
+        return -1;
+    }
+
 }
