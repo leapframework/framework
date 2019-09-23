@@ -235,7 +235,7 @@ public class DefaultRoutes implements Routes {
         // find the route of the highest priority
         return matchedRoutes.stream().min((r1, r2) -> {
             int re = r1.getPathTemplate().compareTo(r2.getPathTemplate());
-            if (0 == re && r1.isExecutable() == r2.isExecutable()) {
+            if (0 == re && r1.isExecutable() && r2.isExecutable()) {
                 log.error("Found multi matched routes -> \n{}", routesPrinter.print(matchedRoutes));
                 throw new IllegalStateException("Ambiguous handler methods mapped for path " + "'"
                         + r1.getPathTemplate()
