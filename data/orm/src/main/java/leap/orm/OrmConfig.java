@@ -96,6 +96,16 @@ public interface OrmConfig {
     boolean isMappingFieldExplicitly();
 
     /**
+     * Returns true if auto mapping table name with acronym.
+     *
+     * <p/>
+     * Example:
+     *
+     * 'User' entity will auto mapping table 'sys_user'.
+     */
+    boolean isAutoMappingTableWithAcronym();
+
+    /**
      * Returns true if the dao events is enabled by default.
      */
     boolean isEventsDefaultEnabled();

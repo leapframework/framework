@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config xmlns="http://www.leapframework.org/schema/config"
-		xmlns:el="http://www.leapframework.org/schema/el/config"
+        xmlns:el="http://www.leapframework.org/schema/el/config"
         xmlns:orm="http://www.leapframework.org/schema/orm/config">
 
     <base-package>leap.orm.tested</base-package>
@@ -13,21 +13,22 @@
         <property name="h2.url">jdbc:h2:mem:leap;DB_CLOSE_ON_EXIT=FALSE;INIT=RUNSCRIPT FROM './init_h2.sql'</property>
         <property name="h2.username">sa</property>
     </properties>
-    
+
     <properties prefix="orm">
-    	<property name="tableNamingStyle"  value="lower_underscore_"/>
-    	<property name="columnNamingStyle" value="lower_underscore_"/>
+        <property name="tableNamingStyle" value="lower_underscore_"/>
+        <property name="columnNamingStyle" value="lower_underscore_"/>
         <property name="modelCrossContext" value="true"/>
+        <property name="autoMappingTableWithAcronym" value="false"/>
         <!--
         <property name="convertPropertyForReadMap" value="true"/>
         -->
     </properties>
 
     <orm:config auto-generate-columns="true" query-filter-enabled="true"/>
-     
+
     <el:functions prefix="orm_test" class="leap.orm.tested.model.Model1Ref">
-    	<el:function method="test()"/>
+        <el:function method="test()"/>
     </el:functions>
-    
+
     <import resource="config.local.xml" check-existence="false" default-override="true"/>
 </config>   

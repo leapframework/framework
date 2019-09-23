@@ -151,10 +151,12 @@ public class SchemaMappingProcessor extends MappingProcessorAdapter {
 				return table;
 			}
 		}
-		
-		for(DbTable table : schema.getTables()){
-			if(context.getNamingStrategy().isTableOfWithAcronym(table.getName(), entityName)){
-				return table;
+
+		if(context.getConfig().isAutoMappingTableWithAcronym()) {
+			for (DbTable table : schema.getTables()) {
+				if (context.getNamingStrategy().isTableOfWithAcronym(table.getName(), entityName)) {
+					return table;
+				}
 			}
 		}
 		
