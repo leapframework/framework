@@ -16,12 +16,12 @@
 
 package leap.oauth2.webapp.user;
 
-import leap.core.security.UserPrincipal;
+import leap.web.security.user.UserDetails;
 
 public interface UserDetailsLookup {
 
     boolean isEnabled();
 
-    UserPrincipal lookupUserDetails(String userId, String name, String loginName);
+    UserDetails lookupUserDetails(String userId, String name, String loginName);
 
 }
