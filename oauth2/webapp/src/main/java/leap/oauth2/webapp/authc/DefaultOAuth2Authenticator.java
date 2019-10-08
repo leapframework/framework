@@ -166,12 +166,12 @@ public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCrea
 
     protected UserPrincipal lookupUserDetails(UserPrincipal user) {
         log.debug("lookup user details by '{}'", userDetailsLookup.getClass().getSimpleName());
-        user = userDetailsLookup.lookupUserDetails(user.getIdAsString(), user.getName(), user.getLoginName());
-        if (null == user) {
+        UserPrincipal ud = userDetailsLookup.lookupUserDetails(user.getIdAsString(), user.getName(), user.getLoginName());
+        if (null == ud) {
             log.error("User details '{}' '{}' not found", user.getId(), user.getLoginName());
             throw new UserNotFoundException();
         }
-        return user;
+        return ud;
     }
 
     protected CachedAuthentication getCachedAuthentication(Token at) {
