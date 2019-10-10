@@ -46,8 +46,17 @@ public class AppContext implements AttributeAccessor {
 	 * @see AppContextInitializer#initStandalone();
 	 */
 	public static AppContext initStandalone(){
+		return initStandalone(null);
+	}
+
+	/**
+	 * Initializes standalone app context if current context did not initialized.
+	 *
+	 * @see AppContextInitializer#initStandalone();
+	 */
+	public static AppContext initStandalone(Map<String, String> props){
 		if(tryGetCurrent() == null){
-			AppContextInitializer.initStandalone();	
+			AppContextInitializer.initStandalone(props);
 		}
 		return current();
 	}

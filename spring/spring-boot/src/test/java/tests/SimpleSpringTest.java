@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 
 import java.util.List;
+import java.util.Locale;
 
 public class SimpleSpringTest extends AbstractTest {
 
@@ -81,5 +82,7 @@ public class SimpleSpringTest extends AbstractTest {
     @Test
     public void testInitialProfile() {
         assertEquals(config.getProfile(), env.getActiveProfiles()[0]);
+        assertEquals("en", config.getProperty("default-locale"));
+        assertEquals(Locale.ENGLISH, config.getDefaultLocale());
     }
 }

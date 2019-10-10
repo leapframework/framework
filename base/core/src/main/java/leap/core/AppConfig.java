@@ -21,6 +21,7 @@ import leap.core.config.dyna.*;
 import leap.core.sys.SysPermissionDef;
 import leap.lang.Charsets;
 import leap.lang.Locales;
+import leap.lang.New;
 import leap.lang.accessor.PropertyGetter;
 import leap.lang.resource.ResourceSet;
 import leap.lang.text.PlaceholderResolver;
@@ -29,10 +30,7 @@ import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public interface AppConfig extends PropertyGetter {
 
@@ -56,6 +54,12 @@ public interface AppConfig extends PropertyGetter {
     Locale  DEFAULT_LOCALE       = Locales.DEFAULT_LOCALE;
     Charset DEFAULT_CHARSET      = Charsets.UTF_8;
 
+	Set<String> INIT_PROPERTIES = New.hashSet(INIT_PROPERTY_PROFILE,
+											  INIT_PROPERTY_DEBUG,
+			                                  INIT_PROPERTY_BASE_PACKAGE,
+											  INIT_PROPERTY_DEFAULT_LOCALE,
+											  INIT_PROPERTY_DEFAULT_CHARSET,
+									          INIT_PROPERTY_RELOAD, INIT_PROPERTY_LAZY_TEMPLATE);
     /**
 	 * Returns current profile name.
 	 */

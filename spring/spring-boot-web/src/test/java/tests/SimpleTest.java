@@ -17,11 +17,22 @@
 package tests;
 
 import app.TestFilter;
+import leap.core.AppConfig;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Map;
 
 public class SimpleTest extends AbstractTest {
+
+    @Autowired
+    protected AppConfig config;
+
+    @Test
+    public void testInitProperties() {
+        String v = config.getProperty("default-locale");
+        assertEquals("en", v);
+    }
 
     @Test
     public void testSimpleFilter() {

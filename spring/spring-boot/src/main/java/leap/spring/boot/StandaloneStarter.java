@@ -28,7 +28,7 @@ public class StandaloneStarter implements Starter {
     public void run(ApplicationArguments args) throws Exception {
         AppContextInitializer.setBasePackage(Global.bp);
 
-        AppContext.initStandalone();
+        AppContext.initStandalone(Global.extraInitPropertiesFromEnv());
 
         final AppContext context = AppContext.current();
         Global.leap = new Global.LeapContext() {

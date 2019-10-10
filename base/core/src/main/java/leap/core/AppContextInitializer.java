@@ -64,16 +64,20 @@ public class AppContextInitializer {
         return null == initialAppConfig ? null : initialAppConfig.get();
     }
 
-    public static void initStandalone() {
-        initStandalone(null);
+    public static AppContext newStandalone() {
+        return initStandalone(null, null, true);
     }
 
-    public static AppContext newStandalone() {
-        return initStandalone(null, true);
+    public static void initStandalone() {
+        initStandalone(null, null, true);
+    }
+
+    public static void initStandalone(Map<String, String> props) {
+        initStandalone(null, props, true);
     }
 
     public static void initStandalone(BeanFactory externalAppFactory) {
-        initStandalone(externalAppFactory, true);
+        initStandalone(externalAppFactory, null, true);
     }
 
     protected static ClassLoader getClassLoader() {
@@ -81,7 +85,7 @@ public class AppContextInitializer {
         return null == classLoaderGetter ? current : classLoaderGetter.getClassLoader(current);
     }
 
-    protected static synchronized AppContext initStandalone(BeanFactory externalAppFactory, boolean createNew) {
+    protected static synchronized AppContext initStandalone(BeanFactory externalAppFactory, Map<String, String> props, boolean createNew) {
         if (initializing) {
             return null;
         }
@@ -95,7 +99,7 @@ public class AppContextInitializer {
 
             log.debug("Starting standalone app...");
             AppConfigSource cs = Factory.newInstance(AppConfigSource.class);
-            config = cs.loadConfig(null, null);
+            config = cs.loadConfig(null, props);
 
             initialAppConfig.set(config);
 
