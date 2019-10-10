@@ -16,9 +16,9 @@
 package leap.db.platform;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 
 import leap.db.Db;
 import leap.db.DbAware;
@@ -110,7 +110,13 @@ public class GenericDbComparator implements DbComparator,DbAware {
 		
 		GenericSchemaChanges changes = db.createSchemaChanges();
 
-		compareTables(changes, Arrays2.sort(source.getTables()), Arrays2.sort(target.getTables()));
+		DbTable[] tables = Arrays2.filter(source.getTables(), new Predicate<DbTable>() {
+            public boolean test(DbTable table) {
+                return table.getName().indexOf(".") < 0;
+            }
+        }).toArray(new DbTable[]{});
+
+		compareTables(changes, tables, Arrays2.sort(target.getTables()));
 		compareSequences(changes, Arrays2.sort(source.getSequences()), Arrays2.sort(target.getSequences()));
 		
 	    return changes;
