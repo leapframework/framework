@@ -27,6 +27,10 @@ public class HomeController extends ControllerBase {
 	public void expr1(){
 		
 	}
+
+	public void error500() {
+		throw new RuntimeException("test 500 error");
+	}
 	
 	public void html() {
 		Results.renderView("/html.html");
