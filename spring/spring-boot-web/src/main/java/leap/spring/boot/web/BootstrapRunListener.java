@@ -22,6 +22,7 @@ import leap.core.BeanFactory;
 import leap.lang.resource.Resources;
 import leap.spring.boot.Global;
 import leap.spring.boot.LeapResourceLoader;
+import leap.spring.boot.SpringEnvPostProcessor;
 import leap.web.AppBootstrap;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringApplicationRunListener;
@@ -119,6 +120,6 @@ public class BootstrapRunListener implements SpringApplicationRunListener, Order
                 return bootstrap.getAppContext();
             }
         };
-        bootstrap.initialize(sc);
+        bootstrap.initialize(sc, Global.extraInitPropertiesFromEnv());
     }
 }

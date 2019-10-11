@@ -19,10 +19,15 @@ package leap.spring.boot;
 import leap.core.AppConfig;
 import leap.core.AppContext;
 import leap.core.BeanFactory;
+import leap.core.DefaultAppConfig;
 import leap.lang.Factory;
+import leap.lang.Strings;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class Global {
 
@@ -73,6 +78,20 @@ public class Global {
 
     public static BeanFactory factory() {
         return null == leap ? null : leap.factory();
+    }
+
+    public static Map<String, String> extraInitPropertiesFromEnv() {
+        if(null == env) {
+            throw new IllegalStateException("Spring env must be initialized");
+        }
+        Map<String, String> props = new HashMap<>();
+        for(String name : AppConfig.INIT_PROPERTIES) {
+            String v = env.getProperty(name);
+            if(!Strings.isEmpty(v)) {
+                props.put(name, v);
+            }
+        }
+        return props;
     }
 
     static void start() {

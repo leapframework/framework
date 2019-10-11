@@ -26,6 +26,7 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.reflect.ReflectClass;
 import leap.spring.boot.Global;
+import leap.spring.boot.SpringEnvPostProcessor;
 import leap.web.AppBootstrap;
 import leap.web.AppFilter;
 import org.springframework.beans.BeansException;
@@ -44,6 +45,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 
 import javax.servlet.*;
 import java.util.List;
+import java.util.Map;
 
 @Configuration
 public class WebConfiguration {
@@ -94,6 +96,11 @@ public class WebConfiguration {
         r.addUrlPatterns("/*");
         r.setName("app-filter");
         r.setOrder(Ordered.LOWEST_PRECEDENCE);
+
+        Map<String, String> initProps = Global.extraInitPropertiesFromEnv();
+        if(!initProps.isEmpty()) {
+            initProps.forEach((n, v) -> r.addInitParameter(n, v));
+        }
 
         if (!Strings.isEmpty(leap.spring.boot.Global.bp)) {
             r.addInitParameter(AppConfig.INIT_PROPERTY_BASE_PACKAGE, leap.spring.boot.Global.bp);
@@ -175,7 +182,7 @@ public class WebConfiguration {
                 return bootstrap.getAppContext();
             }
         };
-        bootstrap.initialize(sc);
+        bootstrap.initialize(sc, Global.extraInitPropertiesFromEnv());
         AppContext.setStandalone(bootstrap.getAppContext());
     }
 

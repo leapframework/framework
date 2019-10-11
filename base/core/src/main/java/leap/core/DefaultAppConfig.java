@@ -48,16 +48,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 	private static final Log log = LogFactory.get(DefaultAppConfig.class);
-	//all init properties
-	protected static Set<String> INIT_PROPERTIES = new HashSet<>();
-	static {
-		INIT_PROPERTIES.add(INIT_PROPERTY_PROFILE);
-		INIT_PROPERTIES.add(INIT_PROPERTY_BASE_PACKAGE);
-		INIT_PROPERTIES.add(INIT_PROPERTY_DEBUG);
-        INIT_PROPERTIES.add(INIT_PROPERTY_LAZY_TEMPLATE);
-		INIT_PROPERTIES.add(INIT_PROPERTY_DEFAULT_CHARSET);
-		INIT_PROPERTIES.add(INIT_PROPERTY_DEFAULT_LOCALE);
-	}
 
 	protected AppConfigSupport[]            initialSupports     = new AppConfigSupport[0];
     protected AppConfigSupport[]            preSupports         = new AppConfigSupport[0];

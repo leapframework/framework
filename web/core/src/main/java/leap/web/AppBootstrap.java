@@ -31,6 +31,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -75,8 +76,17 @@ public class AppBootstrap extends ServletContextInitializerBase implements Servl
 	}
 
 	public void initialize(ServletContext sc) {
+		initialize(sc, null);
+	}
+
+	public void initialize(ServletContext sc, Map<String,String> props) {
 		try {
-			bootApplication(sc, Servlets.getInitParamsMap(sc));
+			Map<String, String> initProps = Servlets.getInitParamsMap(sc);
+			if(null != props) {
+				initProps.putAll(props);
+			}
+
+			bootApplication(sc, initProps);
 
 			startApplication();
 
