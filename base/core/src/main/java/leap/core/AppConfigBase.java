@@ -16,6 +16,7 @@
 
 package leap.core;
 
+import leap.core.config.AppPropertyPrinter;
 import leap.core.config.dyna.PropertyProvider;
 
 public abstract class AppConfigBase implements AppConfig {
@@ -26,4 +27,5 @@ public abstract class AppConfigBase implements AppConfig {
 
     public abstract void setPropertyProvider(PropertyProvider pp);
 
+    public abstract void printProperties(AppPropertyPrinter printer);
 }

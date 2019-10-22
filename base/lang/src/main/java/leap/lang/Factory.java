@@ -125,8 +125,11 @@ public class Factory {
 	private static ResourceSet getAllClassNameResources(Class<?> type){
 		ResourceSet rs1 = Resources.scan(Urls.CLASSPATH_ALL_URL_PREFIX + META_PREFIX + type.getName().replace('.','/') + "/?*");
 		ResourceSet rs2 = Resources.scan(Urls.CLASSPATH_ALL_URL_PREFIX + META_PREFIX + type.getName());
-		
-		return new SimpleResourceSet(Arrays2.concat(rs1.toResourceArray(), rs2.toResourceArray()));
+
+		Resource[] array = Arrays2.concat(rs1.toResourceArray(), rs2.toResourceArray());
+		Arrays.sort(array, Comparator.comparing(Resource::getURLString));
+
+		return new SimpleResourceSet(array);
 	}
 	
 	private static ResourceSet getAllNamedClassNameResources(Class<?> type){

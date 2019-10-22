@@ -16,7 +16,13 @@
 
 package leap.core.config;
 
+import leap.lang.Objects2;
+
 public interface AppProperty {
+
+    default String getSourceString() {
+        return Objects2.toStringOrEmpty(getSource());
+    }
 
     Object getSource();
 

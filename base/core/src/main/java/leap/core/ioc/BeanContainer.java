@@ -18,6 +18,7 @@ package leap.core.ioc;
 import leap.core.*;
 import leap.core.annotation.*;
 import leap.core.config.AppConfigInitializer;
+import leap.core.config.AppPropertyPrinter;
 import leap.core.config.dyna.PropertyProvider;
 import leap.core.validation.annotations.NotEmpty;
 import leap.core.validation.annotations.NotNull;
@@ -298,6 +299,8 @@ public class BeanContainer implements BeanFactory {
 
             c.setPreSupports(preSupports.toArray(new AppConfigSupport[0]));
             c.setPostSupports(postSupports.toArray(new AppConfigSupport[0]));
+
+            c.printProperties(getBean(AppPropertyPrinter.class));
         }
 
         this.containerInited = true;

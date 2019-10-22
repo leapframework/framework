@@ -17,6 +17,7 @@
 package leap.spring.boot;
 
 import leap.core.AppConfigSupport;
+import leap.lang.annotation.Name;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -28,6 +29,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+@Name("spring-boot")
 public class LeapConfigSupport implements AppConfigSupport {
 
     private static final Log log = LogFactory.get(LeapConfigSupport.class);

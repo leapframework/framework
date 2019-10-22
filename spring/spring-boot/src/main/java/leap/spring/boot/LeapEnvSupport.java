@@ -17,12 +17,14 @@
 package leap.spring.boot;
 
 import leap.core.AppConfigSupport;
+import leap.lang.annotation.Name;
 import org.springframework.core.env.SystemEnvironmentPropertySource;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
+@Name("spring-env")
 public class LeapEnvSupport implements AppConfigSupport {
 
     private final SystemEnvironmentPropertySource env = new SystemEnvironmentPropertySource("env", (Map) System.getenv());

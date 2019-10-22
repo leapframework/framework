@@ -65,7 +65,6 @@ public class DefaultAppConfigSource implements AppConfigSource {
     }
 
     private static final AppProfileResolver      profileResolver = Factory.newInstance(AppProfileResolver.class);
-    private static final AppPropertyPrinter      propertyPrinter = Factory.newInstance(AppPropertyPrinter.class);
     private static final List<AppPropertyReader> propertyReaders = Factory.newInstances(AppPropertyReader.class);
     private static final List<AppConfigReader>   configReaders   = Factory.newInstances(AppConfigReader.class);
     private static final List<AppConfigListener> configListeners = Factory.newInstances(AppConfigListener.class);
@@ -445,12 +444,12 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
         protected void complete() {
             //Apply all the properties to config object.
-            config.loadProperties(getPropertiesMap());
+            config.loadProperties(properties);
             config.loadArrayProperties(this.arrayProperties);
 
             log.info("\n\n   *** {} : {} ***\n",INIT_PROPERTY_BASE_PACKAGE,config.basePackage);
             log.info("Load {} properties (includes system)",config.properties.size());
-            printProperties();
+//            printProperties();
 
             //resources
             try {
@@ -478,7 +477,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
             if(log.isDebugEnabled()){
                 StringWriter msg = new StringWriter();
                 PrintWriter writer = new PrintWriter(msg);
-                propertyPrinter.printProperties(this.properties.values(), writer);
+                //propertyPrinter.printProperties(this.properties.values(), writer);
                 log.debug("Print properties : \n\n{}",msg.toString());
             }
         }
