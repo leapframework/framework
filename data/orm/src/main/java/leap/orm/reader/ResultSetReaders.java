@@ -67,6 +67,11 @@ public class ResultSetReaders {
 														  final Class<? extends T> resultClass, final SqlCommand command){
 		return (c,rs) -> context.getRowReader().readList(c, rs, elementType, resultClass, command);
 	}
+
+	public static <T> SqlResultSetReader<List<T>> forNativeListRow(final OrmContext context, final Class<T> elementType,
+															 final Class<? extends T> resultClass, final SqlCommand command){
+		return (c,rs) -> context.getRowReader().readNativeList(c, rs, elementType, resultClass, command);
+	}
 	
 	protected ResultSetReaders(){
 		

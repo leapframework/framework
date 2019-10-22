@@ -36,6 +36,7 @@ import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.MappingNotFoundException;
 import leap.orm.query.CriteriaQuery;
 import leap.orm.query.EntityQuery;
+import leap.orm.query.NativeQuery;
 import leap.orm.query.Query;
 import leap.orm.sql.SqlCommand;
 import leap.orm.value.Entity;
@@ -442,6 +443,26 @@ public abstract class DaoWrapper extends Dao {
     @Override
     public <T> EntityQuery<T> createSqlQuery(EntityMapping em, Class<T> resultClass, String sql) {
         return dao().createSqlQuery(em, resultClass, sql);
+    }
+
+    @Override
+    public NativeQuery<Record> createNativeQuery(String sql) {
+        return dao().createNativeQuery(sql);
+    }
+
+    @Override
+    public NativeQuery<Record> createNativeQuery(String sql, Object... args) {
+        return dao().createNativeQuery(sql, args);
+    }
+
+    @Override
+    public <T> NativeQuery<T> createNativeQuery(Class<T> resultClass, String sql) {
+        return dao().createNativeQuery(resultClass, sql);
+    }
+
+    @Override
+    public <T> NativeQuery<T> createNativeQuery(Class<T> resultClass, String sql, Object... args) {
+        return dao().createNativeQuery(resultClass, sql, args);
     }
 
     @Override

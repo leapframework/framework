@@ -31,18 +31,16 @@ import leap.lang.params.ArrayParams;
 import leap.lang.tostring.ToStringBuilder;
 import leap.orm.Orm;
 import leap.orm.OrmContext;
-import leap.orm.OrmRegistry;
 import leap.orm.command.DeleteCommand;
 import leap.orm.command.InsertCommand;
 import leap.orm.command.UpdateCommand;
 import leap.orm.enums.RemoteType;
 import leap.orm.mapping.EntityMapping;
-import leap.orm.mapping.EntityNotFoundException;
 import leap.orm.mapping.MappingNotFoundException;
 import leap.orm.mapping.Mappings;
-import leap.orm.model.Model;
 import leap.orm.query.CriteriaQuery;
 import leap.orm.query.EntityQuery;
+import leap.orm.query.NativeQuery;
 import leap.orm.query.Query;
 import leap.orm.sql.Sql;
 import leap.orm.sql.SqlCommand;
@@ -56,7 +54,6 @@ import leap.orm.value.EntityWrapper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -674,7 +671,27 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 		});
     }
 
-	@Override
+    @Override
+    public NativeQuery<Record> createNativeQuery(String sql) {
+        return createNativeQuery(Record.class, sql);
+    }
+
+    @Override
+    public NativeQuery<Record> createNativeQuery(String sql, Object... args) {
+        return createNativeQuery(sql).args(args);
+    }
+
+    @Override
+    public <T> NativeQuery<T> createNativeQuery(Class<T> resultClass, String sql) {
+        return queryFactory().createNativeQuery(this, resultClass, sql);
+    }
+
+    @Override
+    public <T> NativeQuery<T> createNativeQuery(Class<T> resultClass, String sql, Object... args) {
+        return queryFactory().createNativeQuery(this, resultClass, sql).args(args);
+    }
+
+    @Override
     public <T> CriteriaQuery<T> createCriteriaQuery(Class<T> entityClass) {
 		Args.notNull(entityClass,"entity class");
 		return runInWrapperContext(em(entityClass), (context)->{

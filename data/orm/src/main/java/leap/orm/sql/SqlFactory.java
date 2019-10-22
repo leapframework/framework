@@ -26,6 +26,11 @@ public interface SqlFactory {
 	SqlCommand createSqlCommand(MetadataContext context, String sql);
 
     /**
+     * Creates a native jdbc {@link SqlCommand} by the given sql.
+     */
+    SqlCommand createNativeCommand(MetadataContext context, String sql);
+
+    /**
      * Creates an insert {@link SqlCommand} with all the fields in primary table of the given entity.
      */
 	default SqlCommand createInsertCommand(MetadataContext context,EntityMapping em) {

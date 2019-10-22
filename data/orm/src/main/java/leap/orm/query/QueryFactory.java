@@ -23,6 +23,8 @@ import leap.orm.sql.SqlCommand;
 public interface QueryFactory {
 	
 	<T> Query<T> createQuery(Dao dao,Class<T> resultClass, String sql);
+
+	<T> NativeQuery<T> createNativeQuery(Dao dao,Class<T> resultClass, String sql);
 	
 	<T> Query<T> createQuery(Dao dao,Class<T> resultClass, SqlCommand command);
 	

@@ -35,6 +35,12 @@ public class DefaultQueryFactory implements QueryFactory {
     }
 
 	@Override
+	public <T> NativeQuery<T> createNativeQuery(Dao dao, Class<T> resultClass, String sql) {
+		SqlCommand command = sqlFactory.createNativeCommand(dao.getOrmContext(), sql);
+		return new DefaultNativeQuery(dao, command, resultClass);
+	}
+
+	@Override
     public <T> CriteriaQuery<T> createCriteriaQuery(Dao dao, EntityMapping em, Class<T> targetType) {
 	    return new DefaultCriteriaQuery<T>(dao, em, targetType);
     }

@@ -78,10 +78,19 @@ public class DefaultRowReader implements RowReader {
     @Override
 	@SuppressWarnings("unchecked")
     public <T> List<T> readList(SqlExecutionContext context, ResultSet rs, Class<T> elementType, Class<? extends T> resultClass, SqlCommand command) throws SQLException {
+		return doReadList(context, rs, elementType, resultClass, command, false);
+    }
+
+	@Override
+	public <T> List<T> readNativeList(SqlExecutionContext context, ResultSet rs, Class<T> elementType, Class<? extends T> resultClass, SqlCommand command) throws SQLException {
+		return doReadList(context, rs, elementType, resultClass, command, true);
+	}
+
+	protected  <T> List<T> doReadList(SqlExecutionContext context, ResultSet rs, Class<T> elementType, Class<? extends T> resultClass, SqlCommand command, boolean readNative) throws SQLException {
 		List<T> list = new ArrayList<T>();
-		
+
 		if(rs.next()){
-			ResultColumn[] columns = createResultColumns(context, command, rs);
+			ResultColumn[] columns = createResultColumns(context, command, rs, readNative);
 
 			if(Record.class.equals(resultClass)) {
 				do{
@@ -98,12 +107,12 @@ public class DefaultRowReader implements RowReader {
 				}while(rs.next());
 			}
 		}
-		
+
 		log.debug("Read {} rows from result(s)",list.size());
-		
-	    return list;
-    }
-	
+
+		return list;
+	}
+
 	@SuppressWarnings("unchecked")
     protected <T> T readCurrentRow(SqlExecutionContext context, ResultSet rs,ResultColumn[] columns,Class<T> resultClass) throws SQLException {
 		
@@ -181,8 +190,11 @@ public class DefaultRowReader implements RowReader {
 		return key;
 	}
 
-
 	protected static ResultColumn[] createResultColumns(SqlExecutionContext context, SqlCommand command, ResultSet rs) throws SQLException {
+		return createResultColumns(context, command, rs, false);
+	}
+
+	protected static ResultColumn[] createResultColumns(SqlExecutionContext context, SqlCommand command, ResultSet rs, boolean readNative) throws SQLException {
 		ResultSetMetaData rsm = rs.getMetaData();
 		NamingStrategy    ns  = context.getOrmContext().getNamingStrategy();
 
@@ -203,7 +215,9 @@ public class DefaultRowReader implements RowReader {
 				c.isAlias   = true;
 				c.fieldName = select.getSelectItemAlias(c.columnLabel);
 			}else {
-				c.fieldName = ns.columnToFieldName(c.columnLabel);
+				c.fieldName = readNative ?
+								Strings.firstNotEmpty(c.columnLabel, c.columnName) :
+								ns.columnToFieldName(c.columnLabel);
 			}
 			columns[i-1] = c;
 		}

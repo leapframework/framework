@@ -31,4 +31,5 @@ public interface RowReader {
 	
 	<T> List<T> readList(SqlExecutionContext context, ResultSet rs, Class<T> elementType, Class<? extends T> resultClass, SqlCommand command) throws SQLException;
 
+	<T> List<T> readNativeList(SqlExecutionContext context, ResultSet rs, Class<T> elementType, Class<? extends T> resultClass, SqlCommand command) throws SQLException;
 }

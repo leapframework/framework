@@ -1681,7 +1681,7 @@ public class BeanContainer implements BeanFactory {
             } else {
                 Class beanType = null == inject ? null : inject.type();
                 if (Strings.isEmpty(beanName)) {
-                    beanName = null == inject ? null : inject.name();
+                    beanName = null == inject ? null : Strings.firstNotEmpty(inject.name(), inject.value());
                 }
 
                 if (null != genericType && Lazy.class.equals(type)) {

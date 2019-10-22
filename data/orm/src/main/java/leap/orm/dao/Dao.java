@@ -34,6 +34,7 @@ import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.MappingNotFoundException;
 import leap.orm.query.CriteriaQuery;
 import leap.orm.query.EntityQuery;
+import leap.orm.query.NativeQuery;
 import leap.orm.query.Query;
 import leap.orm.sql.SqlCommand;
 import leap.orm.value.Entity;
@@ -721,7 +722,27 @@ public abstract class Dao implements JdbcExecutor {
 	 * Creates a new {@link EntityQuery} object for executing the given query sql.
 	 */
 	public abstract <T> EntityQuery<T> createSqlQuery(EntityMapping em, Class<T> resultClass, String sql);
-	
+
+	/**
+	 * Creates a new {@link Query} object for executing the given query sql.
+	 */
+	public abstract NativeQuery<Record> createNativeQuery(String sql);
+
+	/**
+	 * Creates a new {@link Query} object for executing the given query sql.
+	 */
+	public abstract NativeQuery<Record> createNativeQuery(String sql, Object... args);
+
+	/**
+	 * Creates a new {@link Query} object for executing the given query sql.
+	 */
+	public abstract <T> NativeQuery<T> createNativeQuery(Class<T> resultClass, String sql);
+
+	/**
+	 * Creates a new {@link Query} object for executing the given query sql.
+	 */
+	public abstract <T> NativeQuery<T> createNativeQuery(Class<T> resultClass, String sql, Object... args);
+
 	/**
 	 * Creates a new {@link CriteriaQuery} for querying the records of the given entity.
 	 */
