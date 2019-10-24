@@ -26,6 +26,7 @@ import java.util.function.Predicate;
 
 import leap.lang.Args;
 import leap.lang.Arrays2;
+import leap.lang.Strings;
 import leap.lang.Types;
 import leap.lang.annotation.Order;
 import leap.lang.exception.ObjectNotFoundException;
@@ -207,9 +208,8 @@ public class BeanType {
 			
 			if(field.isPublic() || field.hasGetter() || field.hasSetter()){
 			
-				String name = getTranditionalPropertyName(field);
-				
-				if(props.containsKey(name)){
+				String name = getTraditionalPropertyName(field);
+				if(Strings.isEmpty(name) || props.containsKey(name)){
 					continue;
 				}
 				
@@ -389,7 +389,7 @@ public class BeanType {
 		return null;
 	}
 	
-	private String getTranditionalPropertyName(ReflectField field) {
+	private String getTraditionalPropertyName(ReflectField field) {
 		String name = null;
 		if(field.hasSetter()){
 			name = field.getSetter().getName().substring(SETTER_PREFIX.length());
@@ -403,6 +403,10 @@ public class BeanType {
 			}
 		}else{
 			name = field.getName().startsWith("_") ? field.getName().substring(1) : field.getName();
+		}
+
+		if(Strings.isEmpty(name)) {
+			return name;
 		}
 		
 		return name.length() == 1 ? name.toLowerCase() : Character.toLowerCase(name.charAt(0)) + name.substring(1);
