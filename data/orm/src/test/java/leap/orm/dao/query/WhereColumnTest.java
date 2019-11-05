@@ -94,6 +94,10 @@ public class WhereColumnTest extends OrmTestCase {
         ECodeModel o1 = new ECodeModel("1").id(1).create();
         ECodeModel o2 = new ECodeModel("2").id(2).set("ecode","t1").create();
 
+        executeWithoutGlobalField(b -> {
+           ECodeModel.query().orderByIdAsc().list();
+        });
+
         assertEquals(1,ECodeModel.where("1=1").count());
         assertEquals("1",ECodeModel.<ECodeModel>where("1=1").first().getName());
 

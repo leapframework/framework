@@ -170,8 +170,8 @@ class SqlFilterColumnProcessor {
                     filterNodes.add(new Text(" and "));
                 }else{
                     nodes.add(new Text(" where"));
-                    nodes.add(new Text(" 1=1"));
-                    filterNodes.add(new Text(" and "));
+                    nodes.add(new Text(" 1=1 "));
+                    filterNodes.add(new Text("and "));
                 }
 
                 addFilterNodes(filterNodes, fm, alias);
