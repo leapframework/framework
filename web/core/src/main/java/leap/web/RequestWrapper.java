@@ -15,6 +15,8 @@
  */
 package leap.web;
 
+import leap.lang.Strings;
+import leap.lang.http.Headers;
 import leap.lang.io.IO;
 
 import javax.servlet.ServletInputStream;
@@ -80,5 +82,16 @@ class RequestWrapper extends HttpServletRequestWrapper {
 
     public void destroy() {
         bytes = null;
+    }
+
+    @Override
+    public String getMethod() {
+        String overrideMethod = request.getHeader(Headers.X_HTTP_METHOD_OVERRIDE);
+
+        if (!Strings.isEmpty(overrideMethod)) {
+            return Strings.upperCase(overrideMethod);
+        }
+
+        return super.getMethod();
     }
 }
