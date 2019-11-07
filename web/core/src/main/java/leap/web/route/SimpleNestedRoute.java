@@ -17,17 +17,18 @@
 package leap.web.route;
 
 import leap.core.web.path.PathTemplate;
-import leap.lang.ExtensibleBase;
 
 import java.util.Map;
 
-public class SimpleNestedRoute extends ExtensibleBase implements NestedRoute {
+public class SimpleNestedRoute extends AbstractNestedRoute implements NestedRoute {
 
     private final Object       source;
     private final String       method;
     private final String       basePath;
     private final PathTemplate pathTemplate;
     private final Routes       routes;
+
+    private boolean enabled = true;
 
     public SimpleNestedRoute(Object source, PathTemplate pathTemplate, Routes routes) {
         this(source, "*", null, pathTemplate, routes);
@@ -47,9 +48,9 @@ public class SimpleNestedRoute extends ExtensibleBase implements NestedRoute {
 
     @Override
     public boolean match(String path, Map<String, String> variables) {
-        if(null != basePath && path.equalsIgnoreCase(basePath)) {
+        if (null != basePath && path.equalsIgnoreCase(basePath)) {
             return true;
-        }else {
+        } else {
             return getPathTemplate().match(path, variables);
         }
     }

@@ -111,6 +111,7 @@ class DefaultRoute extends ExtensibleBase implements Sourced, Route {
         return enabled;
     }
 
+    @Override
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }

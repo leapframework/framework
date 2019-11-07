@@ -58,9 +58,12 @@ public interface Route extends RouteBase, Sourced, Extensible {
     /**
      * Returns true if this route is enabled.
      */
-    default boolean isEnabled() {
-        return true;
-    }
+    boolean isEnabled();
+
+	/**
+	 * Sets enabled.
+	 */
+	void setEnabled(boolean enabled);
 
     /**
      * Returns true if this route is executable.
