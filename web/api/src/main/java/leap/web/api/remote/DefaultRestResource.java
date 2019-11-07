@@ -129,6 +129,8 @@ public class DefaultRestResource extends AbstractRestResource {
     public <T> RestQueryListResult<T> queryList(Class<T> resultElementClass, final QueryOptions options, Map<String, Object> filters) {
         String op = "";
 
+        applyFilters(options, filters);
+
         return doQueryList(resultElementClass, buildOperationPath(op), options);
     }
 
@@ -192,4 +194,35 @@ public class DefaultRestResource extends AbstractRestResource {
     protected String idPath(Object id) {
         return null == em ? "/" + id : CrudUtils.getIdPath(em, id);
     }
+
+    protected void applyFilters(QueryOptions options, Map<String, Object> filters) {
+        if (null == filters || filters.isEmpty()) {
+            return;
+        }
+        StringBuilder filtersBuilder = new StringBuilder();
+        String opFilters = options.getFilters();
+
+        if (!Strings.isEmpty(opFilters)) {
+            filtersBuilder.append(opFilters);
+        }
+
+        filters.forEach((field, value) -> {
+            if (!Strings.isEmpty(filtersBuilder.toString())) {
+                filtersBuilder.append(" and ");
+            }
+            if (null == value) {
+                filtersBuilder.append(field).append(" is null");
+            } else if (value instanceof String) {
+                filtersBuilder.append(field).append(" eq ").append(value);
+            } else if (value instanceof List) {
+                List list = (List) value;
+                if (!list.isEmpty()) {
+                    filtersBuilder.append(field).append(" in ").append(Strings.join(list, ","));
+                }
+            }
+        });
+
+        options.setFilters(filtersBuilder.toString());
+    }
+
 }
