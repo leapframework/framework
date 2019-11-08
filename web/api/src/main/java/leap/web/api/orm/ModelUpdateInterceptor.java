@@ -42,8 +42,15 @@ public interface ModelUpdateInterceptor {
         return false;
     }
 
+    default boolean preUpdate(ModelExecutionContext context, Object id, Map<String, Object> properties) {
+        return false;
+    }
+
     default Object postUpdateProperties(ModelExecutionContext context, Object id, int affected) {
         return null;
     }
 
+    default void completeUpdate(ModelExecutionContext context, UpdateOneResult result, Throwable e) {
+
+    }
 }

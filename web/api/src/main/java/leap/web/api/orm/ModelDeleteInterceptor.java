@@ -29,6 +29,10 @@ public interface ModelDeleteInterceptor {
         return false;
     }
 
+    default boolean preDeleteOne(ModelExecutionContext context, Object id) {
+        return false;
+    }
+
     default DeleteOneResult handleDeleteOne(ModelExecutionContext context, Object id, DeleteOptions options) {
         return null;
     }
@@ -37,4 +41,7 @@ public interface ModelDeleteInterceptor {
         return null;
     }
 
+    default void completeDeleteOne(ModelExecutionContext context, DeleteOneResult result, Throwable e) {
+
+    }
 }

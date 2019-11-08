@@ -18,6 +18,8 @@ package leap.web.api.orm;
 
 import leap.core.value.Record;
 import leap.lang.jdbc.WhereBuilder;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.orm.query.CriteriaQuery;
 import leap.orm.query.PageResult;
 import leap.web.api.mvc.params.QueryOptions;
@@ -26,6 +28,7 @@ import leap.web.api.mvc.params.QueryOptionsBase;
 import java.util.List;
 
 public class ModelQueryExtension implements ModelQueryInterceptor {
+    private static final Log log = LogFactory.get(ModelQueryExtension.class);
 
     public static final ModelQueryExtension EMPTY = new ModelQueryExtension(null, null);
 
@@ -52,6 +55,16 @@ public class ModelQueryExtension implements ModelQueryInterceptor {
     }
 
     @Override
+    public boolean preQueryOne(ModelExecutionContext context) {
+        for(ModelQueryInterceptor interceptor : interceptors) {
+            if(interceptor.preQueryOne(context)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public boolean preQueryOne(ModelExecutionContext context, Object id, CriteriaQuery query) {
         for(ModelQueryInterceptor interceptor : interceptors) {
             if(interceptor.preQueryOne(context, id, query)) {
@@ -70,6 +83,17 @@ public class ModelQueryExtension implements ModelQueryInterceptor {
             }
         }
         return null;
+    }
+
+    @Override
+    public void completeQueryOne(ModelExecutionContext context, QueryOneResult result, Throwable e) {
+        for(ModelQueryInterceptor interceptor : interceptors) {
+            try {
+                interceptor.completeQueryOne(context, result, e);
+            }catch (Throwable ex) {
+                log.error("Err exec {}#completeQueryOne", interceptor, e);
+            }
+        }
     }
 
     @Override
@@ -132,6 +156,17 @@ public class ModelQueryExtension implements ModelQueryInterceptor {
             }
         }
         return null;
+    }
+
+    @Override
+    public void completeQueryList(ModelExecutionContext context, QueryListResult result, Throwable e) {
+        for(ModelQueryInterceptor interceptor : interceptors) {
+            try {
+                interceptor.completeQueryList(context, result, e);
+            }catch (Throwable ex) {
+                log.error("Err exec {}#completeQueryList", interceptor, e);
+            }
+        }
     }
 
     @Override

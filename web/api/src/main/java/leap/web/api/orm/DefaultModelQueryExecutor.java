@@ -120,34 +120,44 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         ModelExecutionContext context = new DefaultModelExecutionContext(this.context);
 
         return em.withContextListeners(listeners, () -> {
+            ex.processQueryOneOptions(context, options); //for compatibility only.
             if (null != ex.handler) {
                 ex.handler.processQueryOneOptions(context, id, options);
             }
+            try {
+                ex.preQueryOne(context);
+                Record record;
 
-            Record record;
+                if (null != findHandler) {
+                    record = queryOneByHandler(context, id, options);
+                } else {
+                    CriteriaQuery<Record> query = createCriteriaQuery().whereById(id);
+                    applySelect(query, options, new JoinModels());
 
-            if(null != findHandler) {
-                record = queryOneByHandler(context, id, options);
-            }else {
-                CriteriaQuery<Record> query = createCriteriaQuery().whereById(id);
-                applySelect(query, options, new JoinModels());
-
-                ex.preQueryOne(context, id, query);
-                if (null != ex.handler) {
-                    ex.handler.preQueryOne(context, id, query);
+                    ex.preQueryOne(context, id, query);
+                    if (null != ex.handler) {
+                        ex.handler.preQueryOne(context, id, query);
+                    }
+                    record = dao.withEvents(() -> query.firstOrNull());
                 }
-                record = dao.withEvents(() -> query.firstOrNull());
+
+                List<ExpandError> expandErrors = expandOne(record, options);
+
+                if (null != ex.handler && null != record) {
+                    ex.handler.postQueryOne(context, id, record);
+                }
+
+                Object entity = ex.processQueryOneRecord(context, id, record);
+
+                QueryOneResult result = new QueryOneResult(record, entity, expandErrors);
+
+                ex.completeQueryOne(context, result, null);
+
+                return result;
+            }catch (Throwable e) {
+                ex.completeQueryOne(context, null, e);
+                throw e;
             }
-
-            List<ExpandError> expandErrors = expandOne(record, options);
-
-            if (null != ex.handler && null != record) {
-                ex.handler.postQueryOne(context, id, record);
-            }
-
-            Object entity = ex.processQueryOneRecord(context, id, record);
-
-            return new QueryOneResult(record, entity, expandErrors);
         });
     }
 
@@ -303,59 +313,68 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             long         count = -1;
             List<Record> list;
 
-            ex.preQueryList(context, query);
-            if (null != ex.handler) {
-                ex.handler.preQueryList(context, query);
-            }
+            try {
+                ex.preQueryList(context, query);
+                if (null != ex.handler) {
+                    ex.handler.preQueryList(context, query);
+                }
 
-            PageResult page = query.pageResult(finalOptions.getPage(ac.getDefaultPageSize()));
-            list = ex.executeQueryList(context, finalOptions, query);
-            if (null == list) {
-                list = dao.withEvents(() -> page.list());
-            }
+                PageResult page = query.pageResult(finalOptions.getPage(ac.getDefaultPageSize()));
+                list = ex.executeQueryList(context, finalOptions, query);
+                if (null == list) {
+                    list = dao.withEvents(() -> page.list());
+                }
 
-            if (null != ex.handler) {
-                ex.handler.postQueryList(context, list);
-            }
+                if (null != ex.handler) {
+                    ex.handler.postQueryList(context, list);
+                }
 
-            List<ExpandError> expandErrors = new ArrayList<>();
-            if (!list.isEmpty()) {
-                Expand[] expands = ExpandParser.parse(finalOptions.getExpand());
-                if (expands.length > 0) {
-                    ResolvedExpand[] resolvedExpands = resolveExpands(expands);
+                List<ExpandError> expandErrors = new ArrayList<>();
+                if (!list.isEmpty()) {
+                    Expand[] expands = ExpandParser.parse(finalOptions.getExpand());
+                    if (expands.length > 0) {
+                        ResolvedExpand[] resolvedExpands = resolveExpands(expands);
 
-                    int maxPageSize = ac.getMaxPageSizeWithExpandOne();
-                    for (ResolvedExpand expand : resolvedExpands) {
-                        if (expand.isEmbedded()) {
-                            continue;
+                        int maxPageSize = ac.getMaxPageSizeWithExpandOne();
+                        for (ResolvedExpand expand : resolvedExpands) {
+                            if (expand.isEmbedded()) {
+                                continue;
+                            }
+                            if (expand.rm.isOneToMany() || expand.rm.isOneToMany()) {
+                                maxPageSize = ac.getMaxPageSizeWithExpandMany();
+                                break;
+                            }
                         }
-                        if (expand.rm.isOneToMany() || expand.rm.isOneToMany()) {
-                            maxPageSize = ac.getMaxPageSizeWithExpandMany();
-                            break;
+
+                        if (list.size() > maxPageSize) {
+                            throw new BadRequestException("The result size " + list.size() + " exceed max expand " + maxPageSize + ", please decrease your page_size");
                         }
-                    }
 
-                    if (list.size() > maxPageSize) {
-                        throw new BadRequestException("The result size " + list.size() + " exceed max expand " + maxPageSize + ", please decrease your page_size");
-                    }
-
-                    for (ResolvedExpand expand : resolvedExpands) {
-                        try {
-                            expand(expand, list);
-                        } catch (ExpandException e) {
-                            expandErrors.add(new ExpandError(expand.getName(), e.getMessage(), e.getCause()));
+                        for (ResolvedExpand expand : resolvedExpands) {
+                            try {
+                                expand(expand, list);
+                            } catch (ExpandException e) {
+                                expandErrors.add(new ExpandError(expand.getName(), e.getMessage(), e.getCause()));
+                            }
                         }
                     }
                 }
+
+                if (finalOptions.isTotal()) {
+                    count = query.count();
+                }
+
+                Object entity = ex.processQueryListResult(context, page, count, list);
+
+                QueryListResult result = new QueryListResult(list, count, entity, expandErrors);
+
+                ex.completeQueryList(context, result, null);
+
+                return result;
+            }catch (Throwable e) {
+                ex.completeQueryList(context, null, e);
+                throw e;
             }
-
-            if (finalOptions.isTotal()) {
-                count = query.count();
-            }
-
-            Object entity = ex.processQueryListResult(context, page, count, list);
-
-            return new QueryListResult(list, count, entity, expandErrors);
         });
     }
 

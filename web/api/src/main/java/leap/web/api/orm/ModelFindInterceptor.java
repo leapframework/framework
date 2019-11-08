@@ -20,11 +20,16 @@ package leap.web.api.orm;
 
 import leap.core.value.Record;
 import leap.orm.query.CriteriaQuery;
+import leap.web.api.mvc.params.QueryOptions;
 import leap.web.api.mvc.params.QueryOptionsBase;
 
 public interface ModelFindInterceptor {
 
     default boolean processQueryOneOptions(ModelExecutionContext context, QueryOptionsBase options) {
+        return false;
+    }
+
+    default boolean preQueryOne(ModelExecutionContext context) {
         return false;
     }
 
@@ -34,6 +39,10 @@ public interface ModelFindInterceptor {
 
     default Object processQueryOneRecord(ModelExecutionContext context, Object id, Record record) {
         return null;
+    }
+
+    default void completeQueryOne(ModelExecutionContext context, QueryOneResult result, Throwable e) {
+
     }
 
 }

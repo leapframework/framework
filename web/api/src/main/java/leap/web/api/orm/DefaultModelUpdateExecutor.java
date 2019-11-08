@@ -106,10 +106,20 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
 
         removes.forEach(record::remove);
 
-        int    affected = em.withContextListeners(listeners, () -> doUpdate(context, id, record, false));;
-        Object entity   = ex.postReplaceRecord(context, id, affected);
+        try {
+            ex.preReplace(context, id, record);
+            int affected = em.withContextListeners(listeners, () -> doUpdate(context, id, record, false));
+            Object entity = ex.postReplaceRecord(context, id, affected);
 
-        return new UpdateOneResult(affected, entity);
+            UpdateOneResult result = new UpdateOneResult(affected, entity);
+
+            ex.completeReplace(context, result, null);
+
+            return result;
+        }catch (Throwable e) {
+            ex.completeReplace(context, null, e);
+            throw e;
+        }
     }
 
     @Override
@@ -131,26 +141,37 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
 
         int affected;
 
-        if (!em.isRemoteRest()) {
-            affected = em.withContextListeners(listeners, () -> {
-                if (null != handler) {
-                    return handler.partialUpdate(context, id, properties);
-                } else {
-                    return doUpdate(context, id, properties, true);
-                }
-            });
-        } else {
-            RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), em);
-            if (restResource.update(id, properties)) {
-                affected = 1;
+        try {
+            ex.preUpdate(context, id, properties);
+
+            if (!em.isRemoteRest()) {
+                affected = em.withContextListeners(listeners, () -> {
+                    if (null != handler) {
+                        return handler.partialUpdate(context, id, properties);
+                    } else {
+                        return doUpdate(context, id, properties, true);
+                    }
+                });
             } else {
-                affected = 0;
+                RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), em);
+                if (restResource.update(id, properties)) {
+                    affected = 1;
+                } else {
+                    affected = 0;
+                }
             }
+
+            Object entity = ex.postUpdateProperties(context, id, affected);
+
+            UpdateOneResult result = new UpdateOneResult(affected, entity);
+
+            ex.completeUpdate(context, result, null);
+
+            return result;
+        }catch (Throwable e) {
+            ex.completeUpdate(context, null, e);
+            throw e;
         }
-
-        Object entity = ex.postUpdateProperties(context, id, affected);
-
-        return new UpdateOneResult(affected, entity);
     }
 
     protected int doUpdate(ModelExecutionContext context, Object id, Map<String, Object> properties, boolean partial) {

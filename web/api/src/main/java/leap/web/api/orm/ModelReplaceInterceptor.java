@@ -40,8 +40,15 @@ public interface ModelReplaceInterceptor {
         return false;
     }
 
+    default boolean preReplace(ModelExecutionContext context, Object id, Map<String, Object> record) {
+        return false;
+    }
+
     default Object postReplaceRecord(ModelExecutionContext context, Object id, int affected) {
         return null;
     }
 
+    default void completeReplace(ModelExecutionContext context, UpdateOneResult result, Throwable e) {
+
+    }
 }

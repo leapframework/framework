@@ -57,52 +57,59 @@ public class DefaultModelDeleteExecutor extends ModelExecutorBase implements Mod
         ex.processDeleteOneOptions(context, id, options);
         ex.processDeleteOneOptions((ModelExecutorContext) context, id, options);
 
-        DeleteOneResult result;
-        if (null != ex.handler) {
-            ex.handler.processDeleteOptions(context, id, options);
-            result = ex.handler.handleDeleteExecution(context, id, options);
-        } else {
-            result = ex.handleDeleteOne(context, id, options);
-        }
-
-        if (null == result) {
-            if (!em.isRemoteRest()) {
-                final DeleteOptions finalOptions = options;
-
-                result = em.withContextListeners(listeners, () -> {
-                    if(null != handler) {
-                        return new DeleteOneResult(handler.deleteOne(context, id, finalOptions) > 0);
-                    }else {
-                        if (!finalOptions.isCascadeDelete()) {
-                            return dao.withEvents(() -> new DeleteOneResult(dao.delete(em, id) > 0));
-                        } else {
-                            return dao.withEvents(() -> new DeleteOneResult(dao.cascadeDelete(em, id)));
-                        }
-                    }
-                });
+        try {
+            ex.preDeleteOne(context, id);
+            DeleteOneResult result;
+            if (null != ex.handler) {
+                ex.handler.processDeleteOptions(context, id, options);
+                result = ex.handler.handleDeleteExecution(context, id, options);
             } else {
-                RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), em);
-                if (restResource.delete(id, options)) {
-                    result = new DeleteOneResult(true);
+                result = ex.handleDeleteOne(context, id, options);
+            }
+
+            if (null == result) {
+                if (!em.isRemoteRest()) {
+                    final DeleteOptions finalOptions = options;
+
+                    result = em.withContextListeners(listeners, () -> {
+                        if (null != handler) {
+                            return new DeleteOneResult(handler.deleteOne(context, id, finalOptions) > 0);
+                        } else {
+                            if (!finalOptions.isCascadeDelete()) {
+                                return dao.withEvents(() -> new DeleteOneResult(dao.delete(em, id) > 0));
+                            } else {
+                                return dao.withEvents(() -> new DeleteOneResult(dao.cascadeDelete(em, id)));
+                            }
+                        }
+                    });
                 } else {
-                    result = new DeleteOneResult(false);
+                    RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), em);
+                    if (restResource.delete(id, options)) {
+                        result = new DeleteOneResult(true);
+                    } else {
+                        result = new DeleteOneResult(false);
+                    }
                 }
             }
-        }
 
-        if (null != ex.handler) {
-            DeleteOneResult r = ex.handler.postDeleteRecord(context, id, options, result);
-            if (null != r) {
-                result = r;
+            if (null != ex.handler) {
+                DeleteOneResult r = ex.handler.postDeleteRecord(context, id, options, result);
+                if (null != r) {
+                    result = r;
+                }
             }
-        }
 
-        Object entity = ex.processDeleteOneResult(context, id, result.success);
-        if (null != entity) {
-            result = new DeleteOneResult(result.success, entity);
-        }
+            Object entity = ex.processDeleteOneResult(context, id, result.success);
+            if (null != entity) {
+                result = new DeleteOneResult(result.success, entity);
+            }
 
-        return result;
+            ex.completeDeleteOne(context, result, null);
+
+            return result;
+        } catch (Throwable e) {
+            ex.completeDeleteOne(context, null, e);
+            throw e;
+        }
     }
-
 }

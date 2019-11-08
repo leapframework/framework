@@ -16,10 +16,14 @@
 
 package leap.web.api.orm;
 
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
+
 import java.util.Map;
 import java.util.Set;
 
 public class ModelUpdateExtension implements ModelUpdateInterceptor, ModelReplaceInterceptor {
+    private static final Log log = LogFactory.get(ModelUpdateExtension.class);
 
     static ModelUpdateExtension EMPTY = new ModelUpdateExtension(null, null, null);
 
@@ -69,6 +73,16 @@ public class ModelUpdateExtension implements ModelUpdateInterceptor, ModelReplac
     }
 
     @Override
+    public boolean preUpdate(ModelExecutionContext context, Object id, Map<String, Object> properties) {
+        for(ModelUpdateInterceptor interceptor : updateInterceptors) {
+            if(interceptor.preUpdate(context, id, properties)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public Object postUpdateProperties(ModelExecutionContext context, Object id, int affected) {
         for(ModelUpdateInterceptor interceptor : updateInterceptors) {
             Object v = interceptor.postUpdateProperties(context, id, affected);
@@ -77,6 +91,17 @@ public class ModelUpdateExtension implements ModelUpdateInterceptor, ModelReplac
             }
         }
         return null;
+    }
+
+    @Override
+    public void completeUpdate(ModelExecutionContext context, UpdateOneResult result, Throwable e) {
+        for(ModelUpdateInterceptor interceptor : updateInterceptors) {
+            try {
+                interceptor.completeUpdate(context, result, e);
+            }catch (Throwable ex) {
+                log.error("Err exec {}#complteUpdate", interceptor, e);
+            }
+        }
     }
 
     @Override
@@ -120,6 +145,16 @@ public class ModelUpdateExtension implements ModelUpdateInterceptor, ModelReplac
     }
 
     @Override
+    public boolean preReplace(ModelExecutionContext context, Object id, Map<String, Object> record) {
+        for(ModelReplaceInterceptor interceptor : replaceInterceptors) {
+            if(interceptor.preReplace(context, id, record)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public Object postReplaceRecord(ModelExecutionContext context, Object id, int affected) {
         for(ModelReplaceInterceptor interceptor : replaceInterceptors) {
             Object v = interceptor.postReplaceRecord(context, id, affected);
@@ -128,5 +163,16 @@ public class ModelUpdateExtension implements ModelUpdateInterceptor, ModelReplac
             }
         }
         return null;
+    }
+
+    @Override
+    public void completeReplace(ModelExecutionContext context, UpdateOneResult result, Throwable e) {
+        for(ModelReplaceInterceptor interceptor : replaceInterceptors) {
+            try {
+                interceptor.completeReplace(context, result, e);
+            }catch (Throwable ex) {
+                log.error("Err exec {}#complteReplace", interceptor, e);
+            }
+        }
     }
 }

@@ -21,7 +21,6 @@ import leap.lang.jdbc.WhereBuilder;
 import leap.orm.query.CriteriaQuery;
 import leap.orm.query.PageResult;
 import leap.web.api.mvc.params.QueryOptions;
-import leap.web.api.mvc.params.QueryOptionsBase;
 
 import java.util.List;
 
@@ -49,6 +48,10 @@ public interface ModelQueryInterceptor extends ModelFindInterceptor {
 
     default Object processQueryListResult(ModelExecutionContext context, PageResult page, long totalCount, List<Record> records) {
         return null;
+    }
+
+    default void completeQueryList(ModelExecutionContext context, QueryListResult result, Throwable e) {
+
     }
 
     default boolean preCount(ModelExecutionContext context, CriteriaQuery query) {

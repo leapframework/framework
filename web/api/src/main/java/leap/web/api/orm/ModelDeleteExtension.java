@@ -16,9 +16,12 @@
 
 package leap.web.api.orm;
 
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.web.api.mvc.params.DeleteOptions;
 
 public class ModelDeleteExtension implements ModelDeleteInterceptor {
+    private static final Log log = LogFactory.get(ModelDeleteExtension.class);
 
     public static final ModelDeleteExtension EMPTY = new ModelDeleteExtension(null, null);
 
@@ -33,8 +36,8 @@ public class ModelDeleteExtension implements ModelDeleteInterceptor {
     @Override
     @Deprecated
     public boolean processDeleteOneOptions(ModelExecutorContext context, Object id, DeleteOptions options) {
-        for(ModelDeleteInterceptor interceptor : interceptors) {
-            if(interceptor.processDeleteOneOptions(context, id, options)) {
+        for (ModelDeleteInterceptor interceptor : interceptors) {
+            if (interceptor.processDeleteOneOptions(context, id, options)) {
                 return true;
             }
         }
@@ -43,8 +46,18 @@ public class ModelDeleteExtension implements ModelDeleteInterceptor {
 
     @Override
     public boolean processDeleteOneOptions(ModelExecutionContext context, Object id, DeleteOptions options) {
-        for(ModelDeleteInterceptor interceptor : interceptors) {
-            if(interceptor.processDeleteOneOptions(context, id, options)) {
+        for (ModelDeleteInterceptor interceptor : interceptors) {
+            if (interceptor.processDeleteOneOptions(context, id, options)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean preDeleteOne(ModelExecutionContext context, Object id) {
+        for (ModelDeleteInterceptor interceptor : interceptors) {
+            if (interceptor.preDeleteOne(context, id)) {
                 return true;
             }
         }
@@ -53,9 +66,9 @@ public class ModelDeleteExtension implements ModelDeleteInterceptor {
 
     @Override
     public DeleteOneResult handleDeleteOne(ModelExecutionContext context, Object id, DeleteOptions options) {
-        for(ModelDeleteInterceptor interceptor : interceptors) {
+        for (ModelDeleteInterceptor interceptor : interceptors) {
             DeleteOneResult result = interceptor.handleDeleteOne(context, id, options);
-            if(null != result) {
+            if (null != result) {
                 return result;
             }
         }
@@ -64,12 +77,23 @@ public class ModelDeleteExtension implements ModelDeleteInterceptor {
 
     @Override
     public Object processDeleteOneResult(ModelExecutionContext context, Object id, boolean success) {
-        for(ModelDeleteInterceptor interceptor : interceptors) {
+        for (ModelDeleteInterceptor interceptor : interceptors) {
             Object v = interceptor.processDeleteOneResult(context, id, success);
-            if(null != v) {
+            if (null != v) {
                 return v;
             }
         }
         return null;
+    }
+
+    @Override
+    public void completeDeleteOne(ModelExecutionContext context, DeleteOneResult result, Throwable e) {
+        for (ModelDeleteInterceptor interceptor : interceptors) {
+            try {
+                interceptor.completeDeleteOne(context, result, e);
+            } catch (Throwable ex) {
+                log.error("Err exec {}#completeDeleteOne", interceptor, e);
+            }
+        }
     }
 }
