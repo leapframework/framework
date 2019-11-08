@@ -92,7 +92,7 @@ public class ModelDeleteExtension implements ModelDeleteInterceptor {
             try {
                 interceptor.completeDeleteOne(context, result, e);
             } catch (Throwable ex) {
-                log.error("Err exec {}#completeDeleteOne", interceptor, e);
+                log.error("Err exec {}#completeDeleteOne", interceptor, ex);
             }
         }
     }

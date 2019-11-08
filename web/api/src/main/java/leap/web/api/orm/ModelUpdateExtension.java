@@ -99,7 +99,7 @@ public class ModelUpdateExtension implements ModelUpdateInterceptor, ModelReplac
             try {
                 interceptor.completeUpdate(context, result, e);
             }catch (Throwable ex) {
-                log.error("Err exec {}#complteUpdate", interceptor, e);
+                log.error("Err exec {}#completeUpdate", interceptor, ex);
             }
         }
     }
@@ -171,7 +171,7 @@ public class ModelUpdateExtension implements ModelUpdateInterceptor, ModelReplac
             try {
                 interceptor.completeReplace(context, result, e);
             }catch (Throwable ex) {
-                log.error("Err exec {}#complteReplace", interceptor, e);
+                log.error("Err exec {}#completeReplace", interceptor, ex);
             }
         }
     }

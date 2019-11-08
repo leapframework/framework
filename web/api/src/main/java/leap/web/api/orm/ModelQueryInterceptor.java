@@ -57,4 +57,12 @@ public interface ModelQueryInterceptor extends ModelFindInterceptor {
     default boolean preCount(ModelExecutionContext context, CriteriaQuery query) {
         return false;
     }
+
+    default void preExpand(ModelExecutionContext context) {
+
+    }
+
+    default void completeExpand(ModelExecutionContext context) {
+        
+    }
 }

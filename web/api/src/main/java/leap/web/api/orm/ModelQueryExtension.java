@@ -91,7 +91,7 @@ public class ModelQueryExtension implements ModelQueryInterceptor {
             try {
                 interceptor.completeQueryOne(context, result, e);
             }catch (Throwable ex) {
-                log.error("Err exec {}#completeQueryOne", interceptor, e);
+                log.error("Err exec {}#completeQueryOne", interceptor, ex);
             }
         }
     }
@@ -164,7 +164,7 @@ public class ModelQueryExtension implements ModelQueryInterceptor {
             try {
                 interceptor.completeQueryList(context, result, e);
             }catch (Throwable ex) {
-                log.error("Err exec {}#completeQueryList", interceptor, e);
+                log.error("Err exec {}#completeQueryList", interceptor, ex);
             }
         }
     }
@@ -177,5 +177,23 @@ public class ModelQueryExtension implements ModelQueryInterceptor {
             }
         }
         return false;
+    }
+
+    @Override
+    public void preExpand(ModelExecutionContext context) {
+        for(ModelQueryInterceptor interceptor : interceptors) {
+            interceptor.preExpand(context);
+        }
+    }
+
+    @Override
+    public void completeExpand(ModelExecutionContext context) {
+        for(ModelQueryInterceptor interceptor : interceptors) {
+            try {
+                interceptor.completeExpand(context);
+            }catch (Throwable ex) {
+                log.error("Err exec {}#completeExpand", interceptor, ex);
+            }
+        }
     }
 }

@@ -71,7 +71,7 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase<RelationExec
             record = queryOneRemoteTarget(id, options);
         } else {
             expandErrors = new ArrayList<>();
-            record = iqe.queryOneByRelation(id, options, expandErrors);
+            record = iqe.queryOneByRelation(context, id, options, expandErrors);
         }
 
         ex.postRelateQueryOne(context, id, record);
@@ -165,7 +165,7 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase<RelationExec
             this.rm = rm;
         }
 
-        public Record queryOneByRelation(Object relatedId, QueryOptionsBase options, List<ExpandError> expandErrors) {
+        public Record queryOneByRelation(ModelExecutionContext context, Object relatedId, QueryOptionsBase options, List<ExpandError> expandErrors) {
             CriteriaQuery<Record> query =
                     createCriteriaQuery().joinById(rm.getTargetEntityName(), rm.getName(), "j", relatedId);
 
@@ -174,7 +174,7 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase<RelationExec
 
             Record record = query.firstOrNull();
 
-            List<ExpandError> ees = expandOne(record, options);
+            List<ExpandError> ees = expandOne(context, record, options);
             if (null != ees) {
                 expandErrors.addAll(ees);
             }

@@ -51,6 +51,7 @@ import leap.web.api.query.*;
 import leap.web.api.remote.RestQueryListResult;
 import leap.web.api.remote.RestResource;
 import leap.web.exception.BadRequestException;
+
 import java.lang.reflect.Array;
 import java.util.*;
 import java.util.function.Consumer;
@@ -141,7 +142,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                     record = dao.withEvents(() -> query.firstOrNull());
                 }
 
-                List<ExpandError> expandErrors = expandOne(record, options);
+                List<ExpandError> expandErrors = expandOne(context, record, options);
 
                 if (null != ex.handler && null != record) {
                     ex.handler.postQueryOne(context, id, record);
@@ -154,7 +155,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                 ex.completeQueryOne(context, result, null);
 
                 return result;
-            }catch (Throwable e) {
+            } catch (Throwable e) {
                 ex.completeQueryOne(context, null, e);
                 throw e;
             }
@@ -163,20 +164,20 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
     protected Record queryOneByHandler(ModelExecutionContext context, Object id, QueryOptionsBase options) {
         Object result = findHandler.findOrNull(context, id, options);
-        if(null == result) {
+        if (null == result) {
             return null;
         }
-        if(result instanceof Record) {
-            return (Record)result;
+        if (result instanceof Record) {
+            return (Record) result;
         }
-        if(result instanceof Map) {
-            return new SimpleRecord((Map)result);
+        if (result instanceof Map) {
+            return new SimpleRecord((Map) result);
         }
         Map map = Beans.toMap(result);
         return new SimpleRecord(map);
     }
 
-    protected List<ExpandError> expandOne(Record record, QueryOptionsBase options) {
+    protected List<ExpandError> expandOne(ModelExecutionContext context, Record record, QueryOptionsBase options) {
         if (null != record && null != options) {
             Expand[] expands = options.getResolvedExpands();
             if (expands.length > 0) {
@@ -185,7 +186,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                 final ResolvedExpand[]  resolvedExpands = resolveExpands(expands);
                 for (ResolvedExpand expand : resolvedExpands) {
                     try {
-                        expand(expand, list);
+                        expand(context, expand, list);
                     } catch (ExpandException e) {
                         expandErrors.add(new ExpandError(expand.name, e.getMessage(), e));
                     }
@@ -352,7 +353,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
                         for (ResolvedExpand expand : resolvedExpands) {
                             try {
-                                expand(expand, list);
+                                expand(context, expand, list);
                             } catch (ExpandException e) {
                                 expandErrors.add(new ExpandError(expand.getName(), e.getMessage(), e.getCause()));
                             }
@@ -371,7 +372,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                 ex.completeQueryList(context, result, null);
 
                 return result;
-            }catch (Throwable e) {
+            } catch (Throwable e) {
                 ex.completeQueryList(context, null, e);
                 throw e;
             }
@@ -408,18 +409,18 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         return dao.createCriteriaQuery(em).fromSqlView(sqlView);
     }
 
-    protected void expand(ResolvedExpand expand, List<Record> records) {
+    protected void expand(ModelExecutionContext context, ResolvedExpand expand, List<Record> records) {
         if (records == null || records.size() == 0) {
             return;
         }
         if (expand.isRemoteRest()) {
-            expandByRest(expand, records);
+            expandByRest(context, expand, records);
         } else {
-            expandByDb(expand, records);
+            expandByDb(context, expand, records);
         }
     }
 
-    protected void expandByRest(ResolvedExpand expand, List<Record> records) {
+    protected void expandByRest(ModelExecutionContext context, ResolvedExpand expand, List<Record> records) {
         if (expand.isEmbedded()) {
             expandByRestEmbedded(expand, records);
             return;
@@ -429,7 +430,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         opts.setLimit(ac.getMaxRecordsPerExpand() + 1);
 
         RestResource resource = restResourceFactory.createResource(dao.getOrmContext(), expand.tem);
-        if(expand.tem.getRemoteSettings().isExpandCanNewAccessToken()) {
+        if (expand.tem.getRemoteSettings().isExpandCanNewAccessToken()) {
             resource.setCanNewAccessToken(true);
         }
 
@@ -533,115 +534,120 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
     }
 
-    protected void expandByDb(ResolvedExpand expand, List<Record> records) {
+    protected void expandByDb(ModelExecutionContext context, ResolvedExpand expand, List<Record> records) {
         if (expand.isEmbedded()) {
             expandByDbEmbedded(expand, records);
             return;
         }
 
-        final RelationProperty rp          = expand.rp;
-        final RelationMapping  rm          = expand.rm;
-        CriteriaQuery<Record>  expandQuery = dao.createCriteriaQuery(rp.getTargetEntityName()).limit(ac.getMaxRecordsPerExpand() + 1);
+        ex.preExpand(context);
+        try {
+            final RelationProperty rp          = expand.rp;
+            final RelationMapping  rm          = expand.rm;
+            CriteriaQuery<Record>  expandQuery = dao.createCriteriaQuery(rp.getTargetEntityName()).limit(ac.getMaxRecordsPerExpand() + 1);
 
-        //根据不同类型的关系，计算引用的源字段、被引用字段
-        String localFieldName;
-        String referredFieldName;
+            //根据不同类型的关系，计算引用的源字段、被引用字段
+            String localFieldName;
+            String referredFieldName;
 
-        if (rm.isOneToMany()) {
-            RelationMapping inverseRm = this.md.getEntityMapping(rm.getTargetEntityName()).getRelationMapping(rm.getInverseRelationName());
-            localFieldName = inverseRm.getJoinFields()[0].getReferencedFieldName();
-            referredFieldName = inverseRm.getJoinFields()[0].getLocalFieldName();
-        } else if (rm.isManyToMany()) {
-            RelationMapping joinRm = this.md.getEntityMapping(rm.getJoinEntityName()).tryGetRelationMappingOfTargetEntity(em.getEntityName());
-            localFieldName = em.getKeyFieldNames()[0];
-            referredFieldName = joinRm.getJoinFields()[0].getLocalFieldName();
-            expandQuery.join(rm.getJoinEntityName(), "_jt_");
-        } else {
-            localFieldName = rm.getJoinFields()[0].getLocalFieldName();
-            referredFieldName = rm.getJoinFields()[0].getReferencedFieldName();
-        }
-
-        String referredFieldAlias = rm.getTargetEntityName() + "_" + referredFieldName;
-
-        //获取所有被引用记录的id
-        Set<Object> fks = new HashSet<>();
-        for (Record record : records) {
-            Object fk = record.get(localFieldName);
-            if (fk == null || fks.contains(fk)) {
-                continue;
-            }
-            fks.add(fk);
-        }
-
-        if (rm.isManyToMany()) {
-            expandQuery.where(Strings.format("_jt_.{0} in :fks", referredFieldName))
-                    .param("fks", fks.toArray());
-        } else {
-            expandQuery.where(Strings.format("{0} in :fks", referredFieldName))
-                    .param("fks", fks.toArray());
-        }
-
-        //构造expand时，要返回引用记录的字段
-        if (Strings.isEmpty(expand.getSelect())) {
-            if (rm.isManyToMany()) {
-                expandQuery.select("*", Strings.format("_jt_.{0} as {1}", referredFieldName, referredFieldAlias));
+            if (rm.isOneToMany()) {
+                RelationMapping inverseRm = this.md.getEntityMapping(rm.getTargetEntityName()).getRelationMapping(rm.getInverseRelationName());
+                localFieldName = inverseRm.getJoinFields()[0].getReferencedFieldName();
+                referredFieldName = inverseRm.getJoinFields()[0].getLocalFieldName();
+            } else if (rm.isManyToMany()) {
+                RelationMapping joinRm = this.md.getEntityMapping(rm.getJoinEntityName()).tryGetRelationMappingOfTargetEntity(em.getEntityName());
+                localFieldName = em.getKeyFieldNames()[0];
+                referredFieldName = joinRm.getJoinFields()[0].getLocalFieldName();
+                expandQuery.join(rm.getJoinEntityName(), "_jt_");
             } else {
-                referredFieldAlias = referredFieldName;
+                localFieldName = rm.getJoinFields()[0].getLocalFieldName();
+                referredFieldName = rm.getJoinFields()[0].getReferencedFieldName();
             }
-        } else {
-            if (rm.isManyToMany()) {
-                applySelect(expandQuery, expand.getSelect(), Strings.format("_jt_.{0} as {1}", referredFieldName, referredFieldAlias));
-            } else {
-                applySelect(expandQuery, expand.getSelect(), referredFieldName);
-                referredFieldAlias = referredFieldName;
-            }
-        }
-        List<Record> resultList = expandQuery.list();
-        if (resultList.size() > ac.getMaxRecordsPerExpand()) {
-            throw new BadRequestException("Expanded records of '" + rp.getName() + "' exceed max limit " + ac.getMaxRecordsPerExpand());
-        }
 
-        //根据引用字段值，对所有查询出来的被引用数据，进行分组
-        Map<Object, List<Record>> referredRecords = new HashMap<>();
-        for (Record referred : resultList) {
+            String referredFieldAlias = rm.getTargetEntityName() + "_" + referredFieldName;
 
-            Object       fkVal;
-            List<Record> fieldToValList;
-
-            if (rm.isManyToMany()) {
-                fkVal = referred.remove(referredFieldAlias);
-                if (fkVal == null) {
-                    fkVal = referred.remove(referredFieldAlias.toUpperCase());
+            //获取所有被引用记录的id
+            Set<Object> fks = new HashSet<>();
+            for (Record record : records) {
+                Object fk = record.get(localFieldName);
+                if (fk == null || fks.contains(fk)) {
+                    continue;
                 }
-                if (fkVal == null) {
-                    fkVal = referred.remove(referredFieldAlias.toLowerCase());
-                }
-            } else {
-                fkVal = referred.get(referredFieldAlias);
+                fks.add(fk);
             }
 
-            if (referredRecords.containsKey(fkVal)) {
-                fieldToValList = referredRecords.get(fkVal);
+            if (rm.isManyToMany()) {
+                expandQuery.where(Strings.format("_jt_.{0} in :fks", referredFieldName))
+                        .param("fks", fks.toArray());
             } else {
-                fieldToValList = new ArrayList<>();
-                referredRecords.put(fkVal, fieldToValList);
+                expandQuery.where(Strings.format("{0} in :fks", referredFieldName))
+                        .param("fks", fks.toArray());
             }
-            fieldToValList.add(referred);
-        }
 
-        //填充expand指定的属性
-        for (Record record : records) {
-            Object       fk             = record.get(localFieldName);
-            List<Record> fieldToRecords = referredRecords.get(fk);
-            if (rp.isMany()) {
-                record.put(rp.getName(), null == fieldToRecords ? Collections.emptyList() : fieldToRecords);
-            } else {
-                if (fieldToRecords != null && fieldToRecords.size() > 0) {
-                    record.put(rp.getName(), fieldToRecords.get(0));
+            //构造expand时，要返回引用记录的字段
+            if (Strings.isEmpty(expand.getSelect())) {
+                if (rm.isManyToMany()) {
+                    expandQuery.select("*", Strings.format("_jt_.{0} as {1}", referredFieldName, referredFieldAlias));
                 } else {
-                    record.put(rp.getName(), null);
+                    referredFieldAlias = referredFieldName;
+                }
+            } else {
+                if (rm.isManyToMany()) {
+                    applySelect(expandQuery, expand.getSelect(), Strings.format("_jt_.{0} as {1}", referredFieldName, referredFieldAlias));
+                } else {
+                    applySelect(expandQuery, expand.getSelect(), referredFieldName);
+                    referredFieldAlias = referredFieldName;
                 }
             }
+            List<Record> resultList = expandQuery.list();
+            if (resultList.size() > ac.getMaxRecordsPerExpand()) {
+                throw new BadRequestException("Expanded records of '" + rp.getName() + "' exceed max limit " + ac.getMaxRecordsPerExpand());
+            }
+
+            //根据引用字段值，对所有查询出来的被引用数据，进行分组
+            Map<Object, List<Record>> referredRecords = new HashMap<>();
+            for (Record referred : resultList) {
+
+                Object       fkVal;
+                List<Record> fieldToValList;
+
+                if (rm.isManyToMany()) {
+                    fkVal = referred.remove(referredFieldAlias);
+                    if (fkVal == null) {
+                        fkVal = referred.remove(referredFieldAlias.toUpperCase());
+                    }
+                    if (fkVal == null) {
+                        fkVal = referred.remove(referredFieldAlias.toLowerCase());
+                    }
+                } else {
+                    fkVal = referred.get(referredFieldAlias);
+                }
+
+                if (referredRecords.containsKey(fkVal)) {
+                    fieldToValList = referredRecords.get(fkVal);
+                } else {
+                    fieldToValList = new ArrayList<>();
+                    referredRecords.put(fkVal, fieldToValList);
+                }
+                fieldToValList.add(referred);
+            }
+
+            //填充expand指定的属性
+            for (Record record : records) {
+                Object       fk             = record.get(localFieldName);
+                List<Record> fieldToRecords = referredRecords.get(fk);
+                if (rp.isMany()) {
+                    record.put(rp.getName(), null == fieldToRecords ? Collections.emptyList() : fieldToRecords);
+                } else {
+                    if (fieldToRecords != null && fieldToRecords.size() > 0) {
+                        record.put(rp.getName(), fieldToRecords.get(0));
+                    } else {
+                        record.put(rp.getName(), null);
+                    }
+                }
+            }
+        } finally {
+            ex.completeExpand(context);
         }
     }
 
@@ -659,7 +665,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         String        idFieldName = targetEm.getKeyFieldNames()[0];
 
         RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), targetEm);
-        if(targetEm.getRemoteSettings().isExpandCanNewAccessToken()) {
+        if (targetEm.getRemoteSettings().isExpandCanNewAccessToken()) {
             restResource.setCanNewAccessToken(true);
         }
 
@@ -865,7 +871,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                         isAlias = true;
                     } else if (null != options.getResolvedGroupBy() && options.getResolvedGroupBy().aliasContain(name)) {
                         isAlias = true;
-                    } else if (null != options.getResolvedAggregate() && options.getResolvedAggregate().aliasContain(name)){
+                    } else if (null != options.getResolvedAggregate() && options.getResolvedAggregate().aliasContain(name)) {
                         isAlias = true;
                     }
                     if (!isAlias) {
@@ -1088,8 +1094,8 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                 throw new BadRequestException("Must use groupby with aggregates");
             }
 
-            GroupBy.Item[] items = options.getResolvedGroupBy().items();
-            StringBuilder groupBy = new StringBuilder();
+            GroupBy.Item[] items   = options.getResolvedGroupBy().items();
+            StringBuilder  groupBy = new StringBuilder();
 
             for (int i = 0; i < items.length; i++) {
                 if (i > 0) {
@@ -1294,7 +1300,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                         ScelName nameNode = (ScelName) nodes[i];
 
 
-                        String    name  = nameNode.literal();
+                        String name        = nameNode.literal();
                         String filtersExpr = em.getFiltersExprs().get(name);
                         if (!Strings.isEmpty(filtersExpr)) {
                             expr.append(filtersExpr);
@@ -1341,7 +1347,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                                 //todo: check env is valid or allowed?
                                 String valueExpr = "#{env." + envName + "}";
                                 applyFieldFilterExpr(expr, alias, modelAndProp.field, valueExpr, sqlOperator);
-                            }else if(value.startsWith("env.")) {
+                            } else if (value.startsWith("env.")) {
                                 //todo: check env is valid or allowed?
                                 String valueExpr = "#{" + value + "}";
                                 applyFieldFilterExpr(expr, alias, modelAndProp.field, valueExpr, sqlOperator);
