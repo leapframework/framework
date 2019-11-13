@@ -207,7 +207,9 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 
     @Override
     public int update(Object entity, Map<String, Object> fields) throws MappingNotFoundException {
-        return cmdUpdate(entity.getClass()).withId(entity).setAll(fields).execute();
+        final EntityMapping em = em(entity.getClass());
+        final Object        id = Mappings.getId(em, entity);
+        return update(em, id, fields);
     }
 
     @Override
