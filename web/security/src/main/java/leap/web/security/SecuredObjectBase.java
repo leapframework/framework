@@ -48,7 +48,7 @@ public abstract class SecuredObjectBase implements SecuredObject {
             boolean allow = false;
             String[] grantedPermissions = context.getAuthentication().getPermissions();
             if(null != grantedPermissions && grantedPermissions.length > 0) {
-                allow = pm.checkPermissionImpliesAll(grantedPermissions,permissions);
+                allow = pm.checkPermissionImplies(permissions, grantedPermissions);
             }
 
             if(!allow) {

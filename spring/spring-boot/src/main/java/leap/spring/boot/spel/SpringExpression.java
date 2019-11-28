@@ -19,19 +19,20 @@ import leap.lang.el.ElException;
 import leap.lang.expression.AbstractExpression;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class SpringExpression extends AbstractExpression {
 
-    protected final Expression          expr;
-    protected final EvaluationContext   context;
-    protected final Map<String, Object> globalVariables;
+    protected final Expression                expr;
+    protected final StandardEvaluationContext defaultEvalContext;
+    protected final Map<String, Object>       globalVariables;
 
-    public SpringExpression(Expression expr, EvaluationContext context, Map<String, Object> globalVariables) {
+    public SpringExpression(Expression expr, StandardEvaluationContext defaultEvalContext, Map<String, Object> globalVariables) {
         this.expr = expr;
-        this.context = context;
+        this.defaultEvalContext = defaultEvalContext;
         this.globalVariables = globalVariables;
     }
 
@@ -44,8 +45,20 @@ public class SpringExpression extends AbstractExpression {
             vars.putAll(globalVariables);
         }
 
+        StandardEvaluationContext evalContext = defaultEvalContext;
+        if (null != context) {
+            evalContext = new StandardEvaluationContext(context);
+            evalContext.setOperatorOverloader(defaultEvalContext.getOperatorOverloader());
+            evalContext.setMethodResolvers(defaultEvalContext.getMethodResolvers());
+            evalContext.setConstructorResolvers(defaultEvalContext.getConstructorResolvers());
+            evalContext.setBeanResolver(defaultEvalContext.getBeanResolver());
+            evalContext.setPropertyAccessors(defaultEvalContext.getPropertyAccessors());
+            evalContext.setTypeComparator(defaultEvalContext.getTypeComparator());
+            evalContext.setTypeConverter(defaultEvalContext.getTypeConverter());
+            evalContext.setTypeLocator(defaultEvalContext.getTypeLocator());
+        }
         try {
-            return expr.getValue(this.context, vars);
+            return expr.getValue(evalContext, vars);
         } catch (Exception e) {
             throw new ElException("Err eval expr [ " + expr.getExpressionString() + " ], " + e.getMessage(), e);
         }

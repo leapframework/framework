@@ -18,10 +18,13 @@ package leap.web.security;
 
 import leap.core.ioc.BeanList;
 import leap.core.security.crypto.PasswordEncoder;
+import leap.lang.expression.Expression;
 import leap.web.route.Route;
 import leap.web.security.csrf.CsrfStore;
 import leap.web.security.path.SecuredPaths;
 import leap.web.security.user.UserStore;
+
+import java.util.Map;
 
 /**
  * The configurator of {@link SecurityConfig}.
@@ -185,6 +188,11 @@ public interface SecurityConfigurator {
 	 * Do not intercept the given path.
 	 */
 	SecurityConfigurator ignore(String path);
+
+	/**
+	 * Set the scopes expressions.
+	 */
+	SecurityConfigurator setScopeExpressions(Map<String, Expression> m);
 
 	/**
 	 * Returns a mutable list contains all {@link SecurityInterceptor}. 

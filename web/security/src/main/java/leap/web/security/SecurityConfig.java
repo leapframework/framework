@@ -18,6 +18,7 @@ package leap.web.security;
 import leap.core.AppConfig;
 import leap.core.security.crypto.PasswordEncoder;
 import leap.core.web.RequestIgnore;
+import leap.lang.expression.Expression;
 import leap.web.security.csrf.CsrfStore;
 import leap.web.security.path.SecuredPaths;
 import leap.web.security.user.UserStore;
@@ -230,6 +231,11 @@ public interface SecurityConfig {
 	 * Returns the {@link SecuredPaths}.
      */
 	SecuredPaths getSecuredPaths();
+
+	/**
+	 * Returns the expressions of scope.
+	 */
+	Map<String, Expression> getScopeExpressions();
 	
 	/**
 	 * Optional.

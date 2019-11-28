@@ -27,55 +27,53 @@ import leap.core.web.RequestBase;
 import leap.core.web.RequestIgnore;
 import leap.lang.Args;
 import leap.lang.Strings;
-import leap.lang.path.AntPathMatcher;
+import leap.lang.expression.Expression;
 import leap.lang.path.AntPathPattern;
 import leap.web.Renderable;
 import leap.web.security.csrf.CsrfStore;
 import leap.web.security.path.SecuredPaths;
 import leap.web.security.user.UserStore;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 @Configurable(prefix = "websecurity")
 public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurator, PostConfigureBean {
 
-    protected BeanFactory              factory                        = null;
-    protected boolean                  enabled                        = false;
-    protected boolean                  crossContext                   = false;
-    protected Boolean                  csrfEnabled                    = null;
-    protected boolean                  corsIgnored                    = false;
-    protected boolean                  loginEnabled                   = true;
-    protected boolean                  loginRedirectRoot              = true;
-    protected boolean                  logoutEnabled                  = true;
-    protected boolean                  authenticateAnyRequests        = true;
-    protected boolean                  authorizeAnyRequests           = false;
-    protected int                      defaultAuthenticationExpires   = SecurityConstants.DEFAULT_AUTHENTICATION_EXPIRES;
-    protected String                   returnUrlParameterName         = SecurityConstants.DEFAULT_RETURN_URL_PARAMETER;
-    protected boolean                  rememberMeEnabled              = true;
-    protected String                   rememberMeSecret               = null;
-    protected String                   rememberMeCookieName           = SecurityConstants.DEFAULT_REMEMBERME_COOKIE;
-    protected String                   rememberMeParameterName        = SecurityConstants.DEFAULT_REMEMBERME_PARAMETER;
-    protected String                   rememberMeExpiresParameterName = SecurityConstants.DEFAULT_REMEMBERME_EXPIRES_PARAMETER;
-    protected String                   loginUrl                       = null;
-    protected String                   loginAction                    = SecurityConstants.DEFAULT_LOGIN_ACTION;
-    protected String                   logoutAction                   = SecurityConstants.DEFAULT_LOGOUT_ACTION;
-    protected String                   logoutSuccessUrl               = SecurityConstants.DEFAULT_LOGOUT_SUCCESS_URL;
-    protected int                      defaultRememberMeExpires       = SecurityConstants.DEFAULT_REMEMBERME_EXPIRES;
-    protected String                   csrfHeaderName                 = SecurityConstants.DEFAULT_CSRF_HEADER;
-    protected String                   csrfParameterName              = SecurityConstants.DEFAULT_CSRF_PARAMETER;
-    protected boolean                  authenticationTokenEnabled     = true;
-    protected String                   authenticationTokenCookieName  = SecurityConstants.DEFAULT_TOKEN_AUTHENTICATION_COOKIE;
-    protected String                   authenticationTokenHeaderName  = SecurityConstants.DEFAULT_TOKEN_AUTHENTICATION_HEADER;
-    protected String                   authenticationTokenType        = SecurityConstants.DEFAULT_TOKEN_TYPE;
-    protected String                   tokenSecret                    = null;
-    protected String                   cookieDomain                   = null;
-    protected String[]                 ignorePaths                    = new String[0];
-    protected List<RequestIgnore>      ignores                        = new ArrayList<>();
+    protected BeanFactory             factory                        = null;
+    protected boolean                 enabled                        = false;
+    protected boolean                 crossContext                   = false;
+    protected Boolean                 csrfEnabled                    = null;
+    protected boolean                 corsIgnored                    = false;
+    protected boolean                 loginEnabled                   = true;
+    protected boolean                 loginRedirectRoot              = true;
+    protected boolean                 logoutEnabled                  = true;
+    protected boolean                 authenticateAnyRequests        = true;
+    protected boolean                 authorizeAnyRequests           = false;
+    protected int                     defaultAuthenticationExpires   = SecurityConstants.DEFAULT_AUTHENTICATION_EXPIRES;
+    protected String                  returnUrlParameterName         = SecurityConstants.DEFAULT_RETURN_URL_PARAMETER;
+    protected boolean                 rememberMeEnabled              = true;
+    protected String                  rememberMeSecret               = null;
+    protected String                  rememberMeCookieName           = SecurityConstants.DEFAULT_REMEMBERME_COOKIE;
+    protected String                  rememberMeParameterName        = SecurityConstants.DEFAULT_REMEMBERME_PARAMETER;
+    protected String                  rememberMeExpiresParameterName = SecurityConstants.DEFAULT_REMEMBERME_EXPIRES_PARAMETER;
+    protected String                  loginUrl                       = null;
+    protected String                  loginAction                    = SecurityConstants.DEFAULT_LOGIN_ACTION;
+    protected String                  logoutAction                   = SecurityConstants.DEFAULT_LOGOUT_ACTION;
+    protected String                  logoutSuccessUrl               = SecurityConstants.DEFAULT_LOGOUT_SUCCESS_URL;
+    protected int                     defaultRememberMeExpires       = SecurityConstants.DEFAULT_REMEMBERME_EXPIRES;
+    protected String                  csrfHeaderName                 = SecurityConstants.DEFAULT_CSRF_HEADER;
+    protected String                  csrfParameterName              = SecurityConstants.DEFAULT_CSRF_PARAMETER;
+    protected boolean                 authenticationTokenEnabled     = true;
+    protected String                  authenticationTokenCookieName  = SecurityConstants.DEFAULT_TOKEN_AUTHENTICATION_COOKIE;
+    protected String                  authenticationTokenHeaderName  = SecurityConstants.DEFAULT_TOKEN_AUTHENTICATION_HEADER;
+    protected String                  authenticationTokenType        = SecurityConstants.DEFAULT_TOKEN_TYPE;
+    protected String                  tokenSecret                    = null;
+    protected String                  cookieDomain                   = null;
+    protected String[]                ignorePaths                    = new String[0];
+    protected List<RequestIgnore>     ignores                        = new ArrayList<>();
+    protected Map<String, Expression> scopeExpressions               = new HashMap<>();
 
-    protected Map<String,SecurityFailureHandler> pathPrefixFailureHandlers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    protected Map<String, SecurityFailureHandler> pathPrefixFailureHandlers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
     protected @Inject SecuredPaths                  securedPaths;
     protected @Inject PasswordEncoder               passwordEncoder;
@@ -83,14 +81,14 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
     protected @Inject CsrfStore                     csrfStore;
     protected @Inject BeanList<SecurityInterceptor> interceptors;
 
-    private RequestIgnore[]       ignoresArray       = new RequestIgnore[] {};
-    private SecurityInterceptor[] interceptorArray   = new SecurityInterceptor[]{};
-    private final Object          interceptorLock    = new Object();
-    
+    private       RequestIgnore[]       ignoresArray     = new RequestIgnore[]{};
+    private       SecurityInterceptor[] interceptorArray = new SecurityInterceptor[]{};
+    private final Object                interceptorLock  = new Object();
+
     public DefaultSecurityConfig() {
         super();
     }
-    
+
     @Override
     public SecurityConfig config() {
         return this;
@@ -118,10 +116,10 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
 
     @Override
     public SecurityInterceptor[] getInterceptors() {
-        if(interceptorArray.length != interceptors.size()) {
+        if (interceptorArray.length != interceptors.size()) {
             synchronized (interceptorLock) {
-                if(interceptorArray.length != interceptors.size()){
-                    interceptorArray = interceptors.toArray(new SecurityInterceptor[interceptors.size()]);        
+                if (interceptorArray.length != interceptors.size()) {
+                    interceptorArray = interceptors.toArray(new SecurityInterceptor[interceptors.size()]);
                 }
             }
         }
@@ -177,7 +175,7 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
         this.authorizeAnyRequests = authorizeAnyRequests;
         return this;
     }
-    
+
     @Override
     public UserStore getUserStore() {
         return userStore;
@@ -309,7 +307,7 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
     }
 
     @Override
-    public int  getDefaultAuthenticationExpires() {
+    public int getDefaultAuthenticationExpires() {
         return defaultAuthenticationExpires;
     }
 
@@ -361,16 +359,16 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
     public void setTokenSecret(String tokenSecret) {
         this.tokenSecret = tokenSecret;
     }
-    
-    public String[] getIgnorePaths(){
+
+    public String[] getIgnorePaths() {
         return this.ignorePaths;
     }
-    
+
     @ConfigProperty
-    public void setIgnorePaths(String[] ignorePaths){
+    public void setIgnorePaths(String[] ignorePaths) {
         this.ignorePaths = ignorePaths;
     }
-    
+
     public String getCookieDomain() {
         return cookieDomain;
     }
@@ -413,7 +411,7 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
     }
 
     public String getLoginUrl() {
-        if(null == loginUrl) {
+        if (null == loginUrl) {
             return Renderable.ACTION_PREFIX + loginAction;
         }
         return loginUrl;
@@ -424,7 +422,7 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
         this.loginUrl = url;
         return this;
     }
-    
+
     @Override
     public String getLoginAction() {
         return loginAction;
@@ -438,7 +436,7 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
     public String getLogoutSuccessUrl() {
         return logoutSuccessUrl;
     }
-    
+
     @ConfigProperty
     public SecurityConfigurator setLoginAction(String path) {
         this.loginAction = path;
@@ -480,13 +478,24 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
     }
 
     @Override
+    public Map<String, Expression> getScopeExpressions() {
+        return scopeExpressions;
+    }
+
+    @Override
+    public SecurityConfigurator setScopeExpressions(Map<String, Expression> m) {
+        this.scopeExpressions = null == m ? new HashMap<>() : m;
+        return this;
+    }
+
+    @Override
     public SecurityConfigurator ignore(String path) {
-        if(Strings.isEmpty(path)) {
+        if (Strings.isEmpty(path)) {
             return this;
         }
 
-        for(RequestIgnore ignore : ignores) {
-            if(ignore instanceof AntPathIgnore && ((AntPathIgnore) ignore).getPath().equals(path)) {
+        for (RequestIgnore ignore : ignores) {
+            if (ignore instanceof AntPathIgnore && ((AntPathIgnore) ignore).getPath().equals(path)) {
                 return this;
             }
         }
@@ -514,7 +523,7 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
         if (Strings.isEmpty(tokenSecret)) {
             tokenSecret = config.ensureGetSecret();
         }
-        
+
         if (Strings.isEmpty(rememberMeSecret)) {
             rememberMeSecret = tokenSecret;
         }
@@ -523,10 +532,10 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
             rememberMeSecret = config.ensureGetSecret();
         }
 
-        for (String path : getIgnorePaths()){
+        for (String path : getIgnorePaths()) {
             ignore(path);
         }
-        
+
     }
 
     protected static final class AntPathIgnore implements RequestIgnore {
