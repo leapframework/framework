@@ -103,7 +103,7 @@ public class DefaultTokenInfoLookup implements TokenInfoLookup {
     protected TokenInfo createTokenInfo(Map<String, Object> map) {
         SimpleTokenInfo info = new SimpleTokenInfo();
 
-        info.setClientId((String)map.get("client_id"));
+        info.setClientId(getClientId(map));
         info.setUserId((String)map.get("user_id"));
         info.setCreated(System.currentTimeMillis());
         info.setExpiresIn(((Integer)map.get("expires_in")));
@@ -132,5 +132,16 @@ public class DefaultTokenInfoLookup implements TokenInfoLookup {
 
         return info;
         */
+    }
+
+    protected String getClientId(Map<String, Object> map) {
+        Object clientId = map.get("client_id");
+        if (null == clientId) {
+            Object client = map.get("client");
+            if (client instanceof Map) {
+                clientId = ((Map)client).get("id");
+            }
+        }
+        return (String)clientId;
     }
 }
