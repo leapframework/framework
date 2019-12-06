@@ -62,6 +62,10 @@ public interface ModelQueryInterceptor extends ModelFindInterceptor {
 
     }
 
+    default void preExpand(ModelExecutionContext context, CriteriaQuery<Record> query) {
+
+    }
+
     default void completeExpand(ModelExecutionContext context) {
         
     }

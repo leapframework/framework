@@ -187,6 +187,13 @@ public class ModelQueryExtension implements ModelQueryInterceptor {
     }
 
     @Override
+    public void preExpand(ModelExecutionContext context, CriteriaQuery<Record> query) {
+        for(ModelQueryInterceptor interceptor : interceptors) {
+            interceptor.preExpand(context, query);
+        }
+    }
+
+    @Override
     public void completeExpand(ModelExecutionContext context) {
         for(ModelQueryInterceptor interceptor : interceptors) {
             try {

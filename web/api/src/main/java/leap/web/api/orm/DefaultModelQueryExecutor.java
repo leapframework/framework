@@ -599,6 +599,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                     referredFieldAlias = referredFieldName;
                 }
             }
+            ex.preExpand(context, expandQuery);
             List<Record> resultList = expandQuery.list();
             if (resultList.size() > ac.getMaxRecordsPerExpand()) {
                 throw new BadRequestException("Expanded records of '" + rp.getName() + "' exceed max limit " + ac.getMaxRecordsPerExpand());
