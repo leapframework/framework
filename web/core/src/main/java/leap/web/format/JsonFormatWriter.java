@@ -34,91 +34,102 @@ import leap.web.route.RouteBuilder;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Map;
 
-public class JsonFormatWriter implements FormatWriter,ActionInitializable {
+public class JsonFormatWriter implements FormatWriter, ActionInitializable {
 
-	private static final Log log = LogFactory.get(JsonFormatWriter.class);
-	
-	private JsonSettings defaultJsonSettings;
+    private static final Log log = LogFactory.get(JsonFormatWriter.class);
 
-    protected @Inject BeanFactory factory;
-	protected @Inject JsonConfig  defaultJsonConfig;
+    private JsonSettings defaultJsonSettings;
+
+    protected @Inject BeanFactory               factory;
+    protected @Inject JsonConfig                defaultJsonConfig;
+    protected @Inject Map<String, JsonSettings> jsonSettingsMap;
 
     @Override
     public void postActionInit(RouteBuilder route, Action action) {
         JsonSerialize a = action.searchAnnotation(JsonSerialize.class);
-        if(null != a) {
-            JsonSettings settings = createJsonSettings(a);
+        if (null != a) {
+        	JsonSettings settings = null;
+        	if(!Strings.isEmpty(a.settings())) {
+        		settings = jsonSettingsMap.get(a.settings());
+			}
+        	if(null == settings) {
+        		settings = createJsonSettings(a);
+			}
             route.setExtension(settings);
         }
     }
 
     @Override
     public void write(ActionContext context, Object value, Writer out) throws IOException {
-		JsonSettings settings = context.getRoute().getExtension(JsonSettings.class);
-        if(null == settings) {
+        JsonSettings settings = context.getRoute().getExtension(JsonSettings.class);
+        if (null == settings) {
             settings = getDefaultJsonSettings();
         }
-		
-		if(value instanceof JsonStringable) {
-			((JsonStringable) value).toJson(out,settings);
-			return;
-		}
 
-        if(log.isTraceEnabled()) {
+        if (value instanceof JsonStringable) {
+            ((JsonStringable) value).toJson(out, settings);
+            return;
+        }
+
+        if (log.isTraceEnabled()) {
 
             String json = JSON.encode(value, settings);
 
             log.trace("json output -> \n{}", Strings.abbreviate(json, 1024));
 
             out.write(json);
-        }else{
+        } else {
             JSON.encode(value, settings, out);
         }
     }
 
-	protected JsonSettings getDefaultJsonSettings() {
-		if(null == defaultJsonSettings) {
-			defaultJsonSettings =
-                    new JsonSettings.Builder()
-                            .setKeyQuoted(defaultJsonConfig.isDefaultSerializationKeyQuoted())
-                            .setIgnoreNull(defaultJsonConfig.isDefaultSerializationIgnoreNull())
-                            .setIgnoreEmpty(defaultJsonConfig.isDefaultSerializationIgnoreEmpty())
-                            .setNamingStyle(defaultJsonConfig.getDefaultNamingStyle())
-                            .setDateTimeFormatter(defaultJsonConfig.getDefaultDateFormat())
-                            .build();
-		}
-		return defaultJsonSettings;
-	}
-	
-	protected JsonSettings createJsonSettings(JsonSerialize a) {
-		boolean keyQuoted   = a.keyQuoted().isNone()   ? defaultJsonConfig.isDefaultSerializationKeyQuoted()   : a.keyQuoted().getValue();
-		boolean ignoreNull  = a.ignoreNull().isNone()  ? defaultJsonConfig.isDefaultSerializationIgnoreNull()  : a.ignoreNull().getValue();
-		boolean ignoreEmpty = a.ignoreEmpty().isNone() ? defaultJsonConfig.isDefaultSerializationIgnoreEmpty() : a.ignoreEmpty().getValue();
-		boolean nullToEmptyString = a.nullToEmptyString().isNone() ? false : a.nullToEmptyString().getValue();
-        String  dateFormat  = Strings.isEmpty(a.dateFormat()) ? defaultJsonConfig.getDefaultDateFormat() : a.dateFormat();
+    protected JsonSettings getDefaultJsonSettings() {
+        if (null == defaultJsonSettings) {
+            defaultJsonSettings = factory.tryGetBean(JsonSettings.class);
+            if (null == defaultJsonSettings) {
+                defaultJsonSettings =
+                        new JsonSettings.Builder()
+                                .setKeyQuoted(defaultJsonConfig.isDefaultSerializationKeyQuoted())
+                                .setIgnoreNull(defaultJsonConfig.isDefaultSerializationIgnoreNull())
+                                .setIgnoreEmpty(defaultJsonConfig.isDefaultSerializationIgnoreEmpty())
+                                .setNamingStyle(defaultJsonConfig.getDefaultNamingStyle())
+                                .setDateTimeFormatter(defaultJsonConfig.getDefaultDateFormat())
+                                .build();
+            }
+        }
+        return defaultJsonSettings;
+    }
+
+    protected JsonSettings createJsonSettings(JsonSerialize a) {
+        boolean keyQuoted         = a.keyQuoted().isNone() ? defaultJsonConfig.isDefaultSerializationKeyQuoted() : a.keyQuoted().getValue();
+        boolean ignoreNull        = a.ignoreNull().isNone() ? defaultJsonConfig.isDefaultSerializationIgnoreNull() : a.ignoreNull().getValue();
+        boolean ignoreEmpty       = a.ignoreEmpty().isNone() ? defaultJsonConfig.isDefaultSerializationIgnoreEmpty() : a.ignoreEmpty().getValue();
+        boolean nullToEmptyString = a.nullToEmptyString().isNone() ? false : a.nullToEmptyString().getValue();
+        String  dateFormat        = Strings.isEmpty(a.dateFormat()) ? defaultJsonConfig.getDefaultDateFormat() : a.dateFormat();
 
         NamingStyle ns;
 
-        if(Strings.isEmpty(a.namingStyle())){
-			ns = getDefaultJsonSettings().getNamingStyle();
-		}else {
-			ns = NamingStyles.get(a.namingStyle());
-			if(ns == null){
-				ns = NamingStyles.get(a.namingStyle(), factory);
-			}
-			if(ns == null){
-				throw new IllegalArgumentException("NamingStyle not found:"+a.namingStyle());
-			}
-		}
+        if (Strings.isEmpty(a.namingStyle())) {
+            ns = getDefaultJsonSettings().getNamingStyle();
+        } else {
+            ns = NamingStyles.get(a.namingStyle());
+            if (ns == null) {
+                ns = NamingStyles.get(a.namingStyle(), factory);
+            }
+            if (ns == null) {
+                throw new IllegalArgumentException("NamingStyle not found:" + a.namingStyle());
+            }
+        }
 
-		return new JsonSettings.Builder()
-                    .setKeyQuoted(keyQuoted)
-                    .setIgnoreNull(ignoreNull)
-                    .setIgnoreEmpty(ignoreEmpty)
-                    .setNamingStyle(ns)
-                    .setDateTimeFormatter(dateFormat, a.gmt() ? "GMT" : null)
-					.setNullToEmptyString(nullToEmptyString)
-                    .build();
-	}
+        return new JsonSettings.Builder()
+                .setKeyQuoted(keyQuoted)
+                .setIgnoreNull(ignoreNull)
+                .setIgnoreEmpty(ignoreEmpty)
+                .setNamingStyle(ns)
+                .setDateTimeFormatter(dateFormat, a.gmt() ? "GMT" : null)
+                .setNullToEmptyString(nullToEmptyString)
+                .build();
+    }
 }

@@ -38,7 +38,6 @@ import leap.web.api.meta.model.MApiOperationBuilder;
 import leap.web.api.meta.model.MApiParameter;
 import leap.web.api.meta.model.MApiParameterBuilder;
 import leap.web.api.meta.model.MApiTag;
-import leap.web.api.mvc.ApiFailureHandler;
 import leap.web.api.route.ApiRoute;
 import leap.web.api.spec.swagger.SwaggerConstants;
 import leap.web.format.RequestFormat;
@@ -52,19 +51,20 @@ import java.util.Map;
 
 public abstract class RestdOperationBase {
 
-    protected @Inject RouteManager            rm;
-    protected @Inject Apis                    apis;
-    protected @Inject ValidationManager       validationManager;
-    protected @Inject RestdOperationSupport[] operationSupports;
-    protected @Inject RestdArgumentSupport[]  argumentSupports;
-    protected @Inject RequestFormat[]         supportedConsumes;
-    protected @Inject ResponseFormat[]        supportedProduces;
+    protected @Inject               RouteManager            rm;
+    protected @Inject               Apis                    apis;
+    protected @Inject               ValidationManager       validationManager;
+    protected @Inject               RestdOperationSupport[] operationSupports;
+    protected @Inject               RestdArgumentSupport[]  argumentSupports;
+    protected @Inject               RequestFormat[]         supportedConsumes;
+    protected @Inject               ResponseFormat[]        supportedProduces;
+    protected @Inject(name = "api") JsonSettings            apiJsonSettings;
 
     protected boolean isOperationExists(RestdContext context, RouteBuilder route) {
-        for(ApiRoute ar : context.getApiConfig().getApiRoutes()) {
+        for (ApiRoute ar : context.getApiConfig().getApiRoutes()) {
             Route route1 = ar.getRoute();
 
-            if(route.getMethod().equalsIgnoreCase(route1.getMethod()) &&
+            if (route.getMethod().equalsIgnoreCase(route1.getMethod()) &&
                     route.getPathTemplate().getTemplate().equals(route1.getPathTemplate().getTemplate())) {
 
                 route.setAction(route1.getAction());
@@ -73,9 +73,9 @@ public abstract class RestdOperationBase {
             }
         }
 
-        for(RestdOperationSupport support : operationSupports) {
-            if(support.isOperationExists(context, route)) {
-                if(null == route.getEnabled()) {
+        for (RestdOperationSupport support : operationSupports) {
+            if (support.isOperationExists(context, route)) {
+                if (null == route.getEnabled()) {
                     route.setEnabled(false);
                 }
                 return route.isDisabledExplicitly();
@@ -111,7 +111,7 @@ public abstract class RestdOperationBase {
         a.setType(type);
         a.setRequired(required);
 
-        if(Classes.isAnnotationPresent(type, ParamsWrapper.class)) {
+        if (Classes.isAnnotationPresent(type, ParamsWrapper.class)) {
             BeanType bt = BeanType.of(type);
             for (BeanProperty bp : bt.getProperties()) {
                 if (bp.isField() && !bp.isAnnotationPresent(NonParam.class)) {
@@ -121,7 +121,7 @@ public abstract class RestdOperationBase {
             }
         }
 
-        for(RestdArgumentSupport vs : argumentSupports) {
+        for (RestdArgumentSupport vs : argumentSupports) {
             vs.processArgument(context, a);
         }
 
@@ -132,9 +132,9 @@ public abstract class RestdOperationBase {
 
     protected void preConfigure(RestdContext context, RestdModel model, FuncActionBuilder action) {
         RestdConfig.Model m = context.getConfig().getModel(model.getName());
-        if(null != m && !Strings.isEmpty(m.getTitle())) {
+        if (null != m && !Strings.isEmpty(m.getTitle())) {
             action.setExtension(new MApiTag[]{new MApiTag(model.getName(), m.getTitle())});
-        }else {
+        } else {
             action.setExtension(new MApiTag[]{new MApiTag(model.getName())});
         }
     }
@@ -146,22 +146,22 @@ public abstract class RestdOperationBase {
     }
 
     protected void preConfigure(RestdContext context, RouteBuilder route, FuncActionBuilder action, MApiOperationBuilder mo) {
-        if(null == mo) {
+        if (null == mo) {
             return;
         }
 
-        for(String consume : mo.getConsumes()) {
-            for(RequestFormat format : supportedConsumes) {
-                if(null != format.getPrimaryMimeType() && format.getPrimaryMimeType().getMediaType().equalsIgnoreCase(consume)) {
+        for (String consume : mo.getConsumes()) {
+            for (RequestFormat format : supportedConsumes) {
+                if (null != format.getPrimaryMimeType() && format.getPrimaryMimeType().getMediaType().equalsIgnoreCase(consume)) {
                     action.addConsume(format);
                     break;
                 }
             }
         }
 
-        for(String produce : mo.getProduces()) {
-            for(ResponseFormat format : supportedProduces) {
-                if(null != format.getPrimaryMimeType() && format.getPrimaryMimeType().getMediaType().equalsIgnoreCase(produce)) {
+        for (String produce : mo.getProduces()) {
+            for (ResponseFormat format : supportedProduces) {
+                if (null != format.getPrimaryMimeType() && format.getPrimaryMimeType().getMediaType().equalsIgnoreCase(produce)) {
                     action.addProduce(format);
                     break;
                 }
@@ -172,7 +172,7 @@ public abstract class RestdOperationBase {
     protected void postConfigure(RestdContext context, RestdModel model, RouteBuilder route, MApiOperationBuilder mo) {
         RestdConfig c = context.getConfig();
 
-        if(null != model) {
+        if (null != model) {
             if (c.isModelAnonymous(model.getName())) {
                 route.setAllowAnonymous(true);
             }
@@ -180,15 +180,18 @@ public abstract class RestdOperationBase {
 
         route.addFailureHandler(context.getApiConfig().getFailureHandler());
 
-        JsonSettings settings = new JsonSettings.Builder().setDateTimeFormatter(SwaggerConstants.DATE_TIME_FORMAT, "GMT").build();
+        JsonSettings settings = apiJsonSettings;
+        if (null == settings) {
+            settings = new JsonSettings.Builder().setDateTimeFormatter(SwaggerConstants.DATE_TIME_FORMAT, "GMT").build();
+        }
         route.setExtension(settings);
 
-        if(null != mo) {
-            if(mo.isAllowAnonymous()) {
+        if (null != mo) {
+            if (mo.isAllowAnonymous()) {
                 route.setAllowAnonymous(true);
             }
 
-            if(mo.isAllowClientOnly()) {
+            if (mo.isAllowClientOnly()) {
                 route.setAllowClientOnly(true);
             }
 
@@ -198,7 +201,7 @@ public abstract class RestdOperationBase {
     }
 
     protected void createArguments(RouteBuilder route, FuncActionBuilder action, MApiOperationBuilder mo) {
-        for(MApiParameterBuilder p : mo.getParameters()) {
+        for (MApiParameterBuilder p : mo.getParameters()) {
             addArgument(route, action, p);
         }
     }
@@ -209,7 +212,7 @@ public abstract class RestdOperationBase {
         arg.setRequired(p.getRequired());
 
         //validators
-        if(null != p.getValidators() && !p.getValidators().isEmpty())  {
+        if (null != p.getValidators() && !p.getValidators().isEmpty()) {
             p.getValidators().forEach(arg::addValidator);
         }
 
@@ -229,28 +232,28 @@ public abstract class RestdOperationBase {
             return;
         }
 
-        if(type.isSimpleType()) {
+        if (type.isSimpleType()) {
             arg.setType(type.asSimpleType().getJavaType());
             return;
         }
 
-        if(type.isObjectType()) {
+        if (type.isObjectType()) {
             arg.setType(Object.class);
             return;
         }
 
-        if(type.isDictionaryType()) {
+        if (type.isDictionaryType()) {
             arg.setType(Map.class);
             return;
         }
 
-        if(type.isCollectionType()) {
+        if (type.isCollectionType()) {
             MType elementType = type.asCollectionType().getElementType();
-            if(elementType.isSimpleType()) {
-                arg.setType(Array.newInstance(elementType.asSimpleType().getJavaType(),0).getClass());
-            }else if(elementType.isObjectType()){
+            if (elementType.isSimpleType()) {
+                arg.setType(Array.newInstance(elementType.asSimpleType().getJavaType(), 0).getClass());
+            } else if (elementType.isObjectType()) {
                 arg.setType(Object[].class);
-            }else {
+            } else {
                 arg.setType(Map[].class);
             }
             return;
@@ -291,13 +294,13 @@ public abstract class RestdOperationBase {
     }
 
     protected boolean setDefaultLocation(RouteBuilder route, MApiParameterBuilder p) {
-        if(null == p.getLocation()) {
+        if (null == p.getLocation()) {
             if (route.getPathTemplate().getTemplateVariables().contains(p.getName())) {
                 p.setLocation(MApiParameter.Location.PATH);
                 return true;
             }
 
-            if(p.getType().isComplexType() || p.getType().isTypeRef() || p.getType().isDictionaryType()) {
+            if (p.getType().isComplexType() || p.getType().isTypeRef() || p.getType().isDictionaryType()) {
                 p.setLocation(MApiParameter.Location.BODY);
                 return true;
             }

@@ -23,6 +23,8 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface JsonSerialize {
+
+	String settings() default "";
 	
 	Bool keyQuoted() default Bool.NONE;
 

@@ -22,70 +22,68 @@ import leap.lang.New;
 import leap.lang.naming.NamingStyle;
 import leap.lang.naming.NamingStyles;
 
-import java.text.DateFormat;
 import java.util.Collection;
-import java.util.List;
 
-@Configurable(prefix="webmvc.json")
-public class DefaultJsonConfig implements JsonConfig,JsonConfigurator {
+@Configurable(prefix = "webmvc.json")
+public class DefaultJsonConfig implements JsonConfig, JsonConfigurator {
 
-    protected boolean     defaultSerializationKeyQuoted    = true;
-    protected boolean     defaultSerializationIgnoreNull   = false;
-    protected boolean     defaultSerializationIgnoreEmpty  = false;
-    protected NamingStyle defaultNamingStyle               = NamingStyles.RAW;
-    protected String      defaultDateFormat                = null;
-    protected boolean     jsonpEnabled                     = true;
-	protected boolean     jsonpResponseHeaders             = true;
-    protected String      jsonpParameter                   = DEFAULT_JSONP_PARAMETER;
-    protected Collection<String> jsonpAllowResponseHeaders = New.arrayList("X-Total-Count");
+    protected boolean            defaultSerializationKeyQuoted   = true;
+    protected boolean            defaultSerializationIgnoreNull  = false;
+    protected boolean            defaultSerializationIgnoreEmpty = false;
+    protected NamingStyle        defaultNamingStyle              = NamingStyles.RAW;
+    protected String             defaultDateFormat               = null;
+    protected boolean            jsonpEnabled                    = true;
+    protected boolean            jsonpResponseHeaders            = true;
+    protected String             jsonpParameter                  = DEFAULT_JSONP_PARAMETER;
+    protected Collection<String> jsonpAllowResponseHeaders       = New.arrayList("X-Total-Count");
 
     public DefaultJsonConfig() {
-	    super();
+        super();
     }
 
-	@Override
+    @Override
     public JsonConfig config() {
-	    return this;
+        return this;
     }
 
-	public boolean isDefaultSerializationKeyQuoted() {
-		return defaultSerializationKeyQuoted;
-	}
+    public boolean isDefaultSerializationKeyQuoted() {
+        return defaultSerializationKeyQuoted;
+    }
 
-	@ConfigProperty
-	public JsonConfigurator setDefaultSerializationKeyQuoted(boolean keyQuoted) {
-		this.defaultSerializationKeyQuoted = keyQuoted;
-		return this;
-	}
+    @ConfigProperty
+    public JsonConfigurator setDefaultSerializationKeyQuoted(boolean keyQuoted) {
+        this.defaultSerializationKeyQuoted = keyQuoted;
+        return this;
+    }
 
-	public boolean isDefaultSerializationIgnoreNull() {
-		return defaultSerializationIgnoreNull;
-	}
+    public boolean isDefaultSerializationIgnoreNull() {
+        return defaultSerializationIgnoreNull;
+    }
 
-	@ConfigProperty
-	public JsonConfigurator setDefaultSerializationIgnoreNull(boolean ignoreNull) {
-		this.defaultSerializationIgnoreNull = ignoreNull;
-		return this;
-	}
+    @ConfigProperty
+    public JsonConfigurator setDefaultSerializationIgnoreNull(boolean ignoreNull) {
+        this.defaultSerializationIgnoreNull = ignoreNull;
+        return this;
+    }
 
-	public boolean isDefaultSerializationIgnoreEmpty() {
-		return defaultSerializationIgnoreEmpty;
-	}
+    public boolean isDefaultSerializationIgnoreEmpty() {
+        return defaultSerializationIgnoreEmpty;
+    }
 
-	@ConfigProperty
-	public JsonConfigurator setDefaultSerializationIgnoreEmpty(boolean ignoreEmpty) {
-		this.defaultSerializationIgnoreEmpty = ignoreEmpty;
-		return this;
-	}
+    @ConfigProperty
+    public JsonConfigurator setDefaultSerializationIgnoreEmpty(boolean ignoreEmpty) {
+        this.defaultSerializationIgnoreEmpty = ignoreEmpty;
+        return this;
+    }
 
-	@Override
-	public JsonConfigurator setDefaultNamingStyle(NamingStyle namingStyle) {
-		if(namingStyle == null){
-			throw new IllegalArgumentException("default naming style can not be null!");
-		}
-		this.defaultNamingStyle = namingStyle;
-		return this;
-	}
+    @Override
+    public JsonConfigurator setDefaultNamingStyle(NamingStyle namingStyle) {
+        if (namingStyle == null) {
+            throw new IllegalArgumentException("default naming style can not be null!");
+        }
+        this.defaultNamingStyle = namingStyle;
+        return this;
+    }
 
     @Override
     public String getDefaultDateFormat() {
@@ -99,53 +97,55 @@ public class DefaultJsonConfig implements JsonConfig,JsonConfigurator {
     }
 
     @ConfigProperty
-	public JsonConfigurator setJsonpEnabled(boolean enabled) {
-		this.jsonpEnabled = enabled;
-	    return this;
+    public JsonConfigurator setJsonpEnabled(boolean enabled) {
+        this.jsonpEnabled = enabled;
+        return this;
     }
-	@ConfigProperty
-	@Override
-	public JsonConfigurator setJsonpResponseHeaders(boolean enabled) {
-    	this.setJsonpResponseHeaders(enabled);
-		return this;
-	}
 
-	@Override
-	public Collection<String> getJsonpAllowResponseHeaders() {
-		return jsonpAllowResponseHeaders;
-	}
-	@ConfigProperty
-	@Override
-	public JsonConfigurator setJsonpAllowResponseHeaders(Collection<String> headerNames) {
-		Args.notEmpty(headerNames, "header names");
-    	this.jsonpAllowResponseHeaders = headerNames;
-		return this;
-	}
+    @ConfigProperty
+    @Override
+    public JsonConfigurator setJsonpResponseHeaders(boolean enabled) {
+        this.setJsonpResponseHeaders(enabled);
+        return this;
+    }
 
-	@Override
-	public boolean isJsonpResponseHeaders() {
-		return jsonpResponseHeaders;
-	}
+    @Override
+    public Collection<String> getJsonpAllowResponseHeaders() {
+        return jsonpAllowResponseHeaders;
+    }
 
-	@ConfigProperty
+    @ConfigProperty
+    @Override
+    public JsonConfigurator setJsonpAllowResponseHeaders(Collection<String> headerNames) {
+        Args.notEmpty(headerNames, "header names");
+        this.jsonpAllowResponseHeaders = headerNames;
+        return this;
+    }
+
+    @Override
+    public boolean isJsonpResponseHeaders() {
+        return jsonpResponseHeaders;
+    }
+
+    @ConfigProperty
     public JsonConfigurator setJsonpParameter(String jsonpParameter) {
-		Args.notEmpty(jsonpParameter, "jsonp parameter");
-		this.jsonpParameter = jsonpParameter;
-	    return this;
+        Args.notEmpty(jsonpParameter, "jsonp parameter");
+        this.jsonpParameter = jsonpParameter;
+        return this;
     }
 
-	@Override
+    @Override
     public boolean isJsonpEnabled() {
-	    return jsonpEnabled;
+        return jsonpEnabled;
     }
 
-	@Override
+    @Override
     public String getJsonpParameter() {
-	    return jsonpParameter;
+        return jsonpParameter;
     }
 
-	@Override
-	public NamingStyle getDefaultNamingStyle() {
-		return defaultNamingStyle;
-	}
+    @Override
+    public NamingStyle getDefaultNamingStyle() {
+        return defaultNamingStyle;
+    }
 }

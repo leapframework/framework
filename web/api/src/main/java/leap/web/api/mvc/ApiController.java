@@ -31,7 +31,7 @@ import leap.core.security.annotation.AllowClientOnly;
 @AllowClientOnly
 @Restful
 @Failure(handler = ApiFailureHandler.class)
-@JsonSerialize(dateFormat = SwaggerConstants.DATE_TIME_FORMAT, gmt = true)
+@JsonSerialize(settings = "api", dateFormat = SwaggerConstants.DATE_TIME_FORMAT, gmt = true)
 public abstract class ApiController {
 
     protected ApiConfig   apiConfig;
