@@ -538,7 +538,11 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         }else {
             where = "(" + where + ") and (" + expr + ")";
         }
-        this.whereExtraArgs = args;
+        if (null == this.whereExtraArgs) {
+            this.whereExtraArgs = args;
+        } else if (!Arrays2.isEmpty(args)) {
+            this.whereExtraArgs = Arrays2.concat(this.whereExtraArgs, args);
+        }
         return this;
     }
 
@@ -554,7 +558,11 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         }else {
             where = "(" + where + ") or (" + expr + ")";
         }
-        this.whereExtraArgs = args;
+        if (null == this.whereExtraArgs) {
+            this.whereExtraArgs = args;
+        } else if (!Arrays2.isEmpty(args)) {
+            this.whereExtraArgs = Arrays2.concat(this.whereExtraArgs, args);
+        }
         return this;
     }
 

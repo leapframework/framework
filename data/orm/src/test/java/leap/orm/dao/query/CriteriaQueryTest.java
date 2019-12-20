@@ -18,10 +18,7 @@ package leap.orm.dao.query;
 import java.util.List;
 
 import leap.junit.contexual.Contextual;
-import leap.lang.Confirm;
 import leap.orm.mapping.EntityMapping;
-import leap.orm.query.JoinBuilder;
-import leap.orm.query.JoinContext;
 import leap.orm.sql.SqlFragment;
 import leap.orm.tested.model.api.Api;
 import leap.orm.tested.model.api.ApiCategory;
@@ -30,7 +27,6 @@ import leap.orm.tested.model.api.Category;
 import leap.orm.tested.model.file.Directory;
 import leap.orm.tested.model.product.Product;
 import org.junit.Test;
-
 import leap.orm.OrmTestCase;
 import leap.orm.tested.model.petclinic.Owner;
 
@@ -263,9 +259,26 @@ public class CriteriaQueryTest extends OrmTestCase {
 			ApiPath.deleteAll();
 			Api.deleteAll();
 		}
-		
-		
-		
+	}
+
+	@Test
+	public void testAndOrInWhere() {
+		deleteAll(Owner.class);
+		Owner o1 = new Owner();
+		o1.setAddress("ab");
+		o1.setCity("cd");
+		o1.save();
+
+		Owner o2 = new Owner();
+		o2.setAddress("ab");
+		o2.setCity("ef");
+		o2.save();
+
+		List<Owner> owner = Owner.<Owner>query()
+				.whereAnd("address = ?", "ab")
+				.whereAnd("city = ?", "cd")
+				.list();
+		assertEquals(1, owner.size());
 	}
     
 }
