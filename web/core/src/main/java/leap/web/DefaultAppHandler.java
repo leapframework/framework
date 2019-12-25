@@ -688,6 +688,10 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
             }
         } else {
             response.setStatus(e.getStatus());
+            String contentType = content.getContentType(request);
+            if(!Strings.isEmpty(contentType)) {
+                response.setContentType(contentType);
+            }
             content.render(request, response);
         }
     }
