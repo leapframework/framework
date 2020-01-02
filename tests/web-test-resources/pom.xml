@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.leapframework</groupId>
 		<artifactId>tests</artifactId>
-		<version>0.7.13b</version>
+		<version>0.7.14b-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>web-test-resources</artifactId>
