@@ -36,14 +36,14 @@ import leap.orm.command.CommandFactory;
 import leap.orm.jdbc.JdbcExecutorFactory;
 import leap.orm.query.QueryFactory;
 import leap.orm.sql.SqlFactory;
-
 import javax.sql.DataSource;
+import java.util.Stack;
 import java.util.function.Supplier;
 
 public abstract class DaoBase extends Dao implements PostCreateBean, PostInjectBean {
     protected final Readonly _readonly = new Readonly(this);
 
-    protected static final ThreadLocal<Boolean> WITH_EVENTS = new ThreadLocal<>();
+    protected static final ThreadLocal<Stack<Boolean>> WITH_EVENTS = new ThreadLocal<>();
 
     protected @NotEmpty String              name;
     protected @NotNull  OrmContext          ormContext;
@@ -166,48 +166,65 @@ public abstract class DaoBase extends Dao implements PostCreateBean, PostInjectB
 
     @Override
     public void withEvents(Runnable func) {
-        WITH_EVENTS.set(true);
+        Stack<Boolean> stack = mustGetWithEvents();
+        stack.push(true);
         try {
             func.run();
         } finally {
-            WITH_EVENTS.remove();
+            stack.pop();
         }
     }
 
     @Override
     public <T> T withEvents(Supplier<T> func) {
-        WITH_EVENTS.set(true);
+        Stack<Boolean> stack = mustGetWithEvents();
+        stack.push(true);
         try {
             return func.get();
         } finally {
-            WITH_EVENTS.remove();
+            stack.pop();
         }
     }
 
     @Override
     public void withoutEvents(Runnable func) {
-        WITH_EVENTS.set(false);
+        Stack<Boolean> stack = mustGetWithEvents();
+        stack.push(false);
         try {
             func.run();
         } finally {
-            WITH_EVENTS.remove();
+            stack.pop();
         }
     }
 
     @Override
     public <T> T withoutEvents(Supplier<T> func) {
-        WITH_EVENTS.set(false);
+        Stack<Boolean> stack = mustGetWithEvents();
+        stack.push(false);
         try {
             return func.get();
         } finally {
-            WITH_EVENTS.remove();
+            stack.pop();
         }
     }
 
     @Override
     public boolean isWithEvents() {
-        Boolean b = WITH_EVENTS.get();
+        Stack<Boolean> stack = mustGetWithEvents();
+
+        if (stack.size() <= 0) {
+            return ormContext.getConfig().isEventsDefaultEnabled();
+        }
+
+        Boolean b = stack.peek();
         return null == b ? ormContext.getConfig().isEventsDefaultEnabled() : b;
+    }
+
+    protected Stack<Boolean> mustGetWithEvents() {
+        if (null == WITH_EVENTS.get()) {
+            WITH_EVENTS.set(new Stack<>());
+        }
+        return WITH_EVENTS.get();
     }
 
     @Override

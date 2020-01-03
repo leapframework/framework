@@ -737,7 +737,7 @@ public abstract class DaoWrapper extends Dao {
 
     @Override
     public void withoutEvents(Runnable func) {
-        dao().withEvents(func);
+        dao().withoutEvents(func);
     }
 
     @Override
