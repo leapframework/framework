@@ -21,6 +21,7 @@ package leap.core.bean;
 import leap.lang.Classes;
 import leap.lang.convert.StringParsable;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class BeanDef implements StringParsable {
@@ -64,6 +65,13 @@ public class BeanDef implements StringParsable {
 
     public void setConfig(Map<String, Object> config) {
         this.config = config;
+    }
+
+    public void setConfigProperty(String name, Object value) {
+        if(null == config) {
+            config = new LinkedHashMap<>();
+        }
+        config.put(name, value);
     }
 
     @Override

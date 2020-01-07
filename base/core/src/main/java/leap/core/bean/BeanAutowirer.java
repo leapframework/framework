@@ -20,6 +20,13 @@ package leap.core.bean;
 
 public interface BeanAutowirer {
 
+    /**
+     * Is the {@link BeanAutowirer} the wrapper of {@link leap.core.BeanFactory}
+     */
+    default boolean isBeanFactoryWrapper() {
+        return false;
+    }
+
     <T> T autowire(T bean);
 
 }

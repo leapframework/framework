@@ -109,6 +109,9 @@ public class DefaultBeanCreator implements BeanCreator {
             if (null == bean) {
                 throw new IllegalStateException("Bean '" + def.getType() + "' is not exists for '" + type.getName() + "'");
             }
+            if(null != autowirer && !autowirer.isBeanFactoryWrapper()) {
+                autowirer.autowire(bean);
+            }
         } else {
             throw new IllegalStateException("Type 'type' or 'className' must be exists at bean definition");
         }

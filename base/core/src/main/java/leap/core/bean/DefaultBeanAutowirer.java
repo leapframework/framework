@@ -26,6 +26,11 @@ public class DefaultBeanAutowirer implements BeanAutowirer {
     protected @Inject BeanFactory factory;
 
     @Override
+    public boolean isBeanFactoryWrapper() {
+        return true;
+    }
+
+    @Override
     public <T> T autowire(T bean) {
         return factory.inject(bean);
     }
