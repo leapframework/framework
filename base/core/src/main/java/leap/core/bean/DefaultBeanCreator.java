@@ -24,8 +24,10 @@ import leap.core.annotation.Inject;
 import leap.core.config.ConfigUtils;
 import leap.core.validation.BeanValidator;
 import leap.core.validation.Valid;
+import leap.core.validation.ValidationException;
 import leap.lang.Classes;
 import leap.lang.Strings;
+import leap.lang.annotation.Init;
 import leap.lang.convert.Converts;
 import leap.lang.json.JSON;
 import leap.lang.reflect.Reflection;
@@ -45,10 +47,19 @@ public class DefaultBeanCreator implements BeanCreator {
     protected BeanFactory factory;
 
     @Inject
-    protected BeanAutowirer autowier;
+    protected BeanAutowirer autowirer;
 
     @Inject
-    protected BeanValidator validator;
+    protected BeanValidator beanValidator;
+
+    protected Object standardValidator;
+
+    @Init
+    protected void init() {
+        if (Classes.isPresent("javax.validation.Validator")) {
+            standardValidator = factory.tryGetBean(javax.validation.Validator.class);
+        }
+    }
 
     @Override
     public <T> T tryCreateBean(Class<T> type, String configurationPrefix) {
@@ -88,8 +99,8 @@ public class DefaultBeanCreator implements BeanCreator {
                 throw new IllegalStateException("Class '" + def.getClassName() + "' must be sub-class of '" + type.getName() + "'");
             }
             bean = (T) Reflection.newInstance(c);
-            if (null != autowier) {
-                autowier.autowire(bean);
+            if (null != autowirer) {
+                autowirer.autowire(bean);
             } else {
                 factory.inject(bean);
             }
@@ -129,7 +140,10 @@ public class DefaultBeanCreator implements BeanCreator {
                     }
                     Object config = Converts.convert(def.getConfig(), cc);
                     if (config.getClass().isAnnotationPresent(Valid.class)) {
-                        validator.validate(type.getSimpleName() + "(" + def.getType() + ")", config);
+                        beanValidator.validate(type.getSimpleName() + "(" + def.getType() + ")", config);
+                    }
+                    if (null != standardValidator) {
+                        validateByStandardValidator(type.getSimpleName() + "(" + def.getType() + ")", config);
                     }
                     cb.initConfiguration(config);
                 }
@@ -151,6 +165,18 @@ public class DefaultBeanCreator implements BeanCreator {
             }
         }
         return list.toArray((T[]) Array.newInstance(type, list.size()));
+    }
+
+    protected void validateByStandardValidator(String name, Object v) {
+        if (v.getClass().isAnnotationPresent(javax.validation.Valid.class)) {
+            Set<javax.validation.ConstraintViolation<Object>> errs = ((javax.validation.Validator) standardValidator).validate(v);
+            if (!errs.isEmpty()) {
+                final javax.validation.ConstraintViolation<Object> err = errs.iterator().next();
+                final String message = (Strings.isEmpty(name) ? name + ", property '" : "Property '") +
+                        (err.getPropertyPath() + "' : " + err.getMessage());
+                throw new ValidationException(message);
+            }
+        }
     }
 
 }
