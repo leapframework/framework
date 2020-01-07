@@ -33,10 +33,7 @@ import leap.lang.json.JSON;
 import leap.lang.reflect.Reflection;
 
 import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class DefaultBeanCreator implements BeanCreator {
 
@@ -119,13 +116,18 @@ public class DefaultBeanCreator implements BeanCreator {
         if (bean instanceof ConfigurableBean) {
             ConfigurableBean cb = (ConfigurableBean) bean;
 
+            Map<String, Object> configMap = def.getConfig();
+            if(null == configMap) {
+                configMap = Collections.emptyMap();
+            }
+
             Class<?> cc = cb.getConfigurationClass();
             if (null != cc && !Object.class.equals(cc)) {
                 if (Map.class.equals(cc)) {
-                    cb.initConfiguration(def.getConfig());
+                    cb.initConfiguration(configMap);
                 } else if (Map.class.isAssignableFrom(cc)) {
                     Map map = (Map) Reflection.newInstance(cc);
-                    map.putAll(def.getConfig());
+                    map.putAll(configMap);
                     cb.initConfiguration(map);
                 } else {
                     Set<String> missingProperties = JSON.checkMissingProperties(cc, def.getConfig());
@@ -138,7 +140,7 @@ public class DefaultBeanCreator implements BeanCreator {
                                     "' at the config of '" + type.getSimpleName() + " : " + def.getType() + "'");
                         }
                     }
-                    Object config = Converts.convert(def.getConfig(), cc);
+                    Object config = Converts.convert(configMap, cc);
                     if (config.getClass().isAnnotationPresent(Valid.class)) {
                         beanValidator.validate(type.getSimpleName() + "(" + def.getType() + ")", config);
                     }

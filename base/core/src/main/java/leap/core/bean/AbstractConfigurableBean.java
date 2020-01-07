@@ -28,6 +28,10 @@ public abstract class AbstractConfigurableBean<C> implements ConfigurableBean<C>
         return (Class<C>)Types.getActualTypeArgument(this.getClass().getGenericSuperclass());
     }
 
+    public C getConfig() {
+        return config;
+    }
+
     @Override
     public void initConfiguration(C config) {
         this.config = config;
