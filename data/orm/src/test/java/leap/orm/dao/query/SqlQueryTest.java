@@ -38,6 +38,12 @@ public class SqlQueryTest extends OrmTestCase {
 
         Record record = dao.createSqlQuery("select `first_name` as `myFirstName` from owner").single();
         assertEquals("a", record.getString("myFirstName"));
+
+        record = dao.createSqlQuery("select first_name as \"myFirstName\" from owner").single();
+        assertEquals("a", record.getString("myFirstName"));
+
+        record = dao.createSqlQuery("select first_name as 'myFirstName' from owner").single();
+        assertEquals("a", record.getString("myFirstName"));
     }
 
     @Test

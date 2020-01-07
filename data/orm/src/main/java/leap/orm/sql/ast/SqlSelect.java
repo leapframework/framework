@@ -72,6 +72,8 @@ public class SqlSelect extends SqlQuery implements SqlTableSource {
 			alias = alias.substring(1, alias.length() - 1);
 		}else if(alias.startsWith("\"") && alias.endsWith("\"")) {
 			alias = alias.substring(1, alias.length() - 1);
+		}else if(alias.startsWith("'") && alias.endsWith("'")) {
+			alias = alias.substring(1, alias.length() - 1);
 		}
 		selectItemAliases.put(alias.toLowerCase(),alias);
 	}
