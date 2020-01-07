@@ -168,14 +168,9 @@ public class DefaultBeanCreator implements BeanCreator {
     }
 
     protected void validateByStandardValidator(String name, Object v) {
-        if (v.getClass().isAnnotationPresent(javax.validation.Valid.class)) {
-            Set<javax.validation.ConstraintViolation<Object>> errs = ((javax.validation.Validator) standardValidator).validate(v);
-            if (!errs.isEmpty()) {
-                final javax.validation.ConstraintViolation<Object> err = errs.iterator().next();
-                final String message = (Strings.isEmpty(name) ? name + ", property '" : "Property '") +
-                        (err.getPropertyPath() + "' : " + err.getMessage());
-                throw new ValidationException(message);
-            }
+        final String error = ValidatorUtils.validate(((javax.validation.Validator) standardValidator), name, v);
+        if (null != error) {
+            throw new ValidationException(error);
         }
     }
 
