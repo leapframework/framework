@@ -562,7 +562,7 @@ public abstract class DaoWrapper extends Dao {
 
     @Override
     public int[] batchUpdate(List<?> entities) {
-        return dao().batchInsert(entities);
+        return dao().batchUpdate(entities);
     }
 
     @Override

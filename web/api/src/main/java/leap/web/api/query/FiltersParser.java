@@ -22,6 +22,8 @@ import leap.web.exception.BadRequestException;
 
 public class FiltersParser extends ScelParser {
 
+    public static final String FILTERS = "filters";
+
     public static ScelExpr filters(String expr) {
         return new FiltersParser(expr).expr();
     }

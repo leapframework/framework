@@ -21,15 +21,19 @@ package leap.web.api.query;
 public class Expand {
 
     protected final String name;
-    protected final String select;
+    protected String select;
+    protected String filters;
+    protected String orderBy;
 
     public Expand(String name) {
-        this(name, null);
+        this(name, null, null, null);
     }
 
-    public Expand(String name, String select) {
+    public Expand(String name, String select, String filters, String orderBy) {
         this.name = name;
         this.select = select;
+        this.filters = filters;
+        this.orderBy = orderBy;
     }
 
     public String getName() {
@@ -38,6 +42,26 @@ public class Expand {
 
     public String getSelect() {
         return select;
+    }
+
+    public void setSelect(String select) {
+        this.select = select;
+    }
+
+    public String getFilters() {
+        return filters;
+    }
+
+    public void setFilters(String filters) {
+        this.filters = filters;
+    }
+
+    public String getOrderBy() {
+        return orderBy;
+    }
+
+    public void setOrderBy(String orderBy) {
+        this.orderBy = orderBy;
     }
 
 }

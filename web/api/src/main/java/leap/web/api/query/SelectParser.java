@@ -24,6 +24,8 @@ import java.util.List;
 
 public class SelectParser {
 
+    public static final String SELETE = "select";
+
     public static Select parse(String expr) {
         List<Select.Item> items = new ArrayList<>();
         Select.Item item;

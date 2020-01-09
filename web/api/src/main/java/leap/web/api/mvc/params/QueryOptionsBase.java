@@ -18,6 +18,7 @@
 
 package leap.web.api.mvc.params;
 
+import leap.lang.Strings;
 import leap.lang.json.JsonIgnore;
 import leap.web.Params;
 import leap.web.Request;
@@ -82,7 +83,7 @@ public class QueryOptionsBase {
     }
 
     public Expand[] getResolvedExpands() {
-        if (null == resolvedExpands) {
+        if (null == resolvedExpands && Strings.isNotEmpty(expand)) {
             resolvedExpands = ExpandParser.parse(expand);
         }
         return resolvedExpands;

@@ -20,10 +20,7 @@ package leap.web.api.orm;
 
 import leap.core.value.Record;
 import leap.core.value.SimpleRecord;
-import leap.lang.Beans;
-import leap.lang.Enumerable;
-import leap.lang.Enumerables;
-import leap.lang.Strings;
+import leap.lang.*;
 import leap.lang.collection.SimpleCaseInsensitiveMap;
 import leap.lang.convert.Converts;
 import leap.lang.jdbc.SimpleWhereBuilder;
@@ -180,7 +177,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
     protected List<ExpandError> expandOne(ModelExecutionContext context, Record record, QueryOptionsBase options) {
         if (null != record && null != options) {
             Expand[] expands = options.getResolvedExpands();
-            if (expands.length > 0) {
+            if (!Arrays2.isEmpty(expands)) {
                 final List<ExpandError> expandErrors    = new ArrayList<>();
                 final List<Record>      list            = Arrays.asList(record);
                 final ResolvedExpand[]  resolvedExpands = resolveExpands(expands);
@@ -472,12 +469,20 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         opts.setFilters(Strings.format("{0} in ({1})", referredFieldName, filters.toString()));
 
         //构造expand时，要返回引用记录的字段
-        if (Strings.isNotEmpty(expand.getSelect())) {
+        if (!Strings.isEmpty(expand.getSelect())) {
             if (expand.getSelect().contains(referredFieldName)) {
                 opts.setSelect(expand.getSelect());
             } else {
                 opts.setSelect(expand.getSelect() + "," + referredFieldName);
             }
+        }
+
+        if (!Strings.isEmpty(expand.getFilters())) {
+            opts.setFilters(expand.getFilters());
+        }
+
+        if (!Strings.isEmpty(expand.getOrderBy())) {
+            opts.setFilters(expand.getOrderBy());
         }
 
         RestQueryListResult<Map> resultList;
@@ -599,6 +604,9 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                     referredFieldAlias = referredFieldName;
                 }
             }
+
+            applyExpand(expandQuery, expand, false);
+
             ex.preExpand(context, expandQuery);
             List<Record> resultList = expandQuery.list();
             if (resultList.size() > ac.getMaxRecordsPerExpand()) {
@@ -753,9 +761,8 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
         CriteriaQuery<Record> expandQuery =
                 dao.createCriteriaQuery(targetEm).where(idFieldName + " in ?", ids);
-        if (!Strings.isEmpty(expand.getSelect())) {
-            applySelect(expandQuery, expand.getSelect(), false, idFieldName);
-        }
+
+        applyExpand(expandQuery, expand, true);
 
         List<Record> totalExpanded = expandQuery.limit(ac.getMaxRecordsPerExpand() + 1).list();
         if (totalExpanded.size() > ac.getMaxRecordsPerExpand()) {
@@ -795,7 +802,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
     }
 
     @Deprecated
-    protected void expand(Record record, Object id, Expand expand) {
+    protected void expand(Record record, Object id, ResolvedExpand expand) {
         String name = expand.getName();
 
         MApiProperty ap = am.tryGetProperty(name);
@@ -816,16 +823,27 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                 dao.createCriteriaQuery(rp.getTargetEntityName())
                         .joinById(em.getEntityName(), rm.getInverseRelationName(), "t_" + em.getEntityName(), id);
 
-
-        if (!Strings.isEmpty(expand.getSelect())) {
-            applySelect(expandQuery, expand.getSelect());
-        }
+        applyExpand(expandQuery, expand, true);
 
         if (rp.isMany()) {
             //todo : limit
             record.put(rp.getName(), expandQuery.list());
         } else {
             record.put(rp.getName(), expandQuery.firstOrNull());
+        }
+    }
+
+    protected void applyExpand(CriteriaQuery query, ResolvedExpand expand, Boolean applySelect) {
+        if (applySelect && !Strings.isEmpty(expand.getSelect())) {
+            applySelect(query, expand);
+        }
+
+        if (!Strings.isEmpty(expand.getFilters())) {
+            applyFilters(query, expand);
+        }
+
+        if (!Strings.isEmpty(expand.getOrderBy())) {
+            applyOrderBy(query, expand);
         }
     }
 
@@ -868,7 +886,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                 boolean      isAlias = false;
 
                 if (null == ap) {
-                    if (null != options.getResolvedSelect() && options.getResolvedSelect().aliasContain(name)) {
+                    if (null != options.getResolvedSelect() && options.getResolvedSelect().containAlias(name)) {
                         isAlias = true;
                     } else if (null != options.getResolvedGroupBy() && options.getResolvedGroupBy().aliasContain(name)) {
                         isAlias = true;
@@ -901,26 +919,101 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         query.orderBy(s.toString());
     }
 
-    protected void applySelect(CriteriaQuery query, String select) {
-        if (Strings.equals("*", select)) {
+    protected void applyOrderBy(CriteriaQuery query, ResolvedExpand expand) {
+        OrderBy orderBy = expand.getResolvedOrderBy();
+
+        if (null == orderBy) {
             return;
         }
 
         EntityMapping em = query.getEntityMapping();
+        OrderBy.Item[] items = orderBy.items();
+        StringBuilder s = new StringBuilder();
 
-        String[] names = Strings.split(select, ',');
-
-        List<String> fields = new ArrayList<>();
-
-        for (String name : names) {
-
-            FieldMapping p = em.tryGetFieldMapping(name);
-
-            if (null == p) {
-                throw new BadRequestException("Property '" + name + "' not exists, check the 'select' query param");
+        for (int i = 0; i < items.length; i++) {
+            if (i > 0) {
+                s.append(',');
             }
 
-            fields.add(p.getFieldName());
+            OrderBy.Item item = items[i];
+
+            String expr = em.getOrderByExprs().get(item.name());
+            if (null != expr) {
+                s.append(expr);
+            } else {
+                MApiModel    model      = amd.getModel(em.getEntityName());
+                String       name    = item.name();
+                MApiProperty ap      = model.tryGetProperty(name);
+                boolean      isAlias = false;
+
+                if (null == ap) {
+                    if (null != expand.getResolvedSelect() && expand.getResolvedSelect().containAlias(name)) {
+                        isAlias = true;
+                    }
+                    if (!isAlias) {
+                        throw new BadRequestException("Expand property '" + name + "' not exists in model '" + model.getName() + "'");
+                    }
+                } else if (ap.isNotSortableExplicitly()) {
+                    throw new BadRequestException("Expand property '" + name + "' is not sortable in model '" + model.getName() + "'");
+                }
+
+                if (isAlias) {
+                    s.append(item.name());
+                } else if (item.hasAlias()) {
+                    s.append(item.alias()).append('.').append(item.name());
+                } else if (Strings.isNotEmpty(query.alias())) {
+                    s.append(query.alias()).append('.').append(item.name());
+                } else {
+                    s.append(item.name());
+                }
+            }
+
+            if (!item.isAscending()) {
+                s.append(" desc");
+            }
+        }
+        query.orderBy(s.toString());
+    }
+
+    protected void applySelect(CriteriaQuery query, ResolvedExpand expand) {
+        if (Strings.equals("*", expand.getSelect())) {
+            return;
+        }
+
+        Select select = expand.getResolvedSelect();
+        if (null == select) {
+            return;
+        }
+
+        EntityMapping em = query.getEntityMapping();
+        MApiModel am = amd.getModel(em.getEntityName());
+        Select.Item[] items = select.items();
+        List<String> fields = new ArrayList<>();
+
+        for (Select.Item item : items) {
+            String expr = em.getSelectExprs().get(item.name());
+
+            if (null != expr) {
+                if (Strings.isEmpty(item.alias())) {
+                    fields.add("(" + expr + ") as " + item.name());
+                } else {
+                    fields.add("(" + expr + ") as" + item.alias());
+                }
+            } else {
+                MApiProperty p = am.tryGetProperty(item.name());
+
+                if (null == p) {
+                    throw new BadRequestException("Expand property '" + item.name() + "' not exists, check the 'select' query param");
+                }
+                if (!p.isSelectableExplicitly()) {
+                    throw new BadRequestException("Expand property '" + item.name() + "' is not selectable, check the 'select' query param");
+                }
+                if (Strings.isEmpty(item.alias())) {
+                    fields.add(p.getName());
+                } else {
+                    fields.add(p.getName() + " as " + item.alias());
+                }
+            }
         }
 
         if (null != excludedFields) {
@@ -1371,6 +1464,99 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
     }
 
+    protected void applyFilters(CriteriaQuery query, ResolvedExpand expand) {
+        ScelExpr filters = expand.getResolvedFilters();
+
+        if (null == filters) {
+            return;
+        }
+
+        EntityMapping em = query.getEntityMapping();
+        ScelNode[] nodes = filters.nodes();
+        SimpleWhereBuilder where = new SimpleWhereBuilder();
+
+        if (nodes.length > 0) {
+            where.and((expr) -> {
+                for (int i = 0; i < nodes.length; i++) {
+                    ScelNode node = nodes[i];
+
+                    if (node.isParen()) {
+                        expr.append(node.literal());
+                        continue;
+                    }
+
+                    if (node.isAnd()) {
+                        expr.append(" and ");
+                        continue;
+                    }
+
+                    if (node.isOr()) {
+                        expr.append(" or ");
+                        continue;
+                    }
+
+                    ScelName nameNode = (ScelName) nodes[i];
+
+                    String name        = nameNode.literal();
+                    String filtersExpr = em.getFiltersExprs().get(name);
+                    if (!Strings.isEmpty(filtersExpr)) {
+                        expr.append(filtersExpr);
+                    } else {
+                        FieldMapping field = em.getFieldMapping(name);
+                        String    alias = nameNode.alias();
+                        ScelToken op    = nodes[++i].token();
+                        String    value = nodes[++i].literal();
+
+                        if (null == op && Strings.isEmpty(value)) {
+                            throw new BadRequestException("Invalid filter expr in '" + name + "'");
+                        }
+
+                        if (null != alias) {
+                            throw new BadRequestException("Unknown alias '" + alias + "' at property '" + nameNode.toString() + "'");
+                        } else {
+                            alias = query.alias();
+                        }
+
+                        String sqlOperator = toSqlOperator(op);
+
+                        if (op == ScelToken.IS || op == ScelToken.IS_NOT) {
+                            expr.append(alias).append('.').append(name).append(' ').append(sqlOperator);
+                            continue;
+                        }
+
+                        if (op == ScelToken.SW) {
+                            value = "%" + value;
+                        } else if (op == ScelToken.EW) {
+                            value = value + "%";
+                        } else if (op == ScelToken.CO) {
+                            value = "%" + value + "%";
+                        }
+
+                        //env
+                        if (op == ScelToken.IN || op == ScelToken.NOT_IN) {
+                            applyFieldFilterIn(expr, alias, field, nodes[i].values(), sqlOperator);
+                        } else if (value.endsWith("()") && value.length() > 2) {
+                            String envName = value.substring(0, value.length() - 2);
+                            //todo: check env is valid or allowed?
+                            String valueExpr = "#{env." + envName + "}";
+                            applyFieldFilterExpr(expr, alias, field, valueExpr, sqlOperator);
+                        } else if (value.startsWith("env.")) {
+                            //todo: check env is valid or allowed?
+                            String valueExpr = "#{" + value + "}";
+                            applyFieldFilterExpr(expr, alias, field, valueExpr, sqlOperator);
+                        } else {
+                            applyFieldFilter(expr, alias, field, value, sqlOperator);
+                        }
+                    }
+                }
+            });
+        }
+
+        if (!where.isEmpty()) {
+            query.where(where.getWhere().toString(), where.getArgs().toArray());
+        }
+    }
+
     protected void checkProperty(ModelAndProp modelAndProp, String name) {
         boolean joined = modelAndProp.model != this.am;
 
@@ -1595,14 +1781,23 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
     protected static class ResolvedExpand {
         protected final String           name;
-        protected final String           select;
         protected final RelationProperty rp;
         protected final RelationMapping  rm;
         protected final EntityMapping    tem;
 
+        protected String select;
+        protected String filters;
+        protected String orderBy;
+
+        protected Select   resolvedSelect;
+        protected ScelExpr resolvedFilters;
+        protected OrderBy  resolvedOrderBy;
+
         public ResolvedExpand(Expand expand, RelationProperty rp, RelationMapping rm, EntityMapping tem) {
             this.name = expand.getName();
             this.select = expand.getSelect();
+            this.filters = expand.getFilters();
+            this.orderBy = expand.getOrderBy();
             this.rp = rp;
             this.rm = rm;
             this.tem = tem;
@@ -1616,6 +1811,26 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             return select;
         }
 
+        public void setSelect(String select) {
+            this.select = select;
+        }
+
+        public String getFilters() {
+            return filters;
+        }
+
+        public void setFilters(String filters) {
+            this.filters = filters;
+        }
+
+        public String getOrderBy() {
+            return orderBy;
+        }
+
+        public void setOrderBy(String orderBy) {
+            this.orderBy = orderBy;
+        }
+
         public boolean isRemoteRest() {
             return tem.isRemoteRest();
         }
@@ -1623,5 +1838,43 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         public boolean isEmbedded() {
             return rm.isEmbedded();
         }
+
+        public Select getResolvedSelect() {
+            if (null == resolvedSelect && Strings.isNotEmpty(select)) {
+                resolvedSelect = SelectParser.parse(select);
+            }
+            return resolvedSelect;
+        }
+
+        public void setResolvedSelect(Select resolvedSelect) {
+            this.resolvedSelect = resolvedSelect;
+        }
+
+        public ScelExpr getResolvedFilters() {
+            if (null == resolvedFilters && !Strings.isEmpty(filters)) {
+                try {
+                    resolvedFilters = FiltersParser.parse(filters, true);
+                } catch (Exception e) {
+                    throw new BadRequestException("Invalid filter expr '" + filters + "', " + e.getMessage(), e);
+                }
+            }
+            return resolvedFilters;
+        }
+
+        public void setResolvedFilters(ScelExpr resolvedFilters) {
+            this.resolvedFilters = resolvedFilters;
+        }
+
+        public OrderBy getResolvedOrderBy() {
+            if (null == resolvedOrderBy && !Strings.isEmpty(orderBy)) {
+                resolvedOrderBy = OrderByParser.parse(orderBy);
+            }
+            return resolvedOrderBy;
+        }
+
+        public void setResolvedOrderBy(OrderBy resolvedOrderBy) {
+            this.resolvedOrderBy = resolvedOrderBy;
+        }
+
     }
 }

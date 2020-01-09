@@ -19,10 +19,11 @@
 package leap.web.api.query;
 
 import leap.lang.Strings;
+import leap.lang.json.JSON;
 import leap.web.exception.BadRequestException;
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ExpandParser {
 
@@ -59,8 +60,38 @@ public class ExpandParser {
                     }
 
                     String name   = expr.substring(start, i).trim();
-                    String select = expr.substring(i + 1, index);
-                    list.add(new Expand(name, select));
+                    String expandExpr = expr.substring(i + 1, index);
+
+                    String select = null;
+                    String filters = null;
+                    String orderBy = null;
+
+                    if (expandExpr.indexOf(":") > 0) {
+                        Object expandObj = JSON.decode("{" + expandExpr + "}");
+
+                        if (expandObj instanceof Map) {
+                            Map expands = (Map) expandObj;
+
+                            for (Object key : expands.keySet()) {
+                                String value = expands.get(key).toString();
+                                if (key.equals(SelectParser.SELETE)) {
+                                    select = value;
+                                } else if (key.equals(FiltersParser.FILTERS)) {
+                                    filters = value;
+                                } else if (key.equals(OrderByParser.ORDER_BY)) {
+                                    orderBy = value;
+                                } else {
+                                    throw new IllegalStateException("Invalid expand query parameter: " + key);
+                                }
+                            }
+                        } else {
+                            throw new IllegalStateException("Invalid expand expression: " + expandExpr);
+                        }
+                    } else {
+                        select = expandExpr;
+                    }
+
+                    list.add(new Expand(name, select, filters, orderBy));
 
                     i = index + 1;
 

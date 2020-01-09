@@ -30,9 +30,9 @@ public class Select {
         return items;
     }
 
-    public boolean aliasContain(String expr) {
-        for (Select.Item item : items) {
-            if (Strings.isNotEmpty(item.alias) && item.alias().equals(expr)) {
+    public boolean containAlias(String expr) {
+        for (Item item : items) {
+            if (Strings.isNotEmpty(item.alias()) && item.alias().equals(expr)) {
                 return true;
             }
         }

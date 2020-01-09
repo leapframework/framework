@@ -21,6 +21,8 @@ import java.util.List;
 
 public class OrderByParser extends ParserBase {
 
+    public static final String ORDER_BY = "orderby";
+
     public static OrderBy parse(String expr) {
         return new OrderByParser(expr).orderBy();
     }
