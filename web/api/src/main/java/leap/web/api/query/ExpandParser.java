@@ -19,9 +19,9 @@
 package leap.web.api.query;
 
 import leap.lang.Strings;
-import leap.lang.json.JSON;
 import leap.web.exception.BadRequestException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -62,36 +62,7 @@ public class ExpandParser {
                     String name   = expr.substring(start, i).trim();
                     String expandExpr = expr.substring(i + 1, index);
 
-                    String select = null;
-                    String filters = null;
-                    String orderBy = null;
-
-                    if (expandExpr.indexOf(":") > 0) {
-                        Object expandObj = JSON.decode("{" + expandExpr + "}");
-
-                        if (expandObj instanceof Map) {
-                            Map expands = (Map) expandObj;
-
-                            for (Object key : expands.keySet()) {
-                                String value = expands.get(key).toString();
-                                if (key.equals(SelectParser.SELETE)) {
-                                    select = value;
-                                } else if (key.equals(FiltersParser.FILTERS)) {
-                                    filters = value;
-                                } else if (key.equals(OrderByParser.ORDER_BY)) {
-                                    orderBy = value;
-                                } else {
-                                    throw new IllegalStateException("Invalid expand query parameter: " + key);
-                                }
-                            }
-                        } else {
-                            throw new IllegalStateException("Invalid expand expression: " + expandExpr);
-                        }
-                    } else {
-                        select = expandExpr;
-                    }
-
-                    list.add(new Expand(name, select, filters, orderBy));
+                    list.add(applyExpr(name, expandExpr));
 
                     i = index + 1;
 
@@ -126,6 +97,47 @@ public class ExpandParser {
         }
 
         return list.toArray(EMPTY_ARRAY);
+    }
+
+    protected static Expand applyExpr(String name, String expandExpr) {
+        int index = expandExpr.indexOf(":");
+        if (index > 0) {
+            Map<String, String> keys = new HashMap<>();
+
+            applyParameter(keys, expandExpr, 0);
+
+            return new Expand(name, keys.get(SelectParser.SELETE), keys.get(FiltersParser.FILTERS), keys.get(OrderByParser.ORDER_BY));
+        } else if (index == 0) {
+            throw new IllegalStateException("Invalid expand expression: " + expandExpr);
+        } else {
+            return new Expand(name, expandExpr, null, null);
+        }
+    }
+
+    protected static void applyParameter(Map<String, String> keys, String expandExpr, int i) {
+        int start = expandExpr.indexOf(":", i);
+
+        String key = expandExpr.substring(i, start);
+        if (!key.equals(SelectParser.SELETE) && !key.equals(FiltersParser.FILTERS) && !key.equals(OrderByParser.ORDER_BY)) {
+            throw new IllegalStateException("Invalid expand query parameter: " + key);
+        }
+
+        int end = expandExpr.indexOf(":", start + 1);
+        if (end < 0) {
+            keys.put(key, expandExpr.substring(start + 1));
+        } else {
+            String expr = expandExpr.substring(start + 1, end);
+
+            int m = expr.lastIndexOf(",");
+            if (m <= 0) {
+                throw new IllegalStateException("Invalid expand expression: " + expandExpr);
+            }
+
+            String mExpr = expr.substring(0, m);
+            keys.put(key, mExpr);
+
+            applyParameter(keys, expandExpr, start + m + 2);
+        }
     }
 
 }

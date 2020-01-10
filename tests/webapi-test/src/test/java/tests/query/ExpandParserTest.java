@@ -99,6 +99,21 @@ public class ExpandParserTest extends TestBase {
         assertEquals("name", selectItem.name());
         assertNull(selectItem.joinAlias());
         assertNull(selectItem.alias());
+
+        expands = ExpandParser.parse("a(select:name n,desc d)");
+        expand = expands[0];
+        assertNull(expand.getFilters());
+        assertNull(expand.getOrderBy());
+        selectsItems = SelectParser.parse(expand.getSelect()).items();
+        assertEquals(2, selectsItems.length);
+        selectItem = selectsItems[0];
+        assertEquals("name", selectItem.name());
+        assertNull(selectItem.joinAlias());
+        assertEquals("n", selectItem.alias());
+        selectItem = selectsItems[1];
+        assertEquals("desc", selectItem.name());
+        assertNull(selectItem.joinAlias());
+        assertEquals("d", selectItem.alias());
     }
 
     @Test
@@ -150,7 +165,7 @@ public class ExpandParserTest extends TestBase {
 
     @Test
     public void testWithOrder() {
-        Expand[] expands = ExpandParser.parse("a(orderby:name desc)");
+        Expand[] expands = ExpandParser.parse("a(orderby:name desc,createdAt)");
         assertEquals(1, expands.length);
 
         Expand expand = expands[0];
@@ -158,34 +173,46 @@ public class ExpandParserTest extends TestBase {
         assertNull(expand.getSelect());
         assertNull(expand.getFilters());
         OrderBy.Item[] items = OrderByParser.parse(expand.getOrderBy()).items();
-        assertEquals(1, items.length);
+        assertEquals(2, items.length);
         OrderBy.Item item = items[0];
         assertFalse(item.hasAlias());
         assertEquals("name", item.name());
         assertFalse(item.isAscending());
+        item = items[1];
+        assertFalse(item.hasAlias());
+        assertEquals("createdAt", item.name());
+        assertTrue(item.isAscending());
     }
 
     @Test
     public void testComplexExpr() {
-        Expand[] expands = ExpandParser.parse("a(select:name,filters:id eq bingo and name is null,orderby:name desc)");
+        Expand[] expands = ExpandParser.parse("a(select:name n,desc d,filters:id eq bingo and name is null,orderby:name desc,createdAt)");
         assertEquals(1, expands.length);
 
         Expand expand = expands[0];
         assertEquals("a", expand.getName());
         Select.Item[] selectItems = SelectParser.parse(expand.getSelect()).items();
-        assertEquals(1, selectItems.length);
+        assertEquals(2, selectItems.length);
         Select.Item selectItem = selectItems[0];
         assertEquals("name", selectItem.name());
-        assertNull(selectItem.alias());
         assertNull(selectItem.joinAlias());
+        assertEquals("n", selectItem.alias());
+        selectItem = selectItems[1];
+        assertEquals("desc", selectItem.name());
+        assertNull(selectItem.joinAlias());
+        assertEquals("d", selectItem.alias());
         ScelNode[] filtersItems = FiltersParser.parse(expand.getFilters()).nodes();
         assertEquals(7, filtersItems.length);
         OrderBy.Item[] orderByItems = OrderByParser.parse(expand.getOrderBy()).items();
-        assertEquals(1, orderByItems.length);
+        assertEquals(2, orderByItems.length);
         OrderBy.Item orderByItem = orderByItems[0];
         assertEquals("name", orderByItem.name());
         assertFalse(orderByItem.hasAlias());
         assertFalse(orderByItem.isAscending());
+        orderByItem = orderByItems[1];
+        assertEquals("createdAt", orderByItem.name());
+        assertFalse(orderByItem.hasAlias());
+        assertTrue(orderByItem.isAscending());
     }
 
 }

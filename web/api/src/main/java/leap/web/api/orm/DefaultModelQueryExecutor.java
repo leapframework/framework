@@ -482,7 +482,11 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
 
         if (!Strings.isEmpty(expand.getOrderBy())) {
-            opts.setFilters(expand.getOrderBy());
+            if (rm.isManyToOne()) {
+                throw new BadRequestException("Many-to-one relation expand is meaningless, check '" + rm.getName() + "' relation");
+            }
+
+            opts.setOrderBy(expand.getOrderBy());
         }
 
         RestQueryListResult<Map> resultList;
@@ -598,14 +602,14 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                 }
             } else {
                 if (rm.isManyToMany()) {
-                    applySelect(expandQuery, expand.getSelect(), Strings.format("_jt_.{0} as {1}", referredFieldName, referredFieldAlias));
+                    applySelect(expandQuery, expand, Strings.format("_jt_.{0} as {1}", referredFieldName, referredFieldAlias));
                 } else {
-                    applySelect(expandQuery, expand.getSelect(), referredFieldName);
+                    applySelect(expandQuery, expand, referredFieldName);
                     referredFieldAlias = referredFieldName;
                 }
             }
 
-            applyExpand(expandQuery, expand, false);
+            applyExpand(rm, expandQuery, expand, false);
 
             ex.preExpand(context, expandQuery);
             List<Record> resultList = expandQuery.list();
@@ -762,7 +766,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         CriteriaQuery<Record> expandQuery =
                 dao.createCriteriaQuery(targetEm).where(idFieldName + " in ?", ids);
 
-        applyExpand(expandQuery, expand, true);
+        applyExpand(rm, expandQuery, expand, true);
 
         List<Record> totalExpanded = expandQuery.limit(ac.getMaxRecordsPerExpand() + 1).list();
         if (totalExpanded.size() > ac.getMaxRecordsPerExpand()) {
@@ -823,7 +827,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                 dao.createCriteriaQuery(rp.getTargetEntityName())
                         .joinById(em.getEntityName(), rm.getInverseRelationName(), "t_" + em.getEntityName(), id);
 
-        applyExpand(expandQuery, expand, true);
+        applyExpand(rm, expandQuery, expand, true);
 
         if (rp.isMany()) {
             //todo : limit
@@ -833,9 +837,9 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
     }
 
-    protected void applyExpand(CriteriaQuery query, ResolvedExpand expand, Boolean applySelect) {
+    protected void applyExpand(RelationMapping rm, CriteriaQuery query, ResolvedExpand expand, Boolean applySelect) {
         if (applySelect && !Strings.isEmpty(expand.getSelect())) {
-            applySelect(query, expand);
+            applySelect(query, expand, null);
         }
 
         if (!Strings.isEmpty(expand.getFilters())) {
@@ -843,6 +847,9 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
 
         if (!Strings.isEmpty(expand.getOrderBy())) {
+            if (rm.isManyToOne()) {
+                throw new BadRequestException("Many-to-one relation expand is meaningless, check '" + rm.getName() + "' relation");
+            }
             applyOrderBy(query, expand);
         }
     }
@@ -975,7 +982,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         query.orderBy(s.toString());
     }
 
-    protected void applySelect(CriteriaQuery query, ResolvedExpand expand) {
+    protected void applySelect(CriteriaQuery query, ResolvedExpand expand, String... requiredFields) {
         if (Strings.equals("*", expand.getSelect())) {
             return;
         }
@@ -1021,48 +1028,6 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                 fields.remove(name);
             }
         }
-
-        query.select(fields.toArray(new String[fields.size()]));
-    }
-
-    protected void applySelect(CriteriaQuery query, String select, String... requiredFields) {
-        applySelect(query, select, true, requiredFields);
-    }
-
-    /**
-     * 设置查询字段
-     *
-     * @param query          查询语句
-     * @param select         待查询字段
-     * @param requiredFields select中必须包含的字段，如果不包含，则自动添加该字段
-     */
-    protected void applySelect(CriteriaQuery query, String select, boolean exclude, String... requiredFields) {
-        if (Strings.equals("*", select)) {
-            return;
-        }
-
-        EntityMapping em = query.getEntityMapping();
-
-        String[] names = Strings.split(select, ',');
-
-        List<String> fields = new ArrayList<>();
-
-        for (String name : names) {
-
-            FieldMapping p = em.tryGetFieldMapping(name);
-
-            if (null == p) {
-                throw new BadRequestException("Property '" + name + "' not exists, check the 'select' query param");
-            }
-
-            fields.add(p.getFieldName());
-        }
-
-        if (exclude && null != excludedFields) {
-            for (String name : excludedFields) {
-                fields.remove(name);
-            }
-        }
         if (requiredFields != null && requiredFields.length > 0) {
             for (String requiredField : requiredFields) {
                 boolean isContain = false;
@@ -1078,6 +1043,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                 fields.add(requiredField);
             }
         }
+
         query.select(fields.toArray(new String[fields.size()]));
     }
 
