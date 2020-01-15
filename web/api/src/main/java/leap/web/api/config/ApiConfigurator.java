@@ -150,6 +150,11 @@ public interface ApiConfigurator extends Extensible {
     ApiConfigurator setMaxPageSizeWithExpand(int size);
 
     /**
+     * Sets the max expand one.
+     */
+    ApiConfigurator setMaxPageSizeWithExpandOne(int size);
+
+    /**
      * Sets the expand limit.
      */
     ApiConfigurator setMaxRecordsPerExpand(int limit);
