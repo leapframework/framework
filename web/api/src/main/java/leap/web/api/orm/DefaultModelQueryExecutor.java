@@ -338,7 +338,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                             if (expand.isEmbedded()) {
                                 continue;
                             }
-                            if (expand.rm.isOneToMany() || expand.rm.isOneToMany()) {
+                            if (expand.rm.isOneToMany() || expand.rm.isManyToMany()) {
                                 maxPageSize = ac.getMaxPageSizeWithExpandMany();
                                 break;
                             }
@@ -998,27 +998,39 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         List<String> fields = new ArrayList<>();
 
         for (Select.Item item : items) {
-            String expr = em.getSelectExprs().get(item.name());
-
-            if (null != expr) {
-                if (Strings.isEmpty(item.alias())) {
-                    fields.add("(" + expr + ") as " + item.name());
-                } else {
-                    fields.add("(" + expr + ") as" + item.alias());
+            if (item.name().equals("*")) {
+                for (MApiProperty p : am.getProperties()) {
+                    if (p.isReference()) {
+                        continue;
+                    }
+                    if (p.isSelectableExplicitly()) {
+                        fields.add(p.getName());
+                    }
                 }
+                continue;
             } else {
-                MApiProperty p = am.tryGetProperty(item.name());
+                String expr = em.getSelectExprs().get(item.name());
 
-                if (null == p) {
-                    throw new BadRequestException("Expand property '" + item.name() + "' not exists, check the 'select' query param");
-                }
-                if (!p.isSelectableExplicitly()) {
-                    throw new BadRequestException("Expand property '" + item.name() + "' is not selectable, check the 'select' query param");
-                }
-                if (Strings.isEmpty(item.alias())) {
-                    fields.add(p.getName());
+                if (null != expr) {
+                    if (Strings.isEmpty(item.alias())) {
+                        fields.add("(" + expr + ") as " + item.name());
+                    } else {
+                        fields.add("(" + expr + ") as" + item.alias());
+                    }
                 } else {
-                    fields.add(p.getName() + " as " + item.alias());
+                    MApiProperty p = am.tryGetProperty(item.name());
+
+                    if (null == p) {
+                        throw new BadRequestException("Expand property '" + item.name() + "' not exists, check the 'select' query param");
+                    }
+                    if (!p.isSelectableExplicitly()) {
+                        throw new BadRequestException("Expand property '" + item.name() + "' is not selectable, check the 'select' query param");
+                    }
+                    if (Strings.isEmpty(item.alias())) {
+                        fields.add(p.getName());
+                    } else {
+                        fields.add(p.getName() + " as " + item.alias());
+                    }
                 }
             }
         }
