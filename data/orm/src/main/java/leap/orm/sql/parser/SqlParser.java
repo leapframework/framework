@@ -550,7 +550,25 @@ public class SqlParser extends SqlParserBase {
 	protected boolean parseSqlObjectName(){
 		if(null != lexer.token() && lexer.token().isKeywordOrIdentifier()){
 			if(!parseSqlDotName()){
-				acceptNode(new SqlObjectName(scope(),lexer.tokenText()));
+				acceptNode(new SqlObjectName(scope(), lexer.tokenText()));
+			}
+			return true;
+		}
+		return false;
+	}
+
+	protected boolean parseSqlObjectNameOrExpr(){
+		if (parseSqlObjectName()) {
+			if (lexer.token().isOperator()) {
+				acceptText(lexer.token());
+
+				if (!parseSqlObjectName()) {
+					acceptText(lexer.token());
+				}
+
+				if (lexer.token().isOperator()) {
+					parseSqlObjectNameOrExpr();
+				}
 			}
 			return true;
 		}

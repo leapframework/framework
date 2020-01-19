@@ -342,7 +342,7 @@ abstract class SqlQueryParser extends SqlParser {
                 parseNameExpr();
             }
         }else{
-            parseSqlObjectName();
+            parseSqlObjectNameOrExpr();
         }
     }
 
