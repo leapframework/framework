@@ -346,6 +346,18 @@ abstract class SqlQueryParser extends SqlParser {
         }
     }
 
+    protected void parseSqlObjectNameOrExpr(){
+        if (!parseSqlObjectName()) {
+            acceptText(lexer.token());
+        }
+
+        if (lexer.token().isOperator()) {
+            acceptText(lexer.token());
+
+            parseSqlObjectNameOrExpr();
+        }
+    }
+
 	protected boolean isEndFromItem(){
 //		if(lexer.isEOF()) {
 //			return true;

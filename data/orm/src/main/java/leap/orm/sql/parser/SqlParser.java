@@ -556,24 +556,6 @@ public class SqlParser extends SqlParserBase {
 		}
 		return false;
 	}
-
-	protected boolean parseSqlObjectNameOrExpr(){
-		if (parseSqlObjectName()) {
-			if (lexer.token().isOperator()) {
-				acceptText(lexer.token());
-
-				if (!parseSqlObjectName()) {
-					acceptText(lexer.token());
-				}
-
-				if (lexer.token().isOperator()) {
-					parseSqlObjectNameOrExpr();
-				}
-			}
-			return true;
-		}
-		return false;
-	}
 	
 	protected boolean parseSqlDotName(){
 		if(lexer.ch == '.'){
