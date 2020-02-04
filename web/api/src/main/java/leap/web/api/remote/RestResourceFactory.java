@@ -26,4 +26,9 @@ public interface RestResourceFactory {
      */
     RestResource createResource(OrmContext context, EntityMapping em);
 
+    /**
+     * Returns the {@link RestResource} with the endpoint url.
+     */
+    RestResource createResource(OrmContext context, EntityMapping em, String endpointUrl);
+
 }

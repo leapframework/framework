@@ -33,23 +33,23 @@ public class DefaultRestResourceFactory implements RestResourceFactory {
 
     @Override
     public RestResource createResource(OrmContext context, EntityMapping em) {
-        if(!em.isRemoteRest()) {
+        if (!em.isRemoteRest()) {
             return null;
         }
 
         RestResourceInfo rri = em.getExtension(RestResourceInfo.class);
-        if(null == rri) {
+        if (null == rri) {
             String basePath = em.getRemoteSettings().getEndpoint();
-            if(Strings.isEmpty(basePath) && null != em.getRemoteSettings().getDataSource()) {
+            if (Strings.isEmpty(basePath) && null != em.getRemoteSettings().getDataSource()) {
                 RestDataSource ds = dsm.tryGetDataSource(em.getRemoteSettings().getDataSource());
-                if(null == ds) {
+                if (null == ds) {
                     throw new IllegalStateException("Remote dataSource '" + em.getRemoteSettings().getDataSource() +
                             "' not found, check entity '" + em.getEntityName() + "'");
                 }
                 basePath = ds.getEndpoint();
             }
 
-            if(Strings.isEmpty(basePath)) {
+            if (Strings.isEmpty(basePath)) {
                 throw new IllegalStateException("Remote endpoint must be configured, check entity '" + em.getEntityName() + "'");
             }
 
@@ -59,6 +59,11 @@ public class DefaultRestResourceFactory implements RestResourceFactory {
         }
 
         return doCreateResource(context, em, rri);
+    }
+
+    @Override
+    public RestResource createResource(OrmContext context, EntityMapping em, String endpointUrl) {
+        return doCreateResource(context, em, new RestResourceInfo(endpointUrl));
     }
 
     protected RestResource doCreateResource(OrmContext context, EntityMapping em, RestResourceInfo info) {
