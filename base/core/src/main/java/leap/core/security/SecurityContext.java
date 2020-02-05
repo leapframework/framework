@@ -21,13 +21,15 @@ public abstract class SecurityContext {
 	
 	protected static final String CONTEXT_ATTRIBUTE_NAME = SecurityContext.class.getName();
 
+	protected static SecurityContext GLOBAL_CONTEXT = null;
+
     /**
      * Returns the instance of {@link SecurityContext} in current request.
      *
      * @throws IllegalStateException if the context not exists in current request.
      */
 	public static SecurityContext current() {
-		SecurityContext context = (SecurityContext)RequestContext.current().getAttribute(CONTEXT_ATTRIBUTE_NAME);
+		SecurityContext context = tryGetCurrent();
 		
 		if(null == context){
 			throw new IllegalStateException("Current security context does not exists");
@@ -42,9 +44,10 @@ public abstract class SecurityContext {
     public static SecurityContext tryGetCurrent(){
         RequestContext rc = RequestContext.tryGetCurrent();
         if(null == rc) {
-            return null;
+            return GLOBAL_CONTEXT;
         }else{
-            return (SecurityContext)rc.getAttribute(CONTEXT_ATTRIBUTE_NAME);
+            SecurityContext sc = (SecurityContext)rc.getAttribute(CONTEXT_ATTRIBUTE_NAME);
+            return null == sc ? GLOBAL_CONTEXT : sc;
         }
     }
 
