@@ -67,7 +67,7 @@ public class WebTestRunner extends BlockJUnit4ClassRunner {
         return cls;
     }
 
-    protected static void startServer() {
+    public static void startServer() {
         synchronized (WebTestRunner.class) {
             if(null == server) {
                 if(null == httpClient) {
