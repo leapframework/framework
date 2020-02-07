@@ -458,15 +458,22 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
 
         StringBuilder filters = new StringBuilder();
+        StringBuilder filterIds = new StringBuilder();
+
         int           i       = 0;
         for (Object fk : fks) {
             if (i > 0) {
-                filters.append(',');
+                filterIds.append(',');
             }
-            filters.append(fk.toString());
+            filterIds.append(fk.toString());
             i++;
         }
-        opts.setFilters(Strings.format("{0} in ({1})", referredFieldName, filters.toString()));
+        filters.append(Strings.format("{0} in ({1})", referredFieldName, filterIds.toString()));
+
+        if (!Strings.isEmpty(expand.getFilters())) {
+            filterIds.append(" and ").append(expand.getFilters());
+        }
+        opts.setFilters(filters.toString());
 
         //构造expand时，要返回引用记录的字段
         if (!Strings.isEmpty(expand.getSelect())) {
@@ -475,10 +482,6 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             } else {
                 opts.setSelect(expand.getSelect() + "," + referredFieldName);
             }
-        }
-
-        if (!Strings.isEmpty(expand.getFilters())) {
-            opts.setFilters(expand.getFilters());
         }
 
         if (!Strings.isEmpty(expand.getOrderBy())) {
@@ -1531,7 +1534,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
 
         if (!where.isEmpty()) {
-            query.where(where.getWhere().toString(), where.getArgs().toArray());
+            query.whereAnd(where.getWhere().toString(), where.getArgs().toArray());
         }
     }
 
