@@ -20,6 +20,8 @@ import leap.lang.Comparators;
 import leap.lang.*;
 import leap.lang.collection.SimpleCaseInsensitiveMap;
 import leap.lang.exception.ObjectExistsException;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.orm.event.EntityListenersBuilder;
 import leap.orm.interceptor.EntityExecutionInterceptor;
 import leap.orm.model.Model;
@@ -29,6 +31,8 @@ import java.util.*;
 import java.util.function.Predicate;
 
 public class EntityMappingBuilder extends ExtensibleBase implements Buildable<EntityMapping> {
+
+    private static final Log log = LogFactory.get(EntityMappingBuilder.class);
 
     protected String              entityName;
     protected String              wideEntityName;
@@ -655,27 +659,32 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
     public EntityMapping build() {
         Collections.sort(fieldMappings, Comparators.ORDERED_COMPARATOR);
 
-        List<FieldMapping>    fields         = Builders.buildList(fieldMappings);
-        List<RelationMapping> relations      = Builders.buildList(relationMappings);
-        DbTable               table          = buildTable(fields, relations);
-        DbTable               secondaryTable = buildSecondaryTable(fields, relations);
+        try {
+            List<FieldMapping>    fields         = Builders.buildList(fieldMappings);
+            List<RelationMapping> relations      = Builders.buildList(relationMappings);
+            DbTable               table          = buildTable(fields, relations);
+            DbTable               secondaryTable = buildSecondaryTable(fields, relations);
 
-        EntityMapping em =
-                new EntityMapping(this,
-                        entityName, wideEntityName, dynamicTableName, entityClass, extendedEntityClass,
-                        table, secondaryTable, fields,
-                        insertInterceptor, updateInterceptor, deleteInterceptor, findInterceptor,
-                        modelClass, validators,
-                        relations,
-                        Builders.buildArray(relationProperties, new RelationProperty[0]),
-                        autoCreateTable, queryFilterEnabled == null ? false : queryFilterEnabled,
-                        autoValidate,
-                        remote, remoteSettings, groupByExprs, selectExprs, orderByExprs, filtersExprs, aggregatesExprs,
-                        listeners.build());
+            EntityMapping em =
+                    new EntityMapping(this,
+                            entityName, wideEntityName, dynamicTableName, entityClass, extendedEntityClass,
+                            table, secondaryTable, fields,
+                            insertInterceptor, updateInterceptor, deleteInterceptor, findInterceptor,
+                            modelClass, validators,
+                            relations,
+                            Builders.buildArray(relationProperties, new RelationProperty[0]),
+                            autoCreateTable, queryFilterEnabled == null ? false : queryFilterEnabled,
+                            autoValidate,
+                            remote, remoteSettings, groupByExprs, selectExprs, orderByExprs, filtersExprs, aggregatesExprs,
+                            listeners.build());
 
-        em.getExtensions().putAll(extensions);
+            em.getExtensions().putAll(extensions);
 
-        return em;
+            return em;
+        }catch (RuntimeException e) {
+            log.error("Error create entity mapping '" + entityName, e);
+            throw e;
+        }
     }
 
     public DbSchemaObjectName getTableSchemaObjectName() {

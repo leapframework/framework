@@ -17,7 +17,6 @@
 package leap.web.api.orm;
 
 import leap.core.value.Record;
-import leap.lang.New;
 import leap.lang.Strings;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.RelationMapping;
@@ -31,6 +30,7 @@ import leap.web.api.restd.CrudUtils;
 import leap.web.exception.BadRequestException;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 public class DefaultRelationQueryExecutor extends ModelExecutorBase<RelationExecutorContext> implements RelationQueryExecutor {
 
@@ -52,7 +52,7 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase<RelationExec
     }
 
     @Override
-    public QueryOneResult queryOne(Object id, QueryOptionsBase options) {
+    public QueryOneResult queryOne(Object id, QueryOptionsBase options, Supplier<QueryOneResult> func) {
         if (!rm.isManyToOne()) {
             throw new IllegalStateException("Relation '" + rm.getName() + "' must be " + RelationType.MANY_TO_ONE + "' for query one");
         }
@@ -62,21 +62,25 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase<RelationExec
 
         ex.preRelateQueryOne(context, id, options);
 
-        Record record;
+        QueryOneResult result;
 
-        List<ExpandError> expandErrors = null;
-        if (remoteRest) {
-            record = queryOneRemoteSource(id, options);
-        } else if (tem.isRemoteRest()) {
-            record = queryOneRemoteTarget(id, options);
+        if (null != func) {
+            result = func.get();
         } else {
-            expandErrors = new ArrayList<>();
-            record = iqe.queryOneByRelation(context, id, options, expandErrors);
+            Record            record;
+            List<ExpandError> expandErrors = null;
+            if (remoteRest) {
+                record = queryOneRemoteSource(id, options);
+            } else if (tem.isRemoteRest()) {
+                record = queryOneRemoteTarget(id, options);
+            } else {
+                expandErrors = new ArrayList<>();
+                record = iqe.queryOneByRelation(context, id, options, expandErrors);
+            }
+            ex.postRelateQueryOne(context, id, record);
+            result = new QueryOneResult(record, expandErrors);
         }
 
-        ex.postRelateQueryOne(context, id, record);
-
-        QueryOneResult result = new QueryOneResult(record, expandErrors);
         ex.completeRelateQueryOne(context, id, result);
 
         return result;
@@ -106,14 +110,16 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase<RelationExec
     }
 
     @Override
-    public QueryListResult queryList(Object id, QueryOptions options) {
+    public QueryListResult queryList(Object id, QueryOptions options, Supplier<QueryListResult> func) {
         RelationExecutionContext context = new
                 DefaultRelationExecutionContext(DefaultRelationQueryExecutor.this.context);
 
         ex.preRelateQueryList(context, id, options);
 
         QueryListResult result;
-        if (remoteRest) {
+        if (null != func) {
+            result = func.get();
+        } else if (remoteRest) {
             result = queryListRemoteSource(id, options);
         } else if (rm.isEmbedded()) {
             result = queryListEmbedded(id, options);
@@ -122,7 +128,6 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase<RelationExec
         } else {
             result = iqe.queryListByRelation(id, options);
         }
-
         ex.postRelateQueryList(context, id, result.getList());
         ex.completeRelateQueryList(context, id, result);
 

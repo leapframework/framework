@@ -19,16 +19,32 @@ package leap.web.api.orm;
 import leap.web.api.mvc.params.QueryOptions;
 import leap.web.api.mvc.params.QueryOptionsBase;
 
+import java.util.function.Supplier;
+
 public interface RelationQueryExecutor {
 
     /**
      * Find one or null record for many-to-one relation.
      */
-    QueryOneResult queryOne(Object id, QueryOptionsBase options);
+    default QueryOneResult queryOne(Object id, QueryOptionsBase options) {
+        return queryOne(id, options, null);
+    }
+
+    /**
+     * Find one or null record for many-to-one relation.
+     */
+    QueryOneResult queryOne(Object id, QueryOptionsBase options, Supplier<QueryOneResult> func);
 
     /**
      * Query records for *-to-many relation.
      */
-    QueryListResult queryList(Object id, QueryOptions options);
+    default QueryListResult queryList(Object id, QueryOptions options) {
+        return queryList(id, options, null);
+    }
+
+    /**
+     * Query records for *-to-many relation.
+     */
+    QueryListResult queryList(Object id, QueryOptions options, Supplier<QueryListResult> func);
 
 }
