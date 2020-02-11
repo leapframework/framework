@@ -52,6 +52,11 @@ public interface ModelQueryExecutor {
     ModelQueryExecutor fromSqlView(String sql);
 
     /**
+     * @see {@link CriteriaQuery#fromSqlView(String)}.
+     */
+    ModelQueryExecutor fromSqlView(String sql, Map<String, Object> params);
+
+    /**
      * Excludes the field names in the result record.
      */
     ModelQueryExecutor selectExclude(String... names);

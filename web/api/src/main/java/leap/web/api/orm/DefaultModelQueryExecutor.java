@@ -61,11 +61,12 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
     protected final ModelAndMapping     modelAndMapping;
     protected final ModelQueryExtension ex;
 
-    protected FindHandler     findHandler;
-    protected EntityListeners listeners;
-    protected String          sqlView;
-    protected String[]        excludedFields;
-    protected boolean         filterByParams = true;
+    protected FindHandler         findHandler;
+    protected EntityListeners     listeners;
+    protected String              sqlView;
+    protected Map<String, Object> sqlViewParams;
+    protected String[]            excludedFields;
+    protected boolean             filterByParams = true;
 
     public DefaultModelQueryExecutor(ModelExecutorContext context) {
         this(context, null);
@@ -92,6 +93,13 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
     @Override
     public ModelQueryExecutor fromSqlView(String sql) {
         this.sqlView = sql;
+        return this;
+    }
+
+    @Override
+    public ModelQueryExecutor fromSqlView(String sql, Map<String, Object> params) {
+        this.sqlView = sql;
+        this.sqlViewParams = params;
         return this;
     }
 
@@ -403,7 +411,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
     }
 
     protected CriteriaQuery<Record> createCriteriaQuery() {
-        return dao.createCriteriaQuery(em).fromSqlView(sqlView);
+        return dao.createCriteriaQuery(em).fromSqlView(sqlView).params(sqlViewParams);
     }
 
     protected void expand(ModelExecutionContext context, ResolvedExpand expand, List<Record> records) {
@@ -457,10 +465,10 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             fks.add(fk);
         }
 
-        StringBuilder filters = new StringBuilder();
+        StringBuilder filters   = new StringBuilder();
         StringBuilder filterIds = new StringBuilder();
 
-        int           i       = 0;
+        int i = 0;
         for (Object fk : fks) {
             if (i > 0) {
                 filterIds.append(',');
@@ -936,9 +944,9 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             return;
         }
 
-        EntityMapping em = query.getEntityMapping();
+        EntityMapping  em    = query.getEntityMapping();
         OrderBy.Item[] items = orderBy.items();
-        StringBuilder s = new StringBuilder();
+        StringBuilder  s     = new StringBuilder();
 
         for (int i = 0; i < items.length; i++) {
             if (i > 0) {
@@ -951,7 +959,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             if (null != expr) {
                 s.append(expr);
             } else {
-                MApiModel    model      = amd.getModel(em.getEntityName());
+                MApiModel    model   = amd.getModel(em.getEntityName());
                 String       name    = item.name();
                 MApiProperty ap      = model.tryGetProperty(name);
                 boolean      isAlias = false;
@@ -995,10 +1003,10 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             return;
         }
 
-        EntityMapping em = query.getEntityMapping();
-        MApiModel am = amd.getModel(em.getEntityName());
-        Select.Item[] items = select.items();
-        List<String> fields = new ArrayList<>();
+        EntityMapping em     = query.getEntityMapping();
+        MApiModel     am     = amd.getModel(em.getEntityName());
+        Select.Item[] items  = select.items();
+        List<String>  fields = new ArrayList<>();
 
         for (Select.Item item : items) {
             if (item.name().equals("*")) {
@@ -1452,8 +1460,8 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             return;
         }
 
-        EntityMapping em = query.getEntityMapping();
-        ScelNode[] nodes = filters.nodes();
+        EntityMapping      em    = query.getEntityMapping();
+        ScelNode[]         nodes = filters.nodes();
         SimpleWhereBuilder where = new SimpleWhereBuilder();
 
         if (nodes.length > 0) {
@@ -1484,9 +1492,9 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                         expr.append(filtersExpr);
                     } else {
                         FieldMapping field = em.getFieldMapping(name);
-                        String    alias = nameNode.alias();
-                        ScelToken op    = nodes[++i].token();
-                        String    value = nodes[++i].literal();
+                        String       alias = nameNode.alias();
+                        ScelToken    op    = nodes[++i].token();
+                        String       value = nodes[++i].literal();
 
                         if (null == op && Strings.isEmpty(value)) {
                             throw new BadRequestException("Invalid filter expr in '" + name + "'");
