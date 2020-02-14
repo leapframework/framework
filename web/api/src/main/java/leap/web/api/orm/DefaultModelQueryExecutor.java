@@ -1110,11 +1110,18 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                     } else {
                         String expr = em.getSelectExprs().get(selectItem.name());
                         if (null != expr) {
-                            if (Strings.isEmpty(selectItem.alias())) {
-                                items.add("(" + expr + ") as " + selectItem.name());
+                            StringBuilder exprSql = new StringBuilder();
+                            if (Strings.startsWithIgnoreCase(expr, "select")) {
+                                exprSql.append("(").append(expr).append(") as ");
                             } else {
-                                items.add("(" + expr + ") as " + selectItem.alias());
+                                exprSql.append(expr).append(" as ");
                             }
+                            if (Strings.isEmpty(selectItem.alias())) {
+                                exprSql.append(selectItem.name());
+                            } else {
+                                exprSql.append(selectItem.alias());
+                            }
+                            items.add(exprSql.toString());
                         } else {
                             MApiProperty p = am.tryGetProperty(selectItem.name());
                             if (null == p) {
