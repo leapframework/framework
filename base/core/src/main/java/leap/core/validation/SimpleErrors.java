@@ -15,141 +15,155 @@
  */
 package leap.core.validation;
 
+import leap.lang.NamedError;
+import leap.lang.Strings;
+import leap.lang.exception.EmptyElementsException;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
-import leap.lang.NamedError;
-import leap.lang.Strings;
-import leap.lang.exception.EmptyElementsException;
-
 public class SimpleErrors extends AbstractErrors implements Errors {
-	
-	protected final List<NamedError> list;
-	
-	public SimpleErrors(){
-		super();
-		this.list = new ArrayList<>();
-	}
 
-	public SimpleErrors(Locale locale) {
-	    super(locale);
-	    this.list = new ArrayList<>();
+    protected final List<NamedError> list;
+
+    protected Throwable cause;
+
+    public SimpleErrors() {
+        super();
+        this.list = new ArrayList<>();
     }
-	
-	@Override
+
+    public SimpleErrors(Locale locale) {
+        super(locale);
+        this.list = new ArrayList<>();
+    }
+
+    @Override
     public boolean isEmpty() {
-	    return list.isEmpty();
+        return list.isEmpty();
     }
 
-	@Override
-	public int size() {
-		return list.size();
-	}
+    @Override
+    public int size() {
+        return list.size();
+    }
 
-	@Override
+    @Override
     public void clear() {
-		list.clear();
+        list.clear();
     }
-	
-	@Override
+
+    @Override
     public String getMessage() {
-		NamedError e = firstOrNull();
-        if(null == e) {
+        NamedError e = firstOrNull();
+        if (null == e) {
             return "";
-        }else{
-            if(Strings.isEmpty(e.getName())) {
+        } else {
+            if (Strings.isEmpty(e.getName())) {
                 return e.getMessage();
-            }else{
+            } else {
                 return "Invalid '" + e.getName() + "' : " + e.getMessage();
             }
         }
     }
 
 	@Override
+	public Throwable getCause() {
+		return cause;
+	}
+
+	public void setCause(Exception cause) {
+		this.cause = cause;
+	}
+
+	@Override
     public NamedError first() throws EmptyElementsException {
-		if(list.isEmpty()){
-			throw new EmptyElementsException("Cannot get first error from empty errors");
-		}
-	    return list.get(0);
+        if (list.isEmpty()) {
+            throw new EmptyElementsException("Cannot get first error from empty errors");
+        }
+        return list.get(0);
     }
-	
-	public NamedError firstOrNull() {
-		if(list.isEmpty()){
-			return null;
-		}
-		return list.get(0);
-	}
 
-	@Override
-	public void add(String objectName, String message) {
-		list.add(createError(objectName, message));
-	}
+    public NamedError firstOrNull() {
+        if (list.isEmpty()) {
+            return null;
+        }
+        return list.get(0);
+    }
 
-	@Override
+    @Override
+    public void add(String objectName, String message) {
+        add(createError(objectName, message));
+    }
+
+    @Override
     public void add(NamedError e) {
-	    list.add(e);
+        list.add(e);
+        if(null == cause) {
+            cause = new Exception("Error");
+        }
     }
 
-	@Override
+    @Override
     public void addAll(Errors errors) {
-		if(null != errors){
-			for(NamedError error : errors){
-				this.list.add(error);
-			}
-		}
+        if (null != errors) {
+            for (NamedError error : errors) {
+                add(error);
+            }
+        }
     }
 
-	@Override
+    @Override
     public void addAll(String objectName, Errors errors) {
-		if(Strings.isEmpty(objectName)){
-			addAll(errors);
-		}else if(null != errors){
-			for(NamedError error : errors){
-				list.add(createError(objectName + "." + error.getName(), error.getCode(), error.getMessage()));
-			}
-		}
-	}
+        if (Strings.isEmpty(objectName)) {
+            addAll(errors);
+        } else if (null != errors) {
+            for (NamedError error : errors) {
+                add(createError(objectName + "." + error.getName(), error.getCode(), error.getMessage()));
+            }
+        }
+    }
 
-	@Override
+    @Override
     public List<String> getMessages(String objectName) {
-		List<String> messages = new ArrayList<String>();
-		
-		for(NamedError error : list){
-			if(Strings.equals(error.getName(), objectName)){
-				messages.add(error.getMessage());
-			}
-		}
-		
-		return messages;
+        List<String> messages = new ArrayList<String>();
+
+        for (NamedError error : list) {
+            if (Strings.equals(error.getName(), objectName)) {
+                messages.add(error.getMessage());
+            }
+        }
+
+        return messages;
     }
-	
-	@Override
+
+    @Override
     public boolean contains(String objectName) {
-		for(NamedError error : list){
-			if(Strings.equals(error.getName(), objectName)){
-				return true;
-			}
-		}
-		return false;
+        for (NamedError error : list) {
+            if (Strings.equals(error.getName(), objectName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
-	@Override
+    @Override
     public Iterator<NamedError> iterator() {
-	    return list.iterator();
+        return list.iterator();
     }
-	
-	protected NamedError createError(String name, String code, String message) {
-		return new NamedError(name, code, message);
-	}
-	
-	protected NamedError createError(String name, String message) {
-		return new NamedError(name, message);
-	}
 
-	@Override
+    protected NamedError createError(String name, String code, String message) {
+        return new NamedError(name, code, message);
+    }
+
+    protected NamedError createError(String name, String message) {
+        return new NamedError(name, message);
+    }
+
+    @Override
     public String toString() {
-		return list.toString();
+        return list.toString();
     }
 }

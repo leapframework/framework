@@ -128,7 +128,12 @@ public class DefaultActionManager implements ActionManager {
 
             //if validate errors, do not continue to execute the action.
             if (validation.hasErrors() && !context.isAcceptValidationError()) {
-                throw new ValidateFailureException(validation);
+                final Throwable cause = validation.errors().getCause();
+                if(null == cause) {
+                    throw new ValidateFailureException(validation);
+                }else {
+                    throw new ValidateFailureException(validation, cause);
+                }
             }
 
             //execute action

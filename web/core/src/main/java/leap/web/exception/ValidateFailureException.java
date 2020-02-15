@@ -29,6 +29,12 @@ public class ValidateFailureException extends BadRequestException {
         this.errors     = validation.errors();
     }
 
+    public ValidateFailureException(Validation validation, Throwable cause) {
+        super(validation.errors().getMessage(), cause);
+        this.validation = validation;
+        this.errors     = validation.errors();
+    }
+
     public Validation getValidation() {
         return validation;
     }

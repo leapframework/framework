@@ -43,6 +43,11 @@ public interface Errors extends Iterable<NamedError>,Emptiable {
 	 * Returns the first error's message or <code>null</code> if empty.
 	 */
 	String getMessage();
+
+	/**
+	 * Returns the exception cause of the error or null.
+	 */
+	Throwable getCause();
 	
 	/**
 	 * 
