@@ -1282,12 +1282,16 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
     protected void applyFilters(ModelExecutionContext context, CriteriaQuery query, Params params,
                                 QueryOptions options, JoinModels jms, Map<String, Object> fields, boolean filterByParams) {
-        SimpleWhereBuilder where = new SimpleWhereBuilder();
+        if(null == fields) {
+            fields = new HashMap<>();
+        }
+
+        final SimpleWhereBuilder where = new SimpleWhereBuilder();
 
         if (null != ex.handler) {
             ex.handler.preProcessQueryListWhere(context, options, where);
         }
-        ex.preProcessQueryListWhere(context, options, where);
+        ex.preProcessQueryListWhere(context, options, where, fields);
 
         //view
         if (!Strings.isEmpty(options.getViewId()) && null == ex.handler) {
@@ -1298,10 +1302,11 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
 
         //fields
-        if (null != fields && !fields.isEmpty()) {
+        final Map<String, Object> finalFields = fields;
+        if (!finalFields.isEmpty()) {
             where.and((expr) -> {
                 int i = 0;
-                for (Map.Entry<String, Object> entry : fields.entrySet()) {
+                for (Map.Entry<String, Object> entry : finalFields.entrySet()) {
                     if (i > 0) {
                         expr.append(" and ");
                     }

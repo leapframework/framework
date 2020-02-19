@@ -23,6 +23,7 @@ import leap.orm.query.PageResult;
 import leap.web.api.mvc.params.QueryOptions;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ModelQueryInterceptor extends ModelFindInterceptor {
 
@@ -30,6 +31,14 @@ public interface ModelQueryInterceptor extends ModelFindInterceptor {
         return false;
     }
 
+    default boolean preProcessQueryListWhere(ModelExecutionContext context, QueryOptions options, WhereBuilder where, Map<String, Object> filters) {
+        return preProcessQueryListWhere(context, options, where);
+    }
+
+    /**
+     * @deprecated Use {@link #preProcessQueryListWhere(ModelExecutionContext, QueryOptions, WhereBuilder, Map)}.
+     */
+    @Deprecated
     default boolean preProcessQueryListWhere(ModelExecutionContext context, QueryOptions options, WhereBuilder where) {
         return false;
     }
