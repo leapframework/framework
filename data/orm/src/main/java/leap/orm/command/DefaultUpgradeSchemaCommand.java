@@ -301,17 +301,14 @@ public class DefaultUpgradeSchemaCommand extends AbstractDmoCommand implements U
             }
         }else{
 			Map<String, DbTable> tables = new WrappedCaseInsensitiveMap<>();
-//            List<DbTable> tables = new ArrayList<>();
             for(EntityMapping em : entityMappings) {
             	if(em.isRemote() || em.isNarrowEntity()) {
             	    continue;
                 }
 
             	addTable(tables, em.getTable());;
-//                tables.add(em.getTable());
                 if(em.hasSecondaryTable()) {
                 	addTable(tables, em.getSecondaryTable());
-//                    tables.add(em.getSecondaryTable());
                 }
             }
             log.info("Comparing {} tables in db '{}'", tables.size(), db.getDescription());
@@ -326,41 +323,14 @@ public class DefaultUpgradeSchemaCommand extends AbstractDmoCommand implements U
 		final String key = table.getQualifiedName();
 		DbTable existence = tables.get(key);
 		if(null != existence) {
-			if(isSameColumns(table, existence)) {
+			if(table.isSameColumnNamesWith(existence) || table.isSubColumnsNamesOf(existence)) {
 				return;
 			}
-			if(isSubColumnsOf(table, existence)) {
-				return;
-			}
-			if(!isSubColumnsOf(existence, table)) {
+			if(!existence.isSubColumnsNamesOf(table)) {
 				log.warn("Found duplicated table '" + table.getName() + "' with difference columns");
 				return;
 			}
 		}
 		tables.put(key, table);
-	}
-
-	protected boolean isSameColumns(DbTable t1, DbTable t2) {
-		if(t1.getColumns().length != t2.getColumns().length) {
-			return false;
-		}
-		for(DbColumn c1 : t1.getColumns()) {
-			if(null == t2.findColumn(c1.getName())) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	protected boolean isSubColumnsOf(DbTable t1, DbTable t2) {
-		if(t1.getColumns().length >= t2.getColumns().length) {
-			return false;
-		}
-		for(DbColumn c1 : t1.getColumns()) {
-			if(null == t2.findColumn(c1.getName())) {
-				return false;
-			}
-		}
-		return true;
 	}
 }

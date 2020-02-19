@@ -23,6 +23,8 @@ import leap.db.model.DbTable;
 import leap.lang.Args;
 import leap.lang.Confirm;
 import leap.lang.Strings;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.lang.tostring.ToStringBuilder;
 import leap.orm.OrmContext;
 import leap.orm.command.CreateEntityCommand;
@@ -41,52 +43,54 @@ import java.util.Map;
 
 public class DefaultDmo extends DmoBase {
 
-	public DefaultDmo(){
-		super();
-	}
+	private static final Log log = LogFactory.get(DefaultDmo.class);
 
-	public DefaultDmo(String name){
-		super(name);
-	}
+    public DefaultDmo() {
+        super();
+    }
+
+    public DefaultDmo(String name) {
+        super(name);
+    }
 
     public DefaultDmo(OrmContext context) {
         super(context.getName());
         this.ormContext = context;
     }
 
-	@Override
+    @Override
     public List<DbSchema> getDbSchemas() {
-	    return createDbSchemas();
+        return createDbSchemas();
     }
 
-	@Override
+    @Override
     public void truncate(Class<?> entityClass) {
-	    Args.notNull(entityClass,"entity class");
+        Args.notNull(entityClass, "entity class");
 
-	    EntityMapping em = em(entityClass);
+        EntityMapping em = em(entityClass);
 
-	    Confirm.checkConfirmed("Dmo.truncate","may lost all the data in table '" + em.getTableName() + "'");
+        Confirm.checkConfirmed("Dmo.truncate", "may lost all the data in table '" + em.getTableName() + "'");
 
-	    commandFactory().newTruncateEntityCommand(this, em).execute();
+        commandFactory().newTruncateEntityCommand(this, em).execute();
     }
 
-	@Override
+    @Override
     public boolean createTableIfNotExists(Class<?> entityClass) {
-	    Args.notNull(entityClass, "entity class");
-	    return commandFactory().newCreateTableCommand(this, em(entityClass)).execute();
+        Args.notNull(entityClass, "entity class");
+        return commandFactory().newCreateTableCommand(this, em(entityClass)).execute();
     }
 
     @Override
     public CreateEntityCommand cmdCreateEntity(Class<?> entityClass) {
-		Args.notNull(entityClass,"entity class");
-	    return commandFactory().newCreateEntityCommand(this, entityClass);
+        Args.notNull(entityClass, "entity class");
+        return commandFactory().newCreateEntityCommand(this, entityClass);
     }
 
-	@Override
-	public CreateTableCommand cmdCreateTable(Class<?> entityClass) {
-		Args.notNull(entityClass, "entity class");
-		return commandFactory().newCreateTableCommand(this, em(entityClass));
-	}
+    @Override
+    public CreateTableCommand cmdCreateTable(Class<?> entityClass) {
+        Args.notNull(entityClass, "entity class");
+        return commandFactory().newCreateTableCommand(this, em(entityClass));
+    }
 
     @Override
     public CreateTableCommand cmdCreateTable(EntityMapping em) {
@@ -95,14 +99,14 @@ public class DefaultDmo extends DmoBase {
     }
 
     @Override
-	public DropTableCommand cmdDropTable(Class<?> entityClass) {
-		Args.notNull(entityClass, "entity class");
-		return commandFactory().newDropTableCommand(this, em(entityClass));
-	}
+    public DropTableCommand cmdDropTable(Class<?> entityClass) {
+        Args.notNull(entityClass, "entity class");
+        return commandFactory().newDropTableCommand(this, em(entityClass));
+    }
 
-	@Override
+    @Override
     public UpgradeSchemaCommand cmdUpgradeSchema(Class<?> entityClass) throws EntityNotFoundException {
-	    Args.notNull(entityClass,"entity class");
+        Args.notNull(entityClass, "entity class");
         return commandFactory().newUpgradeSchemaCommand(this, em(entityClass));
     }
 
@@ -114,104 +118,122 @@ public class DefaultDmo extends DmoBase {
 
     @Override
     public UpgradeSchemaCommand cmdUpgradeSchema() {
-		return commandFactory().newUpgradeSchemaCommand(this);
+        return commandFactory().newUpgradeSchemaCommand(this);
     }
 
     protected List<DbSchema> createDbSchemas() {
-    	Db db = ormContext.getDb();
+        Db db = ormContext.getDb();
 
-    	List<EntityMapping>   entityMappings   = ormContext.getMetadata().getEntityMappingSnapshotList();
-    	List<SequenceMapping> sequenceMappings = ormContext.getMetadata().getSequenceMappingSnapshotList();
+        List<EntityMapping>   entityMappings   = ormContext.getMetadata().getEntityMappingSnapshotList();
+        List<SequenceMapping> sequenceMappings = ormContext.getMetadata().getSequenceMappingSnapshotList();
 
-		DbSchemaBuilder 		     defaultSchema = new DbSchemaBuilder(db.getMetadata().getDefaultSchemaName());
-		Map<String, DbSchemaBuilder> extraSchemas  = null;
+        DbSchemaBuilder              defaultSchema = new DbSchemaBuilder(db.getMetadata().getDefaultSchemaName());
+        Map<String, DbSchemaBuilder> extraSchemas  = null;
 
-		//build tables
-		for(int i=0;i<entityMappings.size();i++){
-			EntityMapping em = entityMappings.get(i);
-			if(em.isRemote() || em.isNarrowEntity()){
-				continue;
-			}
-			DbTable       table = em.getTable();
-            DbTable       secondaryTable = em.getSecondaryTable();
+        //build tables
+        for (int i = 0; i < entityMappings.size(); i++) {
+            EntityMapping em = entityMappings.get(i);
+            if (em.isRemote() || em.isNarrowEntity()) {
+                continue;
+            }
+            DbTable table          = em.getTable();
+            DbTable secondaryTable = em.getSecondaryTable();
 
-			String schemaName = table.getSchema();
+            String schemaName = table.getSchema();
 
-			if(Strings.isEmpty(schemaName)){
-				defaultSchema.addTable(table);
-                if(null != secondaryTable) {
-                    defaultSchema.addTable(secondaryTable);
+            if (Strings.isEmpty(schemaName)) {
+                addTable(defaultSchema, table);
+                if (null != secondaryTable) {
+                    addTable(defaultSchema, secondaryTable);
                 }
-			}else{
-				if(null == extraSchemas){
-					extraSchemas = new HashMap<>();
-				}
-
-				DbSchemaBuilder schema = extraSchemas.get(schemaName.toLowerCase());
-				if(null == schema){
-					schema = new DbSchemaBuilder(schemaName).setCatalog(table.getCatalog());
-					extraSchemas.put(schemaName.toLowerCase(), schema);
-				}
-
-				schema.addTable(table);
-
-                if(null != secondaryTable) {
-                    schema.addTable(secondaryTable);
+            } else {
+                if (null == extraSchemas) {
+                    extraSchemas = new HashMap<>();
                 }
-			}
-		}
 
-		//build sequences
-		for(int i=0;i<sequenceMappings.size();i++){
-			SequenceMapping sm  = sequenceMappings.get(i);
-			DbSequence      seq = sm.getSequence();
+                DbSchemaBuilder schema = extraSchemas.get(schemaName.toLowerCase());
+                if (null == schema) {
+                    schema = new DbSchemaBuilder(schemaName).setCatalog(table.getCatalog());
+                    extraSchemas.put(schemaName.toLowerCase(), schema);
+                }
 
-			String schemaName = seq.getSchema();
-			if(Strings.isEmpty(schemaName)){
-				defaultSchema.addSequence(seq);
-			}else{
-				if(null == extraSchemas){
-					extraSchemas = new HashMap<String, DbSchemaBuilder>();
-				}
-				DbSchemaBuilder schema = extraSchemas.get(schemaName.toLowerCase());
-				if(null == schema){
-					schema = new DbSchemaBuilder(schemaName).setCatalog(seq.getCatalog());
-					extraSchemas.put(schemaName.toLowerCase(), schema);
-				}
+                addTable(schema, table);
 
-				schema.addSequence(seq);
-			}
-		}
+                if (null != secondaryTable) {
+                    addTable(schema, secondaryTable);
+                }
+            }
+        }
 
-		List<DbSchema> schemas = new ArrayList<DbSchema>();
+        //build sequences
+        for (int i = 0; i < sequenceMappings.size(); i++) {
+            SequenceMapping sm  = sequenceMappings.get(i);
+            DbSequence      seq = sm.getSequence();
 
-		schemas.add(defaultSchema.build());
+            String schemaName = seq.getSchema();
+            if (Strings.isEmpty(schemaName)) {
+                defaultSchema.addSequence(seq);
+            } else {
+                if (null == extraSchemas) {
+                    extraSchemas = new HashMap<String, DbSchemaBuilder>();
+                }
+                DbSchemaBuilder schema = extraSchemas.get(schemaName.toLowerCase());
+                if (null == schema) {
+                    schema = new DbSchemaBuilder(schemaName).setCatalog(seq.getCatalog());
+                    extraSchemas.put(schemaName.toLowerCase(), schema);
+                }
 
-		if(null != extraSchemas){
-			for(DbSchemaBuilder schema : extraSchemas.values()){
-				schemas.add(schema.build());
-			}
-		}
+                schema.addSequence(seq);
+            }
+        }
 
-	    return schemas;
+        List<DbSchema> schemas = new ArrayList<DbSchema>();
+
+        schemas.add(defaultSchema.build());
+
+        if (null != extraSchemas) {
+            for (DbSchemaBuilder schema : extraSchemas.values()) {
+                schemas.add(schema.build());
+            }
+        }
+
+        return schemas;
     }
 
-	protected EntityMapping em(String name) throws MappingNotFoundException {
-		return metadata().getEntityMapping(name);
-	}
+    protected EntityMapping em(String name) throws MappingNotFoundException {
+        return metadata().getEntityMapping(name);
+    }
 
-	protected EntityMapping em(Class<?> type) throws MappingNotFoundException {
-		return metadata().getEntityMapping(type);
-	}
+    protected EntityMapping em(Class<?> type) throws MappingNotFoundException {
+        return metadata().getEntityMapping(type);
+    }
 
-	@Override
-    public String toString() {
-		ToStringBuilder tsb = new ToStringBuilder(this);
+    protected void addTable(DbSchemaBuilder schema, DbTable table) {
+    	DbTable existence = schema.getTables()
+				.stream().filter(added -> added.getQualifiedName().equalsIgnoreCase(table.getQualifiedName()))
+				.findFirst().orElse(null);
 
-		if(null != ormContext){
-			tsb.append("dataSource",ormContext.getDataSource());
+    	if(null != existence) {
+			if(table.isSameColumnNamesWith(existence) || table.isSubColumnsNamesOf(existence)) {
+				return;
+			}
+			if(!existence.isSubColumnsNamesOf(table)) {
+				log.error("Found duplicated table '" + table.getName() + "' with difference columns");
+				return;
+			}
+			schema.getTables().remove(existence);
 		}
-
-		return tsb.toString();
+    	schema.addTable(table);
 	}
+
+    @Override
+    public String toString() {
+        ToStringBuilder tsb = new ToStringBuilder(this);
+
+        if (null != ormContext) {
+            tsb.append("dataSource", ormContext.getDataSource());
+        }
+
+        return tsb.toString();
+    }
 }
