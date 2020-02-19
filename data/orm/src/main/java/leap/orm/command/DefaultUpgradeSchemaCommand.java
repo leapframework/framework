@@ -27,6 +27,7 @@ import leap.db.model.DbTable;
 import leap.lang.Collections2;
 import leap.lang.Error;
 import leap.lang.Strings;
+import leap.lang.collection.WrappedCaseInsensitiveMap;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.orm.dmo.Dmo;
@@ -36,6 +37,7 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -298,21 +300,67 @@ public class DefaultUpgradeSchemaCommand extends AbstractDmoCommand implements U
                 allChanges.add(db.getComparator().compareSchema(source, target));
             }
         }else{
-            List<DbTable> tables = new ArrayList<>();
+			Map<String, DbTable> tables = new WrappedCaseInsensitiveMap<>();
+//            List<DbTable> tables = new ArrayList<>();
             for(EntityMapping em : entityMappings) {
             	if(em.isRemote() || em.isNarrowEntity()) {
             	    continue;
                 }
-                tables.add(em.getTable());
+
+            	addTable(tables, em.getTable());;
+//                tables.add(em.getTable());
                 if(em.hasSecondaryTable()) {
-                    tables.add(em.getSecondaryTable());
+                	addTable(tables, em.getSecondaryTable());
+//                    tables.add(em.getSecondaryTable());
                 }
             }
             log.info("Comparing {} tables in db '{}'", tables.size(), db.getDescription());
             DbSchema target = db.getMetadata().getSchema();
-            allChanges.add(db.getComparator().compareTables(tables.toArray(new DbTable[0]), target));
+            allChanges.add(db.getComparator().compareTables(tables.values().toArray(new DbTable[0]), target));
         }
 
         return allChanges;
+	}
+
+	protected void addTable(Map<String, DbTable> tables, DbTable table) {
+		final String key = table.getQualifiedName();
+		DbTable existence = tables.get(key);
+		if(null != existence) {
+			if(isSameColumns(table, existence)) {
+				return;
+			}
+			if(isSubColumnsOf(table, existence)) {
+				return;
+			}
+			if(!isSubColumnsOf(existence, table)) {
+				log.warn("Found duplicated table '" + table.getName() + "' with difference columns");
+				return;
+			}
+		}
+		tables.put(key, table);
+	}
+
+	protected boolean isSameColumns(DbTable t1, DbTable t2) {
+		if(t1.getColumns().length != t2.getColumns().length) {
+			return false;
+		}
+		for(DbColumn c1 : t1.getColumns()) {
+			if(null == t2.findColumn(c1.getName())) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	protected boolean isSubColumnsOf(DbTable t1, DbTable t2) {
+		if(t1.getColumns().length >= t2.getColumns().length) {
+			return false;
+		}
+		for(DbColumn c1 : t1.getColumns()) {
+			if(null == t2.findColumn(c1.getName())) {
+				return false;
+			}
+		}
+		return true;
 	}
 }
