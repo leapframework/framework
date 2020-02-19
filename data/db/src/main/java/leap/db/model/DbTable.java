@@ -234,6 +234,30 @@ public class DbTable extends DbSchemaObjectName implements JsonStringable {
 		}
 		return null;
 	}
+
+	public boolean isSameColumnNamesWith(DbTable t2) {
+		if(getColumns().length != t2.getColumns().length) {
+			return false;
+		}
+		for(DbColumn c1 : getColumns()) {
+			if(null == t2.findColumn(c1.getName())) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public boolean isSubColumnsNamesOf(DbTable t2) {
+		if(getColumns().length >= t2.getColumns().length) {
+			return false;
+		}
+		for(DbColumn c1 : getColumns()) {
+			if(null == t2.findColumn(c1.getName())) {
+				return false;
+			}
+		}
+		return true;
+	}
 	
 	private DbColumn[] fromNames(String[] columnNames){
 		DbColumn[] columns = new DbColumn[columnNames.length];
