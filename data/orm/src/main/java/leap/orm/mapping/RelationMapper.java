@@ -291,7 +291,7 @@ public class RelationMapper implements Mapper {
         }
 
         if(keyFields.size() == 1){
-            //find unique join fields.
+            //find join fields by unique keys.
             for(UniqueKeyBuilder key : join.getKeys()) {
                 if(key.getFields().size() == totalFields) {
                     final String entityName = entity.isNarrow() ? entity.getWideEntityName() : entity.getEntityName();
@@ -307,6 +307,14 @@ public class RelationMapper implements Mapper {
                         return;
                     }
                 }
+            }
+
+            //find join fields by single to-one relations
+            RelationMappingBuilder rm1 = join.findSingleOrNullByTargetEntity(RelationType.MANY_TO_ONE, entity.getEntityName());
+            RelationMappingBuilder rm2 = join.findSingleOrNullByTargetEntity(RelationType.MANY_TO_ONE, target.getEntityName());
+            if(null != rm1 && null != rm2) {
+                addManyToManyJoinFields(entity, target, rmb, rm1, rm2);
+                return;
             }
         }
 
