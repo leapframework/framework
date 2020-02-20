@@ -127,11 +127,6 @@ public abstract class AbstractExprReaderBean {
                 Object value = processPlaceholderOrExpr(resource, path, item);
                 if (item != value) {
                     map.put(key, value);
-                    if (key.equals("default")) {
-                        map.put("x-default-expr", item);
-                    } else if (key.equals("value")) {
-                        map.put("x-value-expr", item);
-                    }
                 }
             }
         }
