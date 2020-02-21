@@ -21,6 +21,20 @@ import java.util.Map;
 public interface ClientPrincipal extends Principal {
 
     /**
+     * Returns appId of current client.
+     *
+     * <p/>
+     * Returns {@link #getIdAsString()} as appId if no appId property exists.
+     */
+    default String getAppId() {
+        Object v = getProperties().get("app_id");
+        if(null == v) {
+            v = getProperties().get("appId");
+        }
+        return null == v ? getIdAsString() : v.toString();
+    }
+
+    /**
      * Returns the details property.
      */
     default Map<String, Object> getProperties() {
