@@ -69,9 +69,20 @@ public interface ActionContext extends AttributeAccessor {
 	Action getAction();
 
 	/**
+	 * Returns the {@link ActionParams} contains all the argument values, valid after all the arguments has been resolved.
+	 */
+	ActionParams getResolvedParams();
+
+	/**
+	 * Sets the {@link ActionParams}.
+	 */
+	void setResolvedParams(ActionParams params);
+
+	/**
 	 * Returns execution of current executing action
 	 */
 	ActionExecution getActionExecution();
+
 	/**
 	 * Sets execution of current executing action
 	 */

@@ -80,9 +80,7 @@ public class FuncAction extends ExtensibleBase implements Action {
 
     @Override
     public Object execute(ActionContext context, Object[] args) throws Throwable {
-        SimpleActionParams params = new SimpleActionParams(context, arguments, args);
-
-        return function.apply(params);
+        return function.apply(context.getResolvedParams());
     }
 
     @Override

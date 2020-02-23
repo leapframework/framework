@@ -29,114 +29,125 @@ import java.util.Map;
 
 public class DefaultActionContext extends MapAttributeAccessor implements ActionContext {
 
-	protected final Request  request;
-	protected final Response response;
-	
-	protected String			  method;
-	protected String			  path;
-	protected Route				  route;
-	protected ActionExecution     execution;
-	protected Map<String, String> pathParameters;
-	protected RequestFormat		  requestFormat;
-	protected ResponseFormat	  responseFormat;
-	protected Boolean             acceptValidationError;
-	
-	private Map<String, Object> mergedParameters;
-	private Map<String, Object> mergedParametersWithArgs;
+    protected final Request  request;
+    protected final Response response;
 
-	public DefaultActionContext(Request request,Response response) {
-		this.request  = request;
-		this.response = response;
-        this.method   = request.getMethod();
-	}
+    protected String              method;
+    protected String              path;
+    protected Route               route;
+    protected ActionExecution     execution;
+    protected Map<String, String> pathParameters;
+    protected RequestFormat       requestFormat;
+    protected ResponseFormat      responseFormat;
+    protected Boolean             acceptValidationError;
 
-	@Override
+    private ActionParams        resolvedParams;
+    private Map<String, Object> mergedParameters;
+    private Map<String, Object> mergedParametersWithArgs;
+
+    public DefaultActionContext(Request request, Response response) {
+        this.request = request;
+        this.response = response;
+        this.method = request.getMethod();
+    }
+
+    @Override
     public Request getRequest() {
-		return request;
-	}
+        return request;
+    }
 
-	@Override
+    @Override
     public Response getResponse() {
-		return response;
-	}
-	
-	@Override
+        return response;
+    }
+
+    @Override
     public Result getResult() {
-	    return request.getResult();
+        return request.getResult();
     }
 
-	@Override
-	public String getMethod() {
-		return method;
-	}
+    @Override
+    public String getMethod() {
+        return method;
+    }
 
-	@Override
+    @Override
     public String getPath() {
-	    return path;
+        return path;
     }
-	
-	public void setPath(String path) {
-		this.path = path;
-	}
 
-	@Override
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    @Override
     public Route getRoute() {
-	    return route;
+        return route;
     }
 
-	public void setRoute(Route route) {
-		this.route = route;
-	}
+    public void setRoute(Route route) {
+        this.route = route;
+    }
 
-	@Override
+    @Override
     public Action getAction() {
-	    return null == route ? null : route.getAction();
+        return null == route ? null : route.getAction();
+    }
+
+    @Override
+    public ActionExecution getActionExecution() {
+        return execution;
+    }
+
+    @Override
+    public void setActionExecution(ActionExecution execution) {
+        this.execution = execution;
     }
 
 	@Override
-	public ActionExecution getActionExecution() {
-		return execution;
+	public ActionParams getResolvedParams() {
+		return resolvedParams;
 	}
 
 	@Override
-	public void setActionExecution(ActionExecution execution) {
-		this.execution = execution;
+	public void setResolvedParams(ActionParams resolvedParams) {
+		this.resolvedParams = resolvedParams;
 	}
 
 	@Override
     public Map<String, String> getPathParameters() {
-		return pathParameters;
-	}
+        return pathParameters;
+    }
 
-	public void setPathParameters(Map<String, String> params) {
-		this.pathParameters = Collections.unmodifiableMap(params);
-	}
+    public void setPathParameters(Map<String, String> params) {
+        this.pathParameters = Collections.unmodifiableMap(params);
+    }
 
     public RequestFormat getRequestFormat() {
-		return requestFormat;
-	}
+        return requestFormat;
+    }
 
-	public void setRequestFormat(RequestFormat requestFormat) {
-		this.requestFormat = requestFormat;
-	}
+    public void setRequestFormat(RequestFormat requestFormat) {
+        this.requestFormat = requestFormat;
+    }
 
-	public ResponseFormat getResponseFormat() {
-		return responseFormat;
-	}
+    public ResponseFormat getResponseFormat() {
+        return responseFormat;
+    }
 
-	public void setResponseFormat(ResponseFormat responseFormat) {
-		this.responseFormat = responseFormat;
-	}
-	
-	@Override
+    public void setResponseFormat(ResponseFormat responseFormat) {
+        this.responseFormat = responseFormat;
+    }
+
+    @Override
     public boolean isAcceptValidationError() {
-	    if(null != acceptValidationError) {
-	        return acceptValidationError;
-	    }else if(null != request.getAcceptValidationError()) {
+        if (null != acceptValidationError) {
+            return acceptValidationError;
+        } else if (null != request.getAcceptValidationError()) {
             return request.getAcceptValidationError();
-        }else if(null != route){
+        } else if (null != route) {
             return route.isAcceptValidationError();
-        }else{
+        } else {
             return false;
         }
     }
@@ -147,32 +158,32 @@ public class DefaultActionContext extends MapAttributeAccessor implements Action
 
     @Override
     public Map<String, Object> getMergedParameters() {
-		if(null == mergedParameters){
-			mergedParameters = new LinkedHashMap<>(request.getParameters());
-			mergedParameters.putAll(pathParameters);
-			mergedParameters = Collections.unmodifiableMap(mergedParameters);
-		}
-	    return mergedParameters;
+        if (null == mergedParameters) {
+            mergedParameters = new LinkedHashMap<>(request.getParameters());
+            mergedParameters.putAll(pathParameters);
+            mergedParameters = Collections.unmodifiableMap(mergedParameters);
+        }
+        return mergedParameters;
     }
 
-	@Override
-	public Map<String, Object> getMergedParametersWithArgs() {
-		if(null == mergedParametersWithArgs) {
-			Action action = getAction();
+    @Override
+    public Map<String, Object> getMergedParametersWithArgs() {
+        if (null == mergedParametersWithArgs) {
+            Action action = getAction();
 
-			if(action.getArguments().length == 0) {
-				return getMergedParameters();
-			}
+            if (action.getArguments().length == 0) {
+                return getMergedParameters();
+            }
 
-			if(null == execution) {
-				throw new IllegalStateException("Action args has not been resolved");
-			}
+            if (null == execution) {
+                throw new IllegalStateException("Action args has not been resolved");
+            }
 
-			mergedParametersWithArgs = new LinkedHashMap<>(getMergedParameters());
-			for(int i=0;i<action.getArguments().length;i++) {
-				mergedParametersWithArgs.put(action.getArguments()[i].getName(), execution.getArgs()[i]);
-			}
-		}
-		return mergedParametersWithArgs;
-	}
+            mergedParametersWithArgs = new LinkedHashMap<>(getMergedParameters());
+            for (int i = 0; i < action.getArguments().length; i++) {
+                mergedParametersWithArgs.put(action.getArguments()[i].getName(), execution.getArgs()[i]);
+            }
+        }
+        return mergedParametersWithArgs;
+    }
 }

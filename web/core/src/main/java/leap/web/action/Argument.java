@@ -63,6 +63,7 @@ public class Argument extends ExtensibleBase implements Named,AnnotationsGetter,
     protected final Location              location;
     protected final Annotation[]          annotations;
     protected final ArgumentBinder        binder;
+    protected final ArgumentProcessor     processor;
     protected final ArgumentValidator[]   validators;
     protected final Argument[]            wrappedArguments;
 
@@ -79,6 +80,7 @@ public class Argument extends ExtensibleBase implements Named,AnnotationsGetter,
                     Location location,
                     Annotation[] annotations,
                     ArgumentBinder binder,
+                    ArgumentProcessor processor,
                     ArgumentValidator[] validators,
                     Argument[] wrappedArguments,
                     Map<Class<?>, Object> extensions) {
@@ -99,6 +101,7 @@ public class Argument extends ExtensibleBase implements Named,AnnotationsGetter,
 		this.location 		   = null == location ? Location.UNDEFINED : location;
 		this.annotations       = null == annotations ? Classes.EMPTY_ANNOTATION_ARRAY : annotations;
         this.binder            = binder;
+        this.processor         = processor;
 		this.validators        = null == validators ? (ArgumentValidator[])Arrays2.EMPTY_OBJECT_ARRAY : validators;
         this.wrappedArguments  = wrappedArguments;
 
@@ -208,6 +211,13 @@ public class Argument extends ExtensibleBase implements Named,AnnotationsGetter,
      */
     public ArgumentBinder getBinder() {
         return binder;
+    }
+
+    /**
+     * Optional. Returns the {@link ArgumentProcessor}.
+     */
+    public ArgumentProcessor getProcessor() {
+        return processor;
     }
 
     /**
