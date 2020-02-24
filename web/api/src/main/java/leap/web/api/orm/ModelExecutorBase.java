@@ -95,4 +95,30 @@ public abstract class ModelExecutorBase<C extends ModelExecutorContext> {
             }
         }
     }
+
+    protected static class IdOrKey {
+        protected final Object              id;
+        protected final Map<String, Object> key;
+
+        protected static IdOrKey ofId(Object id) {
+            return new IdOrKey(id, null);
+        }
+
+        protected static IdOrKey ofKey(Map<String, Object> key) {
+            return new IdOrKey(null, key);
+        }
+
+        private IdOrKey(Object id, Map<String, Object> key) {
+            this.id = id;
+            this.key = key;
+        }
+
+        public boolean isId() {
+            return null != id;
+        }
+
+        public boolean isKey() {
+            return null != key;
+        }
+    }
 }

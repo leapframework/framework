@@ -22,6 +22,8 @@ import leap.orm.event.EntityListeners;
 import leap.web.api.mvc.params.DeleteOptions;
 import leap.web.api.remote.RestResource;
 
+import java.util.Map;
+
 public class DefaultModelDeleteExecutor extends ModelExecutorBase implements ModelDeleteExecutor {
 
     protected final ModelDeleteExtension ex;
@@ -49,7 +51,6 @@ public class DefaultModelDeleteExecutor extends ModelExecutorBase implements Mod
     @Override
     public DeleteOneResult deleteOne(Object id, DeleteOptions options) {
         ModelExecutionContext context = new DefaultModelExecutionContext(this.context);
-
         if (null == options) {
             options = new DeleteOptions();
         }
@@ -106,6 +107,44 @@ public class DefaultModelDeleteExecutor extends ModelExecutorBase implements Mod
 
             ex.completeDeleteOne(context, result, null);
 
+            return result;
+        } catch (Throwable e) {
+            ex.completeDeleteOne(context, null, e);
+            throw e;
+        }
+    }
+
+    @Override
+    public DeleteOneResult deleteOneByKey(Map<String, Object> key, DeleteOptions options) {
+        if (em.isRemoteRest()) {
+            throw new IllegalStateException("Can't delete by key for remote entity");
+        }
+        if (key.isEmpty()) {
+            throw new IllegalStateException("Key can not be empty");
+        }
+
+        if (null == options) {
+            options = new DeleteOptions();
+        }
+
+        if (options.isCascadeDelete()) {
+            throw new IllegalStateException("Cascade delete not supported");
+        }
+
+        ModelExecutionContext context = new DefaultModelExecutionContext(this.context);
+        try {
+            ex.preDeleteOneByKey(context, key);
+            DeleteOneResult result = em.withContextListeners(listeners, () -> {
+                return dao.withEvents(() -> {
+                    final int affected = dao.createCriteriaQuery(em).where(key).delete();
+                    return new DeleteOneResult(affected > 0);
+                });
+            });
+            //            Object entity = ex.processDeleteOneResult(context, id, result.success);
+            //            if (null != entity) {
+            //                result = new DeleteOneResult(result.success, entity);
+            //            }
+            ex.completeDeleteOne(context, result, null);
             return result;
         } catch (Throwable e) {
             ex.completeDeleteOne(context, null, e);

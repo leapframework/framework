@@ -88,9 +88,9 @@ public class ModelQueryExtension implements ModelQueryInterceptor {
 
 
     @Override
-    public boolean preQueryOneByFilters(ModelExecutionContext context, Map<String, Object> filters, CriteriaQuery query) {
+    public boolean preQueryOneByKey(ModelExecutionContext context, Map<String, Object> filters, CriteriaQuery query) {
         for (ModelQueryInterceptor interceptor : interceptors) {
-            if (interceptor.preQueryOneByFilters(context, filters, query)) {
+            if (interceptor.preQueryOneByKey(context, filters, query)) {
                 return true;
             }
         }
@@ -98,9 +98,9 @@ public class ModelQueryExtension implements ModelQueryInterceptor {
     }
 
     @Override
-    public Object processQueryOneRecordByFilters(ModelExecutionContext context, Map<String, Object> filters, Record record) {
+    public Object processQueryOneRecordByKey(ModelExecutionContext context, Map<String, Object> filters, Record record) {
         for (ModelQueryInterceptor interceptor : interceptors) {
-            Object v = interceptor.processQueryOneRecordByFilters(context, filters, record);
+            Object v = interceptor.processQueryOneRecordByKey(context, filters, record);
             if (null != v) {
                 return v;
             }

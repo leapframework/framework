@@ -53,9 +53,9 @@ public class ModelUpdateExtension implements ModelUpdateInterceptor, ModelReplac
     }
 
     @Override
-    public boolean processUpdatePropertiesByFilters(ModelExecutionContext context, Map<String, Object> filters, Map<String, Object> properties) {
+    public boolean processUpdatePropertiesByKey(ModelExecutionContext context, Map<String, Object> filters, Map<String, Object> properties) {
         for(ModelUpdateInterceptor interceptor : updateInterceptors) {
-            if(interceptor.processUpdatePropertiesByFilters(context, filters, properties)) {
+            if(interceptor.processUpdatePropertiesByKey(context, filters, properties)) {
                 return true;
             }
         }
@@ -104,9 +104,9 @@ public class ModelUpdateExtension implements ModelUpdateInterceptor, ModelReplac
     }
 
     @Override
-    public boolean preUpdateByFilters(ModelExecutionContext context, Map<String, Object> filters, Map<String, Object> properties) {
+    public boolean preUpdateByKey(ModelExecutionContext context, Map<String, Object> filters, Map<String, Object> properties) {
         for(ModelUpdateInterceptor interceptor : updateInterceptors) {
-            if(interceptor.preUpdateByFilters(context, filters, properties)) {
+            if(interceptor.preUpdateByKey(context, filters, properties)) {
                 return true;
             }
         }
@@ -114,9 +114,9 @@ public class ModelUpdateExtension implements ModelUpdateInterceptor, ModelReplac
     }
 
     @Override
-    public Object postUpdatePropertiesByFilters(ModelExecutionContext context, Map<String, Object> filters, int affected) {
+    public Object postUpdatePropertiesByKey(ModelExecutionContext context, Map<String, Object> filters, int affected) {
         for(ModelUpdateInterceptor interceptor : updateInterceptors) {
-            Object v = interceptor.postUpdatePropertiesByFilters(context, filters, affected);
+            Object v = interceptor.postUpdatePropertiesByKey(context, filters, affected);
             if(null != v) {
                 return v;
             }

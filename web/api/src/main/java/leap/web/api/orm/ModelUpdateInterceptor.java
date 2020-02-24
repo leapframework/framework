@@ -31,7 +31,7 @@ public interface ModelUpdateInterceptor {
     /**
      * Process the update properties.
      */
-    default boolean processUpdatePropertiesByFilters(ModelExecutionContext context, Map<String, Object> filters, Map<String, Object> properties) {
+    default boolean processUpdatePropertiesByKey(ModelExecutionContext context, Map<String, Object> filters, Map<String, Object> properties) {
         return false;
     }
 
@@ -57,11 +57,11 @@ public interface ModelUpdateInterceptor {
         return null;
     }
 
-    default boolean preUpdateByFilters(ModelExecutionContext context, Map<String, Object> filters, Map<String, Object> properties) {
+    default boolean preUpdateByKey(ModelExecutionContext context, Map<String, Object> filters, Map<String, Object> properties) {
         return false;
     }
 
-    default Object postUpdatePropertiesByFilters(ModelExecutionContext context, Map<String, Object> filters, int affected) {
+    default Object postUpdatePropertiesByKey(ModelExecutionContext context, Map<String, Object> filters, int affected) {
         return null;
     }
 

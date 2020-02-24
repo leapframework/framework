@@ -19,6 +19,8 @@ package leap.web.api.orm;
 import leap.orm.event.EntityListeners;
 import leap.web.api.mvc.params.DeleteOptions;
 
+import java.util.Map;
+
 public interface ModelDeleteExecutor {
 
     interface DeleteHandler {
@@ -35,5 +37,10 @@ public interface ModelDeleteExecutor {
     ModelDeleteExecutor withListeners(EntityListeners listeners);
 
     DeleteOneResult deleteOne(Object id, DeleteOptions options);
+
+    /**
+     * Delete a record by the unique key.
+     */
+    DeleteOneResult deleteOneByKey(Map<String, Object> key, DeleteOptions options);
 
 }

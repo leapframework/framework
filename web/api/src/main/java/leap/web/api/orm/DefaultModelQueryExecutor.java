@@ -168,13 +168,13 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
     }
 
     @Override
-    public QueryOneResult queryOneByFilters(Map<String, Object> filters, QueryOptionsBase options) {
+    public QueryOneResult queryOneByKey(Map<String, Object> key, QueryOptionsBase options) {
         if (remoteRest) {
-            throw new IllegalStateException("Can't query one by filters for remote entity");
+            throw new IllegalStateException("Can't query one by key for remote entity");
         }
 
-        if(filters.isEmpty()) {
-            throw new IllegalStateException("Can't query one by empty filters");
+        if(key.isEmpty()) {
+            throw new IllegalStateException("Can't query one by empty key");
         }
 
         final ModelExecutionContext context = new DefaultModelExecutionContext(this.context);
@@ -183,15 +183,15 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             try {
                 ex.preQueryOne(context);
 
-                CriteriaQuery<Record> query = createCriteriaQuery().where(filters);
+                CriteriaQuery<Record> query = createCriteriaQuery().where(key);
                 applySelect(query, options, new JoinModels());
 
-                ex.preQueryOneByFilters(context, filters, query);
+                ex.preQueryOneByKey(context, key, query);
                 Record record = dao.withEvents(() -> query.firstOrNull());
 
                 List<ExpandError> expandErrors = expandOne(context, record, options);
 
-                Object entity = ex.processQueryOneRecordByFilters(context, filters, record);
+                Object entity = ex.processQueryOneRecordByKey(context, key, record);
 
                 QueryOneResult result = new QueryOneResult(record, entity, expandErrors);
 

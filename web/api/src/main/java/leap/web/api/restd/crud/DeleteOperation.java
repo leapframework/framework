@@ -114,18 +114,18 @@ public class DeleteOperation extends CrudOperationBase implements CrudOperation 
             ModelExecutorContext context  = new SimpleModelExecutorContext(api, dao, am, em, params);
             ModelDeleteExecutor  executor = newDeleteExecutor(context);
 
-            Object        id      = id(params);
-            DeleteOptions options = cascadeDelete ? getWithId(params, 0) : null;
+            Object        id      = doGetId(params);
+            DeleteOptions options = doGetOptions(params);
 
             if (!cascadeDelete) {
-                Request request = Request.tryGetCurrent();
+                Request request = params.getContext().getRequest();
                 String  param   = request.getParameter("cascade_delete");
                 if (!Strings.isEmpty(param) && Converts.toBoolean(param)) {
                     throw new BadRequestException("Cascade delete not supported by this operation, check parameter 'cascade_delete'!");
                 }
             }
 
-            DeleteOneResult result = executor.deleteOne(id, options);
+            DeleteOneResult result = doDeleteOne(params, executor, id, options);
             if (null != result.entity) {
                 return ApiResponse.of(result.entity);
             } else {
@@ -135,6 +135,18 @@ public class DeleteOperation extends CrudOperationBase implements CrudOperation 
                     throw new NotFoundException(am.getName() + " '" + id.toString() + "' not found");
                 }
             }
+        }
+
+        protected Object doGetId(ActionParams params) {
+            return id(params);
+        }
+
+        protected DeleteOptions doGetOptions(ActionParams params) {
+            return cascadeDelete ? params.getLast() : null;
+        }
+
+        protected DeleteOneResult doDeleteOne(ActionParams params, ModelDeleteExecutor executor, Object id, DeleteOptions options) {
+            return executor.deleteOne(id, options);
         }
 
         protected ModelDeleteExecutor newDeleteExecutor(ModelExecutorContext context) {

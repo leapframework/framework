@@ -18,6 +18,8 @@ package leap.web.api.orm;
 
 import leap.web.api.mvc.params.DeleteOptions;
 
+import java.util.Map;
+
 public interface ModelDeleteInterceptor {
 
     @Deprecated
@@ -30,6 +32,10 @@ public interface ModelDeleteInterceptor {
     }
 
     default boolean preDeleteOne(ModelExecutionContext context, Object id) {
+        return false;
+    }
+
+    default boolean preDeleteOneByKey(ModelExecutionContext context, Map<String, Object> key) {
         return false;
     }
 

@@ -20,6 +20,8 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.web.api.mvc.params.DeleteOptions;
 
+import java.util.Map;
+
 public class ModelDeleteExtension implements ModelDeleteInterceptor {
     private static final Log log = LogFactory.get(ModelDeleteExtension.class);
 
@@ -58,6 +60,16 @@ public class ModelDeleteExtension implements ModelDeleteInterceptor {
     public boolean preDeleteOne(ModelExecutionContext context, Object id) {
         for (ModelDeleteInterceptor interceptor : interceptors) {
             if (interceptor.preDeleteOne(context, id)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean preDeleteOneByKey(ModelExecutionContext context, Map<String, Object> key) {
+        for (ModelDeleteInterceptor interceptor : interceptors) {
+            if (interceptor.preDeleteOneByKey(context, key)) {
                 return true;
             }
         }

@@ -72,9 +72,9 @@ public interface ModelQueryExecutor {
     QueryOneResult queryOne(Object id, QueryOptionsBase options);
 
     /**
-     * Finds the record by the given filter fields.
+     * Finds the record by the given key fields.
      */
-    QueryOneResult queryOneByFilters(Map<String, Object> filters, QueryOptionsBase options);
+    QueryOneResult queryOneByKey(Map<String, Object> key, QueryOptionsBase options);
 
     /**
      * Query the records of model.

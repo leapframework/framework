@@ -108,7 +108,7 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
 
         try {
             ex.preReplace(context, id, record);
-            int affected = em.withContextListeners(listeners, () -> doUpdate(context, IdOrFilters.ofId(id), record, false));
+            int affected = em.withContextListeners(listeners, () -> doUpdate(context, IdOrKey.ofId(id), record, false));
             Object entity = ex.postReplaceRecord(context, id, affected);
 
             UpdateOneResult result = new UpdateOneResult(affected, entity);
@@ -149,7 +149,7 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
                     if (null != handler) {
                         return handler.partialUpdate(context, id, properties);
                     } else {
-                        return doUpdate(context, IdOrFilters.ofId(id), properties, true);
+                        return doUpdate(context, IdOrKey.ofId(id), properties, true);
                     }
                 });
             } else {
@@ -175,26 +175,26 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
     }
 
     @Override
-    public UpdateOneResult partialUpdateOneByFilters(Map<String, Object> filters, Map<String, Object> properties) {
+    public UpdateOneResult partialUpdateOneByKey(Map<String, Object> key, Map<String, Object> properties) {
         if(em.isRemoteRest()) {
-            throw new IllegalStateException("Can't update by filters for remote entity");
+            throw new IllegalStateException("Can't update by key for remote entity");
         }
-        if(filters.isEmpty()) {
-            throw new IllegalStateException("Can't update with empty filters");
+        if(key.isEmpty()) {
+            throw new IllegalStateException("Can't update with empty key");
         }
 
         ModelExecutionContext context = new DefaultModelExecutionContext(this.context);
-        ex.processUpdatePropertiesByFilters(context, filters, properties);
+        ex.processUpdatePropertiesByKey(context, key, properties);
 
         int affected;
         try {
-            ex.preUpdateByFilters(context, filters, properties);
+            ex.preUpdateByKey(context, key, properties);
 
             affected = em.withContextListeners(listeners, () -> {
-                    return doUpdate(context, IdOrFilters.ofFilters(filters), properties, true);
+                    return doUpdate(context, IdOrKey.ofKey(key), properties, true);
             });
 
-            Object entity = ex.postUpdatePropertiesByFilters(context, filters, affected);
+            Object entity = ex.postUpdatePropertiesByKey(context, key, affected);
 
             UpdateOneResult result = new UpdateOneResult(affected, entity);
 
@@ -207,7 +207,7 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
         }
     }
 
-    protected int doUpdate(ModelExecutionContext context, IdOrFilters idOrFilters, Map<String, Object> properties, boolean partial) {
+    protected int doUpdate(ModelExecutionContext context, IdOrKey idOrFilters, Map<String, Object> properties, boolean partial) {
         Map<RelationProperty, Object[]> relationProperties = new LinkedHashMap<>();
 
         Set<String> removes = new HashSet<>();
@@ -286,7 +286,7 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
         if (relationProperties.isEmpty()) {
             result.set(executeUpdate(idOrFilters, properties));
         } else {
-            if(idOrFilters.isFilters()) {
+            if(idOrFilters.isKey()) {
                 throw new IllegalStateException("Relation properties not supported for filtering update");
             }
             dao.doTransaction((conn) -> {
@@ -350,7 +350,7 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
 //        return r;
 //    }
 
-    protected int executeUpdate(IdOrFilters idOrFilters, Map<String, Object> properties) {
+    protected int executeUpdate(IdOrKey idOrFilters, Map<String, Object> properties) {
         int r;
         if(idOrFilters.isId()) {
             final Object id = idOrFilters.id;
@@ -361,34 +361,8 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
                 ex.handler.postUpdateProperties(context, id, r);
             }
         }else {
-            r = dao.createCriteriaQuery(em).where(idOrFilters.filters).update(properties);
+            r = dao.createCriteriaQuery(em).where(idOrFilters.key).update(properties);
         }
         return r;
-    }
-
-    protected static class IdOrFilters {
-        protected final Object id;
-        protected final Map<String, Object> filters;
-
-        protected static IdOrFilters ofId(Object id) {
-            return new IdOrFilters(id, null);
-        }
-
-        protected static IdOrFilters ofFilters(Map<String, Object> filters) {
-            return new IdOrFilters(null, filters);
-        }
-
-        private IdOrFilters(Object id, Map<String, Object> filters) {
-            this.id = id;
-            this.filters = filters;
-        }
-
-        public boolean isId() {
-            return null != id;
-        }
-
-        public boolean isFilters() {
-            return null != filters;
-        }
     }
 }

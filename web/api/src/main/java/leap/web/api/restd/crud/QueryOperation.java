@@ -105,16 +105,14 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
         public Object apply(ActionParams params) {
             MApiModel am = am();
 
-            final Request request = params.getContext().getRequest();
-
             ModelExecutorContext context  = new SimpleModelExecutorContext(api, dao, am, em, params);
             ModelQueryExecutor   executor = newQueryExecutor(context);
 
-            QueryOptions options = getWithoutId(params, 0);
+            final QueryOptions    options = doGetOptions(params);
+            final QueryListResult result  = doQueryList(params, executor, options);
 
-            QueryListResult result = executor.queryList(options);
-
-            boolean hasExpandErrors = null != result.getExpandErrors() && !result.getExpandErrors().isEmpty();
+            final Request request         = params.getContext().getRequest();
+            boolean       hasExpandErrors = null != result.getExpandErrors() && !result.getExpandErrors().isEmpty();
             if (hasExpandErrors && !allowExpandErrors(request)) {
                 return ApiResponse.err(request.getMessageSource().getMessage(QUERY_EXPAND_ERROR));
             }
@@ -137,6 +135,14 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
             }
 
             return response;
+        }
+
+        protected QueryOptions doGetOptions(ActionParams params) {
+            return getWithoutId(params, 0);
+        }
+
+        protected QueryListResult doQueryList(ActionParams params, ModelQueryExecutor executor, QueryOptions options) {
+            return executor.queryList(options);
         }
 
         protected ModelQueryExecutor newQueryExecutor(ModelExecutorContext context) {

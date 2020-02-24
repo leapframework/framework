@@ -42,6 +42,6 @@ public interface ModelUpdateExecutor {
 
     UpdateOneResult partialUpdateOne(Object id, Map<String,Object> properties);
 
-    UpdateOneResult partialUpdateOneByFilters(Map<String, Object> filters, Map<String,Object> properties);
+    UpdateOneResult partialUpdateOneByKey(Map<String, Object> key, Map<String,Object> properties);
 
 }

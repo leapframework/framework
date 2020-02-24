@@ -43,11 +43,11 @@ public interface ModelFindInterceptor {
         return null;
     }
 
-    default boolean preQueryOneByFilters(ModelExecutionContext context, Map<String, Object> filters, CriteriaQuery query) {
+    default boolean preQueryOneByKey(ModelExecutionContext context, Map<String, Object> filters, CriteriaQuery query) {
         return false;
     }
 
-    default Object processQueryOneRecordByFilters(ModelExecutionContext context, Map<String, Object> filters, Record record) {
+    default Object processQueryOneRecordByKey(ModelExecutionContext context, Map<String, Object> filters, Record record) {
         return null;
     }
 
