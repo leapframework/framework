@@ -167,6 +167,44 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         });
     }
 
+    @Override
+    public QueryOneResult queryOneByFilters(Map<String, Object> filters, QueryOptionsBase options) {
+        if (remoteRest) {
+            throw new IllegalStateException("Can't query one by filters for remote entity");
+        }
+
+        if(filters.isEmpty()) {
+            throw new IllegalStateException("Can't query one by empty filters");
+        }
+
+        final ModelExecutionContext context = new DefaultModelExecutionContext(this.context);
+
+        return em.withContextListeners(listeners, () -> {
+            try {
+                ex.preQueryOne(context);
+
+                CriteriaQuery<Record> query = createCriteriaQuery().where(filters);
+                applySelect(query, options, new JoinModels());
+
+                ex.preQueryOneByFilters(context, filters, query);
+                Record record = dao.withEvents(() -> query.firstOrNull());
+
+                List<ExpandError> expandErrors = expandOne(context, record, options);
+
+                Object entity = ex.processQueryOneRecordByFilters(context, filters, record);
+
+                QueryOneResult result = new QueryOneResult(record, entity, expandErrors);
+
+                ex.completeQueryOne(context, result, null);
+
+                return result;
+            } catch (Throwable e) {
+                ex.completeQueryOne(context, null, e);
+                throw e;
+            }
+        });
+    }
+
     protected Record queryOneByHandler(ModelExecutionContext context, Object id, QueryOptionsBase options) {
         Object result = findHandler.findOrNull(context, id, options);
         if (null == result) {

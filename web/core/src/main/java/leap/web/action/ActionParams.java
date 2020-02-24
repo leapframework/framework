@@ -19,6 +19,7 @@ package leap.web.action;
 import leap.lang.accessor.IndexedGetter;
 import leap.lang.accessor.NamedGetter;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public interface ActionParams extends NamedGetter,IndexedGetter {
@@ -38,4 +39,28 @@ public interface ActionParams extends NamedGetter,IndexedGetter {
      */
     Map<String,Object> toMap();
 
+    /**
+     * Returns the argument name and values as {@link Map} in the given index range.
+     */
+    default Map<String, Object> toMap(int fromIndex, int endIndex) {
+        Map<String, Object> map = new LinkedHashMap<>();
+        for(int i = fromIndex; i<= endIndex; i++) {
+            map.put(getArguments()[i].getName(), get(i));
+        }
+        return map;
+    }
+
+    /**
+     * Returns the value of first argument.
+     */
+    default <T> T getFirst() {
+        return (T)get(0);
+    }
+
+    /**
+     * Returns the value of last argument.
+     */
+    default <T> T getLast() {
+        return (T)get(getArguments().length -1);
+    }
 }

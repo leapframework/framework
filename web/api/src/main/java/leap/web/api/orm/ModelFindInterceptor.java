@@ -23,6 +23,8 @@ import leap.orm.query.CriteriaQuery;
 import leap.web.api.mvc.params.QueryOptions;
 import leap.web.api.mvc.params.QueryOptionsBase;
 
+import java.util.Map;
+
 public interface ModelFindInterceptor {
 
     default boolean processQueryOneOptions(ModelExecutionContext context, QueryOptionsBase options) {
@@ -41,8 +43,15 @@ public interface ModelFindInterceptor {
         return null;
     }
 
+    default boolean preQueryOneByFilters(ModelExecutionContext context, Map<String, Object> filters, CriteriaQuery query) {
+        return false;
+    }
+
+    default Object processQueryOneRecordByFilters(ModelExecutionContext context, Map<String, Object> filters, Record record) {
+        return null;
+    }
+
     default void completeQueryOne(ModelExecutionContext context, QueryOneResult result, Throwable e) {
 
     }
-
 }

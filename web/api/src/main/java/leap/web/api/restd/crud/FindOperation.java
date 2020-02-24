@@ -101,17 +101,16 @@ public class FindOperation extends CrudOperationBase implements CrudOperation {
         public Object apply(ActionParams params) {
             MApiModel am = am();
 
-            final Request request = params.getContext().getRequest();
-
             ModelExecutorContext context  = new SimpleModelExecutorContext(api, dao, am, em, params);
             ModelQueryExecutor   executor = newQueryExecutor(context);
 
-            Object           id      = id(params);
-            QueryOptionsBase options = getWithId(params, 0);
+            final Object           id      = doGetId(params);
+            final QueryOptionsBase options = doGetOptions(params);
 
-            QueryOneResult result = executor.queryOne(id, options);
+            QueryOneResult result = doQueryOne(params, executor, id, options);
 
-            boolean hasExpandErrors = null != result.getExpandErrors() && !result.getExpandErrors().isEmpty();
+            final Request request         = params.getContext().getRequest();
+            boolean       hasExpandErrors = null != result.getExpandErrors() && !result.getExpandErrors().isEmpty();
             if (hasExpandErrors && !allowExpandErrors(request)) {
                 return ApiResponse.err(request.getMessageSource().getMessage(QueryOperation.QUERY_EXPAND_ERROR));
             }
@@ -134,6 +133,18 @@ public class FindOperation extends CrudOperationBase implements CrudOperation {
             }
 
             return response;
+        }
+
+        protected Object doGetId(ActionParams params) {
+            return id(params);
+        }
+
+        protected QueryOptionsBase doGetOptions(ActionParams params) {
+            return getWithId(params, 0);
+        }
+
+        protected QueryOneResult doQueryOne(ActionParams params, ModelQueryExecutor executor, Object id, QueryOptionsBase options) {
+            return executor.queryOne(id, options);
         }
 
         protected ModelQueryExecutor newQueryExecutor(ModelExecutorContext context) {

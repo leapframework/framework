@@ -100,13 +100,21 @@ public class CreateOperation extends CrudOperationBase implements CrudOperation 
         public Object apply(ActionParams params) {
             MApiModel am = api.getMetadata().getModel(model.getName());
 
-            Map<String, Object> record = getWithoutId(params, 0);
-
             ModelExecutorContext context  = new SimpleModelExecutorContext(api, dao, am, em, params);
             ModelCreateExecutor  executor = newCreateExecutor(context);
 
-            CreateOneResult result = executor.createOne(record);
+            final Map<String, Object> record = doGetRecord(params);
+
+            CreateOneResult result = doCreateRecord(params, executor, record);
             return ApiResponse.created(result.entity);
+        }
+
+        protected Map<String, Object> doGetRecord(ActionParams params) {
+            return getWithoutId(params, 0);
+        }
+
+        protected CreateOneResult doCreateRecord(ActionParams params, ModelCreateExecutor executor, Map<String, Object> record) {
+            return executor.createOne(record);
         }
 
         protected ModelCreateExecutor newCreateExecutor(ModelExecutorContext context) {
