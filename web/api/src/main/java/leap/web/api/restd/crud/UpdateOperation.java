@@ -101,13 +101,13 @@ public class UpdateOperation extends CrudOperationBase implements CrudOperation 
         public Object apply(ActionParams params) {
             MApiModel am = am();
 
-            Object              id     = id(params);
-            Map<String, Object> record = recordWithId(params);
-
             ModelExecutorContext context  = new SimpleModelExecutorContext(api, dao, am, em, params);
             ModelUpdateExecutor  executor = newUpdateExecutor(context);
 
-            UpdateOneResult result = executor.partialUpdateOne(id, record);
+            final Object              id     = doGetId(params);
+            final Map<String, Object> record = doGetRecord(params);
+
+            final UpdateOneResult result = doUpdateRecord(params, executor, id, record);
             if (null != result.entity) {
                 return ApiResponse.of(result.entity);
             }
@@ -117,6 +117,18 @@ public class UpdateOperation extends CrudOperationBase implements CrudOperation 
             } else {
                 throw new NotFoundException(am.getName() + "' " + id.toString() + "' not found");
             }
+        }
+
+        protected Object doGetId(ActionParams params) {
+            return id(params);
+        }
+
+        protected Map<String, Object> doGetRecord(ActionParams params) {
+            return params.getLast();
+        }
+
+        protected UpdateOneResult doUpdateRecord(ActionParams params, ModelUpdateExecutor executor, Object id, Map<String, Object> record) {
+            return executor.partialUpdateOne(id, record);
         }
 
         protected ModelUpdateExecutor newUpdateExecutor(ModelExecutorContext context) {

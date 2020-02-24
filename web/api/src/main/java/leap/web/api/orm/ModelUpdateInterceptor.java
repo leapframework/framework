@@ -29,6 +29,13 @@ public interface ModelUpdateInterceptor {
     }
 
     /**
+     * Process the update properties.
+     */
+    default boolean processUpdatePropertiesByFilters(ModelExecutionContext context, Map<String, Object> filters, Map<String, Object> properties) {
+        return false;
+    }
+
+    /**
      * Handles not exists property.
      */
     default boolean handleUpdatePropertyNotFound(ModelExecutionContext context, String name, Object value, Set<String> removes) {
@@ -47,6 +54,14 @@ public interface ModelUpdateInterceptor {
     }
 
     default Object postUpdateProperties(ModelExecutionContext context, Object id, int affected) {
+        return null;
+    }
+
+    default boolean preUpdateByFilters(ModelExecutionContext context, Map<String, Object> filters, Map<String, Object> properties) {
+        return false;
+    }
+
+    default Object postUpdatePropertiesByFilters(ModelExecutionContext context, Map<String, Object> filters, int affected) {
         return null;
     }
 

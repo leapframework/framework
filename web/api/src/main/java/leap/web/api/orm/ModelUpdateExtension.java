@@ -53,6 +53,16 @@ public class ModelUpdateExtension implements ModelUpdateInterceptor, ModelReplac
     }
 
     @Override
+    public boolean processUpdatePropertiesByFilters(ModelExecutionContext context, Map<String, Object> filters, Map<String, Object> properties) {
+        for(ModelUpdateInterceptor interceptor : updateInterceptors) {
+            if(interceptor.processUpdatePropertiesByFilters(context, filters, properties)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public boolean handleUpdatePropertyNotFound(ModelExecutionContext context, String name, Object value, Set<String> removes) {
         for(ModelUpdateInterceptor interceptor : updateInterceptors) {
             if(interceptor.handleUpdatePropertyNotFound(context, name, value, removes)) {
@@ -86,6 +96,27 @@ public class ModelUpdateExtension implements ModelUpdateInterceptor, ModelReplac
     public Object postUpdateProperties(ModelExecutionContext context, Object id, int affected) {
         for(ModelUpdateInterceptor interceptor : updateInterceptors) {
             Object v = interceptor.postUpdateProperties(context, id, affected);
+            if(null != v) {
+                return v;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public boolean preUpdateByFilters(ModelExecutionContext context, Map<String, Object> filters, Map<String, Object> properties) {
+        for(ModelUpdateInterceptor interceptor : updateInterceptors) {
+            if(interceptor.preUpdateByFilters(context, filters, properties)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public Object postUpdatePropertiesByFilters(ModelExecutionContext context, Map<String, Object> filters, int affected) {
+        for(ModelUpdateInterceptor interceptor : updateInterceptors) {
+            Object v = interceptor.postUpdatePropertiesByFilters(context, filters, affected);
             if(null != v) {
                 return v;
             }

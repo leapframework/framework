@@ -108,7 +108,7 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
 
         try {
             ex.preReplace(context, id, record);
-            int affected = em.withContextListeners(listeners, () -> doUpdate(context, id, record, false));
+            int affected = em.withContextListeners(listeners, () -> doUpdate(context, IdOrFilters.ofId(id), record, false));
             Object entity = ex.postReplaceRecord(context, id, affected);
 
             UpdateOneResult result = new UpdateOneResult(affected, entity);
@@ -149,7 +149,7 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
                     if (null != handler) {
                         return handler.partialUpdate(context, id, properties);
                     } else {
-                        return doUpdate(context, id, properties, true);
+                        return doUpdate(context, IdOrFilters.ofId(id), properties, true);
                     }
                 });
             } else {
@@ -174,7 +174,40 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
         }
     }
 
-    protected int doUpdate(ModelExecutionContext context, Object id, Map<String, Object> properties, boolean partial) {
+    @Override
+    public UpdateOneResult partialUpdateOneByFilters(Map<String, Object> filters, Map<String, Object> properties) {
+        if(em.isRemoteRest()) {
+            throw new IllegalStateException("Can't update by filters for remote entity");
+        }
+        if(filters.isEmpty()) {
+            throw new IllegalStateException("Can't update with empty filters");
+        }
+
+        ModelExecutionContext context = new DefaultModelExecutionContext(this.context);
+        ex.processUpdatePropertiesByFilters(context, filters, properties);
+
+        int affected;
+        try {
+            ex.preUpdateByFilters(context, filters, properties);
+
+            affected = em.withContextListeners(listeners, () -> {
+                    return doUpdate(context, IdOrFilters.ofFilters(filters), properties, true);
+            });
+
+            Object entity = ex.postUpdatePropertiesByFilters(context, filters, affected);
+
+            UpdateOneResult result = new UpdateOneResult(affected, entity);
+
+            ex.completeUpdate(context, result, null);
+
+            return result;
+        }catch (Throwable e) {
+            ex.completeUpdate(context, null, e);
+            throw e;
+        }
+    }
+
+    protected int doUpdate(ModelExecutionContext context, IdOrFilters idOrFilters, Map<String, Object> properties, boolean partial) {
         Map<RelationProperty, Object[]> relationProperties = new LinkedHashMap<>();
 
         Set<String> removes = new HashSet<>();
@@ -240,24 +273,24 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
             removes.forEach(properties::remove);
         }
 
-        if (null != ex.handler) {
-            ex.handler.preUpdateProperties(context, id, properties);
+        if (null != ex.handler && idOrFilters.isId()) {
+            ex.handler.preUpdateProperties(context, idOrFilters.id, properties);
         }
 
         if (properties.isEmpty()) {
             throw new BadRequestException("No update properties");
         }
 
-        UpdateCommand update =
-                dao.cmdUpdate(em.getEntityName()).withId(id).from(properties);
-
         AtomicInteger result = new AtomicInteger();
 
         if (relationProperties.isEmpty()) {
-            result.set(executeUpdate(update, id));
+            result.set(executeUpdate(idOrFilters, properties));
         } else {
+            if(idOrFilters.isFilters()) {
+                throw new IllegalStateException("Relation properties not supported for filtering update");
+            }
             dao.doTransaction((conn) -> {
-                result.set(executeUpdate(update, id));
+                result.set(executeUpdate(idOrFilters, properties));
 
                 if (result.get() > 0) {
                     for (Map.Entry<RelationProperty, Object[]> entry : relationProperties.entrySet()) {
@@ -284,7 +317,7 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
                                 targetName = joinEntity.getKeyFieldNames()[0];
                             }
 
-                            Object localId = id;
+                            Object localId = idOrFilters.id;
 
                             List<Map<String, Object>> batchId = new ArrayList<>();
 
@@ -293,7 +326,7 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
                             }
 
                             //delete
-                            dao.createCriteriaQuery(joinEntity).where(joinIdFieldName1 + " = ?", id).delete();
+                            dao.createCriteriaQuery(joinEntity).where(joinIdFieldName1 + " = ?", idOrFilters.id).delete();
 
                             //insert
                             dao.batchInsert(joinEntity, batchId);
@@ -307,14 +340,55 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
         return result.get();
     }
 
-    protected int executeUpdate(UpdateCommand update, Object id) {
-        int r = dao.withEvents(() -> update.execute());
+//    protected int executeUpdate(UpdateCommand update, Object id) {
+//        int r = dao.withEvents(() -> update.execute());
+//
+//        if (null != ex.handler) {
+//            ex.handler.postUpdateProperties(context, id, r);
+//        }
+//
+//        return r;
+//    }
 
-        if (null != ex.handler) {
-            ex.handler.postUpdateProperties(context, id, r);
+    protected int executeUpdate(IdOrFilters idOrFilters, Map<String, Object> properties) {
+        int r;
+        if(idOrFilters.isId()) {
+            final Object id = idOrFilters.id;
+            UpdateCommand update =
+                    dao.cmdUpdate(em.getEntityName()).withId(idOrFilters.id).from(properties);
+            r = dao.withEvents(() -> update.execute());
+            if (null != ex.handler) {
+                ex.handler.postUpdateProperties(context, id, r);
+            }
+        }else {
+            r = dao.createCriteriaQuery(em).where(idOrFilters.filters).update(properties);
         }
-
         return r;
     }
 
+    protected static class IdOrFilters {
+        protected final Object id;
+        protected final Map<String, Object> filters;
+
+        protected static IdOrFilters ofId(Object id) {
+            return new IdOrFilters(id, null);
+        }
+
+        protected static IdOrFilters ofFilters(Map<String, Object> filters) {
+            return new IdOrFilters(null, filters);
+        }
+
+        private IdOrFilters(Object id, Map<String, Object> filters) {
+            this.id = id;
+            this.filters = filters;
+        }
+
+        public boolean isId() {
+            return null != id;
+        }
+
+        public boolean isFilters() {
+            return null != filters;
+        }
+    }
 }
