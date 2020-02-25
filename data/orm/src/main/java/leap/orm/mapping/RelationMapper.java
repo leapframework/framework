@@ -172,24 +172,41 @@ public class RelationMapper implements Mapper {
         return null;
     }
 
-	protected void processManyToOneMapping(MappingConfigContext context,EntityMappingBuilder emb,RelationMappingBuilder rmb) {
+	protected void processManyToOneMapping(MappingConfigContext context,EntityMappingBuilder emb, RelationMappingBuilder rmb) {
 		//check target entity exists
 		EntityMappingBuilder targetEmb = context.getEntityMapping(rmb.getTargetEntityName());
 
 		//resolve relation's name
         autoSetRelationName(emb, targetEmb, rmb);
 
-		//resolve referenced fields
-		List<FieldMappingBuilder> referencedFields = targetEmb.getIdFieldMappings();
-		if(referencedFields.isEmpty()){
-			throw new MetadataException("Cannot create ManyToOne relation on entity '" + emb.getEntityName() +
-										"', target entity '" + targetEmb.getEntityName() + "' must defines key fields");
-		}
+        final List<FieldMappingBuilder>     targetId = targetEmb.getIdFieldMappings();
+        final List<JoinFieldMappingBuilder> joinFields = rmb.getJoinFields();
 
-		if(!rmb.getJoinFields().isEmpty()){
-			verifyManyToOneJoinFields(context, emb, targetEmb, referencedFields, rmb);
+		if(joinFields.isEmpty()) {
+            if (targetId.isEmpty()) {
+                throw new MetadataException("Cannot create ManyToOne relation on entity '" + emb.getEntityName() +
+                        "', target entity '" + targetEmb.getEntityName() + "' must defines key fields");
+            }
+            createManyToOneJoinFields(context, emb, targetEmb, targetId, rmb);
+        }else if(joinFields.size() == targetId.size() && isTargetFieldsEmpty(joinFields)) {
+            if (targetId.isEmpty()) {
+                throw new MetadataException("Cannot create ManyToOne relation on entity '" + emb.getEntityName() +
+                        "', target entity '" + targetEmb.getEntityName() + "' must defines key fields");
+            }
+            verifyManyToOneJoinFields(context, emb, targetEmb, targetId, rmb);
 		}else{
-			createManyToOneJoinFields(context, emb, targetEmb, referencedFields, rmb);
+            //resolve referenced fields
+            List<FieldMappingBuilder> referencedFields = new ArrayList<>();
+            for(JoinFieldMappingBuilder jf : rmb.getJoinFields()) {
+                FieldMappingBuilder field = targetEmb.findFieldMappingByName(jf.getReferencedFieldName());
+                if(null == field) {
+                    throw new MetadataException("Can't found referenced field '" + jf.getReferencedFieldName() +
+                            "' at entity '" + targetEmb.getEntityName() +
+                            "', check relation '" + emb.getEntityName() + "." + rmb.getName() + "'");
+                }
+                referencedFields.add(field);
+            }
+            verifyManyToOneJoinFields(context, emb, targetEmb, referencedFields, rmb);
 		}
 
 		//Auto create local fields
@@ -219,6 +236,10 @@ public class RelationMapper implements Mapper {
             createManyToOneForeignKey(context, emb, targetEmb, rmb);
         }
 	}
+
+	protected boolean isTargetFieldsEmpty(List<JoinFieldMappingBuilder> joinFields) {
+        return !joinFields.stream().anyMatch(jf -> !Strings.isEmpty(jf.getReferencedFieldName()));
+    }
 
     protected void autoSetRelationName(EntityMappingBuilder entity, EntityMappingBuilder target, RelationMappingBuilder rmb) {
         if(Strings.isEmpty(rmb.getName())) {
