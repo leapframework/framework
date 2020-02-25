@@ -53,13 +53,13 @@ public class ExpandParser {
 
                 case '(' :
 
-                    int index = expr.indexOf(')', i);
+                    int index = exprEndIndex(expr, i);
 
                     if(index < 0) {
                         throw new BadRequestException("Invalid expand : " + expr);
                     }
 
-                    String name   = expr.substring(start, i).trim();
+                    String name = expr.substring(start, i).trim();
                     String expandExpr = expr.substring(i + 1, index);
 
                     list.add(applyExpr(name, expandExpr));
@@ -97,6 +97,36 @@ public class ExpandParser {
         }
 
         return list.toArray(EMPTY_ARRAY);
+    }
+
+    protected static int exprEndIndex(String expr, int beginIndex) {
+        int k = 0;
+        int i = beginIndex;
+
+        char[] chars = expr.toCharArray();
+        for (; i < chars.length; i++) {
+            char c = chars[i];
+
+            switch (c) {
+                case '(':
+                    k++;
+                    break;
+                case ')':
+                    k--;
+                default:
+                    break;
+            }
+
+            if (k == 0) {
+                break;
+            }
+        }
+
+        if (k != 0) {
+            throw new IllegalStateException("Invalid expand expression: " + expr);
+        }
+
+        return i;
     }
 
     protected static Expand applyExpr(String name, String expandExpr) {

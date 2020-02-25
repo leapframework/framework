@@ -139,7 +139,7 @@ public class ExpandParserTest extends TestBase {
 
     @Test
     public void testWithFilters() {
-        Expand[] expands = ExpandParser.parse("a(filters:id eq bingo and name is null),b,c(filters:name eq bingo)");
+        Expand[] expands = ExpandParser.parse("a(filters:id eq bingo and name is null),b,c(filters:name eq bingo and (type is null or type eq n))");
         assertEquals(3, expands.length);
 
         Expand expand = expands[0];
@@ -159,7 +159,7 @@ public class ExpandParserTest extends TestBase {
         assertEquals("c", expand.getName());
         assertNull(expand.getSelect());
         filtersItems = FiltersParser.parse(expand.getFilters()).nodes();
-        assertEquals(3, filtersItems.length);
+        assertEquals(13, filtersItems.length);
         assertNull(expand.getOrderBy());
     }
 
