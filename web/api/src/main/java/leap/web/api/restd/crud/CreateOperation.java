@@ -50,10 +50,14 @@ public class CreateOperation extends CrudOperationBase implements CrudOperation 
             return;
         }
 
-        String path = fullModelPath(c, model);
+        String path = fullModelPath(c, model) + getPathSuffix(model);
         String name = Strings.lowerCamel(NAME, model.getName());
 
         createCrudOperation(c, context, model, path, name, null);
+    }
+
+    protected String getPathSuffix(RestdModel model) {
+        return "";
     }
 
     public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model,
@@ -66,7 +70,7 @@ public class CreateOperation extends CrudOperationBase implements CrudOperation 
             callback.preAddArguments(action);
         }
 
-        action.setFunction(createFunction(context, model, action.getArguments().size()));
+        action.setFunction(createFunction(context, model));
         addModelArgumentForCreate(context, action, model);
         if (null != callback) {
             callback.postAddArguments(action);
@@ -87,13 +91,13 @@ public class CreateOperation extends CrudOperationBase implements CrudOperation 
 
     }
 
-    protected Function<ActionParams, Object> createFunction(RestdContext context, RestdModel model, int start) {
-        return new CreateFunction(context.getApi(), context.getDao(), model, start);
+    protected Function<ActionParams, Object> createFunction(RestdContext context, RestdModel model) {
+        return new CreateFunction(context.getApi(), context.getDao(), model);
     }
 
     protected class CreateFunction extends CrudFunction {
-        public CreateFunction(Api api, Dao dao, RestdModel model, int start) {
-            super(api, dao, model, start);
+        public CreateFunction(Api api, Dao dao, RestdModel model) {
+            super(api, dao, model);
         }
 
         @Override
@@ -110,7 +114,7 @@ public class CreateOperation extends CrudOperationBase implements CrudOperation 
         }
 
         protected Map<String, Object> doGetRecord(ActionParams params) {
-            return getWithoutId(params, 0);
+            return getModelRecord(params);
         }
 
         protected CreateOneResult doCreateRecord(ActionParams params, ModelCreateExecutor executor, Map<String, Object> record) {

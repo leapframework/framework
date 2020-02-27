@@ -54,10 +54,14 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
             return;
         }
 
-        String path = fullModelPath(c, model);
+        String path = fullModelPath(c, model) + getPathSuffix(model);
         String name = Strings.lowerCamel(NAME, model.getName());
 
         createCrudOperation(c, context, model, path, name, null);
+    }
+
+    protected String getPathSuffix(RestdModel model) {
+        return "";
     }
 
     public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model,
@@ -69,7 +73,7 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
             callback.preAddArguments(action);
         }
 
-        action.setFunction(createFunction(context, model, action.getArguments().size()));
+        action.setFunction(createFunction(context, model));
 
         addArgument(context, action, QueryOptions.class, "options");
 
@@ -91,14 +95,14 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 
-    protected Function<ActionParams, Object> createFunction(RestdContext context, RestdModel model, int start) {
-        return new QueryFunction(context.getApi(), context.getDao(), model, start);
+    protected Function<ActionParams, Object> createFunction(RestdContext context, RestdModel model) {
+        return new QueryFunction(context.getApi(), context.getDao(), model);
     }
 
     protected class QueryFunction extends CrudFunction implements Function<ActionParams, Object> {
 
-        public QueryFunction(Api api, Dao dao, RestdModel model, int start) {
-            super(api, dao, model, start);
+        public QueryFunction(Api api, Dao dao, RestdModel model) {
+            super(api, dao, model);
         }
 
         @Override
@@ -138,7 +142,7 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
         }
 
         protected QueryOptions doGetOptions(ActionParams params) {
-            return getWithoutId(params, 0);
+            return (QueryOptions)params.get("options");
         }
 
         protected QueryListResult doQueryList(ActionParams params, ModelQueryExecutor executor, QueryOptions options) {

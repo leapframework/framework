@@ -55,7 +55,7 @@ public class ReplaceOperation extends CrudOperationBase implements CrudOperation
         RouteBuilder      route  = rm.createRoute(verb, path);
 
         action.setName(Strings.lowerCamel(NAME, model.getName()));
-        action.setFunction(createFunction(context, model, action.getArguments().size()));
+        action.setFunction(createFunction(context, model));
         addIdArguments(context, action, model);
         addModelArgumentForReplace(context, action, model);
         addNoContentResponse(action, model);
@@ -72,14 +72,14 @@ public class ReplaceOperation extends CrudOperationBase implements CrudOperation
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 
-    protected Function<ActionParams, Object> createFunction(RestdContext context, RestdModel model, int start) {
-        return new ReplaceFunction(context.getApi(), context.getDao(), model, start);
+    protected Function<ActionParams, Object> createFunction(RestdContext context, RestdModel model) {
+        return new ReplaceFunction(context.getApi(), context.getDao(), model);
     }
 
     protected class ReplaceFunction extends CrudFunction {
 
-        public ReplaceFunction(Api api, Dao dao, RestdModel model, int start) {
-            super(api, dao, model, start);
+        public ReplaceFunction(Api api, Dao dao, RestdModel model) {
+            super(api, dao, model);
         }
 
         @Override
@@ -87,7 +87,7 @@ public class ReplaceOperation extends CrudOperationBase implements CrudOperation
             MApiModel am = am();
 
             Object              id     = id(params);
-            Map<String, Object> record = recordWithId(params);
+            Map<String, Object> record = getModelRecord(params);
 
             ModelExecutorContext context  = new SimpleModelExecutorContext(api, dao, am, em, params);
             ModelUpdateExecutor  executor = newUpdateExecutor(context);

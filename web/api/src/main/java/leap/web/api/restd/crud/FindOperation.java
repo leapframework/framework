@@ -66,7 +66,7 @@ public class FindOperation extends CrudOperationBase implements CrudOperation {
             callback.preAddArguments(action);
         }
 
-        action.setFunction(createFunction(context, model, action.getArguments().size()));
+        action.setFunction(createFunction(context, model));
 
         addIdArguments(context, action, model);
         addArgument(context, action, QueryOptionsBase.class, "options");
@@ -87,14 +87,14 @@ public class FindOperation extends CrudOperationBase implements CrudOperation {
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 
-    protected Function<ActionParams, Object> createFunction(RestdContext context, RestdModel model, int start) {
-        return new FindFunction(context.getApi(), context.getDao(), model, start);
+    protected Function<ActionParams, Object> createFunction(RestdContext context, RestdModel model) {
+        return new FindFunction(context.getApi(), context.getDao(), model);
     }
 
     protected class FindFunction extends CrudFunction {
 
-        public FindFunction(Api api, Dao dao, RestdModel model, int start) {
-            super(api, dao, model, start);
+        public FindFunction(Api api, Dao dao, RestdModel model) {
+            super(api, dao, model);
         }
 
         @Override
@@ -140,7 +140,7 @@ public class FindOperation extends CrudOperationBase implements CrudOperation {
         }
 
         protected QueryOptionsBase doGetOptions(ActionParams params) {
-            return getWithId(params, 0);
+            return (QueryOptionsBase)params.get("options");
         }
 
         protected QueryOneResult doQueryOne(ActionParams params, ModelQueryExecutor executor, Object id, QueryOptionsBase options) {

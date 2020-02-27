@@ -67,7 +67,7 @@ public class CountOperation extends CrudOperationBase implements CrudOperation {
             callback.preAddArguments(action);
         }
 
-        action.setFunction(createFunction(context, model, action.getArguments().size()));
+        action.setFunction(createFunction(context, model));
 
         addArgument(context, action, CountOptions.class, "options");
 
@@ -89,13 +89,13 @@ public class CountOperation extends CrudOperationBase implements CrudOperation {
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 
-    protected Function<ActionParams, Object> createFunction(RestdContext context, RestdModel model, int start) {
-        return new CountFunction(context.getApi(), context.getDao(), model, start);
+    protected Function<ActionParams, Object> createFunction(RestdContext context, RestdModel model) {
+        return new CountFunction(context.getApi(), context.getDao(), model);
     }
 
     protected class CountFunction extends CrudFunction {
-        public CountFunction(Api api, Dao dao, RestdModel model, int start) {
-            super(api, dao, model, start);
+        public CountFunction(Api api, Dao dao, RestdModel model) {
+            super(api, dao, model);
         }
 
         @Override
@@ -105,7 +105,7 @@ public class CountOperation extends CrudOperationBase implements CrudOperation {
             ModelExecutorContext context  = new SimpleModelExecutorContext(api, dao, am, em, params);
             ModelQueryExecutor   executor = newQueryExecutor(context);
 
-            CountOptions options = getWithoutId(params, 0);
+            CountOptions options = get(params, "options");
 
             QueryListResult result = executor.count(options, null);
 

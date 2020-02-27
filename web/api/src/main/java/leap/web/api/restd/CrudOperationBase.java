@@ -247,22 +247,20 @@ public abstract class CrudOperationBase extends RestdOperationBase {
     }
 
     protected abstract static class CrudFunction implements Function<ActionParams, Object> {
-        protected final Api           api;
-        protected final Dao           dao;
-        protected final RestdModel    model;
-        protected final EntityMapping em;
-        protected final int           start;
-        protected final int           idLen;
+        protected final Api            api;
+        protected final Dao            dao;
+        protected final RestdModel     model;
+        protected final EntityMapping  em;
+        protected final FieldMapping[] id;
 
         private MApiModel am;
 
-        protected CrudFunction(Api api, Dao dao, RestdModel model, int start) {
+        protected CrudFunction(Api api, Dao dao, RestdModel model) {
             this.api = api;
             this.dao = dao;
             this.model = model;
             this.em = model.getEntityMapping();
-            this.start = start;
-            this.idLen = em.getKeyFieldMappings().length;
+            this.id = em.getKeyFieldMappings();
         }
 
         protected MApiModel am() {
@@ -273,27 +271,32 @@ public abstract class CrudOperationBase extends RestdOperationBase {
         }
 
         protected final Object id(ActionParams params) {
-            if (idLen > 1) {
-                Map id = new HashMap(idLen);
-                for (int i = start; i < idLen; i++) {
-                    id.put(em.getKeyFieldNames()[i], params.get(i));
+            if (id.length > 1) {
+                Map m = new HashMap(id.length);
+                for (FieldMapping fm : id) {
+                    m.put(fm.getFieldName(), params.get(fm.getFieldName()));
                 }
-                return id;
+                return m;
             } else {
-                return params.get(start);
+                return params.get(id[0].getFieldName());
             }
         }
 
-        protected final <T> T getWithId(ActionParams params, int index) {
-            return params.get(start + idLen + index);
+        protected <T> T get(ActionParams params, String name) {
+            return (T) params.get(name);
         }
 
-        protected final <T> T getWithoutId(ActionParams params, int index) {
-            return params.get(start + index);
+        protected <T> T get(ActionParams params, Class<T> type) {
+            for (int i = 0; i < params.getArguments().length; i++) {
+                if (params.getArguments()[i].getType().equals(type)) {
+                    return (T) params.get(i);
+                }
+            }
+            throw new IllegalStateException("No argument with type '" + type + "'");
         }
 
-        protected final Map recordWithId(ActionParams params) {
-            return params.get(start + idLen);
+        protected Map<String, Object> getModelRecord(ActionParams params) {
+            return (Map<String, Object>) params.get(model.getName());
         }
     }
 
