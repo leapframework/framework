@@ -34,6 +34,7 @@ import leap.web.api.restd.RestdModel;
 import leap.web.route.RouteBuilder;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -76,6 +77,7 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
 
         action.setFunction(createFunction(context, model));
 
+        addPathArguments(context, model, path, action);
         addArgument(context, action, QueryOptions.class, "options");
 
         if (null != callback) {
@@ -143,7 +145,7 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
         }
 
         protected Map<String, Object> doGetFilters(ActionParams params) {
-            return extraPathFieldsMap(params);
+            return Collections.emptyMap(); //todo: extraPathFieldsMap(params);
         }
 
         protected QueryOptions doGetOptions(ActionParams params) {
