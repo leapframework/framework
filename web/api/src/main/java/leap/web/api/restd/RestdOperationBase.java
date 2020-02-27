@@ -85,19 +85,31 @@ public abstract class RestdOperationBase {
         return false;
     }
 
-    protected String fullModelPath(ApiConfigurator api, RestdModel model) {
+    public static String fullModelPath(ApiConfigurator api, RestdModel model) {
         String basePath = api.config().getBasePath();
         return basePath.equals("/") ? model.getPath() : basePath + model.getPath();
     }
 
-    protected String fullModelPath(ApiConfigurator api, RestdModel model, String path) {
+    public static String fullModelPath(ApiConfigurator api, RestdModel model, String path) {
         String modelPath = fullModelPath(api, model);
         return Paths.suffixWithoutSlash(modelPath) + path;
     }
 
-    protected String fullPath(ApiConfigurator api, String path) {
+    public static String fullPath(ApiConfigurator api, String path) {
         String basePath = api.config().getBasePath();
         return basePath.equals("/") ? path : basePath + path;
+    }
+
+    public static String fullModelPath(RestdContext context, RestdModel model) {
+        return fullModelPath(context.getApi().getConfigurator(), model);
+    }
+
+    public static String fullModelPath(RestdContext context, RestdModel model, String path) {
+        return fullModelPath(context.getApi().getConfigurator(), model, path);
+    }
+
+    public static String fullPath(RestdContext context, String path) {
+        return fullPath(context.getApi().getConfigurator(), path);
     }
 
     protected ArgumentBuilder addArgument(RestdContext context, FuncActionBuilder action, Class<?> type, String name) {

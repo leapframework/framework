@@ -312,12 +312,52 @@ public abstract class CrudOperationBase extends RestdOperationBase {
         }
     }
 
+    protected static class Crud {
+        public static Crud of(RestdContext context, RestdModel model, String path) {
+            return new Crud(context, model, path);
+        }
+
+        private final RestdContext context;
+        private final RestdModel   model;
+        private final String       path;
+        private final boolean      rootModel;
+
+        public Crud(RestdContext context, RestdModel model, String path) {
+            this.context = context;
+            this.model = model;
+            this.path = path;
+            this.rootModel = checkIsRootModel();
+        }
+
+        public RestdContext getContext() {
+            return context;
+        }
+
+        public RestdModel getModel() {
+            return model;
+        }
+
+        public String getPath() {
+            return path;
+        }
+
+        public boolean isRootModel() {
+            return rootModel;
+        }
+
+        private boolean checkIsRootModel() {
+            final String fullModelPath = fullModelPath(context, model);
+            return path.equals(fullModelPath) || path.startsWith(fullModelPath + "/");
+        }
+    }
+
     protected abstract static class CrudFunction implements Function<ActionParams, Object>, ActionBuilder.Callback {
         protected final Api            api;
         protected final Dao            dao;
         protected final RestdModel     model;
         protected final EntityMapping  em;
         protected final FieldMapping[] id;
+        protected final boolean        rootModel;
 
         protected Action         action;
         protected FieldMapping[] pathFields;
@@ -328,6 +368,16 @@ public abstract class CrudOperationBase extends RestdOperationBase {
             this.api = api;
             this.dao = dao;
             this.model = model;
+            this.em = model.getEntityMapping();
+            this.id = em.getKeyFieldMappings();
+            this.rootModel = true;
+        }
+
+        protected CrudFunction(Crud crud) {
+            this.api = crud.getContext().getApi();
+            this.dao = crud.getContext().getDao();
+            this.model = crud.getModel();
+            this.rootModel = crud.isRootModel();
             this.em = model.getEntityMapping();
             this.id = em.getKeyFieldMappings();
         }
