@@ -17,12 +17,9 @@
 package leap.web.api.restd.crud;
 
 import leap.lang.Strings;
-import leap.orm.dao.Dao;
 import leap.web.action.ActionParams;
 import leap.web.action.FuncActionBuilder;
-import leap.web.api.Api;
 import leap.web.api.config.ApiConfigurator;
-import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.ApiResponse;
 import leap.web.api.mvc.params.CountOptions;
@@ -47,7 +44,7 @@ public class CountOperation extends CrudOperationBase implements CrudOperation {
 
     @Override
     public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model) {
-        if(!context.getConfig().allowCountModel(model.getName())) {
+        if (!context.getConfig().allowCountModel(model.getName())) {
             return;
         }
 
@@ -60,14 +57,15 @@ public class CountOperation extends CrudOperationBase implements CrudOperation {
     public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model,
                                     String path, String name, Callback callback) {
 
-        FuncActionBuilder action = new FuncActionBuilder(name);
-        RouteBuilder      route  = rm.createRoute("GET", path);
+        final Crud              crud   = Crud.of(context, model, path);
+        final FuncActionBuilder action = new FuncActionBuilder(name);
+        final RouteBuilder      route  = rm.createRoute("GET", path);
 
         if (null != callback) {
             callback.preAddArguments(action);
         }
 
-        action.setFunction(createFunction(context, model));
+        action.setFunction(createFunction(crud));
 
         addArgument(context, action, CountOptions.class, "options");
 
@@ -82,20 +80,21 @@ public class CountOperation extends CrudOperationBase implements CrudOperation {
         setCrudOperation(route, NAME);
         postConfigure(context, model, route);
 
-        if(isOperationExists(context, route)) {
+        if (isOperationExists(context, route)) {
             return;
         }
 
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 
-    protected Function<ActionParams, Object> createFunction(RestdContext context, RestdModel model) {
-        return new CountFunction(context.getApi(), context.getDao(), model);
+    protected Function<ActionParams, Object> createFunction(Crud crud) {
+        return new CountFunction(crud);
     }
 
     protected class CountFunction extends CrudFunction {
-        public CountFunction(Api api, Dao dao, RestdModel model) {
-            super(api, dao, model);
+
+        public CountFunction(Crud crud) {
+            super(crud);
         }
 
         @Override

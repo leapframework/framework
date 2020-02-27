@@ -17,12 +17,8 @@
 package leap.web.api.restd.crud;
 
 import leap.lang.Strings;
-import leap.orm.dao.Dao;
 import leap.web.action.ActionParams;
-import leap.web.action.Argument;
-import leap.web.action.ArgumentProcessor;
 import leap.web.action.FuncActionBuilder;
-import leap.web.api.Api;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.ApiResponse;
@@ -36,7 +32,6 @@ import leap.web.api.restd.RestdContext;
 import leap.web.api.restd.RestdModel;
 import leap.web.route.RouteBuilder;
 
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -56,29 +51,32 @@ public class CreateOperation extends CrudOperationBase implements CrudOperation 
         String path = fullModelPath(c, model) + getPathSuffix(model);
         String name = Strings.lowerCamel(NAME, model.getName());
 
-        createCrudOperation(c, context, model, path, name, null);
+        createCrudOperation(context, model, path, name, null);
     }
 
     protected String getPathSuffix(RestdModel model) {
         return "";
     }
 
-    public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model,
+    public void createCrudOperation(RestdContext context, RestdModel model,
                                     String path, String name, Callback callback) {
 
-        FuncActionBuilder action = new FuncActionBuilder(name);
-        RouteBuilder      route  = rm.createRoute("POST", path);
+        final Crud              crud   = Crud.of(context, model, path);
+        final FuncActionBuilder action = new FuncActionBuilder(name);
+        final RouteBuilder      route  = rm.createRoute("POST", path);
 
         if (null != callback) {
             callback.preAddArguments(action);
         }
 
-        action.setFunction(createFunction(context, model));
+        action.setFunction(createFunction(crud));
         addPathArguments(context, model, path, action);
         addModelArgumentForCreate(context, action, model);
+
         if (null != callback) {
             callback.postAddArguments(action);
         }
+
         addModelResponse(action, model).setStatus(201);
 
         preConfigure(context, model, action);
@@ -91,16 +89,17 @@ public class CreateOperation extends CrudOperationBase implements CrudOperation 
             return;
         }
 
-        c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
+        context.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 
-    protected Function<ActionParams, Object> createFunction(RestdContext context, RestdModel model) {
-        return new CreateFunction(context.getApi(), context.getDao(), model);
+    protected Function<ActionParams, Object> createFunction(Crud crud) {
+        return new CreateFunction(crud);
     }
 
     protected class CreateFunction extends CrudFunction {
-        public CreateFunction(Api api, Dao dao, RestdModel model) {
-            super(api, dao, model);
+
+        public CreateFunction(Crud crud) {
+            super(crud);
         }
 
         @Override

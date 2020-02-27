@@ -18,11 +18,9 @@ package leap.web.api.restd.crud;
 
 import leap.lang.Strings;
 import leap.lang.convert.Converts;
-import leap.orm.dao.Dao;
 import leap.web.Request;
 import leap.web.action.ActionParams;
 import leap.web.action.FuncActionBuilder;
-import leap.web.api.Api;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.ApiResponse;
@@ -57,26 +55,29 @@ public class DeleteOperation extends CrudOperationBase implements CrudOperation 
         String path = fullModelPath(c, model) + getIdPath(model);
         String name = Strings.lowerCamel(NAME, model.getName());
 
-        createCrudOperation(c, context, model, path, name, null);
+        createCrudOperation(context, model, path, name, null);
     }
 
-    public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model,
+    public void createCrudOperation(RestdContext context, RestdModel model,
                                     String path, String name, Callback callback) {
-        FuncActionBuilder action = new FuncActionBuilder(name);
-        RouteBuilder      route  = rm.createRoute("DELETE", path);
+
+        final Crud              crud   = Crud.of(context, model, path);
+        final FuncActionBuilder action = new FuncActionBuilder(name);
+        final RouteBuilder      route  = rm.createRoute("DELETE", path);
 
         if (null != callback) {
             callback.preAddArguments(action);
         }
 
-        action.setFunction(createFunction(context, model));
+        action.setFunction(createFunction(crud));
 
         addPathArguments(context, model, path, action);
-//        addIdArguments(context, action, model);
-        addOtherArguments(c, context, action, model);
+        addOtherArguments(context, action, model);
+
         if (null != callback) {
             callback.postAddArguments(action);
         }
+
         addNoContentResponse(action, model);
 
         preConfigure(context, model, action);
@@ -88,23 +89,23 @@ public class DeleteOperation extends CrudOperationBase implements CrudOperation 
             return;
         }
 
-        c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
+        context.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 
-    protected void addOtherArguments(ApiConfigurator c, RestdContext context, FuncActionBuilder action, RestdModel model) {
+    protected void addOtherArguments(RestdContext context, FuncActionBuilder action, RestdModel model) {
         addArgument(context, action, DeleteOptions.class, "options");
     }
 
-    protected Function<ActionParams, Object> createFunction(RestdContext context, RestdModel model) {
-        return new DeleteFunction(context.getApi(), context.getDao(), model, true);
+    protected Function<ActionParams, Object> createFunction(Crud crud) {
+        return new DeleteFunction(crud, true);
     }
 
     protected class DeleteFunction extends CrudFunction {
 
         private final boolean cascadeDelete;
 
-        public DeleteFunction(Api api, Dao dao, RestdModel model, boolean cascadeDelete) {
-            super(api, dao, model);
+        public DeleteFunction(Crud crud, boolean cascadeDelete) {
+            super(crud);
             this.cascadeDelete = cascadeDelete;
         }
 

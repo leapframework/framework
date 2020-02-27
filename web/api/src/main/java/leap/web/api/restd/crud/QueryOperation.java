@@ -17,11 +17,9 @@
 package leap.web.api.restd.crud;
 
 import leap.lang.Strings;
-import leap.orm.dao.Dao;
 import leap.web.Request;
 import leap.web.action.ActionParams;
 import leap.web.action.FuncActionBuilder;
-import leap.web.api.Api;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.ApiResponse;
@@ -59,23 +57,25 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
         String path = fullModelPath(c, model) + getPathSuffix(model);
         String name = Strings.lowerCamel(NAME, model.getName());
 
-        createCrudOperation(c, context, model, path, name, null);
+        createCrudOperation(context, model, path, name, null);
     }
 
     protected String getPathSuffix(RestdModel model) {
         return "";
     }
 
-    public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model,
+    public void createCrudOperation(RestdContext context, RestdModel model,
                                     String path, String name, Callback callback) {
-        FuncActionBuilder action = new FuncActionBuilder(name);
-        RouteBuilder      route  = rm.createRoute("GET", path);
+
+        final Crud              crud   = Crud.of(context, model, path);
+        final FuncActionBuilder action = new FuncActionBuilder(name);
+        final RouteBuilder      route  = rm.createRoute("GET", path);
 
         if (null != callback) {
             callback.preAddArguments(action);
         }
 
-        action.setFunction(createFunction(context, model));
+        action.setFunction(createFunction(crud));
 
         addPathArguments(context, model, path, action);
         addArgument(context, action, QueryOptions.class, "options");
@@ -95,17 +95,17 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
             return;
         }
 
-        c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
+        context.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 
-    protected Function<ActionParams, Object> createFunction(RestdContext context, RestdModel model) {
-        return new QueryFunction(context.getApi(), context.getDao(), model);
+    protected Function<ActionParams, Object> createFunction(Crud crud) {
+        return new QueryFunction(crud);
     }
 
     protected class QueryFunction extends CrudFunction implements Function<ActionParams, Object> {
 
-        public QueryFunction(Api api, Dao dao, RestdModel model) {
-            super(api, dao, model);
+        public QueryFunction(Crud crud) {
+            super(crud);
         }
 
         @Override

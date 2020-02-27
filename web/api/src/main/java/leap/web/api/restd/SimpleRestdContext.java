@@ -16,26 +16,28 @@
 
 package leap.web.api.restd;
 
+import leap.core.web.path.PathTemplateFactory;
 import leap.orm.dao.Dao;
 import leap.web.api.Api;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.config.model.RestdConfig;
 import leap.web.route.Routes;
 
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class SimpleRestdContext implements RestdContext {
 
-    protected Api             api;
-    protected RestdConfig     config;
-    protected Dao             dao;
-    protected Set<RestdModel> models = new LinkedHashSet<>();
+    protected Api                 api;
+    protected RestdConfig         config;
+    protected Dao                 dao;
+    protected Set<RestdModel>     models = new LinkedHashSet<>();
+    protected PathTemplateFactory pathTemplateFactory;
 
-    public SimpleRestdContext(Api api, RestdConfig config) {
-        this.api    = api;
+    public SimpleRestdContext(Api api, PathTemplateFactory pathTemplateFactory,  RestdConfig config) {
+        this.api = api;
         this.config = config;
+        this.pathTemplateFactory = pathTemplateFactory;
     }
 
     @Override
@@ -51,6 +53,11 @@ public class SimpleRestdContext implements RestdContext {
     @Override
     public RestdConfig getConfig() {
         return config;
+    }
+
+    @Override
+    public PathTemplateFactory getPathTemplateFactory() {
+        return pathTemplateFactory;
     }
 
     @Override

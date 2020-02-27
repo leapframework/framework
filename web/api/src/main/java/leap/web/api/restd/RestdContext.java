@@ -16,10 +16,13 @@
 
 package leap.web.api.restd;
 
+import leap.core.web.path.PathTemplateFactory;
 import leap.orm.dao.Dao;
 import leap.web.api.Api;
 import leap.web.api.config.ApiConfig;
+import leap.web.api.config.ApiConfigurator;
 import leap.web.api.config.model.RestdConfig;
+import leap.web.route.Route;
 import leap.web.route.Routes;
 
 import java.util.Set;
@@ -42,9 +45,28 @@ public interface RestdContext {
     ApiConfig getApiConfig();
 
     /**
+     * Returns the {@link ApiConfigurator}.
+     */
+    default ApiConfigurator getApiConfigurator() {
+        return getApi().getConfigurator();
+    }
+
+    /**
+     * Shortcut of {@link #getApiConfigurator()#addDynamicRoute(Route)}.
+     */
+    default void addDynamicRoute(Route route) {
+        getApiConfigurator().addDynamicRoute(route);
+    }
+
+    /**
      * Returns the dao object.
      */
     Dao getDao();
+
+    /**
+     * Returns the {@link PathTemplateFactory}.
+     */
+    PathTemplateFactory getPathTemplateFactory();
 
     /**
      * Returns the included models of restd api.

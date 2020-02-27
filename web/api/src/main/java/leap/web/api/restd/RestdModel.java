@@ -49,6 +49,10 @@ public class RestdModel extends MapAttributeAccessor {
         return entityMapping;
     }
 
+    public <T> T attr(Class<T> type) {
+        return (T)getAttribute(type.getName());
+    }
+
     public static final class Builder implements Buildable<RestdModel>{
 
         protected Map<String,Object> attrs;

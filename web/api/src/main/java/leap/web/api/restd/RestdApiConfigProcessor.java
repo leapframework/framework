@@ -19,6 +19,7 @@ package leap.web.api.restd;
 import leap.core.annotation.Inject;
 import leap.core.ds.DataSourceManager;
 import leap.core.meta.MTypeContainer;
+import leap.core.web.path.PathTemplateFactory;
 import leap.lang.Strings;
 import leap.lang.meta.MComplexType;
 import leap.lang.path.AntPathPattern;
@@ -46,12 +47,13 @@ import java.util.*;
  */
 public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataProcessor {
 
-    protected @Inject App                app;
-    protected @Inject RestdStrategy      strategy;
-    protected @Inject RestdProcessor[]   processors;
-    protected @Inject OrmMTypeFactory    omf;
-    protected @Inject OrmRegistry        ormRegistry;
-    protected @Inject ApiMetadataFactory amf;
+    protected @Inject App                 app;
+    protected @Inject RestdStrategy       strategy;
+    protected @Inject RestdProcessor[]    processors;
+    protected @Inject OrmMTypeFactory     omf;
+    protected @Inject OrmRegistry         ormRegistry;
+    protected @Inject ApiMetadataFactory  amf;
+    protected @Inject PathTemplateFactory ptf;
 
     @Override
     public void preProcess(Api api) {
@@ -60,15 +62,15 @@ public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataP
             return;
         }
 
-        SimpleRestdContext restdContext = new SimpleRestdContext(api, rc);
+        SimpleRestdContext restdContext = new SimpleRestdContext(api, ptf, rc);
 
-        if(!rc.isNoDataSource()) {
-            OrmContext oc = lookupOrmContext(rc);
-            OrmMetadata om = oc.getMetadata();
-            Dao dao = oc.getDao();
+        if (!rc.isNoDataSource()) {
+            OrmContext  oc  = lookupOrmContext(rc);
+            OrmMetadata om  = oc.getMetadata();
+            Dao         dao = oc.getDao();
 
-            Set<EntityMapping> ormModels = computeOrmModels(rc, om);
-            Set<RestdModel> restdModels = createRestdModels(api, rc, oc, ormModels);
+            Set<EntityMapping> ormModels   = computeOrmModels(rc, om);
+            Set<RestdModel>    restdModels = createRestdModels(api, rc, oc, ormModels);
 
             restdContext.setDao(dao);
             restdContext.setModels(Collections.unmodifiableSet(restdModels));
@@ -82,12 +84,12 @@ public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataP
     @Override
     public void preProcess(ApiMetadataContext context, ApiMetadataBuilder m) {
         RestdContext restdContext = context.getApi().getConfig().removeExtension(RestdContext.class);
-        if(null == restdContext) {
+        if (null == restdContext) {
             return;
         }
 
         Dao dao = restdContext.getDao();
-        if(null == dao) {
+        if (null == dao) {
             return;
         }
 
@@ -96,7 +98,7 @@ public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataP
         //create models.
         MTypeContainer mtc = context.getMTypeContainer();
         for (RestdModel rm : restdContext.getModels()) {
-            if(m.tryGetModel(rm.getName()) == null) {
+            if (m.tryGetModel(rm.getName()) == null) {
                 MComplexType mtype = omf.getMType(mtc, oc, rm.getEntityMapping());
 
                 if (null == m.tryGetModel(rm.getEntityMapping().getEntityClass())) {
@@ -105,7 +107,7 @@ public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataP
             }
         }
 
-        for(MComplexType ct : mtc.getComplexTypes().values()) {
+        for (MComplexType ct : mtc.getComplexTypes().values()) {
             amf.tryAddModel(context, m, ct);
         }
     }
@@ -115,29 +117,29 @@ public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataP
 
         final RestdConfig rc = context.getConfig();
 
-        for(RestdProcessor p : processors) {
+        for (RestdProcessor p : processors) {
             p.preProcessApi(c, context);
         }
 
-        for(RestdModel model : context.getModels()) {
-        	if(model.getEntityMapping().isRemote() && !rc.isAllowRemoteEntity()){
-        		continue;
-        	}
-            for(RestdProcessor p : processors) {
+        for (RestdModel model : context.getModels()) {
+            if (model.getEntityMapping().isRemote() && !rc.isAllowRemoteEntity()) {
+                continue;
+            }
+            for (RestdProcessor p : processors) {
                 p.preProcessModel(c, context, model);
             }
         }
 
-        for(RestdModel model : context.getModels()) {
-        	if(model.getEntityMapping().isRemote() && !rc.isAllowRemoteEntity()){
-        		continue;
-        	}
-            for(RestdProcessor p : processors) {
+        for (RestdModel model : context.getModels()) {
+            if (model.getEntityMapping().isRemote() && !rc.isAllowRemoteEntity()) {
+                continue;
+            }
+            for (RestdProcessor p : processors) {
                 p.postProcessModel(c, context, model);
             }
         }
 
-        for(RestdProcessor p : processors) {
+        for (RestdProcessor p : processors) {
             p.postProcessApi(c, context);
         }
 
@@ -146,7 +148,7 @@ public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataP
     protected OrmContext lookupOrmContext(RestdConfig c) {
         OrmContext oc = c.getOrmContext();
 
-        if(null == oc) {
+        if (null == oc) {
             String dataSourceName =
                     Strings.firstNotEmpty(c.getDataSourceName(), DataSourceManager.DEFAULT_DATASOURCE_NAME);
 
@@ -164,17 +166,17 @@ public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataP
 
         for (EntityMapping em : ormModels) {
             RestdConfig.Model cm = c.getModel(em.getEntityName());
-            if(null == cm && !c.isAutoConfigureEntities()) {
+            if (null == cm && !c.isAutoConfigureEntities()) {
                 continue;
             }
 
             RestdModel.Builder rm = new RestdModel.Builder(em);
-            if(null != cm && !Strings.isEmpty(cm.getPath())) {
+            if (null != cm && !Strings.isEmpty(cm.getPath())) {
                 rm.setPath(cm.getPath());
-            }else {
+            } else {
                 rm.setPath(strategy.getDefaultModelPath(em.getEntityName()));
             }
-            if(null != cm) {
+            if (null != cm) {
                 rm.setAttrs(cm.getAttributes());
             }
             restdModels.add(rm.build());
@@ -187,8 +189,8 @@ public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataP
         List<EntityMapping> ems = om.getEntityMappingSnapshotList();
 
         //computes inclusion first.
-        Set<EntityMapping> includes = new LinkedHashSet<>();
-        boolean includesAll = c.getIncludedModels().isEmpty();
+        Set<EntityMapping> includes    = new LinkedHashSet<>();
+        boolean            includesAll = c.getIncludedModels().isEmpty();
         if (!includesAll) {
             ems.forEach(em -> {
                 c.getIncludedModels().forEach(pattern -> {

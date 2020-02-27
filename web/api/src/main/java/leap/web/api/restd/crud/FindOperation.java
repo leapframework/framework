@@ -17,11 +17,9 @@
 package leap.web.api.restd.crud;
 
 import leap.lang.Strings;
-import leap.orm.dao.Dao;
 import leap.web.Request;
 import leap.web.action.ActionParams;
 import leap.web.action.FuncActionBuilder;
-import leap.web.api.Api;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.ApiResponse;
@@ -54,26 +52,29 @@ public class FindOperation extends CrudOperationBase implements CrudOperation {
         String path = fullModelPath(c, model) + getIdPath(model);
         String name = Strings.lowerCamel(NAME, model.getName());
 
-        createCrudOperation(c, context, model, path, name, null);
+        createCrudOperation(context, model, path, name, null);
     }
 
-    public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model,
+    public void createCrudOperation(RestdContext context, RestdModel model,
                                     String path, String name, Callback callback) {
-        FuncActionBuilder action = new FuncActionBuilder(name);
-        RouteBuilder      route  = rm.createRoute("GET", path);
+
+        final Crud              crud   = Crud.of(context, model, path);
+        final FuncActionBuilder action = new FuncActionBuilder(name);
+        final RouteBuilder      route  = rm.createRoute("GET", path);
 
         if (null != callback) {
             callback.preAddArguments(action);
         }
 
-        action.setFunction(createFunction(context, model));
+        action.setFunction(createFunction(crud));
 
         addPathArguments(context, model, path, action);
-//        addIdArguments(context, action, model);
         addArgument(context, action, QueryOptionsBase.class, "options");
+
         if (null != callback) {
             callback.postAddArguments(action);
         }
+
         addModelResponse(action, model);
 
         preConfigure(context, model, action);
@@ -85,17 +86,17 @@ public class FindOperation extends CrudOperationBase implements CrudOperation {
             return;
         }
 
-        c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
+        context.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 
-    protected Function<ActionParams, Object> createFunction(RestdContext context, RestdModel model) {
-        return new FindFunction(context.getApi(), context.getDao(), model);
+    protected Function<ActionParams, Object> createFunction(Crud crud) {
+        return new FindFunction(crud);
     }
 
     protected class FindFunction extends CrudFunction {
 
-        public FindFunction(Api api, Dao dao, RestdModel model) {
-            super(api, dao, model);
+        public FindFunction(Crud crud) {
+            super(crud);
         }
 
         @Override
@@ -141,7 +142,7 @@ public class FindOperation extends CrudOperationBase implements CrudOperation {
         }
 
         protected QueryOptionsBase doGetOptions(ActionParams params) {
-            return (QueryOptionsBase)params.get("options");
+            return (QueryOptionsBase) params.get("options");
         }
 
         protected QueryOneResult doQueryOne(ActionParams params, ModelQueryExecutor executor, Object id, QueryOptionsBase options) {

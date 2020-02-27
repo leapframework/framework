@@ -17,10 +17,8 @@
 package leap.web.api.restd.crud;
 
 import leap.lang.Strings;
-import leap.orm.dao.Dao;
 import leap.web.action.ActionParams;
 import leap.web.action.FuncActionBuilder;
-import leap.web.api.Api;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.ApiResponse;
@@ -51,13 +49,13 @@ public class ReplaceOperation extends CrudOperationBase implements CrudOperation
         String verb = "PUT";
         String path = fullModelPath(c, model) + getIdPath(model);
 
-        FuncActionBuilder action = new FuncActionBuilder();
-        RouteBuilder      route  = rm.createRoute(verb, path);
+        final Crud              crud   = Crud.of(context, model, path);
+        final FuncActionBuilder action = new FuncActionBuilder();
+        final RouteBuilder      route  = rm.createRoute(verb, path);
 
         action.setName(Strings.lowerCamel(NAME, model.getName()));
-        action.setFunction(createFunction(context, model));
+        action.setFunction(createFunction(crud));
         addPathArguments(context, model, path, action);
-//        addIdArguments(context, action, model);
         addModelArgumentForReplace(context, action, model);
         addNoContentResponse(action, model);
 
@@ -73,14 +71,14 @@ public class ReplaceOperation extends CrudOperationBase implements CrudOperation
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 
-    protected Function<ActionParams, Object> createFunction(RestdContext context, RestdModel model) {
-        return new ReplaceFunction(context.getApi(), context.getDao(), model);
+    protected Function<ActionParams, Object> createFunction(Crud crud) {
+        return new ReplaceFunction(crud);
     }
 
     protected class ReplaceFunction extends CrudFunction {
 
-        public ReplaceFunction(Api api, Dao dao, RestdModel model) {
-            super(api, dao, model);
+        public ReplaceFunction(Crud crud) {
+            super(crud);
         }
 
         @Override

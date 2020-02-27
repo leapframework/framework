@@ -20,6 +20,9 @@ import leap.web.api.config.ApiConfigurator;
 
 public interface CrudOperation {
 
+    /**
+     * Create crud operation(s) for the model.
+     */
     void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model);
 
 }

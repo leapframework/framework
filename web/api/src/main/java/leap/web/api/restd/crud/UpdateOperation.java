@@ -17,10 +17,8 @@
 package leap.web.api.restd.crud;
 
 import leap.lang.Strings;
-import leap.orm.dao.Dao;
 import leap.web.action.ActionParams;
 import leap.web.action.FuncActionBuilder;
-import leap.web.api.Api;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.ApiResponse;
@@ -54,26 +52,28 @@ public class UpdateOperation extends CrudOperationBase implements CrudOperation 
         String path = fullModelPath(c, model) + getIdPath(model);
         String name = Strings.lowerCamel(NAME, model.getName());
 
-        createCrudOperation(c, context, model, path, name, null);
+        createCrudOperation(context, model, path, name, null);
     }
 
-    public void createCrudOperation(ApiConfigurator c, RestdContext context, RestdModel model,
+    public void createCrudOperation(RestdContext context, RestdModel model,
                                     String path, String name, Callback callback) {
 
-        FuncActionBuilder action = new FuncActionBuilder(name);
-        RouteBuilder      route  = rm.createRoute("PATCH", path);
+        final Crud              crud   = Crud.of(context, model, path);
+        final FuncActionBuilder action = new FuncActionBuilder(name);
+        final RouteBuilder      route  = rm.createRoute("PATCH", path);
 
         if (null != callback) {
             callback.preAddArguments(action);
         }
 
-        action.setFunction(createFunction(context, model));
+        action.setFunction(createFunction(crud));
         addPathArguments(context, model, path, action);
-//        addIdArguments(context, action, model);
         addModelArgumentForUpdate(context, action, model);
+
         if (null != callback) {
             callback.postAddArguments(action);
         }
+
         addNoContentResponse(action, model);
 
         preConfigure(context, model, action);
@@ -85,17 +85,17 @@ public class UpdateOperation extends CrudOperationBase implements CrudOperation 
             return;
         }
 
-        c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
+        context.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 
-    protected Function<ActionParams, Object> createFunction(RestdContext context, RestdModel model) {
-        return new UpdateFunction(context.getApi(), context.getDao(), model);
+    protected Function<ActionParams, Object> createFunction(Crud crud) {
+        return new UpdateFunction(crud);
     }
 
     protected class UpdateFunction extends CrudFunction {
 
-        public UpdateFunction(Api api, Dao dao, RestdModel model) {
-            super(api, dao, model);
+        public UpdateFunction(Crud crud) {
+            super(crud);
         }
 
         @Override

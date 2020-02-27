@@ -312,7 +312,7 @@ public abstract class CrudOperationBase extends RestdOperationBase {
         }
     }
 
-    protected static class Crud {
+    public static class Crud {
         public static Crud of(RestdContext context, RestdModel model, String path) {
             return new Crud(context, model, path);
         }
@@ -335,6 +335,10 @@ public abstract class CrudOperationBase extends RestdOperationBase {
 
         public RestdModel getModel() {
             return model;
+        }
+
+        public <T> T getModelAttr(Class<T> type) {
+            return (T)model.getAttribute(type.getName());
         }
 
         public String getPath() {
@@ -364,14 +368,14 @@ public abstract class CrudOperationBase extends RestdOperationBase {
 
         private MApiModel am;
 
-        protected CrudFunction(Api api, Dao dao, RestdModel model) {
-            this.api = api;
-            this.dao = dao;
-            this.model = model;
-            this.em = model.getEntityMapping();
-            this.id = em.getKeyFieldMappings();
-            this.rootModel = true;
-        }
+//        protected CrudFunction(Api api, Dao dao, RestdModel model) {
+//            this.api = api;
+//            this.dao = dao;
+//            this.model = model;
+//            this.em = model.getEntityMapping();
+//            this.id = em.getKeyFieldMappings();
+//            this.rootModel = true;
+//        }
 
         protected CrudFunction(Crud crud) {
             this.api = crud.getContext().getApi();
