@@ -134,6 +134,10 @@ public class FuncActionBuilder extends ExtensibleBase implements Buildable<FuncA
 
         extensions.forEach(action::setExtension);
 
+        if(function instanceof ActionBuilder.Callback) {
+            ((ActionBuilder.Callback) function).setAction(action);
+        }
+
         return action;
     }
 

@@ -35,6 +35,7 @@ import leap.web.route.RouteBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -141,12 +142,21 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
             return response;
         }
 
+        protected Map<String, Object> doGetFilters(ActionParams params) {
+            return extraPathFieldsMap(params);
+        }
+
         protected QueryOptions doGetOptions(ActionParams params) {
-            return (QueryOptions)params.get("options");
+            return (QueryOptions) params.get("options");
         }
 
         protected QueryListResult doQueryList(ActionParams params, ModelQueryExecutor executor, QueryOptions options) {
-            return executor.queryList(options);
+            final Map<String, Object> filters = doGetFilters(params);
+            if (null == filters || filters.isEmpty()) {
+                return executor.queryList(options);
+            } else {
+                return executor.queryList(options, filters);
+            }
         }
 
         protected ModelQueryExecutor newQueryExecutor(ModelExecutorContext context) {

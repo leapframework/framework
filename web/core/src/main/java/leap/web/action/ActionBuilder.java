@@ -23,6 +23,10 @@ import leap.lang.Classes;
 
 public interface ActionBuilder extends Buildable<Action> {
 
+    interface Callback {
+        void setAction(Action action);
+    }
+
 	/**
 	 * Required.
      *

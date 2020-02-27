@@ -19,7 +19,6 @@ package leap.web.api.restd;
 import leap.core.annotation.Inject;
 import leap.core.web.path.PathTemplate;
 import leap.core.web.path.PathTemplateFactory;
-import leap.lang.Objects2;
 import leap.lang.Strings;
 import leap.lang.meta.MCollectionType;
 import leap.lang.meta.MComplexTypeRef;
@@ -35,10 +34,7 @@ import leap.web.api.orm.ModelExecutorFactory;
 import leap.web.exception.BadRequestException;
 import leap.web.route.RouteBuilder;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 public abstract class CrudOperationBase extends RestdOperationBase {
@@ -71,14 +67,14 @@ public abstract class CrudOperationBase extends RestdOperationBase {
 
         int i = 0;
         for (String name : pt.getTemplateVariables()) {
-            if(action.getArguments().stream().anyMatch(a -> a.getName().equals(name) && a.isPathParam())) {
+            if (action.getArguments().stream().anyMatch(a -> a.getName().equals(name) && a.isPathParam())) {
                 continue;
             }
 
             FieldMapping fm = getParamFieldMapping(model.getEntityMapping(), name, mapping);
-            if(null != fm && fm.isPrimaryKey()) {
+            if (null != fm && fm.isPrimaryKey()) {
                 addIdArgument(context, action, model, fm);
-            }else {
+            } else {
                 //            MApiParameterBuilder p = new MApiParameterBuilder();
                 //            p.setName(name);
                 //            p.setLocation(MApiParameter.Location.PATH);
@@ -316,12 +312,15 @@ public abstract class CrudOperationBase extends RestdOperationBase {
         }
     }
 
-    protected abstract static class CrudFunction implements Function<ActionParams, Object> {
+    protected abstract static class CrudFunction implements Function<ActionParams, Object>, ActionBuilder.Callback {
         protected final Api            api;
         protected final Dao            dao;
         protected final RestdModel     model;
         protected final EntityMapping  em;
         protected final FieldMapping[] id;
+
+        protected Action         action;
+        protected FieldMapping[] pathFields;
 
         private MApiModel am;
 
@@ -331,6 +330,37 @@ public abstract class CrudOperationBase extends RestdOperationBase {
             this.model = model;
             this.em = model.getEntityMapping();
             this.id = em.getKeyFieldMappings();
+        }
+
+        @Override
+        public void setAction(Action action) {
+            this.action = action;
+            this.pathFields = resolvePathFields(action);
+        }
+
+        protected Map<String, Object> extraPathFieldsMap(ActionParams params) {
+            if (pathFields.length == 0) {
+                return Collections.emptyMap();
+            } else {
+                Map<String, Object> m = new LinkedHashMap<>(pathFields.length);
+                for (FieldMapping field : pathFields) {
+                    m.put(field.getFieldName(), params.get(field.getFieldName()));
+                }
+                return m;
+            }
+        }
+
+        private FieldMapping[] resolvePathFields(Action action) {
+            List<FieldMapping> list = new ArrayList<>();
+            for (Argument argument : action.getArguments()) {
+                if (argument.isPathParam()) {
+                    FieldMapping field = em.tryGetFieldMapping(argument.getName());
+                    if (null != field) {
+                        list.add(field);
+                    }
+                }
+            }
+            return list.toArray(new FieldMapping[0]);
         }
 
         protected MApiModel am() {
@@ -400,9 +430,9 @@ public abstract class CrudOperationBase extends RestdOperationBase {
                     for (FieldMapping field : fieldsAtPath) {
                         final String name = field.getFieldName();
 
-                        Object valueAtPath = params.get(name);
+                        Object valueAtPath   = params.get(name);
                         Object valueAtRecord = record.get(name);
-                        if(isValueChanged(field, valueAtPath, valueAtRecord)) {
+                        if (isValueChanged(field, valueAtPath, valueAtRecord)) {
                             throw new BadRequestException("Can't change '" + name + "' from value '" + valueAtPath +
                                     "' at path to value '" + valueAtRecord + "' at creating record");
                         }
@@ -414,15 +444,15 @@ public abstract class CrudOperationBase extends RestdOperationBase {
         }
 
         private boolean isValueChanged(FieldMapping field, Object valueAtPath, Object valueAtRecord) {
-            if(null == valueAtRecord) {
+            if (null == valueAtRecord) {
                 return false;
             }
             boolean same;
-            if(valueAtPath instanceof String) {
+            if (valueAtPath instanceof String) {
                 same = valueAtPath.equals(valueAtRecord.toString());
-            }else if(valueAtRecord instanceof String){
+            } else if (valueAtRecord instanceof String) {
                 same = valueAtPath.toString().equals(valueAtRecord);
-            }else {
+            } else {
                 same = valueAtPath.equals(valueAtRecord);
             }
             return !same;
