@@ -70,8 +70,8 @@ public class CreateOperation extends CrudOperationBase implements CrudOperation 
         }
 
         action.setFunction(createFunction(crud));
-        addPathArguments(context, model, path, action);
-        addModelArgumentForCreate(context, action, model);
+        addPathArguments(crud, action);
+        addModelArgumentForCreate(crud, action);
 
         if (null != callback) {
             callback.postAddArguments(action);

@@ -77,7 +77,7 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
 
         action.setFunction(createFunction(crud));
 
-        addPathArguments(context, model, path, action);
+        addPathArguments(crud, action);
         addArgument(context, action, QueryOptions.class, "options");
 
         if (null != callback) {
@@ -145,7 +145,11 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
         }
 
         protected Map<String, Object> doGetFilters(ActionParams params) {
-            return Collections.emptyMap(); //todo: extraPathFieldsMap(params);
+            if(rootModel) {
+                return extraPathFieldsMap(params);
+            }else {
+                return Collections.emptyMap();
+            }
         }
 
         protected QueryOptions doGetOptions(ActionParams params) {

@@ -55,12 +55,12 @@ public abstract class CrudOperationBase extends RestdOperationBase {
         setApiExtension(route, "crud", operation);
     }
 
-    protected int addPathArguments(RestdContext context, RestdModel model, String path, FuncActionBuilder action) {
-        return addPathArguments(context, model, path, action, null);
+    protected int addPathArguments(Crud crud, FuncActionBuilder action) {
+        return addPathArguments(crud, action, null);
     }
 
-    protected int addPathArguments(RestdContext context, RestdModel model, String path, FuncActionBuilder action, Function<String, String> mapping) {
-        PathTemplate pt = ptf.createPathTemplate(path);
+    protected int addPathArguments(Crud crud, FuncActionBuilder action, Function<String, String> mapping) {
+        PathTemplate pt = ptf.createPathTemplate(crud.getPath());
         if (!pt.hasVariables()) {
             return 0;
         }
@@ -71,22 +71,15 @@ public abstract class CrudOperationBase extends RestdOperationBase {
                 continue;
             }
 
-            FieldMapping fm = getParamFieldMapping(model.getEntityMapping(), name, mapping);
+            FieldMapping fm = getParamFieldMapping(crud.getEntityMapping(), name, mapping);
             if (null != fm && fm.isPrimaryKey()) {
-                addIdArgument(context, action, model, fm);
+                addIdArgument(crud, action, fm);
             } else {
-                //            MApiParameterBuilder p = new MApiParameterBuilder();
-                //            p.setName(name);
-                //            p.setLocation(MApiParameter.Location.PATH);
-                //            p.setRequired(true);
-                //            p.setType(null == fm ? MSimpleTypes.STRING : fm.getDataType());
-
                 ArgumentBuilder a = new ArgumentBuilder();
                 a.setName(name);
                 a.setLocation(Argument.Location.PATH_PARAM);
                 a.setType(null == fm ? String.class : fm.getJavaType());
                 a.setRequired(true);
-                //            a.setExtension(p);
                 action.addArgument(a);
             }
             i++;
@@ -116,14 +109,16 @@ public abstract class CrudOperationBase extends RestdOperationBase {
         return null;
     }
 
-    protected ArgumentBuilder addModelArgumentForCreate(RestdContext context, FuncActionBuilder action, RestdModel model) {
-        ArgumentBuilder a = newModelArgument(model);
+    protected ArgumentBuilder addModelArgumentForCreate(Crud crud, FuncActionBuilder action) {
+        ArgumentBuilder a = newModelArgument(crud.getModel());
 
         for (RestdArgumentSupport vs : argumentSupports) {
-            vs.processModelArgumentForCreate(context, model, a);
+            vs.processModelArgumentForCreate(crud.getContext(), crud.getModel(), a);
         }
 
-        a.setProcessor(new CreateRecordProcessor(model));
+        if(crud.isRootModel()) {
+            a.setProcessor(new CreateRecordProcessor(crud.getModel()));
+        }
         action.addArgument(a);
 
         return a;
@@ -153,17 +148,17 @@ public abstract class CrudOperationBase extends RestdOperationBase {
         return a;
     }
 
-    private void addIdArguments(RestdContext context, FuncActionBuilder action, RestdModel model) {
-        for (FieldMapping id : model.getEntityMapping().getKeyFieldMappings()) {
-            addIdArgument(context, action, model, id);
+    private void addIdArguments(Crud crud, FuncActionBuilder action) {
+        for (FieldMapping id : crud.getEntityMapping().getKeyFieldMappings()) {
+            addIdArgument(crud, action, id);
         }
     }
 
-    protected void addIdArgument(RestdContext context, FuncActionBuilder action, RestdModel model, FieldMapping id) {
-        ArgumentBuilder a = newIdArgument(model, id);
+    protected void addIdArgument(Crud crud, FuncActionBuilder action, FieldMapping id) {
+        ArgumentBuilder a = newIdArgument(crud.getModel(), id);
 
         for (RestdArgumentSupport vs : argumentSupports) {
-            vs.processIdArgument(context, model, a);
+            vs.processIdArgument(crud.getContext(), crud.getModel(), a);
         }
 
         action.addArgument(a);
@@ -335,6 +330,10 @@ public abstract class CrudOperationBase extends RestdOperationBase {
 
         public RestdModel getModel() {
             return model;
+        }
+
+        public EntityMapping getEntityMapping() {
+            return model.getEntityMapping();
         }
 
         public <T> T getModelAttr(Class<T> type) {

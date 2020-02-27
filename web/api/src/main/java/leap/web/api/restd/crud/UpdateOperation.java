@@ -67,7 +67,7 @@ public class UpdateOperation extends CrudOperationBase implements CrudOperation 
         }
 
         action.setFunction(createFunction(crud));
-        addPathArguments(context, model, path, action);
+        addPathArguments(crud, action);
         addModelArgumentForUpdate(context, action, model);
 
         if (null != callback) {
