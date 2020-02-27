@@ -72,6 +72,9 @@ public class SimpleActionParams implements ActionParams {
     @Override
     public Object get(String name) {
         Integer index = nameIndexMap.get(name);
+        if(null == index) {
+            throw new IllegalStateException("Argument '" + name + "' not defined");
+        }
         return get(index);
     }
 

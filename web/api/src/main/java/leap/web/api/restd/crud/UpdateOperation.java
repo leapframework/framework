@@ -68,7 +68,8 @@ public class UpdateOperation extends CrudOperationBase implements CrudOperation 
         }
 
         action.setFunction(createFunction(context, model));
-        addIdArguments(context, action, model);
+        addPathArguments(context, model, path, action);
+//        addIdArguments(context, action, model);
         addModelArgumentForUpdate(context, action, model);
         if (null != callback) {
             callback.postAddArguments(action);
@@ -124,7 +125,7 @@ public class UpdateOperation extends CrudOperationBase implements CrudOperation 
         }
 
         protected Map<String, Object> doGetRecord(ActionParams params) {
-            return params.getLast();
+            return getModelRecord(params);
         }
 
         protected UpdateOneResult doUpdateRecord(ActionParams params, ModelUpdateExecutor executor, Object id, Map<String, Object> record) {

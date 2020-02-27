@@ -153,6 +153,13 @@ public class ArgumentBuilder extends ExtensibleBase implements Buildable<Argumen
         return this;
     }
 
+    /**
+     * Returns <code>true</code> if the argument is path parameter.
+     */
+    public boolean isPathParam() {
+        return Location.PATH_PARAM == location;
+    }
+
     public Location getLocation() {
         return location;
     }

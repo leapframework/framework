@@ -71,7 +71,8 @@ public class DeleteOperation extends CrudOperationBase implements CrudOperation 
 
         action.setFunction(createFunction(context, model));
 
-        addIdArguments(context, action, model);
+        addPathArguments(context, model, path, action);
+//        addIdArguments(context, action, model);
         addOtherArguments(c, context, action, model);
         if (null != callback) {
             callback.postAddArguments(action);

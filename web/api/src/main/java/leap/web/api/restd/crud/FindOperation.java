@@ -68,7 +68,8 @@ public class FindOperation extends CrudOperationBase implements CrudOperation {
 
         action.setFunction(createFunction(context, model));
 
-        addIdArguments(context, action, model);
+        addPathArguments(context, model, path, action);
+//        addIdArguments(context, action, model);
         addArgument(context, action, QueryOptionsBase.class, "options");
         if (null != callback) {
             callback.postAddArguments(action);

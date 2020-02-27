@@ -56,7 +56,8 @@ public class ReplaceOperation extends CrudOperationBase implements CrudOperation
 
         action.setName(Strings.lowerCamel(NAME, model.getName()));
         action.setFunction(createFunction(context, model));
-        addIdArguments(context, action, model);
+        addPathArguments(context, model, path, action);
+//        addIdArguments(context, action, model);
         addModelArgumentForReplace(context, action, model);
         addNoContentResponse(action, model);
 

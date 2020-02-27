@@ -19,6 +19,8 @@ package leap.web.api.restd.crud;
 import leap.lang.Strings;
 import leap.orm.dao.Dao;
 import leap.web.action.ActionParams;
+import leap.web.action.Argument;
+import leap.web.action.ArgumentProcessor;
 import leap.web.action.FuncActionBuilder;
 import leap.web.api.Api;
 import leap.web.api.config.ApiConfigurator;
@@ -34,6 +36,7 @@ import leap.web.api.restd.RestdContext;
 import leap.web.api.restd.RestdModel;
 import leap.web.route.RouteBuilder;
 
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -71,6 +74,7 @@ public class CreateOperation extends CrudOperationBase implements CrudOperation 
         }
 
         action.setFunction(createFunction(context, model));
+        addPathArguments(context, model, path, action);
         addModelArgumentForCreate(context, action, model);
         if (null != callback) {
             callback.postAddArguments(action);
@@ -88,7 +92,6 @@ public class CreateOperation extends CrudOperationBase implements CrudOperation 
         }
 
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
-
     }
 
     protected Function<ActionParams, Object> createFunction(RestdContext context, RestdModel model) {
@@ -130,5 +133,4 @@ public class CreateOperation extends CrudOperationBase implements CrudOperation 
             return "Function:" + "Create " + model.getName() + "";
         }
     }
-
 }
