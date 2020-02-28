@@ -22,10 +22,7 @@ import leap.web.action.FuncActionBuilder;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.ApiResponse;
-import leap.web.api.orm.ModelExecutorContext;
-import leap.web.api.orm.ModelUpdateExecutor;
-import leap.web.api.orm.SimpleModelExecutorContext;
-import leap.web.api.orm.UpdateOneResult;
+import leap.web.api.orm.*;
 import leap.web.api.restd.CrudOperation;
 import leap.web.api.restd.CrudOperationBase;
 import leap.web.api.restd.RestdContext;
@@ -57,8 +54,15 @@ public class UpdateOperation extends CrudOperationBase implements CrudOperation 
 
     public void createCrudOperation(RestdContext context, RestdModel model,
                                     String path, String name, Callback callback) {
+        final Crud crud = Crud.of(context, model, path);
+        createCrudOperation(crud, name, callback);
+    }
 
-        final Crud              crud   = Crud.of(context, model, path);
+    public void createCrudOperation(Crud crud, String name, Callback callback) {
+        final RestdContext context = crud.getContext();
+        final RestdModel   model   = crud.getModel();
+        final String       path    = crud.getPath();
+
         final FuncActionBuilder action = new FuncActionBuilder(name);
         final RouteBuilder      route  = rm.createRoute("PATCH", path);
 
@@ -66,7 +70,12 @@ public class UpdateOperation extends CrudOperationBase implements CrudOperation 
             callback.preAddArguments(action);
         }
 
-        action.setFunction(createFunction(crud));
+        if(null != crud.getFunction()) {
+            action.setFunction(crud.getFunction());
+        }else {
+            action.setFunction(createFunction(crud));
+        }
+
         addPathArguments(crud, action);
         addModelArgumentForUpdate(context, action, model);
 
@@ -92,10 +101,10 @@ public class UpdateOperation extends CrudOperationBase implements CrudOperation 
         return new UpdateFunction(crud);
     }
 
-    protected class UpdateFunction extends CrudFunction {
+    public static class UpdateFunction extends CrudFunction<ModelUpdateInterceptor> {
 
         public UpdateFunction(Crud crud) {
-            super(crud);
+            super(crud, ModelUpdateInterceptor.class);
         }
 
         @Override
@@ -133,7 +142,7 @@ public class UpdateOperation extends CrudOperationBase implements CrudOperation 
         }
 
         protected ModelUpdateExecutor newUpdateExecutor(ModelExecutorContext context) {
-            return mef.newUpdateExecutor(context);
+            return mef.newUpdateExecutor(context, interceptors);
         }
 
         @Override

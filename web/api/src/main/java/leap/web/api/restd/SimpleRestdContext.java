@@ -21,6 +21,7 @@ import leap.orm.dao.Dao;
 import leap.web.api.Api;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.config.model.RestdConfig;
+import leap.web.api.orm.ModelExecutorFactory;
 import leap.web.route.Routes;
 
 import java.util.LinkedHashSet;
@@ -28,16 +29,18 @@ import java.util.Set;
 
 public class SimpleRestdContext implements RestdContext {
 
-    protected Api                 api;
-    protected RestdConfig         config;
-    protected Dao                 dao;
-    protected Set<RestdModel>     models = new LinkedHashSet<>();
-    protected PathTemplateFactory pathTemplateFactory;
+    protected Api                  api;
+    protected RestdConfig          config;
+    protected Dao                  dao;
+    protected Set<RestdModel>      models = new LinkedHashSet<>();
+    protected PathTemplateFactory  pathTemplateFactory;
+    protected ModelExecutorFactory modelExecutorFactory;
 
-    public SimpleRestdContext(Api api, PathTemplateFactory pathTemplateFactory,  RestdConfig config) {
+    public SimpleRestdContext(Api api, PathTemplateFactory pathTemplateFactory, ModelExecutorFactory mef, RestdConfig config) {
         this.api = api;
         this.config = config;
         this.pathTemplateFactory = pathTemplateFactory;
+        this.modelExecutorFactory = mef;
     }
 
     @Override
@@ -53,11 +56,6 @@ public class SimpleRestdContext implements RestdContext {
     @Override
     public RestdConfig getConfig() {
         return config;
-    }
-
-    @Override
-    public PathTemplateFactory getPathTemplateFactory() {
-        return pathTemplateFactory;
     }
 
     @Override
@@ -81,5 +79,15 @@ public class SimpleRestdContext implements RestdContext {
     @Override
     public Routes getRoutes() {
         return getApiConfig().getContainerRoutes();
+    }
+
+    @Override
+    public PathTemplateFactory getPathTemplateFactory() {
+        return pathTemplateFactory;
+    }
+
+    @Override
+    public ModelExecutorFactory getModelExecutorFactory() {
+        return modelExecutorFactory;
     }
 }

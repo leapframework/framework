@@ -23,10 +23,7 @@ import leap.web.api.config.ApiConfigurator;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.ApiResponse;
 import leap.web.api.mvc.params.CountOptions;
-import leap.web.api.orm.ModelExecutorContext;
-import leap.web.api.orm.ModelQueryExecutor;
-import leap.web.api.orm.QueryListResult;
-import leap.web.api.orm.SimpleModelExecutorContext;
+import leap.web.api.orm.*;
 import leap.web.api.restd.CrudOperation;
 import leap.web.api.restd.CrudOperationBase;
 import leap.web.api.restd.RestdContext;
@@ -91,10 +88,10 @@ public class CountOperation extends CrudOperationBase implements CrudOperation {
         return new CountFunction(crud);
     }
 
-    protected class CountFunction extends CrudFunction {
+    protected class CountFunction extends CrudFunction<ModelQueryInterceptor> {
 
         public CountFunction(Crud crud) {
-            super(crud);
+            super(crud, ModelQueryInterceptor.class);
         }
 
         @Override

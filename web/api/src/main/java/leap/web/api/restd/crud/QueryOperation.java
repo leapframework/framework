@@ -66,8 +66,15 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
 
     public void createCrudOperation(RestdContext context, RestdModel model,
                                     String path, String name, Callback callback) {
+        final Crud crud = Crud.of(context, model, path);
+        createCrudOperation(crud, name, callback);
+    }
 
-        final Crud              crud   = Crud.of(context, model, path);
+    public void createCrudOperation(Crud crud, String name, Callback callback) {
+        final RestdContext context = crud.getContext();
+        final RestdModel   model   = crud.getModel();
+        final String       path    = crud.getPath();
+
         final FuncActionBuilder action = new FuncActionBuilder(name);
         final RouteBuilder      route  = rm.createRoute("GET", path);
 
@@ -102,10 +109,10 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
         return new QueryFunction(crud);
     }
 
-    protected class QueryFunction extends CrudFunction implements Function<ActionParams, Object> {
+    public static class QueryFunction extends CrudFunction<ModelQueryInterceptor> implements Function<ActionParams, Object> {
 
         public QueryFunction(Crud crud) {
-            super(crud);
+            super(crud, ModelQueryInterceptor.class);
         }
 
         @Override
@@ -145,9 +152,9 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
         }
 
         protected Map<String, Object> doGetFilters(ActionParams params) {
-            if(rootModel) {
+            if (rootModel) {
                 return extraPathFieldsMap(params);
-            }else {
+            } else {
                 return Collections.emptyMap();
             }
         }
@@ -166,7 +173,7 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
         }
 
         protected ModelQueryExecutor newQueryExecutor(ModelExecutorContext context) {
-            return mef.newQueryExecutor(context);
+            return mef.newQueryExecutor(context, interceptors);
         }
 
         protected boolean allowExpandErrors(Request request) {

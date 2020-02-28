@@ -22,10 +22,7 @@ import leap.web.action.FuncActionBuilder;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.ApiResponse;
-import leap.web.api.orm.ModelExecutorContext;
-import leap.web.api.orm.ModelUpdateExecutor;
-import leap.web.api.orm.SimpleModelExecutorContext;
-import leap.web.api.orm.UpdateOneResult;
+import leap.web.api.orm.*;
 import leap.web.api.restd.CrudOperation;
 import leap.web.api.restd.CrudOperationBase;
 import leap.web.api.restd.RestdContext;
@@ -75,10 +72,10 @@ public class ReplaceOperation extends CrudOperationBase implements CrudOperation
         return new ReplaceFunction(crud);
     }
 
-    protected class ReplaceFunction extends CrudFunction {
+    public static class ReplaceFunction extends CrudFunction<ModelReplaceInterceptor> {
 
         public ReplaceFunction(Crud crud) {
-            super(crud);
+            super(crud, ModelReplaceInterceptor.class);
         }
 
         @Override

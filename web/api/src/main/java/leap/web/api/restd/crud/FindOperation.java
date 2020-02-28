@@ -57,8 +57,15 @@ public class FindOperation extends CrudOperationBase implements CrudOperation {
 
     public void createCrudOperation(RestdContext context, RestdModel model,
                                     String path, String name, Callback callback) {
+        final Crud crud = Crud.of(context, model, path);
+        createCrudOperation(crud, name, callback);
+    }
 
-        final Crud              crud   = Crud.of(context, model, path);
+    public void createCrudOperation(Crud crud, String name, Callback callback) {
+        final RestdContext context = crud.getContext();
+        final RestdModel   model   = crud.getModel();
+        final String       path    = crud.getPath();
+
         final FuncActionBuilder action = new FuncActionBuilder(name);
         final RouteBuilder      route  = rm.createRoute("GET", path);
 
@@ -66,7 +73,7 @@ public class FindOperation extends CrudOperationBase implements CrudOperation {
             callback.preAddArguments(action);
         }
 
-        action.setFunction(createFunction(crud));
+        action.setFunction(null != crud.getFunction() ? crud.getFunction() : createFunction(crud));
 
         addPathArguments(crud, action);
         addArgument(context, action, QueryOptionsBase.class, "options");
@@ -93,10 +100,10 @@ public class FindOperation extends CrudOperationBase implements CrudOperation {
         return new FindFunction(crud);
     }
 
-    protected class FindFunction extends CrudFunction {
+    public static class FindFunction extends CrudFunction<ModelFindInterceptor> {
 
         public FindFunction(Crud crud) {
-            super(crud);
+            super(crud, ModelFindInterceptor.class);
         }
 
         @Override
@@ -150,7 +157,7 @@ public class FindOperation extends CrudOperationBase implements CrudOperation {
         }
 
         protected ModelQueryExecutor newQueryExecutor(ModelExecutorContext context) {
-            return mef.newQueryExecutor(context);
+            return mef.newQueryExecutor(context, interceptors);
         }
 
         protected boolean allowExpandErrors(Request request) {

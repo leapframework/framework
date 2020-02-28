@@ -39,6 +39,7 @@ import leap.web.api.meta.ApiMetadataBuilder;
 import leap.web.api.meta.ApiMetadataContext;
 import leap.web.api.meta.ApiMetadataFactory;
 import leap.web.api.meta.ApiMetadataProcessor;
+import leap.web.api.orm.ModelExecutorFactory;
 
 import java.util.*;
 
@@ -47,13 +48,14 @@ import java.util.*;
  */
 public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataProcessor {
 
-    protected @Inject App                 app;
-    protected @Inject RestdStrategy       strategy;
-    protected @Inject RestdProcessor[]    processors;
-    protected @Inject OrmMTypeFactory     omf;
-    protected @Inject OrmRegistry         ormRegistry;
-    protected @Inject ApiMetadataFactory  amf;
-    protected @Inject PathTemplateFactory ptf;
+    protected @Inject App                  app;
+    protected @Inject RestdStrategy        strategy;
+    protected @Inject RestdProcessor[]     processors;
+    protected @Inject OrmMTypeFactory      omf;
+    protected @Inject OrmRegistry          ormRegistry;
+    protected @Inject ApiMetadataFactory   amf;
+    protected @Inject PathTemplateFactory  ptf;
+    protected @Inject ModelExecutorFactory mef;
 
     @Override
     public void preProcess(Api api) {
@@ -62,7 +64,7 @@ public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataP
             return;
         }
 
-        SimpleRestdContext restdContext = new SimpleRestdContext(api, ptf, rc);
+        SimpleRestdContext restdContext = new SimpleRestdContext(api, ptf, mef, rc);
 
         if (!rc.isNoDataSource()) {
             OrmContext  oc  = lookupOrmContext(rc);

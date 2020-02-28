@@ -22,10 +22,7 @@ import leap.web.action.FuncActionBuilder;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.ApiResponse;
-import leap.web.api.orm.CreateOneResult;
-import leap.web.api.orm.ModelCreateExecutor;
-import leap.web.api.orm.ModelExecutorContext;
-import leap.web.api.orm.SimpleModelExecutorContext;
+import leap.web.api.orm.*;
 import leap.web.api.restd.CrudOperation;
 import leap.web.api.restd.CrudOperationBase;
 import leap.web.api.restd.RestdContext;
@@ -61,7 +58,15 @@ public class CreateOperation extends CrudOperationBase implements CrudOperation 
     public void createCrudOperation(RestdContext context, RestdModel model,
                                     String path, String name, Callback callback) {
 
-        final Crud              crud   = Crud.of(context, model, path);
+        final Crud crud = Crud.of(context, model, path);
+        createCrudOperation(crud, name, callback);
+    }
+
+    public void createCrudOperation(Crud crud, String name, Callback callback) {
+        final RestdContext context = crud.getContext();
+        final RestdModel   model   = crud.getModel();
+        final String       path    = crud.getPath();
+
         final FuncActionBuilder action = new FuncActionBuilder(name);
         final RouteBuilder      route  = rm.createRoute("POST", path);
 
@@ -96,10 +101,10 @@ public class CreateOperation extends CrudOperationBase implements CrudOperation 
         return new CreateFunction(crud);
     }
 
-    protected class CreateFunction extends CrudFunction {
+    public static class CreateFunction extends CrudFunction<ModelCreateInterceptor> {
 
         public CreateFunction(Crud crud) {
-            super(crud);
+            super(crud, ModelCreateInterceptor.class);
         }
 
         @Override
@@ -124,7 +129,7 @@ public class CreateOperation extends CrudOperationBase implements CrudOperation 
         }
 
         protected ModelCreateExecutor newCreateExecutor(ModelExecutorContext context) {
-            return mef.newCreateExecutor(context);
+            return mef.newCreateExecutor(context, interceptors);
         }
 
         @Override

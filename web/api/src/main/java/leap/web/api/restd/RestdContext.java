@@ -22,6 +22,7 @@ import leap.web.api.Api;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.config.model.RestdConfig;
+import leap.web.api.orm.ModelExecutorFactory;
 import leap.web.route.Route;
 import leap.web.route.Routes;
 
@@ -64,11 +65,6 @@ public interface RestdContext {
     Dao getDao();
 
     /**
-     * Returns the {@link PathTemplateFactory}.
-     */
-    PathTemplateFactory getPathTemplateFactory();
-
-    /**
      * Returns the included models of restd api.
      */
     Set<RestdModel> getModels();
@@ -78,4 +74,13 @@ public interface RestdContext {
      */
     Routes getRoutes();
 
+    /**
+     * Returns the {@link PathTemplateFactory}.
+     */
+    PathTemplateFactory getPathTemplateFactory();
+
+    /**
+     * Returns the {@link ModelExecutorFactory}
+     */
+    ModelExecutorFactory getModelExecutorFactory();
 }

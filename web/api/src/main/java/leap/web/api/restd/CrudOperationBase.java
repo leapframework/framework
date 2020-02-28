@@ -34,6 +34,7 @@ import leap.web.api.orm.ModelExecutorFactory;
 import leap.web.exception.BadRequestException;
 import leap.web.route.RouteBuilder;
 
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.function.Function;
 
@@ -116,7 +117,7 @@ public abstract class CrudOperationBase extends RestdOperationBase {
             vs.processModelArgumentForCreate(crud.getContext(), crud.getModel(), a);
         }
 
-        if(crud.isRootModel()) {
+        if (crud.isRootModel()) {
             a.setProcessor(new CreateRecordProcessor(crud.getModel()));
         }
         action.addArgument(a);
@@ -315,7 +316,11 @@ public abstract class CrudOperationBase extends RestdOperationBase {
         private final RestdContext context;
         private final RestdModel   model;
         private final String       path;
-        private final boolean      rootModel;
+        private final List<Object> interceptors = new ArrayList<>();
+
+        private boolean                        rootModel;
+        private Function<ActionParams, Object> function;
+        private String                         idFieldNamePrefix;
 
         public Crud(RestdContext context, RestdModel model, String path) {
             this.context = context;
@@ -337,7 +342,7 @@ public abstract class CrudOperationBase extends RestdOperationBase {
         }
 
         public <T> T getModelAttr(Class<T> type) {
-            return (T)model.getAttribute(type.getName());
+            return (T) model.getAttribute(type.getName());
         }
 
         public String getPath() {
@@ -348,41 +353,66 @@ public abstract class CrudOperationBase extends RestdOperationBase {
             return rootModel;
         }
 
+        public void setRootModel(boolean rootModel) {
+            this.rootModel = rootModel;
+        }
+
+        public List<Object> getInterceptors() {
+            return interceptors;
+        }
+
+        public void addInterceptor(Object interceptor) {
+            interceptors.add(interceptor);
+        }
+
+        public Function<ActionParams, Object> getFunction() {
+            return function;
+        }
+
+        public void setFunction(Function<ActionParams, Object> function) {
+            this.function = function;
+        }
+
+        public String getIdFieldNamePrefix() {
+            return idFieldNamePrefix;
+        }
+
+        public void setIdFieldNamePrefix(String idFieldNamePrefix) {
+            this.idFieldNamePrefix = idFieldNamePrefix;
+        }
+
         private boolean checkIsRootModel() {
             final String fullModelPath = fullModelPath(context, model);
             return path.equals(fullModelPath) || path.startsWith(fullModelPath + "/");
         }
     }
 
-    protected abstract static class CrudFunction implements Function<ActionParams, Object>, ActionBuilder.Callback {
-        protected final Api            api;
-        protected final Dao            dao;
-        protected final RestdModel     model;
-        protected final EntityMapping  em;
-        protected final FieldMapping[] id;
-        protected final boolean        rootModel;
+    public abstract static class CrudFunction<T> implements Function<ActionParams, Object>, ActionBuilder.Callback {
+        protected final ModelExecutorFactory mef;
+        protected final Api                  api;
+        protected final Dao                  dao;
+        protected final RestdModel           model;
+        protected final EntityMapping        em;
+        protected final FieldMapping[]       id;
+        protected final boolean              rootModel;
+        protected final T[]                  interceptors;
+        protected final String               idFieldNamePrefix;
 
         protected Action         action;
         protected FieldMapping[] pathFields;
 
         private MApiModel am;
 
-//        protected CrudFunction(Api api, Dao dao, RestdModel model) {
-//            this.api = api;
-//            this.dao = dao;
-//            this.model = model;
-//            this.em = model.getEntityMapping();
-//            this.id = em.getKeyFieldMappings();
-//            this.rootModel = true;
-//        }
-
-        protected CrudFunction(Crud crud) {
+        protected CrudFunction(Crud crud, Class<T> interceptorType) {
+            this.mef = crud.getContext().getModelExecutorFactory();
             this.api = crud.getContext().getApi();
             this.dao = crud.getContext().getDao();
             this.model = crud.getModel();
             this.rootModel = crud.isRootModel();
             this.em = model.getEntityMapping();
             this.id = em.getKeyFieldMappings();
+            this.interceptors = crud.getInterceptors().toArray((T[]) Array.newInstance(interceptorType, 0));
+            this.idFieldNamePrefix = crud.getIdFieldNamePrefix();
         }
 
         @Override
@@ -424,15 +454,23 @@ public abstract class CrudOperationBase extends RestdOperationBase {
         }
 
         protected final Object id(ActionParams params) {
+            return id(params, id);
+        }
+
+        protected final Object id(ActionParams params, FieldMapping[] id) {
             if (id.length > 1) {
                 Map m = new HashMap(id.length);
                 for (FieldMapping fm : id) {
-                    m.put(fm.getFieldName(), params.get(fm.getFieldName()));
+                    m.put(fm.getFieldName(), params.get(getIdFieldName(fm)));
                 }
                 return m;
             } else {
-                return params.get(id[0].getFieldName());
+                return params.get(getIdFieldName(id[0]));
             }
+        }
+
+        protected final String getIdFieldName(FieldMapping field) {
+            return Strings.isEmpty(idFieldNamePrefix) ? field.getFieldName() : idFieldNamePrefix + field.getFieldName();
         }
 
         protected <T> T get(ActionParams params, String name) {

@@ -25,10 +25,7 @@ import leap.web.api.config.ApiConfigurator;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.ApiResponse;
 import leap.web.api.mvc.params.DeleteOptions;
-import leap.web.api.orm.DeleteOneResult;
-import leap.web.api.orm.ModelDeleteExecutor;
-import leap.web.api.orm.ModelExecutorContext;
-import leap.web.api.orm.SimpleModelExecutorContext;
+import leap.web.api.orm.*;
 import leap.web.api.restd.CrudOperation;
 import leap.web.api.restd.CrudOperationBase;
 import leap.web.api.restd.RestdContext;
@@ -60,8 +57,15 @@ public class DeleteOperation extends CrudOperationBase implements CrudOperation 
 
     public void createCrudOperation(RestdContext context, RestdModel model,
                                     String path, String name, Callback callback) {
+        final Crud crud = Crud.of(context, model, path);
+        createCrudOperation(crud, name, callback);
+    }
 
-        final Crud              crud   = Crud.of(context, model, path);
+    public void createCrudOperation(Crud crud, String name, Callback callback) {
+        final RestdContext context = crud.getContext();
+        final RestdModel   model   = crud.getModel();
+        final String       path    = crud.getPath();
+
         final FuncActionBuilder action = new FuncActionBuilder(name);
         final RouteBuilder      route  = rm.createRoute("DELETE", path);
 
@@ -100,12 +104,12 @@ public class DeleteOperation extends CrudOperationBase implements CrudOperation 
         return new DeleteFunction(crud, true);
     }
 
-    protected class DeleteFunction extends CrudFunction {
+    public static class DeleteFunction extends CrudFunction<ModelDeleteInterceptor> {
 
         private final boolean cascadeDelete;
 
         public DeleteFunction(Crud crud, boolean cascadeDelete) {
-            super(crud);
+            super(crud, ModelDeleteInterceptor.class);
             this.cascadeDelete = cascadeDelete;
         }
 
@@ -152,7 +156,7 @@ public class DeleteOperation extends CrudOperationBase implements CrudOperation 
         }
 
         protected ModelDeleteExecutor newDeleteExecutor(ModelExecutorContext context) {
-            return mef.newDeleteExecutor(context);
+            return mef.newDeleteExecutor(context, interceptors);
         }
 
         @Override
