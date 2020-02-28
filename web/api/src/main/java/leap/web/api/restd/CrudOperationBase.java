@@ -117,11 +117,13 @@ public abstract class CrudOperationBase extends RestdOperationBase {
             vs.processModelArgumentForCreate(crud.getContext(), crud.getModel(), a);
         }
 
-        if (crud.isRootModel()) {
+        if(null != crud.getCreateRecordProcessor()) {
+            a.setProcessor(crud.getCreateRecordProcessor());
+        }else if(crud.isRootModel()) {
             a.setProcessor(new CreateRecordProcessor(crud.getModel()));
         }
-        action.addArgument(a);
 
+        action.addArgument(a);
         return a;
     }
 
@@ -321,6 +323,7 @@ public abstract class CrudOperationBase extends RestdOperationBase {
         private boolean                        rootModel;
         private Function<ActionParams, Object> function;
         private String                         idFieldNamePrefix;
+        private ArgumentProcessor              createRecordProcessor;
 
         public Crud(RestdContext context, RestdModel model, String path) {
             this.context = context;
@@ -379,6 +382,14 @@ public abstract class CrudOperationBase extends RestdOperationBase {
 
         public void setIdFieldNamePrefix(String idFieldNamePrefix) {
             this.idFieldNamePrefix = idFieldNamePrefix;
+        }
+
+        public ArgumentProcessor getCreateRecordProcessor() {
+            return createRecordProcessor;
+        }
+
+        public void setCreateRecordProcessor(ArgumentProcessor createRecordProcessor) {
+            this.createRecordProcessor = createRecordProcessor;
         }
 
         private boolean checkIsRootModel() {
