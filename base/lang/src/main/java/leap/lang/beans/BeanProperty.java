@@ -19,21 +19,18 @@ import leap.lang.Named;
 import leap.lang.TypeInfo;
 import leap.lang.accessor.AnnotationsGetter;
 import leap.lang.accessor.TypeInfoGetter;
-import leap.lang.convert.ConvertContext;
 import leap.lang.convert.ConvertUnsupportedException;
 import leap.lang.convert.Converts;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.reflect.ReflectField;
 import leap.lang.reflect.ReflectMethod;
-import leap.lang.reflect.ReflectParameter;
 import leap.lang.reflect.ReflectValued;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -166,7 +163,7 @@ public class BeanProperty implements Named, TypeInfoGetter, AnnotationsGetter, R
             throw new IllegalStateException("Property '" + name + "' is not writable at '" + beanType.getBeanClass().getName() + "'");
         }
 
-        if(null != value && !type.isAssignableFrom(value.getClass())){
+        if(needConvert(value)){
             value = Converts.convert(value, type,genericType);
         }
 
@@ -174,6 +171,22 @@ public class BeanProperty implements Named, TypeInfoGetter, AnnotationsGetter, R
             setter.invoke(bean,value);
         }else{
             field.setValue(bean, value, true);
+        }
+    }
+
+    private boolean needConvert(Object value) {
+        if(null == value) {
+            return false;
+        }
+
+        if(!type.isAssignableFrom(value.getClass())) {
+            return true;
+        }
+
+        if(null == genericType) {
+            return false;
+        }else {
+            return true;
         }
     }
 
