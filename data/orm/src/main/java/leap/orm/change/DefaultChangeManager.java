@@ -124,6 +124,12 @@ public class DefaultChangeManager implements ChangeManager, PostCreateBean, Disp
         }
 
         @Override
+        public ChangeObserver setInitialMaxValue(Object value) {
+            this.maxValue = value;
+            return this;
+        }
+
+        @Override
         public void start() {
             checkStarted();
 
@@ -146,19 +152,19 @@ public class DefaultChangeManager implements ChangeManager, PostCreateBean, Disp
         }
 
         protected void init() {
-            log.info("Finding the max value of field '{}' at entity '{}'...", fm.getFieldName(), em.getEntityName());
+            if(null == this.maxValue) {
+                log.info("Finding the max value of field '{}' at entity '{}'...", fm.getFieldName(), em.getEntityName());
+                Object maxValue = dao.createCriteriaQuery(em)
+                        .select(fm.getFieldName())
+                        .limit(1)
+                        .orderBy(fm.getFieldName() + " desc")
+                        .scalarValueOrNull();
 
-            Object maxValue = dao.createCriteriaQuery(em)
-                                .select(fm.getFieldName())
-                                .limit(1)
-                                .orderBy(fm.getFieldName() + " desc")
-                                .scalarValueOrNull();
-
-            log.info("Max value : {}", maxValue);
-
-            if(null != maxValue) {
-                this.maxValue = maxValue;
+                if (null != maxValue) {
+                    this.maxValue = maxValue;
+                }
             }
+            log.info("Use initial max value '{}'", maxValue);
 
             changesQuery = dao.createCriteriaQuery(em, resultClass)
                     .where(fm.getFieldName() + " > :maxValue")

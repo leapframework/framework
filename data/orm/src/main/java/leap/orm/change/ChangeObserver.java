@@ -37,6 +37,11 @@ public interface ChangeObserver {
     ChangeObserver limit(int maxChanges);
 
     /**
+     * Set the initial max value for watching the changes.
+     */
+    ChangeObserver setInitialMaxValue(Object value);
+
+    /**
      * Start watching.
      *
      * @throws IllegalStateException if already started or no listener(s).
