@@ -1013,6 +1013,10 @@ public class JsonWriterImpl implements JsonWriter {
                         continue;
                     }
 
+                    if(isIgnoreEmptyArray() && isEmptyArray(propValue)) {
+                        continue;
+                    }
+
                     if(null != propValue && null != beanFilter && beanFilter.test(propValue)) {
                         continue;
                     }
@@ -1020,10 +1024,9 @@ public class JsonWriterImpl implements JsonWriter {
                     if (prop.getField().getType().equals(String.class) && settings.isNullToEmptyString() && null == propValue) {
                         propValue = "";
                     }
+
                     keyUseNamingStyle(propName);
-
                     if (!writeDateValue(prop, propValue)) {
-
                         //todo : performance
                         value(propValue, (v) -> {
                             bean(v, prop.getType().getAnnotation(JsonType.class));
@@ -1113,6 +1116,26 @@ public class JsonWriterImpl implements JsonWriter {
 
     protected String ns(String s) {
         return getNamingStyle().of(s);
+    }
+
+    protected boolean isEmptyArray(Object v) {
+        if (v instanceof Object[]) {
+            return ((Object[]) v).length == 0;
+        }
+
+        if(v instanceof Collection) {
+            return ((Collection) v).size() == 0;
+        }
+
+        if (v.getClass().isArray()) {
+            return Array.getLength(v) == 0;
+        }
+
+        if (v instanceof Iterable) {
+            return !((Iterable) v).iterator().hasNext();
+        }
+
+        return false;
     }
 
     private void wrapAndThrow(IOException e) {
