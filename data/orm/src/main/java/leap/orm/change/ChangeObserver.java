@@ -17,29 +17,29 @@ package leap.orm.change;
 
 import java.util.concurrent.TimeUnit;
 
-public interface ChangeObserver {
+public interface ChangeObserver<T> {
 
     /**
      * Adds a listener
      *
      * @throws IllegalStateException if the observer has been started.
      */
-    ChangeObserver setListener(ChangeListener listener);
+    ChangeObserver<T> setListener(ChangeListener<T> listener);
 
     /**
      * The default period is one second.
      */
-    ChangeObserver setPeriod(TimeUnit timeUnit, int period);
+    ChangeObserver<T> setPeriod(TimeUnit timeUnit, int period);
 
     /**
      * Limits the max changes loaded by observer.  The default is 100.
      */
-    ChangeObserver limit(int maxChanges);
+    ChangeObserver<T> limit(int maxChanges);
 
     /**
      * Set the initial max value for watching the changes.
      */
-    ChangeObserver setInitialMaxValue(Object value);
+    ChangeObserver<T> setInitialMaxValue(Object value);
 
     /**
      * Start watching.

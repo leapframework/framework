@@ -19,7 +19,7 @@ import leap.orm.dao.Dao;
 
 public interface ChangeListener<T> {
 
-    default void onEntityChanged(Dao dao, T entity) {
+    default void onEntityChanged(Dao dao, T record) {
 
     }
 

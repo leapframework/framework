@@ -25,6 +25,6 @@ public interface ChangeManager {
      * <p/>
      * The field must be {@link java.sql.Types#BIGINT} or {@link java.sql.Types#TIMESTAMP}.
      */
-    <T> ChangeObserver createEntityChangeObserver(Dao dao, Class<T> entityClass, String field);
+    <T> ChangeObserver<T> createEntityChangeObserver(Dao dao, Class<T> entityClass, String field);
 
 }
