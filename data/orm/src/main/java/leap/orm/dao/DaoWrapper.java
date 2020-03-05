@@ -186,6 +186,46 @@ public abstract class DaoWrapper extends Dao {
     }
 
     @Override
+    public int updateSelective(Object entity) throws MappingNotFoundException {
+        return dao().updateSelective(entity);
+    }
+
+    @Override
+    public int updateSelective(Class<?> entityClass, Object entity) throws MappingNotFoundException {
+        return dao().updateSelective(entityClass, entity);
+    }
+
+    @Override
+    public int updateSelective(String entityName, Object entity) throws MappingNotFoundException {
+        return dao().updateSelective(entityName, entity);
+    }
+
+    @Override
+    public int updateSelective(EntityMapping em, Object entity) throws MappingNotFoundException {
+        return dao().updateSelective(em, entity);
+    }
+
+    @Override
+    public int updateSelective(Object entity, Map<String, Object> fields) throws MappingNotFoundException {
+        return dao().updateSelective(entity, fields);
+    }
+
+    @Override
+    public int updateSelective(Class<?> entityClass, Object id, Map<String, Object> fields) throws MappingNotFoundException {
+        return dao().updateSelective(entityClass, id, fields);
+    }
+
+    @Override
+    public int updateSelective(String entityName, Object id, Map<String, Object> fields) throws MappingNotFoundException {
+        return dao().updateSelective(entityName, id, fields);
+    }
+
+    @Override
+    public int updateSelective(EntityMapping em, Object id, Map<String, Object> fields) throws MappingNotFoundException {
+        return dao().updateSelective(em, id, fields);
+    }
+
+    @Override
     public int delete(Object entity) {
         return dao().delete(entity);
     }

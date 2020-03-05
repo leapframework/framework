@@ -228,6 +228,54 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
     }
 
     @Override
+    public int updateSelective(Object entity) throws MappingNotFoundException {
+        Args.notNull(entity,"entity");
+
+        EntityMapping em = emForObject(entity);
+
+        return runInWrapperContext(em, (context)->{
+            return commandFactory().newUpdateCommand(context.getDao(), context.getEntityMapping()).from(entity).selective().execute();
+        });
+    }
+
+    @Override
+    public int updateSelective(Class<?> entityClass, Object entity) throws MappingNotFoundException {
+        return cmdUpdate(entityClass).from(entity).selective().execute();
+    }
+
+    @Override
+    public int updateSelective(String entityName, Object entity) throws MappingNotFoundException {
+        return cmdUpdate(entityName).from(entity).selective().execute();
+    }
+
+    @Override
+    public int updateSelective(EntityMapping em, Object entity) throws MappingNotFoundException {
+        return cmdUpdate(em).from(entity).selective().execute();
+    }
+
+    @Override
+    public int updateSelective(Object entity, Map<String, Object> fields) throws MappingNotFoundException {
+        final EntityMapping em = em(entity.getClass());
+        final Object        id = Mappings.getId(em, entity);
+        return updateSelective(em, id, fields);
+    }
+
+    @Override
+    public int updateSelective(Class<?> entityClass, Object id, Map<String, Object> fields) throws MappingNotFoundException {
+        return cmdUpdate(entityClass).withId(id).setAll(fields).selective().execute();
+    }
+
+    @Override
+    public int updateSelective(String entityName, Object id, Map<String, Object> fields) throws MappingNotFoundException {
+        return cmdUpdate(entityName).withId(id).setAll(fields).selective().execute();
+    }
+
+    @Override
+    public int updateSelective(EntityMapping em, Object id, Map<String, Object> fields) throws MappingNotFoundException {
+        return cmdUpdate(em).withId(id).setAll(fields).selective().execute();
+    }
+
+    @Override
     public UpdateCommand cmdUpdate(Class<?> entityClass) throws MappingNotFoundException {
 		Args.notNull(entityClass,"entity class");
 		return runInWrapperContext(em(entityClass), (context)->{

@@ -17,7 +17,7 @@ package leap.orm.command;
 
 import java.util.HashMap;
 import java.util.Map;
-
+import java.util.Set;
 import leap.core.exception.InvalidOptimisticLockException;
 import leap.core.exception.OptimisticLockException;
 import leap.core.validation.Errors;
@@ -47,6 +47,8 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
 	protected Object        oldOptimisticLockValue;
 	protected Object        newOptimisticLockValue;
 
+	protected Boolean       selective;
+
 	public DefaultUpdateCommand( Dao dao, EntityMapping em) {
 	    super(dao,em);
 	    this.sf           = dao.getOrmContext().getSqlFactory();
@@ -70,8 +72,8 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
         entity = EntityWrapper.wrap(context, em, record);
         return this;
     }
-	
-	@Override
+
+    @Override
     public UpdateCommand set(String name, Object value) {
 		Args.notEmpty(name,"name");
         if(null == entity) {
@@ -87,6 +89,12 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
             fields.forEach(this::set);
         }
         return this;
+    }
+
+    @Override
+    public UpdateCommand selective() {
+	    selective = true;
+	    return this;
     }
 
     @Override
@@ -136,12 +144,12 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
     }
 
     protected int doExecuteUpdate() {
-        String[]   fields           = entity.getFieldNames().toArray(Arrays2.EMPTY_STRING_ARRAY);
+        //Creates map for saving.
+        Map<String, Object> map      = resolveFieldsMap(entity);
+        String[]   fields           = map.keySet().toArray(Arrays2.EMPTY_STRING_ARRAY);
+
         SqlCommand primaryCommand   = sf.createUpdateCommand(context, em, fields);
         SqlCommand secondaryCommand = em.hasSecondaryTable() ? sf.createUpdateCommand(context, em, fields, true) : null;
-
-        //Creates map for saving.
-        Map<String,Object> map = entity.toMap();
 
         //Prepared id and serialization.
         prepareIdAndSerialization(id, map);
@@ -173,7 +181,22 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
 
         return result;
     }
-	
+
+    protected Map<String, Object> resolveFieldsMap(EntityWrapper entity) {
+	    Map<String, Object> map = entity.toMap();
+	    if (null != selective && selective) {
+	        Set<String> keys = map.keySet();
+
+            for (String key : keys) {
+                if (null == map.get(key)) {
+                    map.remove(key);
+                }
+            }
+        }
+
+	    return map;
+    }
+
 	protected void prepare(){
 		for(FieldMapping fm : em.getFieldMappings()){
 			if(fm.isOptimisticLock()){

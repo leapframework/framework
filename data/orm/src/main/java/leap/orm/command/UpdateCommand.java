@@ -45,6 +45,11 @@ public interface UpdateCommand extends Executable {
     UpdateCommand setAll(Map<String,Object> fields);
 
     /**
+     * Select valid fields for update.
+     */
+    UpdateCommand selective();
+
+    /**
      * Executes update and returns the affected rows.
      */
 	int execute();
