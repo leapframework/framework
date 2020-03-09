@@ -22,6 +22,7 @@ import leap.lang.collection.SimpleCaseInsensitiveMap;
 import leap.lang.exception.ObjectExistsException;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.orm.command.InsertHandler;
 import leap.orm.event.EntityListenersBuilder;
 import leap.orm.interceptor.EntityExecutionInterceptor;
 import leap.orm.model.Model;
@@ -51,13 +52,14 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
     protected boolean             autoValidate;
     protected boolean             remote;
     protected RemoteSettings      remoteSettings;
-    protected Map<String, String> groupByExprs = new SimpleCaseInsensitiveMap<>();
-    protected Map<String, String> selectExprs = new SimpleCaseInsensitiveMap<>();
-    protected Map<String, String> orderByExprs = new SimpleCaseInsensitiveMap<>();
-    protected Map<String, String> filtersExprs = new SimpleCaseInsensitiveMap<>();
+    protected Map<String, String> groupByExprs    = new SimpleCaseInsensitiveMap<>();
+    protected Map<String, String> selectExprs     = new SimpleCaseInsensitiveMap<>();
+    protected Map<String, String> orderByExprs    = new SimpleCaseInsensitiveMap<>();
+    protected Map<String, String> filtersExprs    = new SimpleCaseInsensitiveMap<>();
     protected Map<String, String> aggregatesExprs = new SimpleCaseInsensitiveMap<>();
 
     protected List<FieldMappingBuilder>     fieldMappings      = new ArrayList<>();
+    protected InsertHandler                 insertHandler;
     protected EntityExecutionInterceptor    insertInterceptor;
     protected EntityExecutionInterceptor    updateInterceptor;
     protected EntityExecutionInterceptor    deleteInterceptor;
@@ -454,6 +456,15 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
         return list;
     }
 
+    public InsertHandler getInsertHandler() {
+        return insertHandler;
+    }
+
+    public EntityMappingBuilder setInsertHandler(InsertHandler insertHandler) {
+        this.insertHandler = insertHandler;
+        return this;
+    }
+
     public EntityExecutionInterceptor getInsertInterceptor() {
         return insertInterceptor;
     }
@@ -669,6 +680,7 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
                     new EntityMapping(this,
                             entityName, wideEntityName, dynamicTableName, entityClass, extendedEntityClass,
                             table, secondaryTable, fields,
+                            insertHandler,
                             insertInterceptor, updateInterceptor, deleteInterceptor, findInterceptor,
                             modelClass, validators,
                             relations,
@@ -681,7 +693,7 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
             em.getExtensions().putAll(extensions);
 
             return em;
-        }catch (RuntimeException e) {
+        } catch (RuntimeException e) {
             log.error("Error create entity mapping '" + entityName, e);
             throw e;
         }

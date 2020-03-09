@@ -24,8 +24,8 @@ import leap.lang.Strings;
 import leap.lang.expression.Expression;
 import leap.orm.OrmContext;
 import leap.orm.dao.Dao;
-import leap.orm.event.EntityEventWithWrapperImpl;
 import leap.orm.event.EntityEventHandler;
+import leap.orm.event.EntityEventWithWrapperImpl;
 import leap.orm.interceptor.EntityExecutionContext;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
@@ -38,7 +38,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class DefaultInsertCommand extends AbstractEntityDaoCommand implements InsertCommand,EntityExecutionContext {
+public class DefaultInsertCommand extends AbstractEntityDaoCommand implements InsertCommand, EntityExecutionContext {
 
     protected final SqlFactory         sf;
     protected final EntityEventHandler eventHandler;
@@ -48,9 +48,9 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
     protected Object              id;
     protected Object              generatedId;
 
-	public DefaultInsertCommand(Dao dao,EntityMapping em) {
-	    super(dao,em);
-	    this.sf		      = dao.getOrmContext().getSqlFactory();
+    public DefaultInsertCommand(Dao dao, EntityMapping em) {
+        super(dao, em);
+        this.sf = dao.getOrmContext().getSqlFactory();
         this.eventHandler = context.getEntityEventHandler();
     }
 
@@ -61,25 +61,25 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
 
     @Override
     public EntityMapping getEntityMapping() {
-	    return em;
+        return em;
     }
 
     @Override
     public Object id() {
-        if(null != id) {
+        if (null != id) {
             return id;
         }
 
-        if(null != generatedId) {
+        if (null != generatedId) {
             return generatedId;
         }
 
-        if(em.getKeyFieldNames().length == 1){
+        if (em.getKeyFieldNames().length == 1) {
             return entity.get(em.getKeyFieldNames()[0]);
-        }else if(em.getKeyFieldNames().length > 0){
-            Map<String,Object> map = new LinkedHashMap<>();
+        } else if (em.getKeyFieldNames().length > 0) {
+            Map<String, Object> map = new LinkedHashMap<>();
 
-            for(String name : em.getKeyFieldNames()) {
+            for (String name : em.getKeyFieldNames()) {
                 map.put(name, entity.get(name));
             }
 
@@ -89,22 +89,22 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
         return null;
     }
 
-	@Override
+    @Override
     public boolean isReturnGeneratedId() {
-	    return true;
+        return true;
     }
 
-	@Override
+    @Override
     public void setGeneratedId(Object id) {
-		this.generatedId = id;
-        if(null != entity) {
+        this.generatedId = id;
+        if (null != entity) {
             entity.set(em.getKeyFieldNames()[0], id);
         }
     }
 
     @Override
     public InsertCommand withId(Object id) {
-        if(em.getKeyFieldNames().length == 0){
+        if (em.getKeyFieldNames().length == 0) {
             throw new IllegalStateException("Entity '" + em.getEntityName() + "' has no id");
         }
         this.id = id;
@@ -116,14 +116,14 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
         entity = EntityWrapper.wrap(context, em, record);
         return this;
     }
-	
-	@Override
-    public int execute() {
-		prepare();
 
-        if(eventHandler.isHandleCreateEvent(context, em)) {
+    @Override
+    public int execute() {
+        prepare();
+
+        if (eventHandler.isHandleCreateEvent(context, em)) {
             return doExecuteWithEvent();
-        }else{
+        } else {
             return doExecuteUpdate();
         }
     }
@@ -136,7 +136,7 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
         //pre without transaction.
         eventHandler.preCreateEntityNoTrans(context, em, e);
 
-        if(em.hasSecondaryTable() || eventHandler.isCreateEventTransactional(context, em)) {
+        if (em.hasSecondaryTable() || eventHandler.isCreateEventTransactional(context, em)) {
             result = dao.doTransaction((status) -> {
                 e.setTransactionStatus(status);
 
@@ -153,7 +153,7 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
                 return affected;
             });
 
-        }else{
+        } else {
             result = doExecuteUpdate();
         }
 
@@ -164,19 +164,31 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
     }
 
     protected int doExecuteUpdate() {
-        String[]   fields           = entity.getFieldNames().toArray(Arrays2.EMPTY_STRING_ARRAY);
-        SqlCommand primaryCommand   = sf.createInsertCommand(context, em, fields);
-        SqlCommand secondaryCommand = em.hasSecondaryTable() ? sf.createInsertCommand(context, em, fields, true) : null;
+        final InsertHandler handler = null == em.getInsertHandler() ? InsertHandler.NOP : em.getInsertHandler();
+        handler.handleEntity(this, entity);
+
+        String[]   fields         = entity.getFieldNames().toArray(Arrays2.EMPTY_STRING_ARRAY);
+        SqlCommand primaryCommand = handler.handleNewPrimaryCommand(this, entity, fields);
+        if (null == primaryCommand) {
+            primaryCommand = sf.createInsertCommand(context, em, fields);
+        }
+        SqlCommand secondaryCommand = null;
+        if(em.hasSecondaryTable()) {
+            secondaryCommand = handler.handleNewSecondaryCommand(this, entity, fields);
+            if (null == secondaryCommand) {
+                secondaryCommand = sf.createInsertCommand(context, em, fields, true);
+            }
+        }
 
         //Resolve statement handler.
-        PreparedStatementHandler<Db> handler = null;
-        if(null != em.getInsertInterceptor()){
-            handler = em.getInsertInterceptor().getPreparedStatementHandler(this);
+        PreparedStatementHandler<Db> psHandler = null;
+        if (null != em.getInsertInterceptor()) {
+            psHandler = em.getInsertInterceptor().getPreparedStatementHandler(this);
         }
 
         //Creates map for saving.
-        Map<String,Object> map = entity.toMap();
-        if(null != values) {
+        Map<String, Object> map = entity.toMap();
+        if (null != values) {
             map.putAll(values);
         }
 
@@ -184,31 +196,38 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
         prepareIdAndSerialization(id, map);
 
         //Executes
-        int result = primaryCommand.executeUpdate(this, map, handler);
+        int result = handler.handleExecutePrimaryCommand(this, primaryCommand, map, psHandler);
+        if(result == -1) {
+            result = primaryCommand.executeUpdate(this, map, psHandler);
+        }
 
-        if(null != secondaryCommand) {
-            secondaryCommand.executeUpdate(this, withGeneratedId(map));
+        if (null != secondaryCommand) {
+            final Map<String, Object> secondaryMap = withGeneratedId(map);
+            int secondaryResult = handler.handleExecuteSecondaryCommand(this, secondaryCommand, secondaryMap);
+            if(secondaryResult == -1) {
+                secondaryCommand.executeUpdate(this, secondaryMap);
+            }
         }
 
         return result;
     }
 
-    protected Map<String,Object> withGeneratedId(Map<String,Object> map) {
-        if(null != generatedId) {
+    protected Map<String, Object> withGeneratedId(Map<String, Object> map) {
+        if (null != generatedId) {
             map.put(em.getKeyColumnNames()[0], generatedId);
         }
         return map;
     }
-	
-	protected void prepare(){
-		for(FieldMapping fm : em.getFieldMappings()){
+
+    protected void prepare() {
+        for (FieldMapping fm : em.getFieldMappings()) {
             Object value = entity.get(fm.getFieldName());
 
-            if(null == value) {
+            if (null == value) {
                 if (!Strings.isEmpty(fm.getSequenceName())) {
                     //the insertion sql must use $fieldName$
                     value = db.getDialect().getNextSequenceValueSqlString(fm.getSequenceName());
-                    if(null == values) {
+                    if (null == values) {
                         values = new HashMap<>();
                     }
                     values.put(fm.getFieldName(), value);
@@ -233,18 +252,18 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
                     }
                 }
             }
-		}
+        }
 
-        if(em.isAutoValidate()) {
+        if (em.isAutoValidate()) {
             EntityValidator validator = context.getEntityValidator();
-            Errors errors = validator.validate(entity);
-            if(!errors.isEmpty()) {
+            Errors          errors    = validator.validate(entity);
+            if (!errors.isEmpty()) {
                 throw new ValidationException(errors);
             }
         }
-	}
-	
-	protected void setGeneratedValue(FieldMapping fm,Object value){
-		entity.set(fm.getFieldName(), value);
-	}
+    }
+
+    protected void setGeneratedValue(FieldMapping fm, Object value) {
+        entity.set(fm.getFieldName(), value);
+    }
 }

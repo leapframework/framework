@@ -23,6 +23,7 @@ import leap.lang.beans.BeanType;
 import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.orm.command.InsertHandler;
 import leap.orm.event.EntityListeners;
 import leap.orm.interceptor.EntityExecutionInterceptor;
 import leap.orm.model.Model;
@@ -41,7 +42,7 @@ public class EntityMapping extends ExtensibleBase {
     }
 
     public static void addContextListeners(EntityListeners listeners) {
-        if(null == listeners) {
+        if (null == listeners) {
             return;
         }
         List<EntityListeners> list = CONTEXT_LISTENERS.get();
@@ -60,7 +61,7 @@ public class EntityMapping extends ExtensibleBase {
         try {
             addContextListeners(listeners);
             func.run();
-        }finally {
+        } finally {
             clearContextListeners();
         }
     }
@@ -69,7 +70,7 @@ public class EntityMapping extends ExtensibleBase {
         try {
             addContextListeners(listeners);
             return func.get();
-        }finally {
+        } finally {
             clearContextListeners();
         }
     }
@@ -92,6 +93,7 @@ public class EntityMapping extends ExtensibleBase {
     protected final DbColumn                   autoIncrementKeyColumn;
     protected final FieldMapping               autoIncrementKeyField;
     protected final FieldMapping               optimisticLockField;
+    protected final InsertHandler              insertHandler;
     protected final EntityExecutionInterceptor insertInterceptor;
     protected final EntityExecutionInterceptor updateInterceptor;
     protected final EntityExecutionInterceptor deleteInterceptor;
@@ -126,6 +128,7 @@ public class EntityMapping extends ExtensibleBase {
     public EntityMapping(EntityMappingBuilder builder,
                          String entityName, String wideEntityName, String dynamicTableName,
                          Class<?> entityClass, Class<?> extendedEntityClass, DbTable table, DbTable secondaryTable, List<FieldMapping> fieldMappings,
+                         InsertHandler insertHandler,
                          EntityExecutionInterceptor insertInterceptor, EntityExecutionInterceptor updateInterceptor,
                          EntityExecutionInterceptor deleteInterceptor, EntityExecutionInterceptor findInterceptor,
                          Class<? extends Model> modelClass,
@@ -155,6 +158,7 @@ public class EntityMapping extends ExtensibleBase {
         this.beanType = null == entityClass ? null : BeanType.of(entityClass);
         this.table = table;
         this.secondaryTable = secondaryTable;
+        this.insertHandler = insertHandler;
         this.insertInterceptor = insertInterceptor;
         this.updateInterceptor = updateInterceptor;
         this.deleteInterceptor = deleteInterceptor;
@@ -567,6 +571,10 @@ public class EntityMapping extends ExtensibleBase {
 
     public FieldMapping getOptimisticLockField() {
         return optimisticLockField;
+    }
+
+    public InsertHandler getInsertHandler() {
+        return insertHandler;
     }
 
     public EntityExecutionInterceptor getInsertInterceptor() {
