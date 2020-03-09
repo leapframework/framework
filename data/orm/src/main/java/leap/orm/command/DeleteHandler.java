@@ -26,7 +26,7 @@ public interface DeleteHandler {
     DeleteHandler NOP = new DeleteHandler() {
     };
 
-    default Integer handleDeletePrimary(CommandContext context, Params id, Supplier<Integer> delete) {
+    default Integer handleDelete(CommandContext context, Params id, Supplier<Integer> delete) {
         return delete.get();
     }
 

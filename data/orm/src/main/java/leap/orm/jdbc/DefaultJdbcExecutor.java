@@ -100,7 +100,7 @@ public class DefaultJdbcExecutor implements JdbcExecutor {
 
 	@Override
     public <T> T executeQuery(String sql, Object[] args, ResultSetReader<T> reader) throws NestedSQLException {
-	    return db.executeQuery(sql, reader);
+	    return db.executeQuery(sql, args, reader);
     }
 
 	@Override

@@ -85,7 +85,7 @@ public class DefaultDeleteCommand extends AbstractEntityDaoCommand implements De
             context.getSqlFactory().createDeleteCommand(context, em, true).executeUpdate(this, idParameter);
         }
 
-        return handler.handleDeletePrimary(this, idParameter, () -> primaryCommand.executeUpdate(this, idParameter));
+        return handler.handleDelete(this, idParameter, () -> primaryCommand.executeUpdate(this, idParameter));
     }
 
 }
