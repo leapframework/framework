@@ -17,25 +17,17 @@
 
 package leap.orm.command;
 
-import leap.orm.value.EntityWrapper;
+import leap.lang.params.Params;
 
-import java.util.Map;
 import java.util.function.Supplier;
 
-public interface InsertHandler {
+public interface DeleteHandler {
 
-    InsertHandler NOP = new InsertHandler() {
+    DeleteHandler NOP = new DeleteHandler() {
     };
 
-    default void preProcessCreateRecord(CommandContext context, EntityWrapper record) {
-
+    default Integer handleDeletePrimary(CommandContext context, Params id, Supplier<Integer> delete) {
+        return delete.get();
     }
 
-    default void postProcessCreateRecord(CommandContext context, Map<String, Object> record) {
-
-    }
-
-    default Integer handleInsert(CommandContext context, Map<String, Object> record, Supplier<Integer> insert) {
-        return insert.get();
-    }
 }

@@ -22,20 +22,20 @@ import leap.orm.value.EntityWrapper;
 import java.util.Map;
 import java.util.function.Supplier;
 
-public interface InsertHandler {
+public interface UpdateHandler {
 
-    InsertHandler NOP = new InsertHandler() {
+    UpdateHandler NOP = new UpdateHandler() {
     };
 
-    default void preProcessCreateRecord(CommandContext context, EntityWrapper record) {
+    default void preProcessUpdateRecord(CommandContext context, EntityWrapper record) {
 
     }
 
-    default void postProcessCreateRecord(CommandContext context, Map<String, Object> record) {
+    default void postProcessUpdateRecord(CommandContext context, Map<String, Object> record) {
 
     }
 
-    default Integer handleInsert(CommandContext context, Map<String, Object> record, Supplier<Integer> insert) {
-        return insert.get();
+    default Integer handleUpdate(CommandContext context, Map<String, Object> record, Supplier<Integer> update) {
+        return update.get();
     }
 }

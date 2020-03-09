@@ -22,7 +22,9 @@ import leap.lang.collection.SimpleCaseInsensitiveMap;
 import leap.lang.exception.ObjectExistsException;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.orm.command.DeleteHandler;
 import leap.orm.command.InsertHandler;
+import leap.orm.command.UpdateHandler;
 import leap.orm.event.EntityListenersBuilder;
 import leap.orm.interceptor.EntityExecutionInterceptor;
 import leap.orm.model.Model;
@@ -58,16 +60,18 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
     protected Map<String, String> filtersExprs    = new SimpleCaseInsensitiveMap<>();
     protected Map<String, String> aggregatesExprs = new SimpleCaseInsensitiveMap<>();
 
-    protected List<FieldMappingBuilder>     fieldMappings      = new ArrayList<>();
-    protected InsertHandler                 insertHandler;
-    protected EntityExecutionInterceptor    insertInterceptor;
-    protected EntityExecutionInterceptor    updateInterceptor;
-    protected EntityExecutionInterceptor    deleteInterceptor;
-    protected EntityExecutionInterceptor    findInterceptor;
-    protected Class<? extends Model>        modelClass;
-    protected DbTable                       physicalTable;
-    protected List<EntityValidator>         validators;
-    protected List<RelationMappingBuilder>  relationMappings   = new ArrayList<>();
+    protected List<FieldMappingBuilder>    fieldMappings      = new ArrayList<>();
+    protected InsertHandler                insertHandler;
+    protected UpdateHandler                updateHandler;
+    protected DeleteHandler                deleteHandler;
+    protected EntityExecutionInterceptor   insertInterceptor;
+    protected EntityExecutionInterceptor   updateInterceptor;
+    protected EntityExecutionInterceptor   deleteInterceptor;
+    protected EntityExecutionInterceptor   findInterceptor;
+    protected Class<? extends Model>       modelClass;
+    protected DbTable                      physicalTable;
+    protected List<EntityValidator>        validators;
+    protected List<RelationMappingBuilder> relationMappings   = new ArrayList<>();
     protected List<RelationPropertyBuilder> relationProperties = new ArrayList<>();
     protected List<UniqueKeyBuilder>        keys               = new ArrayList<>();
     protected EntityListenersBuilder        listeners          = new EntityListenersBuilder();
@@ -465,6 +469,24 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
         return this;
     }
 
+    public UpdateHandler getUpdateHandler() {
+        return updateHandler;
+    }
+
+    public EntityMappingBuilder setUpdateHandler(UpdateHandler updateHandler) {
+        this.updateHandler = updateHandler;
+        return this;
+    }
+
+    public DeleteHandler getDeleteHandler() {
+        return deleteHandler;
+    }
+
+    public EntityMappingBuilder setDeleteHandler(DeleteHandler deleteHandler) {
+        this.deleteHandler = deleteHandler;
+        return this;
+    }
+
     public EntityExecutionInterceptor getInsertInterceptor() {
         return insertInterceptor;
     }
@@ -680,7 +702,7 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
                     new EntityMapping(this,
                             entityName, wideEntityName, dynamicTableName, entityClass, extendedEntityClass,
                             table, secondaryTable, fields,
-                            insertHandler,
+                            insertHandler, updateHandler, deleteHandler,
                             insertInterceptor, updateInterceptor, deleteInterceptor, findInterceptor,
                             modelClass, validators,
                             relations,

@@ -43,6 +43,7 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
 
     protected final SqlFactory         sf;
     protected final EntityEventHandler eventHandler;
+    protected final InsertHandler      handler;
 
     protected EntityWrapper       entity;
     protected Map<String, Object> values;
@@ -53,6 +54,7 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
         super(dao, em);
         this.sf = dao.getOrmContext().getSqlFactory();
         this.eventHandler = context.getEntityEventHandler();
+        this.handler = null == em.getInsertHandler() ? InsertHandler.NOP : em.getInsertHandler();
     }
 
     @Override
@@ -170,49 +172,32 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
     }
 
     protected int doExecuteUpdate() {
-        final InsertHandler handler = null == em.getInsertHandler() ? InsertHandler.NOP : em.getInsertHandler();
-        handler.handleEntity(this, entity);
-
-        String[]   fields         = entity.getFieldNames().toArray(Arrays2.EMPTY_STRING_ARRAY);
-        SqlCommand primaryCommand = handler.handleNewPrimaryCommand(this, entity, fields);
-        if (null == primaryCommand) {
-            primaryCommand = sf.createInsertCommand(context, em, fields);
-        }
-        SqlCommand secondaryCommand = null;
-        if(em.hasSecondaryTable()) {
-            secondaryCommand = handler.handleNewSecondaryCommand(this, entity, fields);
-            if (null == secondaryCommand) {
-                secondaryCommand = sf.createInsertCommand(context, em, fields, true);
-            }
-        }
-
-        //Resolve statement handler.
-        PreparedStatementHandler<Db> psHandler = null;
-        if (null != em.getInsertInterceptor()) {
-            psHandler = em.getInsertInterceptor().getPreparedStatementHandler(this);
-        }
-
         //Creates map for saving.
+        handler.preProcessCreateRecord(this, entity);
         Map<String, Object> map = entity.toMap();
         if (null != values) {
             map.putAll(values);
         }
-
         //Prepared id and serialization
         prepareIdAndSerialization(id, map);
+        handler.postProcessCreateRecord(this, map);
 
-        //Executes
-        int result = handler.handleExecutePrimaryCommand(this, primaryCommand, map, psHandler);
-        if(result == -1) {
-            result = primaryCommand.executeUpdate(this, map, psHandler);
+        String[]   fields           = map.keySet().toArray(Arrays2.EMPTY_STRING_ARRAY);
+        SqlCommand primaryCommand   = sf.createInsertCommand(context, em, fields);
+        SqlCommand secondaryCommand = null;
+        if (em.hasSecondaryTable()) {
+            secondaryCommand = sf.createInsertCommand(context, em, fields, true);
         }
 
+        //Resolve statement handler.
+        final PreparedStatementHandler<Db> psHandler =
+                null == em.getInsertInterceptor() ? null : em.getInsertInterceptor().getPreparedStatementHandler(this);
+
+        //Executes
+        int result = handler.handleInsert(this, map, () -> primaryCommand.executeUpdate(this, map, psHandler));
+
         if (null != secondaryCommand) {
-            final Map<String, Object> secondaryMap = withGeneratedId(map);
-            int secondaryResult = handler.handleExecuteSecondaryCommand(this, secondaryCommand, secondaryMap);
-            if(secondaryResult == -1) {
-                secondaryCommand.executeUpdate(this, secondaryMap);
-            }
+            secondaryCommand.executeUpdate(this, withGeneratedId(map));
         }
 
         return result;

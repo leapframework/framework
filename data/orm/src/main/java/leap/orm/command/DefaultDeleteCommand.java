@@ -28,19 +28,21 @@ public class DefaultDeleteCommand extends AbstractEntityDaoCommand implements De
     protected final Object             id;
     protected final Params             idParameter;
     protected final SqlCommand         primaryCommand;
+    protected final DeleteHandler      handler;
 
-    public DefaultDeleteCommand(Dao dao,EntityMapping em,Object id) {
-	    super(dao,em);
+    public DefaultDeleteCommand(Dao dao, EntityMapping em, Object id) {
+        super(dao, em);
 
         this.eventHandler = context.getEntityEventHandler();
-	    this.primaryCommand = metadata.getSqlCommand(em.getEntityName(), SqlCommand.DELETE_COMMAND_NAME);
-	    this.id 		  = id;
-    	this.idParameter  = context.getParameterStrategy().createIdParameters(context, em, id);
+        this.primaryCommand = metadata.getSqlCommand(em.getEntityName(), SqlCommand.DELETE_COMMAND_NAME);
+        this.id = id;
+        this.idParameter = context.getParameterStrategy().createIdParameters(context, em, id);
+        this.handler = null == em.getDeleteHandler() ? DeleteHandler.NOP : em.getDeleteHandler();
     }
 
-	@Override
-	public int execute() {
-        if(eventHandler.isHandleDeleteEvent(context, em)) {
+    @Override
+    public int execute() {
+        if (eventHandler.isHandleDeleteEvent(context, em)) {
             int result;
 
             DeleteEntityEventImpl e = new DeleteEntityEventImpl(context, em, id);
@@ -48,7 +50,7 @@ public class DefaultDeleteCommand extends AbstractEntityDaoCommand implements De
             //pre without transaction.
             eventHandler.preDeleteEntityNoTrans(context, em, e);
 
-            if(em.hasSecondaryTable() || eventHandler.isDeleteEventTransactional(context, em)) {
+            if (em.hasSecondaryTable() || eventHandler.isDeleteEventTransactional(context, em)) {
                 result = dao.doTransaction((status) -> {
                     e.setTransactionStatus(status);
 
@@ -65,7 +67,7 @@ public class DefaultDeleteCommand extends AbstractEntityDaoCommand implements De
                     return affected;
                 });
 
-            }else{
+            } else {
                 result = doExecuteDelete();
             }
 
@@ -73,16 +75,17 @@ public class DefaultDeleteCommand extends AbstractEntityDaoCommand implements De
             eventHandler.postDeleteEntityNoTrans(context, em, e);
 
             return result;
-        }else{
+        } else {
             return doExecuteDelete();
         }
-	}
+    }
 
     protected int doExecuteDelete() {
-        if(em.hasSecondaryTable()) {
+        if (em.hasSecondaryTable()) {
             context.getSqlFactory().createDeleteCommand(context, em, true).executeUpdate(this, idParameter);
         }
-        return primaryCommand.executeUpdate(this, idParameter);
+
+        return handler.handleDeletePrimary(this, idParameter, () -> primaryCommand.executeUpdate(this, idParameter));
     }
 
 }
