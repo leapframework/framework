@@ -30,6 +30,7 @@ import leap.orm.interceptor.EntityExecutionContext;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
 import leap.orm.sql.SqlCommand;
+import leap.orm.sql.SqlContext;
 import leap.orm.sql.SqlFactory;
 import leap.orm.validation.EntityValidator;
 import leap.orm.value.EntityWrapper;
@@ -52,6 +53,11 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
         super(dao, em);
         this.sf = dao.getOrmContext().getSqlFactory();
         this.eventHandler = context.getEntityEventHandler();
+    }
+
+    @Override
+    public SqlContext getSqlContext() {
+        return this;
     }
 
     @Override

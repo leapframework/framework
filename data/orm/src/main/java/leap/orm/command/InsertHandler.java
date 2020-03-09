@@ -19,32 +19,32 @@ package leap.orm.command;
 
 import leap.core.jdbc.PreparedStatementHandler;
 import leap.orm.sql.SqlCommand;
-import leap.orm.sql.SqlContext;
 import leap.orm.value.EntityWrapper;
 
 import java.util.Map;
 
 public interface InsertHandler {
 
-    InsertHandler NOP = new InsertHandler() {};
+    InsertHandler NOP = new InsertHandler() {
+    };
 
-    default void handleEntity(SqlContext context, EntityWrapper entity) {
+    default void handleEntity(CommandContext context, EntityWrapper entity) {
 
     }
 
-    default SqlCommand handleNewPrimaryCommand(SqlContext context, EntityWrapper entity, String[] fields) {
+    default SqlCommand handleNewPrimaryCommand(CommandContext context, EntityWrapper entity, String[] fields) {
         return null;
     }
 
-    default SqlCommand handleNewSecondaryCommand(SqlContext context, EntityWrapper entity, String[] fields) {
+    default SqlCommand handleNewSecondaryCommand(CommandContext context, EntityWrapper entity, String[] fields) {
         return null;
     }
 
-    default int handleExecutePrimaryCommand(SqlContext context, SqlCommand command, Map<String, Object> map, PreparedStatementHandler psHandler) {
-        return  -1;
+    default int handleExecutePrimaryCommand(CommandContext context, SqlCommand command, Map<String, Object> map, PreparedStatementHandler psHandler) {
+        return -1;
     }
 
-    default int handleExecuteSecondaryCommand(SqlContext context, SqlCommand command, Map<String, Object> map) {
-        return  -1;
+    default int handleExecuteSecondaryCommand(CommandContext context, SqlCommand command, Map<String, Object> map) {
+        return -1;
     }
 }

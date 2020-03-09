@@ -17,27 +17,33 @@ package leap.orm.command;
 
 import leap.core.jdbc.JdbcExecutor;
 import leap.db.Db;
+import leap.lang.accessor.MapAttributeAccessor;
 import leap.orm.OrmContext;
 import leap.orm.OrmMetadata;
 import leap.orm.dao.Dao;
 import leap.orm.sql.Sql;
 import leap.orm.sql.SqlContext;
 
-public abstract class AbstractDaoCommand implements SqlContext {
+public abstract class AbstractDaoCommand extends MapAttributeAccessor implements CommandContext, SqlContext {
 
-	protected final Dao         dao;
-	protected final OrmContext  context;
-	protected final OrmMetadata metadata;
-	protected final Db			db;
+    protected final Dao         dao;
+    protected final OrmContext  context;
+    protected final OrmMetadata metadata;
+    protected final Db          db;
 
     private Sql querySql;
 
-	protected AbstractDaoCommand(Dao dao){
-		this.dao      = dao;
-		this.context  = dao.getOrmContext();
-		this.metadata = context.getMetadata();
-		this.db		  = context.getDb();
-	}
+    protected AbstractDaoCommand(Dao dao) {
+        this.dao = dao;
+        this.context = dao.getOrmContext();
+        this.metadata = context.getMetadata();
+        this.db = context.getDb();
+    }
+
+    @Override
+    public SqlContext getSqlContext() {
+        return this;
+    }
 
     @Override
     public Sql getQuerySql() {
@@ -51,11 +57,11 @@ public abstract class AbstractDaoCommand implements SqlContext {
 
     @Override
     public OrmContext getOrmContext() {
-	    return dao.getOrmContext();
+        return dao.getOrmContext();
     }
 
-	@Override
+    @Override
     public JdbcExecutor getJdbcExecutor() {
-	    return dao;
+        return dao;
     }
 }
