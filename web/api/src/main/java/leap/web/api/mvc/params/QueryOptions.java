@@ -18,6 +18,7 @@ package leap.web.api.mvc.params;
 
 import leap.lang.Strings;
 import leap.lang.json.JsonIgnore;
+import leap.lang.json.JsonName;
 import leap.lang.text.scel.ScelExpr;
 import leap.lang.value.Page;
 import leap.web.annotation.NonParam;
@@ -32,17 +33,42 @@ import java.util.Map;
 @ParamsWrapper
 public class QueryOptions extends QueryOptionsBase {
 
-    protected @QueryParam("page_size")  Integer pageSize;
-    protected @QueryParam("page")       Integer pageIndex;
-    protected @QueryParam("limit")      Integer limit;
-    protected @QueryParam("offset")     Integer offset;  //0-based
-    protected @QueryParam("total")      boolean total;
-    protected @QueryParam("orderby")    String  orderBy;
-    protected @QueryParam("viewId")     String  viewId;
-    protected @QueryParam("filters")    String  filters;
-    protected @QueryParam("aggregates") String  aggregates;
-    protected @QueryParam("groupby")    String  groupBy;
-    protected @QueryParam("joins")      String  joins;
+    @QueryParam("page_size")
+    @JsonName("page_size")
+    protected Integer pageSize;
+
+    @QueryParam("page")
+    @JsonName("page")
+    protected Integer pageIndex;
+
+    @QueryParam("limit")
+    protected Integer limit;
+
+    @QueryParam("offset")
+    protected Integer offset;  //0-based
+
+    @QueryParam("total")
+    protected boolean total;
+
+    @QueryParam("orderby")
+    @JsonName("orderby")
+    protected String orderBy;
+
+    @QueryParam("viewId")
+    protected String viewId;
+
+    @QueryParam("filters")
+    protected String filters;
+
+    @QueryParam("aggregates")
+    protected String aggregates;
+
+    @QueryParam("groupby")
+    @JsonName("groupby")
+    protected String groupBy;
+
+    @QueryParam("joins")
+    protected String joins;
 
     @NonParam
     @JsonIgnore
