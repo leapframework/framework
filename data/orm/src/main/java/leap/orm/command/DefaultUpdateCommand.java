@@ -154,22 +154,27 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
         prepareIdAndSerialization(id, map);
         handler.postProcessUpdateRecord(this, map);
 
-        String[] fields = map.keySet().toArray(Arrays2.EMPTY_STRING_ARRAY);
-
-        SqlCommand primaryCommand   = sf.createUpdateCommand(context, em, fields);
-        SqlCommand secondaryCommand = em.hasSecondaryTable() ? sf.createUpdateCommand(context, em, fields, true) : null;
-
         Integer result = 0;
 
-        if (null != primaryCommand) {
-            result = handler.handleUpdate(this, map, () -> primaryCommand.executeUpdate(this, map));
-        }
+        result = handler.handleUpdate(this, map, () -> {
+            String[]   fields         = map.keySet().toArray(Arrays2.EMPTY_STRING_ARRAY);
+            SqlCommand primaryCommand = sf.createUpdateCommand(context, em, fields);
+            if (null != primaryCommand) {
+                return primaryCommand.executeUpdate(this, map);
+            } else {
+                return 0;
+            }
+        });
 
-        if (null != secondaryCommand) {
-            if (null == result) {
-                result = secondaryCommand.executeUpdate(this, map);
-            } else if (result > 0) {
-                secondaryCommand.executeUpdate(this, map);
+        if(em.hasSecondaryTable()) {
+            String[]   fields           = map.keySet().toArray(Arrays2.EMPTY_STRING_ARRAY);
+            SqlCommand secondaryCommand = sf.createUpdateCommand(context, em, fields, true);
+            if(null != secondaryCommand) {
+                if (null == result) {
+                    result = secondaryCommand.executeUpdate(this, map);
+                } else if (result > 0) {
+                    secondaryCommand.executeUpdate(this, map);
+                }
             }
         }
 

@@ -182,22 +182,23 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
         prepareIdAndSerialization(id, map);
         handler.postProcessCreateRecord(this, map);
 
-        String[]   fields           = map.keySet().toArray(Arrays2.EMPTY_STRING_ARRAY);
-        SqlCommand primaryCommand   = sf.createInsertCommand(context, em, fields);
-        SqlCommand secondaryCommand = null;
-        if (em.hasSecondaryTable()) {
-            secondaryCommand = sf.createInsertCommand(context, em, fields, true);
-        }
-
         //Resolve statement handler.
         final PreparedStatementHandler<Db> psHandler =
                 null == em.getInsertInterceptor() ? null : em.getInsertInterceptor().getPreparedStatementHandler(this);
 
         //Executes
-        int result = handler.handleInsert(this, map, () -> primaryCommand.executeUpdate(this, map, psHandler));
+        int result = handler.handleInsert(this, map, () -> {
+            String[]   fields         = map.keySet().toArray(Arrays2.EMPTY_STRING_ARRAY);
+            SqlCommand primaryCommand = sf.createInsertCommand(context, em, fields);
+            return primaryCommand.executeUpdate(this, map, psHandler);
+        });
 
-        if (null != secondaryCommand) {
-            secondaryCommand.executeUpdate(this, withGeneratedId(map));
+        if (em.hasSecondaryTable()) {
+            String[]   fields           = map.keySet().toArray(Arrays2.EMPTY_STRING_ARRAY);
+            SqlCommand secondaryCommand = sf.createInsertCommand(context, em, fields, true);
+            if(null != secondaryCommand) {
+                secondaryCommand.executeUpdate(this, withGeneratedId(map));
+            }
         }
 
         return result;
