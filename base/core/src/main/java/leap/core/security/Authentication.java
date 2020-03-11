@@ -15,7 +15,9 @@
  */
 package leap.core.security;
 
-public interface Authentication {
+import leap.lang.accessor.AttributeAccessor;
+
+public interface Authentication extends AttributeAccessor {
 
     /**
      * Returns <code>true</code> if the authentication is authenticated.

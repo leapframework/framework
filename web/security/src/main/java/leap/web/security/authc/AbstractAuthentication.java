@@ -18,6 +18,8 @@ package leap.web.security.authc;
 import leap.core.security.Authentication;
 import leap.core.security.ClientPrincipal;
 import leap.core.security.UserPrincipal;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class AbstractAuthentication implements Authentication {
 
@@ -27,6 +29,7 @@ public abstract class AbstractAuthentication implements Authentication {
     protected String[] roles;
     protected String[] rules;
     protected String   accessMode;
+    protected Map<String, Object> attributes = new HashMap<String, Object>();
 
     @Override
     public String getToken() {
@@ -104,4 +107,24 @@ public abstract class AbstractAuthentication implements Authentication {
 
         return s.toString();
     }
+
+    @Override
+    public void removeAttribute(String name) {
+        attributes.remove(name);
+    }
+
+    @Override
+    public Object getAttribute(String name) {
+        return attributes.get(name);
+    }
+
+    @Override
+    public void setAttribute(String name, Object value) {
+        attributes.put(name, value);
+    }
+
+    public void setAttributes(Map<String, Object> attributes) {
+        this.attributes = attributes;
+    }
+
 }

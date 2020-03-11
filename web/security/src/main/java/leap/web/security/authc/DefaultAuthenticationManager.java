@@ -281,5 +281,21 @@ public class DefaultAuthenticationManager implements AuthenticationManager {
         public String toString() {
             return wrapped.toString();
         }
+
+        @Override
+        public void removeAttribute(String name) {
+            wrapped.removeAttribute(name);
+        }
+
+        @Override
+        public Object getAttribute(String name) {
+            return wrapped.getAttribute(name);
+        }
+
+        @Override
+        public void setAttribute(String name, Object value) {
+            wrapped.setAttribute(name, value);
+        }
+
     }
 }
