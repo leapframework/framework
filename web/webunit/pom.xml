@@ -100,6 +100,12 @@
 		    <artifactId>jetty-jsp-jdt</artifactId>
 		    <version>2.3.3</version>
 		    <scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.glassfish</groupId>
+					<artifactId>javax.el</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
