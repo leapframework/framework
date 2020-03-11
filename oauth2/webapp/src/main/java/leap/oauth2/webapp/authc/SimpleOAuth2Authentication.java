@@ -57,6 +57,7 @@ public class SimpleOAuth2Authentication extends AbstractAuthentication implement
         authc.setToken(token);
         authc.setRememberMe(rememberMe);
         authc.setRules(rules);
+        authc.setAttributes(attributes);
         return authc;
     }
 }

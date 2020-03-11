@@ -123,4 +123,19 @@ public class AuthenticationWrapper implements Authentication {
     public boolean isFullyAuthenticated() {
         return wrapped.isFullyAuthenticated();
     }
+
+    @Override
+    public void removeAttribute(String name) {
+        wrapped.removeAttribute(name);
+    }
+
+    @Override
+    public Object getAttribute(String name) {
+        return wrapped.getAttribute(name);
+    }
+
+    @Override
+    public void setAttribute(String name, Object value) {
+        wrapped.setAttribute(name, value);
+    }
 }
