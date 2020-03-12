@@ -1329,7 +1329,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         if (null != ex.handler) {
             ex.handler.preProcessQueryListWhere(context, options, where);
         }
-        ex.preProcessQueryListWhere(context, options, where, fields);
+        ex.preProcessQueryListWhere(context, options, query, where, fields);
 
         //view
         if (!Strings.isEmpty(options.getViewId()) && null == ex.handler) {
@@ -1496,7 +1496,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         if (null != ex.handler) {
             ex.handler.postProcessQueryListWhere(context, options, where);
         }
-        ex.postProcessQueryListWhere(context, options, where);
+        ex.postProcessQueryListWhere(context, options, query, where);
 
         if (!where.isEmpty()) {
             query.where(where.getWhere().toString(), where.getArgs().toArray());

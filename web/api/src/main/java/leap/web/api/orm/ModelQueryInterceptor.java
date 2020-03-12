@@ -31,18 +31,26 @@ public interface ModelQueryInterceptor extends ModelFindInterceptor {
         return false;
     }
 
-    default boolean preProcessQueryListWhere(ModelExecutionContext context, QueryOptions options, WhereBuilder where, Map<String, Object> filters) {
+    default boolean preProcessQueryListWhere(ModelExecutionContext context, QueryOptions options, CriteriaQuery query, WhereBuilder where, Map<String, Object> filters) {
         return preProcessQueryListWhere(context, options, where);
     }
 
+    default boolean postProcessQueryListWhere(ModelExecutionContext context, QueryOptions options, CriteriaQuery query, WhereBuilder where) {
+        return postProcessQueryListWhere(context, options, where);
+    }
+
     /**
-     * @deprecated Use {@link #preProcessQueryListWhere(ModelExecutionContext, QueryOptions, WhereBuilder, Map)}.
+     * @deprecated Use {@link #preProcessQueryListWhere(ModelExecutionContext, QueryOptions, CriteriaQuery query, WhereBuilder, Map)}.
      */
     @Deprecated
     default boolean preProcessQueryListWhere(ModelExecutionContext context, QueryOptions options, WhereBuilder where) {
         return false;
     }
 
+    /**
+     * @deprecated Use {@link #postProcessQueryListWhere(ModelExecutionContext, QueryOptions, CriteriaQuery, WhereBuilder)}.
+     */
+    @Deprecated
     default boolean postProcessQueryListWhere(ModelExecutionContext context, QueryOptions options, WhereBuilder where) {
         return false;
     }

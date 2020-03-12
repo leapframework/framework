@@ -130,9 +130,9 @@ public class ModelQueryExtension implements ModelQueryInterceptor {
     }
 
     @Override
-    public boolean preProcessQueryListWhere(ModelExecutionContext context, QueryOptions options, WhereBuilder where, Map<String, Object> filters) {
+    public boolean preProcessQueryListWhere(ModelExecutionContext context, QueryOptions options, CriteriaQuery query, WhereBuilder where, Map<String, Object> filters) {
         for (ModelQueryInterceptor interceptor : interceptors) {
-            if (interceptor.preProcessQueryListWhere(context, options, where, filters)) {
+            if (interceptor.preProcessQueryListWhere(context, options, query, where, filters)) {
                 return true;
             }
         }
@@ -140,9 +140,9 @@ public class ModelQueryExtension implements ModelQueryInterceptor {
     }
 
     @Override
-    public boolean postProcessQueryListWhere(ModelExecutionContext context, QueryOptions options, WhereBuilder where) {
+    public boolean postProcessQueryListWhere(ModelExecutionContext context, QueryOptions options, CriteriaQuery query, WhereBuilder where) {
         for (ModelQueryInterceptor interceptor : interceptors) {
-            if (interceptor.postProcessQueryListWhere(context, options, where)) {
+            if (interceptor.postProcessQueryListWhere(context, options, query, where)) {
                 return true;
             }
         }
