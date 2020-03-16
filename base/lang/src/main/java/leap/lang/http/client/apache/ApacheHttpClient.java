@@ -23,7 +23,6 @@ import leap.lang.http.client.HttpRequest;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.config.ConnectionConfig;
 import org.apache.http.config.Registry;
@@ -35,39 +34,81 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.protocol.HttpContext;
 
-import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
-public class ApacheHttpClient extends AbstractHttpClient implements Initializable,Disposable {
+public class ApacheHttpClient extends AbstractHttpClient implements Initializable, Disposable {
 
     private static final Log log = LogFactory.get(ApacheHttpClient.class);
 
     private boolean             init;
     private CloseableHttpClient httpClient;
     private RequestConfig       requestConfig;
-    private int                 maxConnectionTotal    = 1000;
-    private int                 maxConnectionPerRoute = 1000;
+    private int                 maxTotal                = 300;
+    private int                 defaultMaxPerRoute      = 30;
+    private boolean             evictExpiredConnections = true;
+    private boolean             evictIdleConnections    = true;
+    private long                maxIdleTimeInSeconds    = 10;
     private int                 bufferSize;
 
     public HttpClient getHttpClient() {
         return httpClient;
     }
 
-    public int getMaxConnectionTotal() {
-        return maxConnectionTotal;
+    public int getMaxTotal() {
+        return maxTotal;
     }
 
-    public void setMaxConnectionTotal(int maxConnectionTotal) {
-        this.maxConnectionTotal = maxConnectionTotal;
+    public void setMaxTotal(int maxTotal) {
+        this.maxTotal = maxTotal;
     }
 
-    public int getMaxConnectionPerRoute() {
-        return maxConnectionPerRoute;
+    /**
+     * @deprecated  Refactor to {@link #setMaxTotal(int)}.
+     */
+    @Deprecated
+    public void setMaxConnectionTotal(int i) {
+        this.setMaxTotal(i);
     }
 
-    public void setMaxConnectionPerRoute(int maxConnectionPerRoute) {
-        this.maxConnectionPerRoute = maxConnectionPerRoute;
+    public int getDefaultMaxPerRoute() {
+        return defaultMaxPerRoute;
+    }
+
+    public void setDefaultMaxPerRoute(int defaultMaxPerRoute) {
+        this.defaultMaxPerRoute = defaultMaxPerRoute;
+    }
+
+    /**
+     * @deprecated  Refactor {@link #setDefaultMaxPerRoute(int)}
+     */
+    @Deprecated
+    public void setMaxConnectionPerRoute(int i) {
+        this.setDefaultMaxPerRoute(i);
+    }
+
+    public boolean isEvictExpiredConnections() {
+        return evictExpiredConnections;
+    }
+
+    public void setEvictExpiredConnections(boolean evictExpiredConnections) {
+        this.evictExpiredConnections = evictExpiredConnections;
+    }
+
+    public boolean isEvictIdleConnections() {
+        return evictIdleConnections;
+    }
+
+    public void setEvictIdleConnections(boolean evictIdleConnections) {
+        this.evictIdleConnections = evictIdleConnections;
+    }
+
+    public long getMaxIdleTimeInSeconds() {
+        return maxIdleTimeInSeconds;
+    }
+
+    public void setMaxIdleTimeInSeconds(long maxIdleTimeInSeconds) {
+        this.maxIdleTimeInSeconds = maxIdleTimeInSeconds;
     }
 
     public int getBufferSize() {
@@ -84,18 +125,18 @@ public class ApacheHttpClient extends AbstractHttpClient implements Initializabl
     }
 
     public void init() {
-        if(this.init) {
+        if (this.init) {
             return;
         }
 
-        this.init          = true;
+        this.init = true;
         this.requestConfig = initRequestConfig();
-        this.httpClient    = initHttpClient();
+        this.httpClient = initHttpClient();
     }
 
     @Override
     public void dispose() throws Throwable {
-        if(null != httpClient) {
+        if (null != httpClient) {
             log.info("Close http client");
             this.init = false;
             httpClient.close();
@@ -108,8 +149,8 @@ public class ApacheHttpClient extends AbstractHttpClient implements Initializabl
 
     protected RequestConfig initRequestConfig() {
         return RequestConfig.copy(RequestConfig.DEFAULT)
-                            .setConnectTimeout(getDefaultConnectTimeout())
-                            .build();
+                .setConnectTimeout(getDefaultConnectTimeout())
+                .build();
     }
 
     protected CloseableHttpClient initHttpClient() {
@@ -119,10 +160,10 @@ public class ApacheHttpClient extends AbstractHttpClient implements Initializabl
         PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(getDefaultRegistry());
         //cm.setDefaultConnectionConfig(ConnectionConfig.custom().setBufferSize(1024 * 1024).build());
 
-        cm.setMaxTotal(maxConnectionTotal);
-        cm.setDefaultMaxPerRoute(maxConnectionPerRoute);
+        cm.setMaxTotal(maxTotal);
+        cm.setDefaultMaxPerRoute(defaultMaxPerRoute);
 
-        if(bufferSize > 0) {
+        if (bufferSize > 0) {
             ConnectionConfig cc =
                     ConnectionConfig.copy(ConnectionConfig.DEFAULT).setBufferSize(bufferSize).build();
 
@@ -131,6 +172,12 @@ public class ApacheHttpClient extends AbstractHttpClient implements Initializabl
 
         cb.setRetryHandler(new DefaultHttpRequestRetryHandler());
 
+        if(evictExpiredConnections) {
+            cb.evictExpiredConnections();
+        }
+        if(evictIdleConnections) {
+            cb.evictIdleConnections(maxIdleTimeInSeconds, TimeUnit.SECONDS);
+        }
         cb.setConnectionManager(cm);
         cb.setDefaultRequestConfig(requestConfig);
         cb.disableCookieManagement();
@@ -143,10 +190,10 @@ public class ApacheHttpClient extends AbstractHttpClient implements Initializabl
         reg.register("http", PlainConnectionSocketFactory.getSocketFactory());
 
         SSLConnectionSocketFactory sslSocketFactory =
-                new SSLConnectionSocketFactory(SSL_CONTEXT, SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-
+                new SSLConnectionSocketFactory(SSL_CONTEXT, (s, sslSession) -> true);
         reg.register("https", sslSocketFactory);
 
         return reg.build();
     }
+
 }

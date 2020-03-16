@@ -132,7 +132,7 @@
         <mssql.version>6.1.0.jre8</mssql.version>
         <derby.version>10.10.2.0</derby.version>
         <jetty.version>9.2.2.v20140723</jetty.version>
-        <httpclient.version>4.3.6</httpclient.version>
+        <httpclient.version>4.5.3</httpclient.version>
         <okhttp.version>3.8.1</okhttp.version>
         <spring-boot.version>1.5.8.RELEASE</spring-boot.version>
 	</properties>
