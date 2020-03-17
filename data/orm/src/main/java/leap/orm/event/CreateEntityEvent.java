@@ -18,6 +18,8 @@ package leap.orm.event;
 
 public interface CreateEntityEvent extends EntityEventWithWrapper {
 
-
-
+    @Override
+    default Type getType() {
+        return Type.CREATE;
+    }
 }

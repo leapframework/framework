@@ -24,6 +24,7 @@ import leap.lang.Strings;
 import leap.lang.expression.Expression;
 import leap.orm.OrmContext;
 import leap.orm.dao.Dao;
+import leap.orm.event.EntityEvent;
 import leap.orm.event.EntityEventHandler;
 import leap.orm.event.EntityEventWithWrapperImpl;
 import leap.orm.interceptor.EntityExecutionContext;
@@ -139,7 +140,7 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
     protected int doExecuteWithEvent() {
         int result;
 
-        EntityEventWithWrapperImpl e = new EntityEventWithWrapperImpl(context, entity, id);
+        EntityEventWithWrapperImpl e = new EntityEventWithWrapperImpl(context, entity, id, EntityEvent.Type.CREATE);
 
         //pre without transaction.
         eventHandler.preCreateEntityNoTrans(context, em, e);

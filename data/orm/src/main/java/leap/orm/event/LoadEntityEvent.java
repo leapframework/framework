@@ -36,6 +36,11 @@ public interface LoadEntityEvent extends EntityEvent, Iterable<LoadEntityEvent.R
         EntityWrapper getEntity();
     }
 
+    @Override
+    default Type getType() {
+        return Type.LOAD;
+    }
+
     /**
      * Returns the {@link QueryContext}
      */
