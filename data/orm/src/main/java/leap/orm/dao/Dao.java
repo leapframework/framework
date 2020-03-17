@@ -27,6 +27,7 @@ import leap.orm.Orm;
 import leap.orm.OrmConfig;
 import leap.orm.OrmContext;
 import leap.orm.OrmMetadata;
+import leap.orm.command.CascadeDeleteCommand;
 import leap.orm.command.DeleteCommand;
 import leap.orm.command.InsertCommand;
 import leap.orm.command.UpdateCommand;
@@ -240,6 +241,11 @@ public abstract class Dao implements JdbcExecutor {
 	 * Creates a new {@link DeleteCommand}.
 	 */
 	public abstract DeleteCommand cmdDelete(EntityMapping em, Object id);
+
+	/**
+	 * Creates a new {@link CascadeDeleteCommand}.
+	 */
+	public abstract CascadeDeleteCommand cmdCascadeDelete(EntityMapping em, Object id);
 	
 	//----------------------------insert--------------------------------
 	

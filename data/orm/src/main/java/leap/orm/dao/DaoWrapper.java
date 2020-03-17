@@ -29,6 +29,7 @@ import leap.lang.exception.NestedSQLException;
 import leap.lang.jdbc.ConnectionCallback;
 import leap.lang.jdbc.ConnectionCallbackWithResult;
 import leap.orm.OrmContext;
+import leap.orm.command.CascadeDeleteCommand;
 import leap.orm.command.DeleteCommand;
 import leap.orm.command.InsertCommand;
 import leap.orm.command.UpdateCommand;
@@ -123,6 +124,11 @@ public abstract class DaoWrapper extends Dao {
     @Override
     public DeleteCommand cmdDelete(EntityMapping em, Object id) {
         return dao().cmdDelete(em, id);
+    }
+
+    @Override
+    public CascadeDeleteCommand cmdCascadeDelete(EntityMapping em, Object id) {
+        return dao().cmdCascadeDelete(em, id);
     }
 
     @Override

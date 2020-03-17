@@ -18,10 +18,12 @@ package leap.orm.mapping;
 import java.util.*;
 
 import leap.lang.Beans;
+import leap.lang.New;
 import leap.lang.Objects2;
 import leap.lang.Strings;
 import leap.lang.accessor.Getter;
 import leap.lang.beans.BeanType;
+import leap.lang.collection.WrappedCaseInsensitiveMap;
 import leap.lang.params.Params;
 import leap.orm.value.EntityWrapper;
 
@@ -103,6 +105,20 @@ public class Mappings {
         }else {
             return new Object[]{id};
         }
+    }
+
+    public static Map<String, Object> getIdAsMap(EntityMapping em, Object id) {
+        Map<String, Object> m = WrappedCaseInsensitiveMap.create();
+        if(em.getKeyFieldMappings().length == 1) {
+            m.put(em.getKeyFieldNames()[0], id);
+        }else {
+            if(id instanceof Map) {
+                m.putAll((Map)id);
+            }else {
+                m.putAll(Beans.toMap(id));
+            }
+        }
+        return m;
     }
 	
 	public static String getIdToString(EntityMapping em , Map<String, Object> attributes){

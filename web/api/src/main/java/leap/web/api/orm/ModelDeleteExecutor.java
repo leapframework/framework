@@ -38,6 +38,8 @@ public interface ModelDeleteExecutor {
 
     DeleteOneResult deleteOne(Object id, DeleteOptions options);
 
+    DeleteOneResult deleteOne(Object id, DeleteOptions options, String... cascadeDeleteRelations);
+
     /**
      * Delete a record by the unique key.
      */

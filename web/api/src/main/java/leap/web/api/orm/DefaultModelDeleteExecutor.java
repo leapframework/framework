@@ -18,6 +18,10 @@
 
 package leap.web.api.orm;
 
+import leap.core.transaction.TransactionCallbackWithResult;
+import leap.core.transaction.TransactionStatus;
+import leap.lang.Arrays2;
+import leap.lang.Strings;
 import leap.orm.event.EntityListeners;
 import leap.web.api.mvc.params.DeleteOptions;
 import leap.web.api.remote.RestResource;
@@ -50,6 +54,11 @@ public class DefaultModelDeleteExecutor extends ModelExecutorBase implements Mod
 
     @Override
     public DeleteOneResult deleteOne(Object id, DeleteOptions options) {
+        return deleteOne(id, options, Arrays2.EMPTY_STRING_ARRAY);
+    }
+
+    @Override
+    public DeleteOneResult deleteOne(Object id, DeleteOptions options, String... cascadeDeleteRelations) {
         ModelExecutionContext context = new DefaultModelExecutionContext(this.context);
         if (null == options) {
             options = new DeleteOptions();
@@ -74,10 +83,36 @@ public class DefaultModelDeleteExecutor extends ModelExecutorBase implements Mod
 
                     result = em.withContextListeners(listeners, () -> {
                         if (null != handler) {
-                            return new DeleteOneResult(handler.deleteOne(context, id, finalOptions) > 0);
+                            if(!Arrays2.isEmpty(cascadeDeleteRelations)) {
+                                return dao.doTransaction(new TransactionCallbackWithResult<DeleteOneResult>() {
+                                    @Override
+                                    public DeleteOneResult doInTransaction(TransactionStatus status) throws Throwable {
+                                        dao.cmdCascadeDelete(em, id)
+                                                .setDeleteRelationsOnly(true)
+                                                .setRelationNames(cascadeDeleteRelations)
+                                                .execute();
+                                        return new DeleteOneResult(handler.deleteOne(context, id, finalOptions) > 0);
+                                    }
+                                });
+                            }else {
+                                return new DeleteOneResult(handler.deleteOne(context, id, finalOptions) > 0);
+                            }
                         } else {
                             if (!finalOptions.isCascadeDelete()) {
-                                return dao.withEvents(() -> new DeleteOneResult(dao.delete(em, id) > 0));
+                                return dao.withEvents(() ->  {
+                                    int affected;
+                                    if(!Arrays2.isEmpty(cascadeDeleteRelations)) {
+                                        affected = dao.doTransaction(new TransactionCallbackWithResult<Integer>() {
+                                            @Override
+                                            public Integer doInTransaction(TransactionStatus status) throws Throwable {
+                                                return dao.cmdCascadeDelete(em, id).setRelationNames(cascadeDeleteRelations).execute() ? 1 : 0;
+                                            }
+                                        });
+                                    }else {
+                                        affected = dao.delete(em, id);
+                                    }
+                                    return new DeleteOneResult(affected > 0);
+                                });
                             } else {
                                 return dao.withEvents(() -> new DeleteOneResult(dao.cascadeDelete(em, id)));
                             }

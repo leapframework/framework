@@ -24,6 +24,7 @@ import leap.core.value.Scalars;
 import leap.db.DbDialect;
 import leap.lang.*;
 import leap.lang.beans.DynaBean;
+import leap.lang.collection.WrappedCaseInsensitiveMap;
 import leap.lang.params.ArrayParams;
 import leap.lang.params.MapArrayParams;
 import leap.lang.params.Params;
@@ -467,19 +468,35 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
         StringBuilder s = new StringBuilder();
 
-        for (int i = 0; i < rm.getJoinFields().length; i++) {
-            if (i > 0) {
-                s.append(" and ");
-            }
-
-            JoinFieldMapping jf = rm.getJoinFields()[i];
-
+        if(rm.getJoinFields().length == 1) {
             s.append(builder.alias).append('.')
-                    .append(jf.getLocalFieldName())
+                    .append(rm.getJoinFields()[0].getLocalFieldName())
                     .append("=?");
-        }
+            return where(s.toString(), id);
+        }else {
+            EntityMapping targetEntity =
+                    dao.getOrmContext().getMetadata().getEntityMapping(rm.getTargetEntityName());
+            Map m = Mappings.getIdAsMap(targetEntity, id);
 
-        return where(s.toString(), id);
+            Object[] args = new Object[rm.getJoinFields().length];
+            for (int i = 0; i < rm.getJoinFields().length; i++) {
+                if (i > 0) {
+                    s.append(" and ");
+                }
+                JoinFieldMapping jf = rm.getJoinFields()[i];
+
+                s.append(builder.alias).append('.')
+                        .append(jf.getLocalFieldName())
+                        .append("=?");
+
+                final String refName = jf.getReferencedFieldName();
+                if(!m.containsKey(refName)) {
+                    throw new IllegalStateException("The referenced field '" + refName + "' must be provided");
+                }
+                args[i] = m.get(refName);
+            }
+            return where(s.toString(), args);
+        }
     }
 
     @Override
