@@ -50,6 +50,8 @@
 
         <module>oauth2-test-server</module>
         <module>oauth2-test-webapp</module>
+
+        <module>db-test-dm</module>
     </modules>
 
 </project>

@@ -12,6 +12,7 @@
 	<bean name="Oracle" type="leap.db.DbPlatform" class="leap.db.platform.oracle.OraclePlatform"/>
 	<bean name="SqlServer" type="leap.db.DbPlatform" class="leap.db.platform.sqlserver.SqlServerPlatform"/>
 	<bean name="PostgreSQL" type="leap.db.DbPlatform" class="leap.db.platform.postgresql.PostgreSQLPlatform"/>
+	<bean name="DM" type="leap.db.DbPlatform" class="leap.db.platform.dm.DMPlatform"/>
 	
 	<!-- DataSource -->
 	<bean name="leap" type="leap.core.ds.DataSourceFactory" class="leap.db.cp.PooledDataSourceFactory" primary="true"/>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans">
+
+<!--    <bean type="javax.sql.DataSource" class="leap.db.cp.PooledDataSource" name="h2">-->
+<!--        <property name="driverClassName" value="org.h2.Driver" />-->
+<!--        <property name="jdbcUrl"         value="jdbc:h2:mem:db2;DB_CLOSE_ON_EXIT=FALSE" />-->
+<!--    </bean>-->
+
+    <bean type="javax.sql.DataSource" class="leap.db.cp.PooledDataSource" name="dm">
+        <property name="driverClassName" value="dm.jdbc.driver.DmDriver" />
+        <property name="jdbcUrl"         value="jdbc:dm://localhost:5236" />
+        <property name="username"        value="SYSDBA" />
+        <property name="password"        value="SYSDBA" />
+    </bean>
+
+</beans>
