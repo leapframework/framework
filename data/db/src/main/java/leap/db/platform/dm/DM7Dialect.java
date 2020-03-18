@@ -1,6 +1,8 @@
 package leap.db.platform.dm;
 
+import leap.db.DbLimitQuery;
 import leap.db.platform.GenericDbDialect;
+import leap.lang.value.Limit;
 
 import java.sql.Types;
 
@@ -56,5 +58,19 @@ public class DM7Dialect extends GenericDbDialect {
 
         columnTypes.add(Types.BLOB,          "BLOB");
         columnTypes.add(Types.CLOB,          "CLOB");
+    }
+
+    @Override
+    public String getLimitQuerySql(DbLimitQuery query) {
+        Limit limit = query.getLimit();
+
+        int offset = limit.getStart() - 1;
+        int rows   = limit.getEnd()   - offset;
+
+        String sql = query.getSql(db) + " limit ?,?";
+        query.getArgs().add(offset);
+        query.getArgs().add(rows);
+
+        return sql;
     }
 }
