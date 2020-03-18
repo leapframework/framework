@@ -10,11 +10,11 @@ import java.sql.SQLException;
 public class DMPlatform extends GenericDbPlatform {
 
     public DMPlatform() {
-        this(DbPlatforms.DM);
+        this(DbPlatforms.DAMENG);
     }
 
     public DMPlatform(String type){
-        super(type,productNameContainsIgnorecaseMatcher("dm"));
+        super(type,productNameContainsIgnorecaseMatcher("DM DBMS"));
     }
 
     @Override

@@ -8,7 +8,7 @@ public class DM7Dialect extends GenericDbDialect {
 
     @Override
     protected String getTestDriverSupportsGetParameterTypeSQL() {
-        return "select 1 from dual where 1 = ?";
+        return "select 1";
     }
 
     @Override

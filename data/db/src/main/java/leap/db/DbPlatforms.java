@@ -37,7 +37,7 @@ public class DbPlatforms {
     public static final String H2         = "H2";
     public static final String DERBY	  = "Derby";
     public static final String DB2		  = "DB2";
-    public static final String DM         = "DM";
+    public static final String DAMENG     = "DaMeng";
     
     /**
      * Returns all the registered {@link DbPlatform} objects.

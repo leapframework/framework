@@ -1,6 +1,7 @@
 package app.models;
 
 import leap.core.validation.annotations.Required;
+import leap.lang.enums.Bool;
 import leap.orm.annotation.*;
 import leap.orm.model.Model;
 
@@ -17,8 +18,7 @@ public class DMEntity3 extends Model {
     private String entity1Id;
 
     @Column
-    @Required
-    @ManyToOne(DMEntity2.class)
+    @ManyToOne(value = DMEntity2.class, optional = Bool.TRUE)
     private String entity2Id;
 
     public String getId() {

@@ -4,7 +4,6 @@ import leap.lang.New;
 import leap.orm.junit.OrmTestBase;
 import leap.orm.model.Model;
 import org.junit.Test;
-
 import java.util.List;
 
 public class DMEntityModelTest extends OrmTestBase {
