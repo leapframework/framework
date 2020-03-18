@@ -45,12 +45,24 @@ public interface ModelExecutorHelper {
     }
 
     class SQLExpr {
-        protected final String       expr;
+        protected final String       sql;
         protected final List<Object> args;
 
-        public SQLExpr(String expr, List<Object> args) {
-            this.expr = expr;
+        public SQLExpr(String sql, List<Object> args) {
+            this.sql = sql;
             this.args = args;
+        }
+
+        public String getSql() {
+            return sql;
+        }
+
+        public List<Object> getArgs() {
+            return args;
+        }
+
+        public boolean isEmpty() {
+            return null == sql || sql.length() == 0;
         }
     }
 
@@ -61,6 +73,15 @@ public interface ModelExecutorHelper {
      */
     default SQLExpr toSQLExpr(EntityMapping entity, String alias, String filters) throws BadRequestException {
         return toSQLExpr(new QueryContext(entity, alias), FiltersParser.parse(filters));
+    }
+
+    /**
+     * Converts the filters expr to Standard SQL expr.
+     *
+     * @throws BadRequestException if the given filters is invalid.
+     */
+    default SQLExpr toSQLExpr(EntityMapping entity, String alias, ScelExpr filters) throws BadRequestException {
+        return toSQLExpr(new QueryContext(entity, alias), filters);
     }
 
     /**

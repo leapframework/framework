@@ -28,6 +28,8 @@ import leap.lang.text.scel.ScelToken;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
 import leap.web.exception.BadRequestException;
+import leap.web.exception.NotFoundException;
+import org.omg.CosNaming.NamingContextPackage.NotFound;
 
 import java.lang.reflect.Array;
 import java.util.List;
@@ -67,6 +69,12 @@ public class DefaultModelExecutorHelper implements ModelExecutorHelper {
                     if (!Strings.isEmpty(filtersExpr)) {
                         expr.append(filtersExpr);
                     } else {
+                        FieldMapping field = lookupField(context, name);
+                        if(null == field) {
+                            throw new BadRequestException("Property '" + name + "' not exists in '" + context.getEntity().getEntityName() + "'");
+                        }
+                        checkProperty(context, field);
+
                         String    alias = nameNode.alias();
                         ScelToken op    = nodes[++i].token();
                         String    value = nodes[++i].literal();
@@ -84,8 +92,6 @@ public class DefaultModelExecutorHelper implements ModelExecutorHelper {
                             alias = context.getAlias();
                         }
 
-                        FieldMapping field = lookupField(context, alias, name);
-                        checkProperty(context, field);
 
                         String sqlOperator = toSqlOperator(op);
 
@@ -125,12 +131,12 @@ public class DefaultModelExecutorHelper implements ModelExecutorHelper {
         return new SQLExpr(where.getWhere().toString(), where.getArgs());
     }
 
-    protected FieldMapping lookupField(QueryContext context, String alias, String propertyName) {
+    protected FieldMapping lookupField(QueryContext context, String propertyName) {
         return context.getEntity().tryGetFieldMapping(propertyName);
     }
 
     protected void checkProperty(QueryContext context, FieldMapping field) {
-        if (field.isFilterable()) {
+        if (!field.isFilterable()) {
             throw new BadRequestException("Property '" + field.getFieldName() + "' is not filterable in " + context.getEntity().getEntityName());
         }
     }

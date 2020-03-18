@@ -1505,94 +1505,13 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
     protected void applyFilters(CriteriaQuery query, ResolvedExpand expand) {
         ScelExpr filters = expand.getResolvedFilters();
-
         if (null == filters) {
             return;
         }
 
-        EntityMapping      em    = query.getEntityMapping();
-        ScelNode[]         nodes = filters.nodes();
-        SimpleWhereBuilder where = new SimpleWhereBuilder();
-
-        if (nodes.length > 0) {
-            where.and((expr) -> {
-                for (int i = 0; i < nodes.length; i++) {
-                    ScelNode node = nodes[i];
-
-                    if (node.isParen()) {
-                        expr.append(node.literal());
-                        continue;
-                    }
-
-                    if (node.isAnd()) {
-                        expr.append(" and ");
-                        continue;
-                    }
-
-                    if (node.isOr()) {
-                        expr.append(" or ");
-                        continue;
-                    }
-
-                    ScelName nameNode = (ScelName) nodes[i];
-
-                    String name        = nameNode.literal();
-                    String filtersExpr = em.getFiltersExprs().get(name);
-                    if (!Strings.isEmpty(filtersExpr)) {
-                        expr.append(filtersExpr);
-                    } else {
-                        FieldMapping field = em.getFieldMapping(name);
-                        String       alias = nameNode.alias();
-                        ScelToken    op    = nodes[++i].token();
-                        String       value = nodes[++i].literal();
-
-                        if (null == op && Strings.isEmpty(value)) {
-                            throw new BadRequestException("Invalid filter expr in '" + name + "'");
-                        }
-
-                        if (null != alias) {
-                            throw new BadRequestException("Unknown alias '" + alias + "' at property '" + nameNode.toString() + "'");
-                        } else {
-                            alias = query.alias();
-                        }
-
-                        String sqlOperator = toSqlOperator(op);
-
-                        if (op == ScelToken.IS || op == ScelToken.IS_NOT) {
-                            expr.append(alias).append('.').append(name).append(' ').append(sqlOperator);
-                            continue;
-                        }
-
-                        if (op == ScelToken.SW) {
-                            value = "%" + value;
-                        } else if (op == ScelToken.EW) {
-                            value = value + "%";
-                        } else if (op == ScelToken.CO) {
-                            value = "%" + value + "%";
-                        }
-
-                        //env
-                        if (op == ScelToken.IN || op == ScelToken.NOT_IN) {
-                            applyFieldFilterIn(expr, alias, field, nodes[i].values(), sqlOperator);
-                        } else if (value.endsWith("()") && value.length() > 2) {
-                            String envName = value.substring(0, value.length() - 2);
-                            //todo: check env is valid or allowed?
-                            String valueExpr = "#{env." + envName + "}";
-                            applyFieldFilterExpr(expr, alias, field, valueExpr, sqlOperator);
-                        } else if (value.startsWith("env.")) {
-                            //todo: check env is valid or allowed?
-                            String valueExpr = "#{" + value + "}";
-                            applyFieldFilterExpr(expr, alias, field, valueExpr, sqlOperator);
-                        } else {
-                            applyFieldFilter(expr, alias, field, value, sqlOperator);
-                        }
-                    }
-                }
-            });
-        }
-
-        if (!where.isEmpty()) {
-            query.whereAnd(where.getWhere().toString(), where.getArgs().toArray());
+        ModelExecutorHelper.SQLExpr expr = context.getHelper().toSQLExpr(query.getEntityMapping(), query.alias(), filters);
+        if (!expr.isEmpty()) {
+            query.whereAnd(expr.getSql(), expr.getArgs().toArray());
         }
     }
 
