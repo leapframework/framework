@@ -1,0 +1,54 @@
+[
+  {
+
+    driverClassName: "dm.jdbc.driver.DmDriver",
+
+    urlTemplate: "jdbc:dm://$host$:$port$",
+
+    urlParameters: [
+      {
+        name : "host",
+
+        type : "string",
+
+        required : true,
+
+        defaultValue : "localhost"
+      },
+
+      {
+        name : "port",
+
+        type : "integer",
+
+        required : true,
+
+        defaultValue : "5236"
+      },
+
+      {
+        name : "username",
+
+        type : "string",
+
+        required : true,
+
+        defaultValue : "SYSDBA"
+      },
+
+      {
+        name : "password",
+
+        secret : true,
+
+        type : "string",
+
+        required : true,
+
+        defualtValue : "SYSDBA"
+      }
+
+    ]
+
+  }
+]
