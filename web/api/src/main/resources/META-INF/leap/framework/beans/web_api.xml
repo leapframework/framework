@@ -20,6 +20,8 @@
     <!-- model -->
     <bean type="leap.web.api.orm.ModelExecutorFactory" class="leap.web.api.orm.DefaultModelExecutorFactory" primary="true"/>
 
+    <bean type="leap.web.api.orm.ModelExecutorHelper" class="leap.web.api.orm.DefaultModelExecutorHelper" primary="true"/>
+
     <beans if-class-present="leap.web.security.SecurityConfig">
         <bean type="leap.web.api.config.ApiConfigProcessor" class="leap.web.api.security.SecurityConfigProcessor"/>
     </beans>

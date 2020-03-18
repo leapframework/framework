@@ -23,6 +23,8 @@ import leap.web.api.remote.RestResourceFactory;
 
 public class DefaultModelExecutorFactory implements ModelExecutorFactory {
 
+    protected @Inject ModelExecutorHelper helper;
+
     protected @Inject ModelCreateHandler       createHandler;
     protected @Inject ModelCreateInterceptor[] createInterceptors;
 
@@ -53,6 +55,11 @@ public class DefaultModelExecutorFactory implements ModelExecutorFactory {
         this.queryExtension = new ModelQueryExtension(queryHandler, queryInterceptors);
         this.deleteExtension = new ModelDeleteExtension(deleteHandler, deleteInterceptors);
         this.relationQueryExtension = new RelationQueryExtension(relationQueryInterceptors);
+    }
+
+    @Override
+    public ModelExecutorHelper getHelper() {
+        return helper;
     }
 
     @Override
@@ -112,6 +119,7 @@ public class DefaultModelExecutorFactory implements ModelExecutorFactory {
 
     protected <T extends ModelExecutorContext> T handleContext(T context) {
         context.setRestResourceFactory(restResourceFactory);
+        context.setHelper(helper);
         return context;
     }
 }
