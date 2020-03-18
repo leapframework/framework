@@ -19,6 +19,11 @@ package leap.web.api.orm;
 public interface ModelExecutorFactory {
 
     /**
+     * Returns the {@link ModelExecutorHelper}.
+     */
+    ModelExecutorHelper getHelper();
+
+    /**
      * Returns a new {@link ModelCreateExecutor}.
      */
     default ModelCreateExecutor newCreateExecutor(ModelExecutorContext context) {

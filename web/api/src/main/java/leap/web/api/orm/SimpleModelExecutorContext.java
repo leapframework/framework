@@ -37,6 +37,7 @@ public class SimpleModelExecutorContext extends MapAttributeAccessor implements 
     protected EntityMapping       entityMapping;
     protected ActionParams        actionParams;
     protected RestResourceFactory restResourceFactory;
+    protected ModelExecutorHelper helper;
 
     public SimpleModelExecutorContext(Api api, Dao dao, MApiModel am, EntityMapping em, ActionParams params) {
         this(api.getConfig(), api.getMetadata(), dao, am, em, params);
@@ -55,8 +56,8 @@ public class SimpleModelExecutorContext extends MapAttributeAccessor implements 
         this.actionParams = params;
     }
 
-    public void setAtttributes(Map<String, Object> m) {
-        if(null != m) {
+    public void setAttributes(Map<String, Object> m) {
+        if (null != m) {
             attributes.putAll(m);
         }
     }
@@ -103,5 +104,15 @@ public class SimpleModelExecutorContext extends MapAttributeAccessor implements 
     @Override
     public void setRestResourceFactory(RestResourceFactory restResourceFactory) {
         this.restResourceFactory = restResourceFactory;
+    }
+
+    @Override
+    public ModelExecutorHelper getHelper() {
+        return helper;
+    }
+
+    @Override
+    public void setHelper(ModelExecutorHelper helper) {
+        this.helper = helper;
     }
 }

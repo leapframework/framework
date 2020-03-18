@@ -81,4 +81,14 @@ public interface ModelExecutorContext extends AttributeAccessor {
      * Set the {@link RestResourceFactory}.
      */
     void setRestResourceFactory(RestResourceFactory restResourceFactory);
+
+    /**
+     * Returns the {@link ModelExecutorHelper}.
+     */
+    ModelExecutorHelper getHelper();
+
+    /**
+     * Sets the helper.
+     */
+    void setHelper(ModelExecutorHelper helper);
 }

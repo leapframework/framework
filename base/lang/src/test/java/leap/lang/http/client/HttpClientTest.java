@@ -135,8 +135,8 @@ public class HttpClientTest extends TestBase {
     private static HttpClient createApacheClient() {
         ApacheHttpClient client = new ApacheHttpClient();
 
-        client.setMaxConnectionTotal(2);
-        client.setMaxConnectionPerRoute(2);
+        client.setMaxTotal(2);
+        client.setDefaultMaxPerRoute(2);
 
         client.init();
 

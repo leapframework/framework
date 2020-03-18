@@ -73,4 +73,14 @@ public class DefaultModelExecutionContext extends MapAttributeAccessor implement
     public void setRestResourceFactory(RestResourceFactory restResourceFactory) {
         context.setRestResourceFactory(restResourceFactory);
     }
+
+    @Override
+    public ModelExecutorHelper getHelper() {
+        return context.getHelper();
+    }
+
+    @Override
+    public void setHelper(ModelExecutorHelper helper) {
+        context.setHelper(helper);
+    }
 }

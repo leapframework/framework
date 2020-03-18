@@ -24,6 +24,7 @@ import leap.lang.Arrays2;
 import leap.lang.convert.Converts;
 import leap.lang.expression.Expression;
 import leap.orm.dao.Dao;
+import leap.orm.event.EntityEvent;
 import leap.orm.event.EntityEventHandler;
 import leap.orm.event.EntityEventWithWrapperImpl;
 import leap.orm.mapping.EntityMapping;
@@ -114,7 +115,7 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
     protected int doExecuteWithEvent() {
         int result;
 
-        EntityEventWithWrapperImpl e = new EntityEventWithWrapperImpl(context, entity, id);
+        EntityEventWithWrapperImpl e = new EntityEventWithWrapperImpl(context, entity, id, EntityEvent.Type.UPDATE);
 
         //pre without transaction.
         eventHandler.preUpdateEntityNoTrans(context, em, e);

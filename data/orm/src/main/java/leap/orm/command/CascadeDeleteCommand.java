@@ -19,6 +19,16 @@ package leap.orm.command;
 
 public interface CascadeDeleteCommand {
 
+	/**
+	 * Set to delete the given relations only.
+	 */
+	CascadeDeleteCommand setRelationNames(String... relations);
+
+	/**
+	 * Sets to true for delete relations only, does not delete the primary record.
+	 */
+	CascadeDeleteCommand setDeleteRelationsOnly(boolean b);
+
 	boolean execute();
 	
 }

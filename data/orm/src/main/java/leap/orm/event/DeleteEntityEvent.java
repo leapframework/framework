@@ -18,6 +18,11 @@ package leap.orm.event;
 
 public interface DeleteEntityEvent extends EntityEvent {
 
+    @Override
+    default Type getType() {
+        return Type.DELETE;
+    }
+
     /**
      * Required. Returns the id of entity to be deleted.
      */

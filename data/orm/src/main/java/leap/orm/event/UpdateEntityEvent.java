@@ -18,6 +18,11 @@ package leap.orm.event;
 
 public interface UpdateEntityEvent extends EntityEventWithWrapper {
 
+    @Override
+    default Type getType() {
+        return Type.UPDATE;
+    }
+
     /**
      * Required. Returns the id of entity to be updated.
      */

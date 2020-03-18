@@ -30,59 +30,87 @@ public class DefaultCascadeDeleteCommand extends AbstractEntityDaoCommand implem
 
     protected final DefaultDeleteCommand deleteCommand;
 
-	public DefaultCascadeDeleteCommand(Dao dao, EntityMapping em, Object id) {
+    protected String[] relationNames;
+    protected boolean  deleteRelationsOnly;
+
+    public DefaultCascadeDeleteCommand(Dao dao, EntityMapping em, Object id) {
         super(dao, em);
         deleteCommand = new DefaultDeleteCommand(dao, em, id);
     }
 
-	@Override
-	public boolean execute() {
-        if(em.isSelfReferencing()) {
+    @Override
+    public CascadeDeleteCommand setRelationNames(String... relations) {
+        this.relationNames = relations;
+        return this;
+    }
+
+    @Override
+    public CascadeDeleteCommand setDeleteRelationsOnly(boolean b) {
+        this.deleteRelationsOnly = b;
+        return this;
+    }
+
+    @Override
+    public boolean execute() {
+        if (em.isSelfReferencing()) {
             throw new UnsupportedOperationException("Cannot cascade delete self referencing entity '" + em.getEntityName() + "'");
         }
 
         Set<CascadeRelation> cascadeRelations = new TreeSet<>(CascadeRelation.COMPARATOR);
-        for(RelationMapping rm : em.getRelationMappings()) {
-            if(rm.isOneToMany()) {
+        for (RelationMapping rm : em.getRelationMappings()) {
+            if (rm.isOneToMany()) {
+                if (null != relationNames && relationNames.length > 0) {
+                    boolean found = false;
+                    for (String n : relationNames) {
+                        if (n.equalsIgnoreCase(rm.getName())) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        continue;
+                    }
+                }
+
                 EntityMapping   target  = context.getMetadata().getEntityMapping(rm.getTargetEntityName());
                 RelationMapping inverse = target.getRelationMapping(rm.getInverseRelationName());
                 cascadeRelations.add(new CascadeRelation(target, inverse));
             }
         }
 
-        if(cascadeRelations.isEmpty()) {
-            return deleteCommand.execute() > 0;
-        }else{
+        if (cascadeRelations.isEmpty()) {
+            return deleteRelationsOnly ? false : deleteCommand.execute() > 0;
+        } else {
             Object id = deleteCommand.id;
 
             AtomicBoolean result = new AtomicBoolean(false);
 
             dao.doTransaction((conn) -> {
 
-                for(CascadeRelation cr : cascadeRelations) {
+                for (CascadeRelation cr : cascadeRelations) {
                     EntityMapping   target  = cr.entity;
                     RelationMapping inverse = cr.relation;
 
                     CriteriaQuery query =
                             dao.createCriteriaQuery(target).whereByReference(inverse, id);
 
-                    if(inverse.isOptional() && inverse.isSetNullOnCascadeDelete()) {
+                    if (inverse.isOptional() && inverse.isSetNullOnCascadeDelete()) {
                         //update null
-                        Map<String,Object> fields = new LinkedHashMap<>();
+                        Map<String, Object> fields = new LinkedHashMap<>();
 
-                        for(JoinFieldMapping jf : inverse.getJoinFields()) {
+                        for (JoinFieldMapping jf : inverse.getJoinFields()) {
                             fields.put(jf.getLocalFieldName(), null);
                         }
 
                         query.update(fields);
-                    }else {
+                    } else {
                         //update null for self referencing relation, such as parentId.
-                        if(target.isSelfReferencing()) {
+                        if (target.isSelfReferencing()) {
 
-                            for(RelationMapping rm : target.getSelfReferencingRelations()) {
-                                Map<String,Object> fields = new LinkedHashMap<>();
+                            for (RelationMapping rm : target.getSelfReferencingRelations()) {
+                                Map<String, Object> fields = new LinkedHashMap<>();
 
-                                for(JoinFieldMapping jf : rm.getJoinFields()) {
+                                for (JoinFieldMapping jf : rm.getJoinFields()) {
                                     fields.put(jf.getLocalFieldName(), null);
                                 }
 
@@ -97,12 +125,14 @@ public class DefaultCascadeDeleteCommand extends AbstractEntityDaoCommand implem
                     }
                 }
 
-                result.set(deleteCommand.execute() > 0);
+                if(!deleteRelationsOnly) {
+                    result.set(deleteCommand.execute() > 0);
+                }
             });
 
             return result.get();
         }
-	}
+    }
 
     protected static final class CascadeRelation {
 
@@ -110,7 +140,7 @@ public class DefaultCascadeDeleteCommand extends AbstractEntityDaoCommand implem
 
             //todo : cyclic reference.
 
-            if(o1.entity.isReferenceTo(o2.entity.getEntityName())) {
+            if (o1.entity.isReferenceTo(o2.entity.getEntityName())) {
                 return -1;
             }
 
@@ -121,7 +151,7 @@ public class DefaultCascadeDeleteCommand extends AbstractEntityDaoCommand implem
         private final RelationMapping relation;
 
         public CascadeRelation(EntityMapping entity, RelationMapping relation) {
-            this.entity   = entity;
+            this.entity = entity;
             this.relation = relation;
         }
 

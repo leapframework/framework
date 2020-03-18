@@ -23,6 +23,46 @@ import leap.orm.mapping.EntityMapping;
 
 public interface EntityEvent {
 
+    enum Type {
+        CREATE,
+        UPDATE,
+        DELETE,
+        LOAD
+    }
+
+    /**
+     * Is create event ?
+     */
+    default boolean isCreate() {
+        return getType() == Type.CREATE;
+    }
+
+    /**
+     * Is update event ?
+     */
+    default boolean isUpdate() {
+        return getType() == Type.UPDATE;
+    }
+
+    /**
+     * Is delete event ?
+     */
+    default boolean isDelete() {
+        return getType() == Type.DELETE;
+    }
+
+    /**
+     * Is load event ?
+     */
+    default boolean isLoad() {
+        return getType() == Type.LOAD;
+    }
+
+    /**
+     * Returns the event type.
+     */
+    Type getType();
+
     /**
      * Required.
      */
