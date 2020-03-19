@@ -35,6 +35,8 @@ public class SqlTableName extends SqlObjectNameBase implements SqlTableSource {
     private boolean       join;
 	private EntityMapping em;
 
+	private boolean       isFullNameEm;
+
 	public SqlTableName() {
 		
 	}
@@ -70,6 +72,14 @@ public class SqlTableName extends SqlObjectNameBase implements SqlTableSource {
 
     public boolean isEntityName() {
         return null != em && em.getEntityName().equalsIgnoreCase(lastName);
+    }
+
+    public Boolean isFullNameEm() {
+        return isFullNameEm;
+    }
+
+    public void setIsFullNameEm(Boolean isFullNameEm) {
+        this.isFullNameEm = isFullNameEm;
     }
 
     @Override
@@ -124,7 +134,7 @@ public class SqlTableName extends SqlObjectNameBase implements SqlTableSource {
 
     @Override
     protected void appendLastName(Appendable buf, DbDialect dialect) throws IOException {
-        if(null != em) {
+        if(null != em && !isFullNameEm()) {
             buf.append(dialect.quoteIdentifier(em.getTableName(), true));
         }else{
             buf.append(dialect.quoteIdentifier(lastName, true));    

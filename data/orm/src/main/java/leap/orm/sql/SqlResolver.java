@@ -231,11 +231,17 @@ public class SqlResolver {
 					em = metadata.tryGetEntityMappingByTableName(lastName);
                     if(null == em) {
                         em = metadata.tryGetEntityMappingByTableName(lastName);
+                        if (null == em) {
+							em = metadata.tryGetEntityMappingByTableName(tableName.toString());
+							if (null != em) {
+								tableName.setIsFullNameEm(true);
+							}
+						}
                     }
 				}
 				if(null != em){
-					if(tableName.getSecondaryOrFirstName() == null ||
-					   Strings.equalsIgnoreCase(em.getTable().getSchema(), tableName.getSecondaryOrFirstName())){
+					if(tableName.getSecondaryOrFirstName() == null || em.getTable().getSchema() == null ||
+							Strings.equalsIgnoreCase(em.getTable().getSchema(), tableName.getSecondaryOrFirstName())){
 						tableName.setEntityMapping(em);
 					}
 				}
