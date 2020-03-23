@@ -9,6 +9,19 @@
 	<artifactId>db-test-dm</artifactId>
 	<packaging>jar</packaging>
 
+	<properties>
+		<maven.test.skip>true</maven.test.skip>
+	</properties>
+
+	<profiles>
+		<profile>
+			<id>dm</id>
+			<properties>
+				<maven.test.skip>false</maven.test.skip>
+			</properties>
+		</profile>
+	</profiles>
+
 	<dependencies>
         <dependency>
             <groupId>org.leapframework</groupId>
