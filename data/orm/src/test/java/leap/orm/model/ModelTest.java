@@ -15,12 +15,10 @@
  */
 package leap.orm.model;
 
+import leap.lang.New;
 import leap.orm.OrmTestCase;
 import leap.orm.mapping.EntityMapping;
-import leap.orm.tested.model.Model1;
-import leap.orm.tested.model.ModelBase;
-import leap.orm.tested.model.ModelWithId4;
-import leap.orm.tested.model.NotAModel;
+import leap.orm.tested.model.*;
 import leap.orm.tested.model.petclinic.Owner;
 import org.junit.Test;
 
@@ -95,6 +93,7 @@ public class ModelTest extends OrmTestCase {
 		m.create();
 		assertNotNull(ModelWithId4.find(1));
 	}
+
 	@Test
 	public void testModelDoSetId(){
 		ModelWithId4 m = new ModelWithId4();
@@ -102,4 +101,15 @@ public class ModelTest extends OrmTestCase {
 		assertEquals(3,m.getId());
 	}
 
+	@Test
+	public void testCompositeIdModelSet() {
+		ModelWithCompositeId mc = new ModelWithCompositeId();
+		mc.set("id", "123");
+		assertEquals("123", mc.getId());
+
+		ModelWithId3 m3 = new ModelWithId3();
+		m3.set("id", New.hashMap("id1", "test1", "id2", "test2"));
+		assertEquals("test1", m3.getId1());
+		assertEquals("test2", m3.getId2());
+	}
 }

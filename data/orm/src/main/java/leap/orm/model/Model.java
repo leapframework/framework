@@ -621,14 +621,15 @@ public abstract class Model implements Getter,ValidatableBean,JsonStringable {
 	 * Sets the value of field.
 	 */
 	public final <T extends Model> T set(String field,Object value){
-		if("id".equalsIgnoreCase(field)) {
+		_init();
+		if("id".equalsIgnoreCase(field) && null == em.tryGetFieldMapping(field)) {
 			return id(value);
 		}else{
 			doSet(field, value);
 			return (T)this;
 		}
 	}
-	
+
 	/**
 	 * Returns the value of createdAt.
 	 */
