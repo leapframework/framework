@@ -52,6 +52,7 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
     protected boolean             autoGenerateColumns;
     protected Boolean             queryFilterEnabled;
     protected boolean             autoValidate;
+    protected boolean             logical;
     protected boolean             remote;
     protected RemoteSettings      remoteSettings;
     protected Map<String, String> groupByExprs    = new SimpleCaseInsensitiveMap<>();
@@ -295,6 +296,14 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
 
     public boolean isNarrow() {
         return !Strings.isEmpty(wideEntityName);
+    }
+
+    public boolean isLogical() {
+        return logical;
+    }
+
+    public void setLogical(boolean logical) {
+        this.logical = logical;
     }
 
     public boolean isRemote() {
@@ -692,6 +701,10 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
     public EntityMapping build() {
         Collections.sort(fieldMappings, Comparators.ORDERED_COMPARATOR);
 
+        if(remote) {
+            logical = true;
+        }
+
         try {
             List<FieldMapping>    fields         = Builders.buildList(fieldMappings);
             List<RelationMapping> relations      = Builders.buildList(relationMappings);
@@ -707,9 +720,9 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
                             modelClass, validators,
                             relations,
                             Builders.buildArray(relationProperties, new RelationProperty[0]),
-                            autoCreateTable, queryFilterEnabled == null ? false : queryFilterEnabled,
-                            autoValidate,
-                            remote, remoteSettings, groupByExprs, selectExprs, orderByExprs, filtersExprs, aggregatesExprs,
+                            autoCreateTable, queryFilterEnabled == null ? false : queryFilterEnabled, autoValidate,
+                            logical, remote, remoteSettings,
+                            groupByExprs, selectExprs, orderByExprs, filtersExprs, aggregatesExprs,
                             listeners.build());
 
             em.getExtensions().putAll(extensions);

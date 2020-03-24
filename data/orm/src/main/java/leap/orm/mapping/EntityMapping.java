@@ -113,6 +113,7 @@ public class EntityMapping extends ExtensibleBase {
     protected final EntityListeners     listeners;
     protected final boolean             queryFilterEnabled;
     protected final boolean             autoValidate;
+    protected final boolean             logical;
     protected final boolean             remote;
     protected final RemoteSettings      remoteSettings;
     protected final Map<String, String> groupByExprs;
@@ -139,8 +140,8 @@ public class EntityMapping extends ExtensibleBase {
                          List<EntityValidator> validators,
                          List<RelationMapping> relationMappings,
                          RelationProperty[] relationProperties,
-                         boolean autoCreateTable,
-                         boolean queryFilterEnabled, boolean autoValidate, boolean remote, RemoteSettings remoteSettings,
+                         boolean autoCreateTable, boolean queryFilterEnabled, boolean autoValidate,
+                         boolean logical, boolean remote, RemoteSettings remoteSettings,
                          Map<String, String> groupByExprs, Map<String, String> selectExprs, Map<String, String> orderByExprs,
                          Map<String, String> filtersExprs, Map<String, String> aggregatesExprs,
                          EntityListeners listeners) {
@@ -193,6 +194,7 @@ public class EntityMapping extends ExtensibleBase {
         this.autoCreateTable = autoCreateTable;
         this.queryFilterEnabled = queryFilterEnabled;
         this.autoValidate = autoValidate;
+        this.logical = logical;
         this.remote = remote;
         this.remoteSettings = remoteSettings;
         this.groupByExprs = null == groupByExprs ? Collections.emptyMap() : Collections.unmodifiableMap(groupByExprs);
@@ -462,6 +464,13 @@ public class EntityMapping extends ExtensibleBase {
      */
     public boolean isAutoValidate() {
         return autoValidate;
+    }
+
+    /**
+     * Is a logical entity?
+     */
+    public boolean isLogical() {
+        return logical;
     }
 
     /**

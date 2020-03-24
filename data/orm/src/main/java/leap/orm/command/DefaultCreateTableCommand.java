@@ -60,7 +60,7 @@ public class DefaultCreateTableCommand extends AbstractDmoCommand implements Cre
     protected boolean doExecute() {
         DbTable table;
 
-        if(em.isRemote()){
+        if(em.isLogical()){
         	return false;
         }
 

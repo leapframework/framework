@@ -302,7 +302,7 @@ public class DefaultUpgradeSchemaCommand extends AbstractDmoCommand implements U
         }else{
 			Map<String, DbTable> tables = new WrappedCaseInsensitiveMap<>();
             for(EntityMapping em : entityMappings) {
-            	if(em.isRemote() || em.isNarrowEntity()) {
+            	if(em.isLogical() || em.isNarrowEntity()) {
             	    continue;
                 }
 
