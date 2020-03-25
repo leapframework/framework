@@ -19,13 +19,15 @@ package leap.orm.mapping;
 
 import leap.lang.collection.WrappedCaseInsensitiveMap;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class UnionSettings {
 
     protected String                          typeField;
     protected String                          idField;
-    protected Map<String, UnionEntityMapping> entities = WrappedCaseInsensitiveMap.create();
+    protected Map<String, UnionEntityMapping> entities      = WrappedCaseInsensitiveMap.create();
+    protected Map<String, UnionEntityMapping> typeEntityMap = new HashMap<>();
 
     public String getTypeField() {
         return typeField;
@@ -49,6 +51,20 @@ public class UnionSettings {
 
     public void setEntities(Map<String, UnionEntityMapping> entities) {
         this.entities = entities;
+    }
+
+    public UnionEntityMapping getEntityByType(String type) {
+        return typeEntityMap.get(type);
+    }
+
+    void initTypeAndEntityMap() {
+        typeEntityMap.clear();
+        for(UnionEntityMapping e : entities.values()) {
+            if(typeEntityMap.containsKey(e.getType())) {
+                throw new IllegalStateException("Found duplicated union type '" + e.getType() + "'");
+            }
+            typeEntityMap.put(e.getType(), e);
+        }
     }
 
     public static class UnionEntityMapping {

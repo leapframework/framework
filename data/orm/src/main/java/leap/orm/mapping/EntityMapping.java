@@ -220,6 +220,10 @@ public class EntityMapping extends ExtensibleBase {
         if (null != secondaryTable && keyFieldNames.length != 1) {
             throw new IllegalStateException("Entity with secondary table must has one key field only");
         }
+
+        if(null != unionSettings) {
+            this.unionSettings.initTypeAndEntityMap();
+        }
     }
 
     /**
