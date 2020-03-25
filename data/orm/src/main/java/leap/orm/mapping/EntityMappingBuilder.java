@@ -56,6 +56,7 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
     protected boolean             logical;
     protected boolean             remote;
     protected RemoteSettings      remoteSettings;
+    protected UnionSettings       unionSettings;
     protected Map<String, String> groupByExprs    = new SimpleCaseInsensitiveMap<>();
     protected Map<String, String> selectExprs     = new SimpleCaseInsensitiveMap<>();
     protected Map<String, String> orderByExprs    = new SimpleCaseInsensitiveMap<>();
@@ -697,6 +698,22 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
         return listeners;
     }
 
+    public RemoteSettings getRemoteSettings() {
+        return remoteSettings;
+    }
+
+    public void setRemoteSettings(RemoteSettings remoteSettings) {
+        this.remoteSettings = remoteSettings;
+    }
+
+    public UnionSettings getUnionSettings() {
+        return unionSettings;
+    }
+
+    public void setUnionSettings(UnionSettings unionSettings) {
+        this.unionSettings = unionSettings;
+    }
+
     private String entity() {
         return Strings.isEmpty(entityName) ? entityClass.getSimpleName() : entityName;
     }
@@ -730,7 +747,7 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
                             relations,
                             Builders.buildArray(relationProperties, new RelationProperty[0]),
                             autoCreateTable, queryFilterEnabled == null ? false : queryFilterEnabled, autoValidate,
-                            logical, remote, remoteSettings,
+                            logical, remote, remoteSettings, unionSettings,
                             groupByExprs, selectExprs, orderByExprs, filtersExprs, aggregatesExprs,
                             listeners.build());
 
@@ -807,13 +824,5 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
         secondaryTable.addForeignKey(fk);
 
         return secondaryTable.build();
-    }
-
-    public RemoteSettings getRemoteSettings() {
-        return remoteSettings;
-    }
-
-    public void setRemoteSettings(RemoteSettings remoteSettings) {
-        this.remoteSettings = remoteSettings;
     }
 }

@@ -117,6 +117,7 @@ public class EntityMapping extends ExtensibleBase {
     protected final boolean             logical;
     protected final boolean             remote;
     protected final RemoteSettings      remoteSettings;
+    protected final UnionSettings       unionSettings;
     protected final Map<String, String> groupByExprs;
     protected final Map<String, String> selectExprs;
     protected final Map<String, String> orderByExprs;
@@ -143,7 +144,7 @@ public class EntityMapping extends ExtensibleBase {
                          List<RelationMapping> relationMappings,
                          RelationProperty[] relationProperties,
                          boolean autoCreateTable, boolean queryFilterEnabled, boolean autoValidate,
-                         boolean logical, boolean remote, RemoteSettings remoteSettings,
+                         boolean logical, boolean remote, RemoteSettings remoteSettings,UnionSettings unionSettings,
                          Map<String, String> groupByExprs, Map<String, String> selectExprs, Map<String, String> orderByExprs,
                          Map<String, String> filtersExprs, Map<String, String> aggregatesExprs,
                          EntityListeners listeners) {
@@ -200,6 +201,7 @@ public class EntityMapping extends ExtensibleBase {
         this.logical = logical;
         this.remote = remote;
         this.remoteSettings = remoteSettings;
+        this.unionSettings = unionSettings;
         this.groupByExprs = null == groupByExprs ? Collections.emptyMap() : Collections.unmodifiableMap(groupByExprs);
         this.selectExprs = null == selectExprs ? Collections.emptyMap() : Collections.unmodifiableMap(selectExprs);
         this.orderByExprs = null == orderByExprs ? Collections.emptyMap() : Collections.unmodifiableMap(orderByExprs);
@@ -652,6 +654,14 @@ public class EntityMapping extends ExtensibleBase {
 
     public RemoteSettings getRemoteSettings() {
         return remoteSettings;
+    }
+
+    public boolean isUnionEntity() {
+        return null != unionSettings;
+    }
+
+    public UnionSettings getUnionSettings() {
+        return unionSettings;
     }
 
     public Map<String, String> getGroupByExprs() {
