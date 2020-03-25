@@ -82,12 +82,15 @@ public class JwtIdTokenGenerator implements IdTokenGenerator {
            "picture": "http://example.com/janedoe/me.jpg"
           }
          */
-        
-        claims.put(JWT.CLAIM_AUDIENCE, client.getId());
-        claims.put(JWT.CLAIM_SUBJECT,  user.getId().toString());
+        if(null != client){
+            claims.put(JWT.CLAIM_AUDIENCE, client.getId());
+        }
         claims.put(JWT.CLAIM_EXPIRATION_TIME, System.currentTimeMillis()/1000L+expiresIn);
-        claims.put("name",             user.getName());
-        claims.put("username",       user.getLoginName());
+        if (null != user){
+            claims.put(JWT.CLAIM_SUBJECT,  user.getIdAsString());
+            claims.put("name",             user.getName());
+            claims.put("username",       user.getLoginName());
+        }
         
         //TODO : other user properties
 
@@ -97,7 +100,7 @@ public class JwtIdTokenGenerator implements IdTokenGenerator {
         }
         
         if(extend != null){
-            extend.forEach((s, o) -> claims.put(s,o));
+            extend.forEach(claims::put);
         }
         
         return claims;
