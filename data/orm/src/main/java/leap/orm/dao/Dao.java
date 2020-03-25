@@ -75,6 +75,13 @@ public abstract class Dao implements JdbcExecutor {
     public static Dao of(Class<?> entityClass) {
         return Orm.dao(entityClass);
     }
+
+	/**
+	 * Returns the {@link EntityMapping}.
+	 */
+	public EntityMapping getEntityMapping(String name) {
+    	return getOrmContext().getMetadata().getEntityMapping(name);
+	}
 	
 	/**
 	 * Returns the {@link OrmContext} of this dao.
