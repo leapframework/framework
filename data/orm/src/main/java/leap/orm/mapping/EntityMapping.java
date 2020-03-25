@@ -86,6 +86,7 @@ public class EntityMapping extends ExtensibleBase {
     protected final BeanType                   beanType;
     protected final DbTable                    table;
     protected final DbTable                    secondaryTable;
+    protected final String                     queryView;
     protected final FieldMapping[]             fieldMappings;
     protected final FieldMapping[]             filterFieldMappings;
     protected final FieldMapping[]             keyFieldMappings;
@@ -132,7 +133,8 @@ public class EntityMapping extends ExtensibleBase {
 
     public EntityMapping(EntityMappingBuilder builder,
                          String entityName, String wideEntityName, String dynamicTableName,
-                         Class<?> entityClass, Class<?> extendedEntityClass, DbTable table, DbTable secondaryTable, List<FieldMapping> fieldMappings,
+                         Class<?> entityClass, Class<?> extendedEntityClass, DbTable table, DbTable secondaryTable,
+                         String queryView, List<FieldMapping> fieldMappings,
                          InsertHandler insertHandler, UpdateHandler updateHandler, DeleteHandler deleteHandler,
                          EntityExecutionInterceptor insertInterceptor, EntityExecutionInterceptor updateInterceptor,
                          EntityExecutionInterceptor deleteInterceptor, EntityExecutionInterceptor findInterceptor,
@@ -163,6 +165,7 @@ public class EntityMapping extends ExtensibleBase {
         this.beanType = null == entityClass ? null : BeanType.of(entityClass);
         this.table = table;
         this.secondaryTable = secondaryTable;
+        this.queryView = queryView;
         this.insertHandler = insertHandler;
         this.updateHandler = updateHandler;
         this.deleteHandler = deleteHandler;
@@ -257,6 +260,20 @@ public class EntityMapping extends ExtensibleBase {
      */
     public String getTableName() {
         return table.getName();
+    }
+
+    /**
+     * Returns true if query view defined.
+     */
+    public boolean hasQueryView() {
+        return null != queryView;
+    }
+
+    /**
+     * Returns the sql as query view.
+     */
+    public String getQueryView() {
+        return queryView;
     }
 
     /**

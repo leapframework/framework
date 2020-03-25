@@ -1359,6 +1359,8 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
             sql.append(" from ");
             if (!Strings.isEmpty(sqlView)) {
                 sql.append("(").append(sqlView).append(")");
+            }else if(em.hasQueryView()) {
+                sql.append("(").append(em.getQueryView()).append(")");
             } else {
                 sql.append(em.getEntityName());
             }

@@ -52,6 +52,7 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
     protected boolean             autoGenerateColumns;
     protected Boolean             queryFilterEnabled;
     protected boolean             autoValidate;
+    protected String              queryView;
     protected boolean             logical;
     protected boolean             remote;
     protected RemoteSettings      remoteSettings;
@@ -296,6 +297,14 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
 
     public boolean isNarrow() {
         return !Strings.isEmpty(wideEntityName);
+    }
+
+    public String getQueryView() {
+        return queryView;
+    }
+
+    public void setQueryView(String queryView) {
+        this.queryView = queryView;
     }
 
     public boolean isLogical() {
@@ -714,7 +723,7 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
             EntityMapping em =
                     new EntityMapping(this,
                             entityName, wideEntityName, dynamicTableName, entityClass, extendedEntityClass,
-                            table, secondaryTable, fields,
+                            table, secondaryTable, queryView, fields,
                             insertHandler, updateHandler, deleteHandler,
                             insertInterceptor, updateInterceptor, deleteInterceptor, findInterceptor,
                             modelClass, validators,
