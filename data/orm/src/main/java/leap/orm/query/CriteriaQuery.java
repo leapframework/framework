@@ -162,6 +162,11 @@ public interface CriteriaQuery<T> extends Query<T> {
     CriteriaQuery<T> distinct();
 
     /**
+     * Select the items by {@link #addSelectItem(String)} or {@link #addSelectField(String)} or {@link #addSelectFields(String...)} only.
+     */
+    CriteriaQuery<T> selectNone();
+
+    /**
      * Sets the selected fields(columns) in the CriteriaQuery result.
      * <p>
      * <p>

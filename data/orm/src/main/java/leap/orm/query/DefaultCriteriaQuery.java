@@ -54,6 +54,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     protected SqlBuilder               builder;
     protected String                   sqlView;
     protected List<JoinBuilder>        joins = new ArrayList<>(1);
+    protected boolean                  selectNone;
     protected String[]                 selects;
     protected String                   where;
     protected ArrayParams              whereParameters;
@@ -586,6 +587,12 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     @Override
     public CriteriaQuery<T> distinct() {
         this.distinct = true;
+        return this;
+    }
+
+    @Override
+    public CriteriaQuery<T> selectNone() {
+        this.selectNone = true;
         return this;
     }
 
@@ -1318,38 +1325,49 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         protected SqlBuilder columns() {
             sql.append(' ');
 
-            if (null == columns || columns.length == 0) {
-                SqlFactory sf = dao.getOrmContext().getSqlFactory();
-                sql.append(sf.createSelectColumns(dao.getOrmContext(), em, alias));
-            } else {
-                int index = 0;
-                for (String column : columns) {
-                    if (index > 0) {
-                        sql.append(",");
-                    }
+            boolean selected = false;
+            if(!selectNone) {
+                if (null == columns || columns.length == 0) {
+                    SqlFactory sf = dao.getOrmContext().getSqlFactory();
+                    sql.append(sf.createSelectColumns(dao.getOrmContext(), em, alias));
+                } else {
+                    int index = 0;
+                    for (String column : columns) {
+                        if (index > 0) {
+                            sql.append(",");
+                        }
 
-                    if (column.contains(".") || column.contains(" ") || column.contains("(")) {
-                        sql.append(column);
-                    } else {
-                        sql.append(alias).append(".").append(column);
-                    }
+                        if (column.contains(".") || column.contains(" ") || column.contains("(")) {
+                            sql.append(column);
+                        } else {
+                            sql.append(alias).append(".").append(column);
+                        }
 
-                    index++;
+                        index++;
+                    }
                 }
+                selected = true;
             }
+
             if (null != extraSelectColumns) {
                 for(String column : extraSelectColumns) {
                     if(Arrays2.containsIgnoreCase(columns, column)) {
                         continue;
                     }
-                    sql.append(',');
+                    if(selected) {
+                        sql.append(',');
+                    }
                     sql.append(alias).append('.').append(column);
+                    selected = true;
                 }
             }
             if (null != extraSelectItems) {
                 for (String item : extraSelectItems) {
-                    sql.append(",");
+                    if(selected) {
+                        sql.append(",");
+                    }
                     sql.append(item);
+                    selected = true;
                 }
             }
             return this;

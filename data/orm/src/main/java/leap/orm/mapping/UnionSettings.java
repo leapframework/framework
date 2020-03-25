@@ -68,8 +68,18 @@ public class UnionSettings {
     }
 
     public static class UnionEntityMapping {
+        protected String                         entityName;
         protected String                         type;
+        protected String                         idField;
         protected Map<String, UnionFieldMapping> fields = WrappedCaseInsensitiveMap.create();
+
+        public String getEntityName() {
+            return entityName;
+        }
+
+        public void setEntityName(String entityName) {
+            this.entityName = entityName;
+        }
 
         public String getType() {
             return type;
@@ -77,6 +87,18 @@ public class UnionSettings {
 
         public void setType(String type) {
             this.type = type;
+        }
+
+        public String getIdField() {
+            return idField;
+        }
+
+        public void setIdField(String idField) {
+            this.idField = idField;
+        }
+
+        public UnionFieldMapping getField(String name) {
+            return fields.get(name);
         }
 
         public Map<String, UnionFieldMapping> getFields() {
