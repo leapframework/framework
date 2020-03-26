@@ -20,13 +20,11 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import leap.db.DbLimitQuery;
 import leap.db.change.ColumnDefinitionChange;
 import leap.db.change.SchemaChangeContext;
 import leap.db.model.DbColumn;
 import leap.db.model.DbColumnBuilder;
-import leap.db.model.DbSchemaName;
 import leap.db.model.DbSchemaObjectName;
 import leap.db.platform.GenericDbDialect;
 import leap.lang.Collections2;
