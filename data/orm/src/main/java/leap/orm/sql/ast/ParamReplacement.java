@@ -51,11 +51,6 @@ public class ParamReplacement extends NamedParamNode {
     }
 
 	@Override
-    protected Object getParameterValue(SqlStatementBuilder stm, Params params) {
-	    return params.get(name);
-    }
-
-	@Override
 	protected void toString_(Appendable buf) throws IOException {
 		buf.append('$').append(name).append('$');
     }

@@ -150,7 +150,7 @@ public class DefaultFindListCommand<T> extends AbstractEntityDaoCommand implemen
 	
 	protected Object createSingleIdParameters() {
 		MapParams p = new MapParams();
-		p.set(em.getKeyColumnNames()[0], ids);
+		p.set(em.getKeyFieldNames()[0], ids);
 		return p;
 	}
 }

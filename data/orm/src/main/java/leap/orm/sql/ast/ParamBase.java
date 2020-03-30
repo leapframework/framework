@@ -55,9 +55,8 @@ public abstract class ParamBase extends AstNode {
      * Evaluates the param value.
      */
 	public Object eval(SqlStatementBuilder stm, Params params){
-		if(params.isIndexed()){
-			stm.increaseAndGetParameterIndex();
-			return params.get(stm.currentParameterIndex());
+		if(params.isArray()){
+			return params.get(stm.increaseAndGetParameterIndex());
 		}else{
 			return getParameterValue(stm, params);
 		}

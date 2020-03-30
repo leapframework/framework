@@ -130,6 +130,8 @@ public class DefaultSqlFactory implements SqlFactory {
 
         sql.append("insert into ").append(secondary ? em.getSecondaryTableName() : em.getEntityName()).append("(");
 
+        boolean embedded = false;
+
         int index = 0;
         for(FieldMapping fm : em.getFieldMappings()){
         	if(fm.isInsert()){
@@ -142,6 +144,13 @@ public class DefaultSqlFactory implements SqlFactory {
                     continue;
                 }
 
+                if(fm.isEmbedded()) {
+					if(!embedded) {
+						embedded = true;
+					}
+                	continue;
+				}
+
             	if(index > 0){
             		sql.append(",");
             		values.append(",");
@@ -150,6 +159,16 @@ public class DefaultSqlFactory implements SqlFactory {
         		index++;
         	}
         }
+
+        if(embedded) {
+        	if(index > 0) {
+				sql.append(",");
+				values.append(",");
+			}
+			final String columnName = em.getEmbeddedColumn().getName();
+			sql.append(columnName);
+			values.append('#').append(columnName).append('#');
+		}
 
         if(index == 0) {
         	log.warn("Cannot create insert sql for entity '{}' : no insert columns", em.getEntityName());
@@ -179,6 +198,8 @@ public class DefaultSqlFactory implements SqlFactory {
 
         int index = 0;
 
+        boolean embedded = false;
+
         for(FieldMapping fm : em.getFieldMappings()){
         	if(!fm.isInsert()){
         		continue;
@@ -193,6 +214,13 @@ public class DefaultSqlFactory implements SqlFactory {
                     continue;
                 }
             }
+
+            if(fm.isEmbedded()) {
+            	if(!embedded) {
+            		embedded = true;
+				}
+            	continue;
+			}
 
         	boolean contains = false;
         	for(String field : fields){
@@ -212,7 +240,17 @@ public class DefaultSqlFactory implements SqlFactory {
         	}
         }
 
-        sql.append(") values (").append(values).append(")");
+		if(embedded) {
+			if(index > 0) {
+				sql.append(",");
+				values.append(",");
+			}
+			final String columnName = em.getEmbeddedColumn().getName();
+			sql.append(columnName);
+			values.append('#').append(columnName).append('#');
+		}
+
+		sql.append(") values (").append(values).append(")");
 
 		return sql.toString();
 	}

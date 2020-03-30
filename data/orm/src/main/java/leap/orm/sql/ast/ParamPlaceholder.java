@@ -34,20 +34,7 @@ public class ParamPlaceholder extends NamedParamNode {
 		Args.notNull(token);
 	    this.token = token;
     }
-	
-	public Object eval(SqlStatementBuilder stm, Params params){
-		if(params.isIndexed()) {
-			if(params.contains(name)) {
-				return params.get(name);
-			}else{
-				stm.increaseAndGetParameterIndex();
-				return params.get(stm.currentParameterIndex());
-			}
-		}else{
-			return getParameterValue(stm, params);
-		}
-	}
-	
+
 	@Override
     protected void prepareBatchStatement_(SqlContext context, PreparedBatchSqlStatementBuilder stm,Object[] params) throws IOException {
 		stm.append(JDBC.PARAMETER_PLACEHOLDER_CHAR);
@@ -95,10 +82,5 @@ public class ParamPlaceholder extends NamedParamNode {
 		}else{
 			throw new IllegalStateException("Unsupported placeholder token '" + token.name() + "'");	
 		}
-    }
-	
-	@Override
-    protected Object getParameterValue(SqlStatementBuilder stm, Params params) {
-	    return params.get(name);
     }
 }
