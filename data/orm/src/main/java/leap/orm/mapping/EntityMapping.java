@@ -90,6 +90,7 @@ public class EntityMapping extends ExtensibleBase {
     protected final String                     queryView;
     protected final FieldMapping[]             fieldMappings;
     protected final FieldMapping[]             filterFieldMappings;
+    protected final FieldMapping[]             embeddedFieldMappings;
     protected final FieldMapping[]             keyFieldMappings;
     protected final String[]                   keyFieldNames;
     protected final String[]                   keyColumnNames;
@@ -191,6 +192,7 @@ public class EntityMapping extends ExtensibleBase {
         this.targetEntityRelations = createTargetEntityRelations();
         this.referenceToRelations = createReferenceToRelations();
         this.filterFieldMappings = evalFilterFieldMappings();
+        this.embeddedFieldMappings = evalEmbeddedFieldMappings();
         this.keyFieldMappings = evalKeyFieldMappings();
         this.keyFieldNames = evalKeyFieldNames();
         this.keyColumnNames = evalKeyColumnNames();
@@ -617,6 +619,14 @@ public class EntityMapping extends ExtensibleBase {
         return filterFieldMappings;
     }
 
+    public boolean hasEmbeddedFieldMappings() {
+        return embeddedFieldMappings.length > 0;
+    }
+
+    public FieldMapping[] getEmbeddedFieldMappings() {
+        return embeddedFieldMappings;
+    }
+
     public FieldMapping getOptimisticLockField() {
         return optimisticLockField;
     }
@@ -725,6 +735,17 @@ public class EntityMapping extends ExtensibleBase {
             }
         }
 
+        return list.toArray(new FieldMapping[list.size()]);
+    }
+
+    private FieldMapping[] evalEmbeddedFieldMappings() {
+        List<FieldMapping> list = New.arrayList();
+
+        for (FieldMapping fm : this.fieldMappings) {
+            if (fm.isEmbedded()) {
+                list.add(fm);
+            }
+        }
         return list.toArray(new FieldMapping[list.size()]);
     }
 
