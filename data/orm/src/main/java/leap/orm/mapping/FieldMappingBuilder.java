@@ -59,6 +59,7 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
     protected Expression            insertValue;
     protected Boolean               update;
     protected Expression            updateValue;
+    protected Boolean				embedded;
     protected Boolean               filtered;
     protected Expression            filteredIf;
     protected Expression            filteredValue;
@@ -587,7 +588,15 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		return this;
 	}
 
-    public boolean getFiltered() {
+	public Boolean getEmbedded() {
+		return embedded;
+	}
+
+	public void setEmbedded(Boolean embedded) {
+		this.embedded = embedded;
+	}
+
+	public boolean getFiltered() {
         return null != filtered && filtered;
     }
 
@@ -746,6 +755,10 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 			update = column.isPrimaryKey() ? false : true;
 		}
 
+		if(null == embedded) {
+			embedded = false;
+		}
+
         if(null == filtered) {
             filtered = false;
         }
@@ -768,7 +781,7 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 	    						javaType,
 	    						beanProperty, secondary, column.build(), sequenceName,
 	    						nullable,maxLength,precision,scale,
-                                insert, update, filtered, filteredIf,
+                                insert, update, embedded, filtered, filteredIf,
                                 defaultValueExpression,
                                 insertValue, updateValue, filteredValue,
 	    						optimisticLock,newOptimisticLockFieldName,

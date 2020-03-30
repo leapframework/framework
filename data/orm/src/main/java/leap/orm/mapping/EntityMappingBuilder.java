@@ -79,48 +79,6 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
     protected List<UniqueKeyBuilder>        keys               = new ArrayList<>();
     protected EntityListenersBuilder        listeners          = new EntityListenersBuilder();
 
-    /*
-    public EntityMappingBuilder shallowCopy() {
-        EntityMappingBuilder c = new EntityMappingBuilder();
-
-        c.entityName = entityName;
-        c.entityClass = entityClass;
-        c.extendedEntityClass = extendedEntityClass;
-        c._abstract = _abstract;
-        c.table = null == table ? null : new DbTableBuilder(table.build());
-        c.secondaryTable = null == secondaryTable ? null : new DbTableBuilder(secondaryTable.build());
-        c.tablePrefix = tablePrefix;
-        c.dynamicTableName = dynamicTableName;
-        c.tableNameDeclared = tableNameDeclared;
-        c.idDeclared = idDeclared;
-        c.autoCreateTable = autoCreateTable;
-        c.autoGenerateColumns = autoGenerateColumns;
-        c.queryFilterEnabled = queryFilterEnabled;
-        c.autoValidate = autoValidate;
-        c.remote = remote;
-        c.remoteSettings = Beans.copyNew(remoteSettings);
-        c.fieldMappings.addAll(fieldMappings);
-        c.insertInterceptor = insertInterceptor;
-        c.updateInterceptor = updateInterceptor;
-        c.deleteInterceptor = deleteInterceptor;
-        c.findInterceptor = findInterceptor;
-        c.modelClass = modelClass;
-        c.physicalTable = physicalTable;
-
-        if(null != validators) {
-            c.validators = new ArrayList<>();
-            c.validators.addAll(validators);
-        }
-
-        c.relationMappings.addAll(relationMappings);
-        c.relationProperties.addAll(relationProperties);
-        c.keys.addAll(keys);
-        c.listeners = listeners;
-
-        return c;
-    }
-    */
-
     public Class<?> getSourceClass() {
         return null != entityClass ? entityClass : modelClass;
     }
@@ -773,6 +731,10 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
 
         //columns
         for (FieldMapping fm : fields) {
+            if(fm.isEmbedded()) {
+                continue;
+            }
+
             if (!fm.isSecondary()) {
                 table.addColumn(fm.getColumn());
             }
