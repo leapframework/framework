@@ -337,6 +337,13 @@ public class EntityMapping extends ExtensibleBase {
     }
 
     /**
+     * Returns the embedded column name or null.
+     */
+    public String getEmbeddedColumnName() {
+        return null == embeddedColumn? null : embeddedColumn.getName();
+    }
+
+    /**
      * Returns the column that stores embedded fields.
      */
     public DbColumn getEmbeddedColumn() {

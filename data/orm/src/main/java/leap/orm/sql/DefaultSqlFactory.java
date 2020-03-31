@@ -280,6 +280,8 @@ public class DefaultSqlFactory implements SqlFactory {
 
 		int index = 0;
 
+		boolean embedded = false;
+
 		for(FieldMapping fm : em.getFieldMappings()){
 			if(fm.isUpdate() && !fm.isPrimaryKey()){
 
@@ -291,6 +293,13 @@ public class DefaultSqlFactory implements SqlFactory {
                     continue;
                 }
 
+				if(fm.isEmbedded()) {
+					if(!embedded) {
+						embedded = true;
+					}
+					continue;
+				}
+
 				if(index > 0){
 					sql.append(",");
 				}
@@ -299,6 +308,16 @@ public class DefaultSqlFactory implements SqlFactory {
 
 				index++;
 			}
+		}
+
+		if(embedded) {
+			if(index > 0) {
+				sql.append(",");
+			}
+			final String columnName = em.getEmbeddedColumn().getName();
+			sql.append(columnName).append('=');
+			sql.append('#').append(columnName).append('#');
+			index++;
 		}
 
 		if(index == 0) {
@@ -333,6 +352,8 @@ public class DefaultSqlFactory implements SqlFactory {
 
 		int index = 0;
 
+		boolean embedded = false;
+
 		for(FieldMapping fm : em.getFieldMappings()){
 
 			if(fm.isPrimaryKey() || !fm.isUpdate()){
@@ -346,6 +367,13 @@ public class DefaultSqlFactory implements SqlFactory {
             if (secondary && !fm.isSecondary()) {
                 continue;
             }
+
+			if(fm.isEmbedded()) {
+				if(!embedded) {
+					embedded = true;
+				}
+				continue;
+			}
 
         	boolean contains = false;
         	for(String field : fields){
@@ -364,6 +392,16 @@ public class DefaultSqlFactory implements SqlFactory {
 
 				index++;
 			}
+		}
+
+		if(embedded) {
+			if(index > 0) {
+				sql.append(",");
+			}
+			final String columnName = em.getEmbeddedColumn().getName();
+			sql.append(columnName).append('=');
+			sql.append('#').append(columnName).append('#');
+			index++;
 		}
 
         if(index == 0) {
@@ -528,6 +566,10 @@ public class DefaultSqlFactory implements SqlFactory {
         int index = 0;
 
         for(FieldMapping fm : em.getFieldMappings()){
+        	if(fm.isEmbedded()) {
+        		continue;
+			}
+
             if(index > 0) {
                 s.append(',');
             }
@@ -540,6 +582,14 @@ public class DefaultSqlFactory implements SqlFactory {
 
             index++;
         }
+
+        if(em.hasEmbeddedFieldMappings()) {
+        	s.append(',');
+        	if(!Strings.isEmpty(alias)) {
+        		s.append(alias).append('.');
+			}
+        	s.append(em.getEmbeddedColumn().getName());
+		}
 
         return s.toString();
     }

@@ -81,13 +81,15 @@ public class DefaultResultSetMapping implements ResultSetMapping {
 			
 			FieldMapping fm = primaryEntityMapping.tryGetFieldMappingByColumn(cm.getColumnLabel());
 
-			if(null != fm){
+			if(null != fm) {
 				cm.setEntityMapping(primaryEntityMapping);
 				cm.setFieldMapping(fm);
-                if(null == cm.getResultName()) {
-                    cm.setResultName(fm.getFieldName());
-                    cm.setNormalizedName(fm.getFieldName());
-                }
+				if (null == cm.getResultName()) {
+					cm.setResultName(fm.getFieldName());
+					cm.setNormalizedName(fm.getFieldName());
+				}
+			}else if(cm.getColumnName().equalsIgnoreCase(primaryEntityMapping.getEmbeddedColumnName())) {
+				cm.setEmbeddedColumn(primaryEntityMapping.getEmbeddedColumn());
 			}else {
                 if(null == cm.getResultName()) {
                     String name = Strings.firstNotEmpty(cm.getColumnLabel(), cm.getColumnName());
