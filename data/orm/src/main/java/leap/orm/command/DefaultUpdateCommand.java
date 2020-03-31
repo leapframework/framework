@@ -167,8 +167,9 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
                 final Map<String, Object> updateEmbedded = extractEmbeddedFields(map);
                 if(null != updateEmbedded && updateEmbedded.size() > 0) {
                     return dao.doTransaction((s) -> {
-                        //todo: for update
-                        String dbEmbedded = dao.createCriteriaQuery(em).select(em.getEmbeddedColumnName()).whereById(id).scalarOrNull().getString();
+                        String dbEmbedded =
+                                dao.createCriteriaQuery(em).select(em.getEmbeddedColumnName()).whereById(id).forUpdate()
+                                        .scalarOrNull().getString();
                         Map<String, Object> mergedEmbedded = mergeEmbeddedFields(updateEmbedded, dbEmbedded);
                         map.put(em.getEmbeddedColumnName(), JSON.encode(mergedEmbedded));
                         return primaryCommand.executeUpdate(this, map);
