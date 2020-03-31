@@ -64,6 +64,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     protected boolean                  distinct;
     protected String                   groupBy;
     protected String                   having;
+    protected boolean                  forUpdate;
     protected Function<String, String> sqlWrapper;
 
     public DefaultCriteriaQuery(Dao dao, EntityMapping em, Class<T> targetType) {
@@ -694,6 +695,12 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         return this;
     }
 
+    @Override
+    public CriteriaQuery<T> forUpdate() {
+        this.forUpdate = true;
+        return this;
+    }
+
     protected void orderById(String order) {
         StringBuilder s = new StringBuilder();
 
@@ -1197,7 +1204,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         public String buildSelectSql() {
             sql = new StringBuilder();
 
-            select().columns().from().join().where().groupBy().orderBy();
+            select().columns().from().join().where().groupBy().orderBy().forUpdate();
 
             return wrap(sql.toString());
         }
@@ -1465,6 +1472,13 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         protected SqlBuilder orderBy() {
             if (!Strings.isEmpty(orderBy)) {
                 sql.append(" order by ").append(orderBy);
+            }
+            return this;
+        }
+
+        protected SqlBuilder forUpdate() {
+            if(forUpdate) {
+                dialect().wrapSelectForUpdate(sql);
             }
             return this;
         }

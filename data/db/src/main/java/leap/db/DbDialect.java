@@ -469,4 +469,11 @@ public interface DbDialect {
 	 * Returns <code>true</code> if the given state indicates the connection is disconnect.
 	 */
 	boolean isDisconnectSQLState(String state);
+
+	/**
+	 * Wraps the query sql with for update.
+	 */
+	default void wrapSelectForUpdate(StringBuilder sql) {
+		sql.append(" for update");
+	}
 }
