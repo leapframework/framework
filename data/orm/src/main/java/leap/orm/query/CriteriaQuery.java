@@ -449,6 +449,11 @@ public interface CriteriaQuery<T> extends Query<T> {
     CriteriaQuery<T> orderByIdDesc();
 
     /**
+     * Select for update.
+     */
+    CriteriaQuery<T> forUpdate();
+
+    /**
      * Sets the order by expression in descending order of createdAt column.
      */
     default CriteriaQuery<T> lastCreated() {
