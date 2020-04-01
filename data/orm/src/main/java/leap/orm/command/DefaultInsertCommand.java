@@ -268,7 +268,9 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
 
         Map<String, Object> embedded = new LinkedHashMap<>();
         for(FieldMapping fm : em.getEmbeddedFieldMappings()) {
-            embedded.put(fm.getFieldName(), map.get(fm.getFieldName()));
+            if(map.containsKey(fm.getFieldName())) {
+                embedded.put(fm.getFieldName(), map.get(fm.getFieldName()));
+            }
         }
         map.put(em.getEmbeddedColumn().getName(), JSON.stringify(embedded));
         return map;

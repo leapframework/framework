@@ -1205,6 +1205,10 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
     }
 
     protected String getColumnTypeDefinition(DbColumn column) {
+        if(!Strings.isEmpty(column.getNativeType())) {
+            return column.getNativeType();
+        }
+
         if (column.isDatetime()) {
             String datetimeDef = getColumnDatetimeDef(column);
             if (!Strings.isEmpty(datetimeDef)) {

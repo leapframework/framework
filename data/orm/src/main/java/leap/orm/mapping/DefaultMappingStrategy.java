@@ -17,11 +17,11 @@ package leap.orm.mapping;
 
 import leap.core.*;
 import leap.core.annotation.Inject;
-import leap.core.annotation.M;
 import leap.core.ds.DataSourceManager;
 import leap.core.ioc.AbstractReadonlyBean;
 import leap.core.metamodel.ReservedMetaFieldName;
 import leap.db.Db;
+import leap.db.DbDialect;
 import leap.db.DbMetadata;
 import leap.db.model.DbColumn;
 import leap.db.model.DbColumnBuilder;
@@ -1024,6 +1024,28 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
         listeners.addPreDeleteListeners(preDeleteListeners);
         listeners.addPostDeleteListeners(postDeleteListeners);
         listeners.addPostLoadListeners(postLoadListeners);
+
+        //auto create embedded column
+		if(emb.getFieldMappings().stream().anyMatch(f -> Boolean.TRUE.equals(f.getEmbedded()))) {
+			final OrmConfig.EmbeddedColumnConfig config = context.getConfig().getEmbeddedColumnConfig();
+			DbColumnBuilder column = emb.getEmbeddedColumn();
+			if(null == emb.getEmbeddedColumn()) {
+				column = new DbColumnBuilder();
+				column.setName(config.getName());
+				column.setTypeName(config.getType());
+				column.setLength(config.getLength());
+				emb.setEmbeddedColumn(column);
+			}else if(Strings.isEmpty(column.getNativeType())){
+				final DbDialect dialect = context.getDb().getDialect();
+				if(dialect.supportsJsonColumn()) {
+					column.setNativeType(dialect.getJsonColumnSupport().getNativeType());
+				}
+			}
+			final DbTableBuilder table = emb.getTable();
+			if(table.findColumn(column.getName()) == null) {
+				table.addColumn(column);
+			}
+		}
 	}
 
 	protected boolean checkTableExists(MetadataContext context,EntityMappingBuilder emb){
