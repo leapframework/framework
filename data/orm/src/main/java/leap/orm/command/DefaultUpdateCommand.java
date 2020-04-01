@@ -19,6 +19,7 @@ import leap.core.exception.InvalidOptimisticLockException;
 import leap.core.exception.OptimisticLockException;
 import leap.core.validation.Errors;
 import leap.core.validation.ValidationException;
+import leap.db.support.JsonColumnSupport;
 import leap.lang.Args;
 import leap.lang.Arrays2;
 import leap.lang.Strings;
@@ -166,14 +167,23 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
             if (null != primaryCommand) {
                 final Map<String, Object> updateEmbedded = extractEmbeddedFields(map);
                 if(null != updateEmbedded && updateEmbedded.size() > 0) {
-                    return dao.doTransaction((s) -> {
-                        String dbEmbedded =
-                                dao.createCriteriaQuery(em).select(em.getEmbeddedColumnName()).whereById(id).forUpdate()
-                                        .scalarOrNull().getString();
-                        Map<String, Object> mergedEmbedded = mergeEmbeddedFields(updateEmbedded, dbEmbedded);
-                        map.put(em.getEmbeddedColumnName(), JSON.encode(mergedEmbedded));
+                    final JsonColumnSupport jcs = db.getDialect().getJsonColumnSupport();
+                    if(null != jcs && jcs.isUpdateByKeys()) {
+                        map.putAll(updateEmbedded);
                         return primaryCommand.executeUpdate(this, map);
-                    });
+                    }else if(null != jcs) {
+                        map.put(em.getEmbeddedColumnName(), JSON.stringify(updateEmbedded));
+                        return primaryCommand.executeUpdate(this, map);
+                    }else {
+                        return dao.doTransaction((s) -> {
+                            String dbEmbedded =
+                                    dao.createCriteriaQuery(em).select(em.getEmbeddedColumnName()).whereById(id).forUpdate()
+                                            .scalarOrNull().getString();
+                            Map<String, Object> mergedEmbedded = mergeEmbeddedFields(updateEmbedded, dbEmbedded);
+                            map.put(em.getEmbeddedColumnName(), JSON.stringify(mergedEmbedded));
+                            return primaryCommand.executeUpdate(this, map);
+                        });
+                    }
                 }else {
                     return primaryCommand.executeUpdate(this, map);
                 }

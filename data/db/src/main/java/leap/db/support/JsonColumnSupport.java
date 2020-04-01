@@ -17,6 +17,9 @@
 
 package leap.db.support;
 
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+
 /**
  * Json column support.
  */
@@ -29,4 +32,31 @@ public interface JsonColumnSupport {
         return "json";
     }
 
+    /**
+     * todo: doc
+     */
+    default boolean isInsertByKeys() {
+        return false;
+    }
+
+    /**
+     * Apply the insert expr to the insert consumer.
+     */
+    default void applyInsertExpr(String column, String[] keys, Function<String, String> nameToParam, BiConsumer<String, String> insert) {
+        insert.accept(column, nameToParam.apply(column));
+    }
+
+    /**
+     * todo: doc
+     */
+    default boolean isUpdateByKeys() {
+        return true;
+    }
+
+    /**
+     * Returns the update expr.
+     */
+    default String getUpdateExpr(String column, String[] keys, Function<String, String> nameToParam) {
+        throw new IllegalStateException("Not implemented");
+    }
 }

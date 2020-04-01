@@ -19,6 +19,7 @@ import leap.core.jdbc.PreparedStatementHandler;
 import leap.core.validation.Errors;
 import leap.core.validation.ValidationException;
 import leap.db.Db;
+import leap.db.support.JsonColumnSupport;
 import leap.lang.Arrays2;
 import leap.lang.Strings;
 import leap.lang.expression.Expression;
@@ -263,6 +264,11 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
 
     protected Map<String, Object> withEmbeddedColumn(Map<String, Object> map) {
         if(null == em.getEmbeddedColumn() || !em.hasEmbeddedFieldMappings()) {
+            return map;
+        }
+
+        final JsonColumnSupport jcs = db.getDialect().getJsonColumnSupport();
+        if(null != jcs && jcs.isInsertByKeys()) {
             return map;
         }
 

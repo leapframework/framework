@@ -25,16 +25,20 @@ import leap.db.model.DbColumnBuilder;
 import leap.db.model.DbSchemaObjectName;
 import leap.db.platform.GenericDbDialect;
 import leap.db.support.JsonColumnSupport;
+import leap.lang.Charsets;
 import leap.lang.Collections2;
 import leap.lang.New;
 import leap.lang.Strings;
+import leap.lang.io.IO;
 import leap.lang.value.Limit;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 
 public class MySql5Dialect extends GenericDbDialect {
 
@@ -77,8 +81,9 @@ public class MySql5Dialect extends GenericDbDialect {
                 metadata.getProductMinorVersion(),
                 getProductRevision());
 
-        //json support starts from 5.7.8
-        if (version.ge(DbVersion.of(5, 7, 8))) {
+        //json support starts from 5.7.8, but better support starts from 5.7.13
+        //https://dev.mysql.com/doc/refman/5.7/en/json-search-functions.html#operator_json-inline-path
+        if (version.ge(DbVersion.of(5, 7, 13))) {
             jsonColumnSupport = new MySqlJsonColumnSupport();
         }
     }
@@ -352,7 +357,42 @@ public class MySql5Dialect extends GenericDbDialect {
         return jsonColumnSupport;
     }
 
-    protected class MySqlJsonColumnSupport implements JsonColumnSupport {
+    @Override
+    public Object getJsonColumnValue(ResultSet rs, int column, int type) throws SQLException {
+        if(null == jsonColumnSupport) {
+            return super.getJsonColumnValue(rs, column, type);
+        }else {
+            Object value = super.getJsonColumnValue(rs, column, type);
+            if(null == value) {
+                return null;
+            }
 
+            if(value instanceof byte[]) {
+                value = Strings.newStringUtf8((byte[])value);
+            }else if(value instanceof ByteArrayInputStream) {
+                value = IO.readString((ByteArrayInputStream)value, Charsets.UTF_8);
+            }
+
+            return value;
+        }
+    }
+
+    protected class MySqlJsonColumnSupport implements JsonColumnSupport {
+        @Override
+        public String getUpdateExpr(String column, String[] keys, Function<String, String> nameToParam) {
+            final StringBuilder s = new StringBuilder();
+
+            s.append(column).append(" = JSON_SET(").append(column);
+
+            for(String key : keys) {
+                s.append(',');
+                s.append("'$.").append(key).append("',");
+                s.append(nameToParam.apply(key));
+            }
+
+            s.append(')');
+
+            return s.toString();
+        }
     }
 }

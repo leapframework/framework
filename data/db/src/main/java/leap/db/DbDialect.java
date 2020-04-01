@@ -487,4 +487,11 @@ public interface DbDialect {
     default JsonColumnSupport getJsonColumnSupport() {
         return null;
     }
+
+    /**
+     * Read the value of json column.
+     */
+    default Object getJsonColumnValue(ResultSet rs, int column, int type) throws SQLException {
+        return getColumnValue(rs, column, type);
+    }
 }

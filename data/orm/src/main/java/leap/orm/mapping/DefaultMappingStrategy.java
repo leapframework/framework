@@ -1043,11 +1043,6 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 					column.setNativeType(dialect.getJsonColumnSupport().getNativeType());
 				}
 			}
-
-			final DbTableBuilder table = emb.getTable();
-			if(table.findColumn(column.getName()) == null) {
-				table.addColumn(column);
-			}
 		}
 	}
 

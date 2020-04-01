@@ -148,15 +148,16 @@ public class DefaultEntityReader implements EntityReader {
             ResultColumnMapping cm = rsm.getColumnMapping(i);
             FieldMapping  fm = cm.getFieldMapping();
 
-            String name  = null != fm ? fm.getFieldName() : cm.getNormalizedName();
-            Object value = readColumnValue(dialect, rs, cm, fm, i+1);
-
 			if(cm.isEmbeddedColumn()) {
+				Object value = dialect.getJsonColumnValue(rs, i+1, cm.getColumnType());
 				if(null != value) {
 					embedded = JSON.decodeMap(value.toString());
 				}
 				continue;
 			}
+
+			String name  = null != fm ? fm.getFieldName() : cm.getNormalizedName();
+            Object value = readColumnValue(dialect, rs, cm, fm, i+1);
 
             model.set(name, value);
 
@@ -198,6 +199,15 @@ public class DefaultEntityReader implements EntityReader {
 		for(int i=0;i<rsm.getColumnCount();i++){
 			ResultColumnMapping cm = rsm.getColumnMapping(i);
 			FieldMapping  fm = cm.getFieldMapping();
+
+			if(cm.isEmbeddedColumn()) {
+				Object value = dialect.getJsonColumnValue(rs, i+1, cm.getColumnType());
+				if(null != value) {
+					embedded = JSON.decodeMap(value.toString());
+				}
+				continue;
+			}
+
 			BeanProperty  bp;
 			
 			if(null != fm && beanClass.equals(cm.getEntityMapping().getEntityClass())){
@@ -215,14 +225,6 @@ public class DefaultEntityReader implements EntityReader {
 			
 			if(null != bp){
                 Object value = readColumnValue(dialect, rs, cm, fm, i+1);
-
-				if(cm.isEmbeddedColumn()) {
-					if(null != value) {
-						embedded = JSON.decodeMap(value.toString());
-					}
-					continue;
-				}
-
 				bp.setValue(bean, value);
 			}
 		}

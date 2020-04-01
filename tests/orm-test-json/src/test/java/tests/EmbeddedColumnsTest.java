@@ -20,6 +20,7 @@ package tests;
 import app.EmdEntity;
 import leap.core.annotation.Inject;
 import leap.core.junit.AppTestBase;
+import leap.lang.New;
 import leap.orm.dao.Dao;
 import org.junit.Test;
 
@@ -30,9 +31,28 @@ public class EmbeddedColumnsTest extends AppTestBase {
 
     @Test
     public void testSimpleCRUD() {
-        EmdEntity record = new EmdEntity();
-        record.setC1("x");
+        dao.deleteAll(EmdEntity.class);
 
+        EmdEntity record = new EmdEntity();
+        record.setId("1");
+        record.setC1("s1");
+        record.setC2(1);
+
+        //insert and find
         dao.insert(record);
+        EmdEntity dbRecord = dao.find(EmdEntity.class, "1");
+        assertEquals(record.getC1(), dbRecord.getC1());
+        assertEquals(record.getC2(), dbRecord.getC2());
+
+        //update and find
+        dao.cmdUpdate(EmdEntity.class).withId("1").setAll(New.hashMap("c1", "s2")).execute();
+        dbRecord = dao.find(EmdEntity.class, "1");
+        assertEquals("s2", dbRecord.getC1());
+        assertEquals(record.getC2(), dbRecord.getC2());
+
+        dao.cmdUpdate(EmdEntity.class).withId("1").setAll(New.hashMap("c2", 2)).execute();
+        dbRecord = dao.find(EmdEntity.class, "1");
+        assertEquals("s2", dbRecord.getC1());
+        assertEquals(new Integer(2), dbRecord.getC2());
     }
 }
