@@ -1035,12 +1035,15 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 				column.setTypeName(config.getType());
 				column.setLength(config.getLength());
 				emb.setEmbeddedColumn(column);
-			}else if(Strings.isEmpty(column.getNativeType())){
+			}
+
+			if(Strings.isEmpty(column.getNativeType())){
 				final DbDialect dialect = context.getDb().getDialect();
 				if(dialect.supportsJsonColumn()) {
 					column.setNativeType(dialect.getJsonColumnSupport().getNativeType());
 				}
 			}
+
 			final DbTableBuilder table = emb.getTable();
 			if(table.findColumn(column.getName()) == null) {
 				table.addColumn(column);
