@@ -86,19 +86,17 @@ public class DefaultResultSetMapping implements ResultSetMapping {
 			}
 
 			EntityMapping em = null;
-			FieldMapping fm = null;
-			if (ormConfig.isConvertFieldForJoin() && i <= objectNames.size()) {
-				SqlObjectName objectName = objectNames.get(i-1);
-				fm = objectName.getFieldMapping();
-				if (null != fm && Strings.equals(fm.getColumnName(), cm.getColumnLabel())) {
+			if (ormConfig.isConvertFieldForJoin()) {
+				SqlObjectName objectName = checkAndShiftFirstSqlObjectName(cm, objectNames);
+				if (null != objectName) {
 					em = objectName.getEntityMapping();
 				}
 			}
 
 			if (null == em) {
 				em = primaryEntityMapping;
-				fm = em.tryGetFieldMappingByColumn(cm.getColumnLabel());
 			}
+			FieldMapping fm = em.tryGetFieldMappingByColumn(cm.getColumnLabel());
 
 			if(null != fm){
 				cm.setEntityMapping(em);
@@ -128,6 +126,39 @@ public class DefaultResultSetMapping implements ResultSetMapping {
 
 			columnMappings[i-1] = cm;
 		}
+	}
+
+	protected SqlObjectName checkAndShiftFirstSqlObjectName(ResultColumnMapping cm, List<SqlObjectName> objectNames) {
+		if (null == objectNames && objectNames.size() <= 0) {
+			return null;
+		}
+
+		for (int i = 0; i < objectNames.size(); i++) {
+			SqlObjectName objectName = objectNames.get(i);
+			if (checkColumnNameAndAlias(cm, objectName)) {
+				objectNames.remove(i);
+				return objectName;
+			}
+		}
+
+		return null;
+	}
+
+	protected boolean checkColumnNameAndAlias(ResultColumnMapping cm, SqlObjectName objectName) {
+		FieldMapping fm = objectName.getFieldMapping();
+		if (null == fm) {
+			return false;
+		}
+
+		if (!Strings.equals(fm.getColumnName(), cm.getColumnName())) {
+			return false;
+		}
+
+		if (null != objectName.getAlias() && !Strings.equals(objectName.getAlias(), cm.getAliasName())) {
+			return false;
+		}
+
+		return true;
 	}
 
     protected String normalizeName(String name) {

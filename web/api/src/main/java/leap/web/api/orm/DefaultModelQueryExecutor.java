@@ -1282,7 +1282,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                     if (Strings.isEmpty(selectItem.alias())) {
                         items.add(selectItem.joinAlias() + "." + fm.getColumnName());
                     } else {
-                        items.add(selectItem.joinAlias() + "." + fm.getColumnName() + " " + selectItem.alias());
+                        items.add(selectItem.joinAlias() + "." + fm.getColumnName() + " as " + selectItem.alias());
                     }
                 }
             }
