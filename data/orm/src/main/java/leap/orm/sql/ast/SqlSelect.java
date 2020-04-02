@@ -15,7 +15,9 @@
  */
 package leap.orm.sql.ast;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -110,5 +112,15 @@ public class SqlSelect extends SqlQuery implements SqlTableSource {
 
 	public void setUnion(boolean union) {
 		this.union = union;
+	}
+
+	public List<SqlObjectName> getSelectNames() {
+		List<SqlObjectName> objectNames = new ArrayList<>();
+		for (AstNode node : selectList.getNodes()) {
+			if (node instanceof SqlObjectName) {
+				objectNames.add((SqlObjectName) node);
+			}
+		}
+		return objectNames;
 	}
 }

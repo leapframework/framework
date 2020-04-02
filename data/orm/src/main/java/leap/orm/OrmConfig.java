@@ -59,6 +59,15 @@ public interface OrmConfig {
 	 */
 	boolean isAutoGenerateColumns();
 
+    /**
+     * Returns true if convert result set column name to field name.
+     *
+     * <p/>
+     * Default is false.
+     *
+     */
+	boolean isConvertFieldForJoin();
+
 	/**
 	 * Returns the names of auto generated fields for {@link leap.orm.model.Model}.
 	 */
