@@ -263,6 +263,10 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
     }
 
     protected Map<String, Object> withEmbeddedColumn(Map<String, Object> map) {
+        return withEmbeddedColumn(db, em, map);
+    }
+
+    protected static Map<String, Object> withEmbeddedColumn(Db db, EntityMapping em, Map<String, Object> map) {
         if(null == em.getEmbeddedColumn() || !em.hasEmbeddedFieldMappings()) {
             return map;
         }

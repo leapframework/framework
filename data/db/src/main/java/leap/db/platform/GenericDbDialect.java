@@ -1236,10 +1236,9 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
         JdbcType jdbcType = JdbcTypes.forTypeCode(column.getTypeCode());
 
         DbColumnType columnType = columnTypes.get(jdbcType.getCode(), column.getLength());
-
         if (null == columnType) {
-            throw new DbException(Strings.format(
-                    "Unsupported column type '{0}' defined in column '{1}'", jdbcType.getName(), column.getName()));
+            log.warn("Found unsupported column type {} defined in column {}", jdbcType.getName(), column.getName());
+            return new DbColumnType(jdbcType.getCode(), jdbcType.getName());
         }
 
         if (!columnType.matchesLength(column.getLength())) {

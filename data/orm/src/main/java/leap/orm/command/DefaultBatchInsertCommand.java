@@ -16,9 +16,11 @@
 package leap.orm.command;
 
 import leap.core.value.Record;
+import leap.db.support.JsonColumnSupport;
 import leap.lang.Arrays2;
 import leap.lang.Strings;
 import leap.lang.expression.Expression;
+import leap.lang.json.JSON;
 import leap.lang.value.SimpleEntry;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
@@ -26,10 +28,7 @@ import leap.orm.mapping.FieldMapping;
 import leap.orm.sql.SqlCommand;
 import leap.orm.value.EntityWrapper;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class DefaultBatchInsertCommand extends AbstractEntityDaoCommand implements BatchInsertCommand {
 
@@ -84,9 +83,13 @@ public class DefaultBatchInsertCommand extends AbstractEntityDaoCommand implemen
 	        if(null != entry.getValue()) {
 	            record.putAll(entry.getValue());
             }
-            records.add(record);
+            records.add(withEmbeddedColumn(record));
         });
 	    return records.toArray(new Map[records.size()]);
+    }
+
+    protected Map<String, Object> withEmbeddedColumn(Map<String, Object> map) {
+        return DefaultInsertCommand.withEmbeddedColumn(db, em, map);
     }
 
     protected void prepare(){

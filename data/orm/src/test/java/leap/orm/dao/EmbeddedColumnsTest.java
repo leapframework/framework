@@ -15,21 +15,18 @@
  *
  */
 
-package tests;
+package leap.orm.dao;
 
-import app.EmdEntity;
-import leap.core.annotation.Inject;
-import leap.core.junit.AppTestBase;
 import leap.lang.New;
-import leap.orm.dao.Dao;
+import leap.orm.OrmTestCase;
+import leap.orm.tested.EmdEntity;
+import org.junit.Ignore;
 import org.junit.Test;
 
-public class EmbeddedColumnsTest extends AppTestBase {
-
-    @Inject
-    protected Dao dao;
+public class EmbeddedColumnsTest extends OrmTestCase {
 
     @Test
+    @Ignore
     public void testSimpleCRUD() {
         dao.deleteAll(EmdEntity.class);
 
@@ -72,5 +69,30 @@ public class EmbeddedColumnsTest extends AppTestBase {
         dbRecord = dao.find(EmdEntity.class, "1");
         assertEquals("s3", dbRecord.getC1());
         assertEquals(new Integer(3), dbRecord.getC2());
+    }
+
+    @Test
+    public void testBatchInsert() {
+        dao.deleteAll(EmdEntity.class);
+
+        EmdEntity r1 = new EmdEntity();
+        r1.setId("1");
+        r1.setC1("s1");
+        r1.setC2(1);
+
+        EmdEntity r2 = new EmdEntity();
+        r2.setId("2");
+        r2.setC1("s2");
+        r2.setC2(2);
+
+        dao.batchInsert(EmdEntity.class, New.arrayList(r1, r2));
+
+        EmdEntity dbRecord1 = dao.find(EmdEntity.class, "1");
+        assertEquals(r1.getC1(), dbRecord1.getC1());
+        assertEquals(r1.getC2(), dbRecord1.getC2());
+
+        EmdEntity dbRecord2 = dao.find(EmdEntity.class, "2");
+        assertEquals(r2.getC1(), dbRecord2.getC1());
+        assertEquals(r2.getC2(), dbRecord2.getC2());
     }
 }
