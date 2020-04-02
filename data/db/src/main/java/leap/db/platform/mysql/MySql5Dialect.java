@@ -379,10 +379,18 @@ public class MySql5Dialect extends GenericDbDialect {
 
     protected class MySqlJsonColumnSupport implements JsonColumnSupport {
         @Override
-        public String getUpdateExpr(String column, String[] keys, Function<String, String> nameToParam) {
+        public String getUpdateExpr(String alias, String column, String[] keys, Function<String, String> nameToParam) {
             final StringBuilder s = new StringBuilder();
 
-            s.append(column).append(" = JSON_SET(").append(column);
+            if(null != alias) {
+                s.append(alias).append('.');
+            }
+            s.append(column);
+            s.append(" = JSON_SET(");
+            if(null != alias) {
+                s.append(alias).append('.');
+            }
+            s.append(column);
 
             for(String key : keys) {
                 s.append(',');
@@ -394,5 +402,11 @@ public class MySql5Dialect extends GenericDbDialect {
 
             return s.toString();
         }
+
+        @Override
+        public String getSelectItemExpr(String column, String key) {
+            return column + "->>'$." + key + "'";
+        }
+
     }
 }

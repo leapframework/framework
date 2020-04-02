@@ -22,6 +22,7 @@ import leap.core.jdbc.SimpleScalarsReader;
 import leap.core.value.Scalar;
 import leap.core.value.Scalars;
 import leap.db.DbDialect;
+import leap.db.support.JsonColumnSupport;
 import leap.lang.*;
 import leap.lang.beans.DynaBean;
 import leap.lang.params.ArrayParams;
@@ -1298,6 +1299,8 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
             sql.append(" set ");
 
+            final List<FieldMapping> embedded = new ArrayList<>();
+
             int index = 0;
             for (Entry<String, Object> entry : fields.entrySet()) {
                 String field = entry.getKey();
@@ -1305,6 +1308,11 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
                 FieldMapping fm = em.getFieldMapping(field);
                 if (!fm.matchSecondary(secondary)) {
+                    continue;
+                }
+
+                if(fm.isEmbedded()) {
+                    embedded.add(fm);
                     continue;
                 }
 
@@ -1325,14 +1333,39 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                 index++;
             }
 
+            if(embedded.size() > 0) {
+                final JsonColumnSupport jcs = dialect.getJsonColumnSupport();
+                final String[] keys = embedded.stream().map(f -> f.getFieldName()).toArray(String[]::new);
+                if(null == jcs) {
+                    throw new IllegalStateException("Update embedded fields [" + Strings.join(keys, ',') + "] by query not supported by current db");
+                }
+
+                if(index > 0) {
+                    sql.append(',');
+                }
+
+                final String column = em.getEmbeddedColumnName();
+                String alias1 = null;
+                if (useAlias && !dialect.useTableAliasAfterUpdate()) {
+                    alias1=alias;
+                }
+                sql.append(jcs.getUpdateExpr(alias1, column, keys, (n) -> {
+                    final String param = "new_" + n;
+                    params.put(param, fields.get(n));
+                    return ":" + param;
+                }));
+                index += embedded.size();
+            }
+
             return index > 0;
         }
 
         protected SqlBuilder columns() {
             sql.append(' ');
 
-            boolean mayEmbedded = em.hasEmbeddedFieldMappings();
-            boolean addEmbedded = false;
+            boolean                  mayEmbedded          = em.hasEmbeddedFieldMappings();
+            boolean                  embeddedColumnExists = false;
+            final List<FieldMapping> embedded             = new ArrayList<>();
 
             int index = 0;
             if (!selectNone) {
@@ -1344,12 +1377,11 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                     for (String column : columns) {
                         if(mayEmbedded) {
                             if(column.equalsIgnoreCase(em.getEmbeddedColumnName())) {
-                                mayEmbedded = false;
-                                addEmbedded = false;
+                                embeddedColumnExists = true;
                             }else {
                                 FieldMapping fm = em.tryGetFieldMappingByColumn(column);
                                 if (null != fm && fm.isEmbedded()) {
-                                    addEmbedded = true;
+                                    embedded.add(fm);
                                     continue;
                                 }
                             }
@@ -1378,7 +1410,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                     if (mayEmbedded) {
                         FieldMapping fm = em.tryGetFieldMappingByColumn(column);
                         if (null != fm && fm.isEmbedded()) {
-                            addEmbedded = true;
+                            embedded.add(fm);
                             continue;
                         }
                     }
@@ -1396,7 +1428,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                     if (mayEmbedded) {
                         FieldMapping fm = em.tryGetFieldMapping(item);
                         if (null != fm && fm.isEmbedded()) {
-                            addEmbedded = true;
+                            embedded.add(fm);
                             continue;
                         }
                     }
@@ -1409,11 +1441,27 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                 }
             }
 
-            if (addEmbedded) {
+            if(!embeddedColumnExists && embedded.size() > 0) {
                 if (index > 0) {
                     sql.append(',');
                 }
-                sql.append(em.getEmbeddedColumnName());
+
+                final JsonColumnSupport jcs = dialect().getJsonColumnSupport();
+                if(null != jcs && jcs.supportsSelectByKeys()) {
+                    final String column = em.getEmbeddedColumnName();
+                    for(int i=0;i<embedded.size();i++) {
+                        if(i > 0) {
+                            sql.append(',');
+                        }
+                        final FieldMapping fm = embedded.get(i);
+                        sql.append("```").append(alias).append('.')
+                                .append(jcs.getSelectItemExpr(column, fm.getColumnName()))
+                                .append("```")
+                                .append(" as ").append(fm.getFieldName());
+                    }
+                }else {
+                    sql.append(em.getEmbeddedColumnName());
+                }
             }
 
             return this;

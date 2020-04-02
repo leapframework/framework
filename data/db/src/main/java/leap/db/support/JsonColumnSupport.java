@@ -57,6 +57,27 @@ public interface JsonColumnSupport {
      * Returns the update expr.
      */
     default String getUpdateExpr(String column, String[] keys, Function<String, String> nameToParam) {
+        return getUpdateExpr(null, column, keys, nameToParam);
+    }
+
+    /**
+     * Returns the update expr.
+     */
+    default String getUpdateExpr(String alias, String column, String[] keys, Function<String, String> nameToParam) {
+        throw new IllegalStateException("Not implemented");
+    }
+
+    /**
+     * todo: doc
+     */
+    default boolean supportsSelectByKeys() {
+        return true;
+    }
+
+    /**
+     * Returns the select item expr of the embedded key at the json column.
+     */
+    default String getSelectItemExpr(String column, String key) {
         throw new IllegalStateException("Not implemented");
     }
 }

@@ -54,5 +54,23 @@ public class EmbeddedColumnsTest extends AppTestBase {
         dbRecord = dao.find(EmdEntity.class, "1");
         assertEquals("s2", dbRecord.getC1());
         assertEquals(new Integer(2), dbRecord.getC2());
+
+        //criteria query
+        dbRecord = dao.createCriteriaQuery(EmdEntity.class).first();
+        assertEquals("s2", dbRecord.getC1());
+        assertEquals(new Integer(2), dbRecord.getC2());
+
+        assertEquals("s2", dao.createCriteriaQuery(EmdEntity.class).select("c1").scalar().getString());
+        assertEquals(new Integer(2), dao.createCriteriaQuery(EmdEntity.class).select("c2").scalar().getInteger());
+
+        dbRecord = dao.createCriteriaQuery(EmdEntity.class).select("name", "c1", "c2").first();
+        assertEquals("s2", dbRecord.getC1());
+        assertEquals(new Integer(2), dbRecord.getC2());
+
+        //update by criteria query
+        dao.createCriteriaQuery(EmdEntity.class).whereById("1").update(New.hashMap("name", "x", "c1", "s3", "c2", 3));
+        dbRecord = dao.find(EmdEntity.class, "1");
+        assertEquals("s3", dbRecord.getC1());
+        assertEquals(new Integer(3), dbRecord.getC2());
     }
 }
