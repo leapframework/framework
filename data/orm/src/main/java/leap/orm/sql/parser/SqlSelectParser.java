@@ -269,9 +269,11 @@ class SqlSelectParser extends SqlQueryParser {
 			String alias = lexer.tokenText();
 			
 			select.addSelectItemAlias(alias);
+
+			setSqlObjectNameAlias(alias);
 			
 			acceptText();
-			
+
 			return alias;
 		}
 		
@@ -281,13 +283,24 @@ class SqlSelectParser extends SqlQueryParser {
 			String alias = lexer.tokenText();
 			
 			select.addSelectItemAlias(alias);
-			
+
+			setSqlObjectNameAlias(alias);
+
 			acceptText();
-			
+
 			return alias;
 		}
 		
 		return null;
 	}
-	
+
+	protected void setSqlObjectNameAlias(String alias) {
+		for (int i = nodes.size() - 1; i >= 0; i--) {
+			if (nodes.get(i) instanceof SqlObjectName) {
+				((SqlObjectName) nodes.get(i)).setAlias(alias);
+				return;
+			}
+		}
+	}
+
 }
