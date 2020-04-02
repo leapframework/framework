@@ -34,10 +34,10 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
-import java.sql.*;
 import java.sql.Types;
-import java.util.*;
+import java.sql.*;
 import java.util.Date;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
@@ -167,7 +167,7 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 
         StringBuilder sb = new StringBuilder();
 
-        if(isQualifyFullSchemaObjectName()) {
+        if (isQualifyFullSchemaObjectName()) {
             if (!Strings.isEmpty(catalog)) {
                 sb.append(quoteIdentifier(catalog)).append('.');
 
@@ -1205,6 +1205,10 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
     }
 
     protected String getColumnTypeDefinition(DbColumn column) {
+        if (!Strings.isEmpty(column.getNativeType())) {
+            return column.getNativeType();
+        }
+
         if (column.isDatetime()) {
             String datetimeDef = getColumnDatetimeDef(column);
             if (!Strings.isEmpty(datetimeDef)) {
@@ -1458,4 +1462,5 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
     protected abstract String getCloseQuoteString();
 
     protected abstract void registerColumnTypes();
+
 }

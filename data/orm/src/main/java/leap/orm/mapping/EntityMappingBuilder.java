@@ -46,6 +46,7 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
     protected DbTableBuilder      secondaryTable;
     protected String              tablePrefix;
     protected String              dynamicTableName;
+    protected DbColumnBuilder     embeddedColumn;
     protected boolean             tableNameDeclared;
     protected boolean             idDeclared;
     protected boolean             autoCreateTable;
@@ -78,48 +79,6 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
     protected List<RelationPropertyBuilder> relationProperties = new ArrayList<>();
     protected List<UniqueKeyBuilder>        keys               = new ArrayList<>();
     protected EntityListenersBuilder        listeners          = new EntityListenersBuilder();
-
-    /*
-    public EntityMappingBuilder shallowCopy() {
-        EntityMappingBuilder c = new EntityMappingBuilder();
-
-        c.entityName = entityName;
-        c.entityClass = entityClass;
-        c.extendedEntityClass = extendedEntityClass;
-        c._abstract = _abstract;
-        c.table = null == table ? null : new DbTableBuilder(table.build());
-        c.secondaryTable = null == secondaryTable ? null : new DbTableBuilder(secondaryTable.build());
-        c.tablePrefix = tablePrefix;
-        c.dynamicTableName = dynamicTableName;
-        c.tableNameDeclared = tableNameDeclared;
-        c.idDeclared = idDeclared;
-        c.autoCreateTable = autoCreateTable;
-        c.autoGenerateColumns = autoGenerateColumns;
-        c.queryFilterEnabled = queryFilterEnabled;
-        c.autoValidate = autoValidate;
-        c.remote = remote;
-        c.remoteSettings = Beans.copyNew(remoteSettings);
-        c.fieldMappings.addAll(fieldMappings);
-        c.insertInterceptor = insertInterceptor;
-        c.updateInterceptor = updateInterceptor;
-        c.deleteInterceptor = deleteInterceptor;
-        c.findInterceptor = findInterceptor;
-        c.modelClass = modelClass;
-        c.physicalTable = physicalTable;
-
-        if(null != validators) {
-            c.validators = new ArrayList<>();
-            c.validators.addAll(validators);
-        }
-
-        c.relationMappings.addAll(relationMappings);
-        c.relationProperties.addAll(relationProperties);
-        c.keys.addAll(keys);
-        c.listeners = listeners;
-
-        return c;
-    }
-    */
 
     public Class<?> getSourceClass() {
         return null != entityClass ? entityClass : modelClass;
@@ -278,6 +237,14 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
     public EntityMappingBuilder setAutoGenerateColumns(boolean autoGenerateColumns) {
         this.autoGenerateColumns = autoGenerateColumns;
         return this;
+    }
+
+    public DbColumnBuilder getEmbeddedColumn() {
+        return embeddedColumn;
+    }
+
+    public void setEmbeddedColumn(DbColumnBuilder embeddedColumn) {
+        this.embeddedColumn = embeddedColumn;
     }
 
     public Boolean getQueryFilterEnabled() {
@@ -731,16 +698,24 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
             logical = true;
         }
 
+        if(fieldMappings.stream().anyMatch(f -> Boolean.TRUE.equals(f.getEmbedded()))) {
+            if(null == embeddedColumn) {
+                throw new IllegalStateException("The embedded column must be specified at entity '" + entityName + "'");
+            }
+        }
+
         try {
+            final DbColumn embeddedColumn = null != this.embeddedColumn ? this.embeddedColumn.build() : null;
+
             List<FieldMapping>    fields         = Builders.buildList(fieldMappings);
             List<RelationMapping> relations      = Builders.buildList(relationMappings);
-            DbTable               table          = buildTable(fields, relations);
+            DbTable               table          = buildTable(fields, relations, embeddedColumn);
             DbTable               secondaryTable = buildSecondaryTable(fields, relations);
 
             EntityMapping em =
                     new EntityMapping(this,
                             entityName, wideEntityName, dynamicTableName, entityClass, extendedEntityClass,
-                            table, secondaryTable, queryView, fields,
+                            table, secondaryTable, embeddedColumn, queryView, fields,
                             insertHandler, updateHandler, deleteHandler,
                             insertInterceptor, updateInterceptor, deleteInterceptor, findInterceptor,
                             modelClass, validators,
@@ -764,7 +739,7 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
         return new DbSchemaObjectName(getTableCatalog(), getTableSchema(), getTableNameWithPrefix());
     }
 
-    protected DbTable buildTable(List<FieldMapping> fields, List<RelationMapping> relations) {
+    protected DbTable buildTable(List<FieldMapping> fields, List<RelationMapping> relations, DbColumn embeddedColumn) {
         DbTableBuilder table = getTable();
 
         if (!Strings.isEmpty(tablePrefix)) {
@@ -773,9 +748,17 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
 
         //columns
         for (FieldMapping fm : fields) {
+            if(fm.isEmbedded()) {
+                continue;
+            }
+
             if (!fm.isSecondary()) {
                 table.addColumn(fm.getColumn());
             }
+        }
+
+        if(null != embeddedColumn && table.findColumn(embeddedColumn.getName()) == null) {
+            table.addColumn(embeddedColumn);
         }
 
         //uniques

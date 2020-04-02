@@ -27,6 +27,7 @@ public class DbColumn extends DbNamedObject implements JsonStringable {
 	
 	protected final int     typeCode;
 	protected final String  typeName;
+	protected final String	nativeType;
 	protected final int     length;
 	protected final int     precision;
 	protected final int     scale;
@@ -38,7 +39,7 @@ public class DbColumn extends DbNamedObject implements JsonStringable {
 	protected final String  comment;
 	
 	public DbColumn(String name,
-					int typeCode,String typeName,
+					int typeCode,String typeName, String nativeType,
 					int length,int precision,int scale,
 					boolean nullable,boolean primaryKey,boolean unique,
 					boolean autoIncrement,String defaultValue,String comment) {
@@ -49,6 +50,7 @@ public class DbColumn extends DbNamedObject implements JsonStringable {
 	    
 	    this.typeCode      = typeCode;
 	    this.typeName      = typeName;
+	    this.nativeType	   = nativeType;
 	    this.length        = length;
 	    this.precision     = precision;
 	    this.scale         = scale;
@@ -66,6 +68,10 @@ public class DbColumn extends DbNamedObject implements JsonStringable {
 	
 	public String getTypeName() {
 		return typeName;
+	}
+
+	public String getNativeType() {
+		return nativeType;
 	}
 
 	public int getLength() {

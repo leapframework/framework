@@ -71,6 +71,7 @@ public class DbColumnBuilder implements Buildable<DbColumn>,JsonParsable {
 	protected String  name;
 	protected Integer typeCode;
 	protected String  typeName;
+	protected String  nativeType;
 	protected Integer length;
 	protected Integer precision;
 	protected Integer scale;
@@ -80,7 +81,7 @@ public class DbColumnBuilder implements Buildable<DbColumn>,JsonParsable {
 	protected Boolean autoIncrement;
 	protected String  defaultValue;
 	protected String  comment;
-	
+
 	public DbColumnBuilder(){
 		
 	}
@@ -126,6 +127,7 @@ public class DbColumnBuilder implements Buildable<DbColumn>,JsonParsable {
 		this.name          = cloneFrom.getName();
 		this.typeCode      = cloneFrom.getTypeCode();
 		this.typeName      = cloneFrom.getTypeName();
+		this.nativeType    = cloneFrom.getNativeType();
 		this.length        = cloneFrom.getLength();
 		this.precision     = cloneFrom.getPrecision();
 		this.scale         = cloneFrom.getScale();
@@ -204,7 +206,15 @@ public class DbColumnBuilder implements Buildable<DbColumn>,JsonParsable {
 		}
 		return this;
 	}
-	
+
+	public String getNativeType() {
+		return nativeType;
+	}
+
+	public void setNativeType(String nativeType) {
+		this.nativeType = nativeType;
+	}
+
 	public Integer getLength() {
 		return length;
 	}
@@ -402,7 +412,8 @@ public class DbColumnBuilder implements Buildable<DbColumn>,JsonParsable {
 			autoIncrement = false;
 		}
 		
-	    return new DbColumn(name, typeCode,typeName,length, precision, scale, nullable, primaryKey, unique, autoIncrement, defaultValue, comment);
+	    return new DbColumn(name, typeCode,typeName,nativeType,
+				length, precision, scale, nullable, primaryKey, unique, autoIncrement, defaultValue, comment);
     }
 
 	@Override
@@ -411,6 +422,7 @@ public class DbColumnBuilder implements Buildable<DbColumn>,JsonParsable {
 		this.name          = o.getString("name");
 		this.typeCode      = o.getInteger("typeCode");
 		this.typeName      = o.getString("typeName");
+		this.nativeType    = o.getString("nativeType");
 		this.length        = o.getInteger("length");
 		this.precision     = o.getInteger("precision");
 		this.scale         = o.getInteger("scale");

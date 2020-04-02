@@ -19,10 +19,13 @@ import leap.core.exception.InvalidOptimisticLockException;
 import leap.core.exception.OptimisticLockException;
 import leap.core.validation.Errors;
 import leap.core.validation.ValidationException;
+import leap.db.support.JsonColumnSupport;
 import leap.lang.Args;
 import leap.lang.Arrays2;
+import leap.lang.Strings;
 import leap.lang.convert.Converts;
 import leap.lang.expression.Expression;
+import leap.lang.json.JSON;
 import leap.orm.dao.Dao;
 import leap.orm.event.EntityEvent;
 import leap.orm.event.EntityEventHandler;
@@ -36,6 +39,7 @@ import leap.orm.validation.EntityValidator;
 import leap.orm.value.EntityWrapper;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -161,7 +165,28 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
             String[]   fields         = map.keySet().toArray(Arrays2.EMPTY_STRING_ARRAY);
             SqlCommand primaryCommand = sf.createUpdateCommand(context, em, fields);
             if (null != primaryCommand) {
-                return primaryCommand.executeUpdate(this, map);
+                final Map<String, Object> updateEmbedded = extractEmbeddedFields(map);
+                if(null != updateEmbedded && updateEmbedded.size() > 0) {
+                    final JsonColumnSupport jcs = db.getDialect().getJsonColumnSupport();
+                    if(null != jcs && jcs.isUpdateByKeys()) {
+                        map.putAll(updateEmbedded);
+                        return primaryCommand.executeUpdate(this, map);
+                    }else if(null != jcs) {
+                        map.put(em.getEmbeddedColumnName(), JSON.stringify(updateEmbedded));
+                        return primaryCommand.executeUpdate(this, map);
+                    }else {
+                        return dao.doTransaction((s) -> {
+                            String dbEmbedded =
+                                    dao.createCriteriaQuery(em).select(em.getEmbeddedColumnName()).whereById(id).forUpdate()
+                                            .scalarOrNull().getString();
+                            Map<String, Object> mergedEmbedded = mergeEmbeddedFields(updateEmbedded, dbEmbedded);
+                            map.put(em.getEmbeddedColumnName(), JSON.stringify(mergedEmbedded));
+                            return primaryCommand.executeUpdate(this, map);
+                        });
+                    }
+                }else {
+                    return primaryCommand.executeUpdate(this, map);
+                }
             } else {
                 return 0;
             }
@@ -255,5 +280,31 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
 
     protected void setGeneratedValue(FieldMapping fm, Object value) {
         entity.set(fm.getFieldName(), value);
+    }
+
+    protected Map<String, Object> extractEmbeddedFields(Map<String, Object> map) {
+        if(null == em.getEmbeddedColumn() || !em.hasEmbeddedFieldMappings()) {
+            return null;
+        }
+
+        Map<String, Object> embedded = new LinkedHashMap<>();
+        map.forEach((n,v) -> {
+            FieldMapping fm = em.tryGetFieldMapping(n);
+            if(null != fm && fm.isEmbedded()) {
+                embedded.put(n, v);
+            }
+        });
+        embedded.keySet().forEach(map::remove);
+        return embedded;
+    }
+
+    protected Map<String, Object> mergeEmbeddedFields(Map<String, Object> toUpdate, String dbValue) {
+        if(Strings.isEmpty(dbValue)) {
+            return toUpdate;
+        }
+
+        Map<String, Object> dbFields = JSON.decodeMap(dbValue);
+        dbFields.putAll(toUpdate);
+        return dbFields;
     }
 }

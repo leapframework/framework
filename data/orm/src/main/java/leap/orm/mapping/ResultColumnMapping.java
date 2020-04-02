@@ -15,6 +15,8 @@
  */
 package leap.orm.mapping;
 
+import leap.db.model.DbColumn;
+
 public class ResultColumnMapping {
 	
 	protected String        columnName;
@@ -25,6 +27,7 @@ public class ResultColumnMapping {
     protected String        normalizedName; //the normalized name of result name.
     protected EntityMapping	entityMapping;
     protected FieldMapping  fieldMapping;
+    protected DbColumn		embeddedColumn;
 
 	protected ResultColumnMapping() {
 
@@ -92,5 +95,17 @@ public class ResultColumnMapping {
 
 	public void setAliasName(String aliasName) {
 		this.aliasName = aliasName;
+	}
+
+	public boolean isEmbeddedColumn() {
+		return null != embeddedColumn;
+	}
+
+	public DbColumn getEmbeddedColumn() {
+		return embeddedColumn;
+	}
+
+	public void setEmbeddedColumn(DbColumn embeddedColumn) {
+		this.embeddedColumn = embeddedColumn;
 	}
 }

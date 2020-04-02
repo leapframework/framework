@@ -135,6 +135,11 @@ public interface OrmConfig {
     QueryFilterConfig getQueryFilterConfig();
 
     /**
+     * Returns the {@link EmbeddedColumnConfig}.
+     */
+    EmbeddedColumnConfig getEmbeddedColumnConfig();
+
+    /**
      * zero means no limitation.
      */
     long getDefaultMaxResults();
@@ -232,5 +237,23 @@ public interface OrmConfig {
          */
         Expression getFilteredIf();
 
+    }
+
+    interface EmbeddedColumnConfig {
+
+        /**
+         * Returns the default column name.
+         */
+        String getName();
+
+        /**
+         * Returns the default column type name.
+         */
+        String getType();
+
+        /**
+         * Returns the default column length.
+         */
+        Integer getLength();
     }
 }

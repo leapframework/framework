@@ -86,9 +86,11 @@ public class EntityMapping extends ExtensibleBase {
     protected final BeanType                   beanType;
     protected final DbTable                    table;
     protected final DbTable                    secondaryTable;
+    protected final DbColumn                   embeddedColumn;
     protected final String                     queryView;
     protected final FieldMapping[]             fieldMappings;
     protected final FieldMapping[]             filterFieldMappings;
+    protected final FieldMapping[]             embeddedFieldMappings;
     protected final FieldMapping[]             keyFieldMappings;
     protected final String[]                   keyFieldNames;
     protected final String[]                   keyColumnNames;
@@ -135,6 +137,7 @@ public class EntityMapping extends ExtensibleBase {
     public EntityMapping(EntityMappingBuilder builder,
                          String entityName, String wideEntityName, String dynamicTableName,
                          Class<?> entityClass, Class<?> extendedEntityClass, DbTable table, DbTable secondaryTable,
+                         DbColumn embeddedColumn,
                          String queryView, List<FieldMapping> fieldMappings,
                          InsertHandler insertHandler, UpdateHandler updateHandler, DeleteHandler deleteHandler,
                          EntityExecutionInterceptor insertInterceptor, EntityExecutionInterceptor updateInterceptor,
@@ -166,6 +169,7 @@ public class EntityMapping extends ExtensibleBase {
         this.beanType = null == entityClass ? null : BeanType.of(entityClass);
         this.table = table;
         this.secondaryTable = secondaryTable;
+        this.embeddedColumn = embeddedColumn;
         this.queryView = queryView;
         this.insertHandler = insertHandler;
         this.updateHandler = updateHandler;
@@ -188,6 +192,7 @@ public class EntityMapping extends ExtensibleBase {
         this.targetEntityRelations = createTargetEntityRelations();
         this.referenceToRelations = createReferenceToRelations();
         this.filterFieldMappings = evalFilterFieldMappings();
+        this.embeddedFieldMappings = evalEmbeddedFieldMappings();
         this.keyFieldMappings = evalKeyFieldMappings();
         this.keyFieldNames = evalKeyFieldNames();
         this.keyColumnNames = evalKeyColumnNames();
@@ -329,6 +334,20 @@ public class EntityMapping extends ExtensibleBase {
      */
     public boolean hasSecondaryTable() {
         return null != secondaryTable;
+    }
+
+    /**
+     * Returns the embedded column name or null.
+     */
+    public String getEmbeddedColumnName() {
+        return null == embeddedColumn? null : embeddedColumn.getName();
+    }
+
+    /**
+     * Returns the column that stores embedded fields.
+     */
+    public DbColumn getEmbeddedColumn() {
+        return embeddedColumn;
     }
 
     /**
@@ -607,6 +626,14 @@ public class EntityMapping extends ExtensibleBase {
         return filterFieldMappings;
     }
 
+    public boolean hasEmbeddedFieldMappings() {
+        return embeddedFieldMappings.length > 0;
+    }
+
+    public FieldMapping[] getEmbeddedFieldMappings() {
+        return embeddedFieldMappings;
+    }
+
     public FieldMapping getOptimisticLockField() {
         return optimisticLockField;
     }
@@ -715,6 +742,17 @@ public class EntityMapping extends ExtensibleBase {
             }
         }
 
+        return list.toArray(new FieldMapping[list.size()]);
+    }
+
+    private FieldMapping[] evalEmbeddedFieldMappings() {
+        List<FieldMapping> list = New.arrayList();
+
+        for (FieldMapping fm : this.fieldMappings) {
+            if (fm.isEmbedded()) {
+                list.add(fm);
+            }
+        }
         return list.toArray(new FieldMapping[list.size()]);
     }
 

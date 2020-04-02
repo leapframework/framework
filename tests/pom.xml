@@ -33,6 +33,7 @@
 
         <module>orm-test</module>
         <module>orm-test-dyna</module>
+        <module>orm-test-json</module>
         <module>orm-test-remote</module>
         <module>orm-test-resources</module>
         <module>orm-test-pgsql</module>
