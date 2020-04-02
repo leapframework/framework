@@ -1459,7 +1459,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                         }
                         final FieldMapping fm = embedded.get(i);
                         sql.append("```").append(alias).append('.')
-                                .append(jcs.getSelectItemExpr(column, fm.getColumnName()))
+                                .append(jcs.getSelectItemExpr(column, fm.getFieldName()))
                                 .append("```")
                                 .append(" as ").append(fm.getFieldName());
                     }

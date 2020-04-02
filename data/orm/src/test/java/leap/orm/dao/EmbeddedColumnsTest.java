@@ -20,14 +20,13 @@ package leap.orm.dao;
 import leap.lang.New;
 import leap.orm.OrmTestCase;
 import leap.orm.tested.EmdEntity;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class EmbeddedColumnsTest extends OrmTestCase {
 
     @Test
-    @Ignore
     public void testSimpleCRUD() {
+        //mysql's jdbc driver must use 8.0.x, 5.1.x will returns byte[] for any embedded field at json column.
         dao.deleteAll(EmdEntity.class);
 
         EmdEntity record = new EmdEntity();
@@ -57,18 +56,25 @@ public class EmbeddedColumnsTest extends OrmTestCase {
         assertEquals("s2", dbRecord.getC1());
         assertEquals(new Integer(2), dbRecord.getC2());
 
-        assertEquals("s2", dao.createCriteriaQuery(EmdEntity.class).select("c1").scalar().getString());
-        assertEquals(new Integer(2), dao.createCriteriaQuery(EmdEntity.class).select("c2").scalar().getInteger());
+        if (db.getDialect().supportsJsonColumn()) {
+            assertEquals("s2", dao.createCriteriaQuery(EmdEntity.class).select("c1").scalar().getString());
+            assertEquals(new Integer(2), dao.createCriteriaQuery(EmdEntity.class).select("c2").scalar().getInteger());
+        }
+
+        assertEquals("s2", dao.createCriteriaQuery(EmdEntity.class).select("c1").first().getC1());
+        assertEquals(new Integer(2), dao.createCriteriaQuery(EmdEntity.class).select("c2").first().getC2());
 
         dbRecord = dao.createCriteriaQuery(EmdEntity.class).select("name", "c1", "c2").first();
         assertEquals("s2", dbRecord.getC1());
         assertEquals(new Integer(2), dbRecord.getC2());
 
         //update by criteria query
-        dao.createCriteriaQuery(EmdEntity.class).whereById("1").update(New.hashMap("name", "x", "c1", "s3", "c2", 3));
-        dbRecord = dao.find(EmdEntity.class, "1");
-        assertEquals("s3", dbRecord.getC1());
-        assertEquals(new Integer(3), dbRecord.getC2());
+        if (db.getDialect().supportsJsonColumn()) {
+            dao.createCriteriaQuery(EmdEntity.class).whereById("1").update(New.hashMap("name", "x", "c1", "s3", "c2", 3));
+            dbRecord = dao.find(EmdEntity.class, "1");
+            assertEquals("s3", dbRecord.getC1());
+            assertEquals(new Integer(3), dbRecord.getC2());
+        }
     }
 
     @Test
