@@ -22,6 +22,7 @@ import java.util.Map;
 
 import leap.lang.Arrays2;
 import leap.lang.Strings;
+import leap.orm.query.QueryContext;
 
 public class DefaultSqlStatementBuilder implements SqlStatementBuilder {
 	
@@ -189,6 +190,9 @@ public class DefaultSqlStatementBuilder implements SqlStatementBuilder {
 	
 	@Override
     public DefaultSqlStatement build() {
+		if(context instanceof QueryContext && ((QueryContext) context).isForUpdate()) {
+			dialect().wrapSelectForUpdate(buf);
+		}
 	    return new DefaultSqlStatement(context,
                                         sql,
                                         buf.toString(),
