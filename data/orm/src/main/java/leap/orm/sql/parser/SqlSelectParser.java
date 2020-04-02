@@ -15,6 +15,7 @@
  */
 package leap.orm.sql.parser;
 
+import leap.lang.Strings;
 import leap.orm.sql.Sql.Scope;
 import leap.orm.sql.ast.*;
 
@@ -295,11 +296,14 @@ class SqlSelectParser extends SqlQueryParser {
 	}
 
 	protected void setSqlObjectNameAlias(String alias) {
-		for (int i = nodes.size() - 1; i >= 0; i--) {
-			if (nodes.get(i) instanceof SqlObjectName) {
-				((SqlObjectName) nodes.get(i)).setAlias(alias);
-				return;
-			}
+		int index = nodes.size() - 1;
+
+		AstNode node = nodes.get(index);
+		if (Strings.startsWith(node.toString(), " as ")) {
+			node = nodes.get(index - 1);
+		}
+		if (node instanceof SqlObjectName) {
+			((SqlObjectName) node).setAlias(alias);
 		}
 	}
 
