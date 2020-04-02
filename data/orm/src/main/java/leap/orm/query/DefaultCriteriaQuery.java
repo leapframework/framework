@@ -17,7 +17,6 @@ package leap.orm.query;
 
 import leap.core.exception.TooManyRecordsException;
 import leap.core.jdbc.ResultSetReader;
-import leap.core.jdbc.SimpleScalarReader;
 import leap.core.jdbc.SimpleScalarsReader;
 import leap.core.value.Scalar;
 import leap.core.value.Scalars;
@@ -701,6 +700,11 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         return this;
     }
 
+    @Override
+    public boolean isForUpdate() {
+        return forUpdate;
+    }
+
     protected void orderById(String order) {
         StringBuilder s = new StringBuilder();
 
@@ -792,12 +796,12 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
     @Override
     protected Scalar executeQueryForScalar(QueryContext context) throws TooManyRecordsException {
-        return buildQueryStatement(context).executeQuery(SimpleScalarReader.DEFAULT_INSTANCE);
+        return buildQueryStatement(context).executeQuery(ResultSetReaders.forScalar(context.getOrmContext()));
     }
 
     @Override
     protected Scalars executeQueryForScalars(QueryContext context) throws TooManyRecordsException {
-        return buildQueryStatement(context).executeQuery(SimpleScalarsReader.DEFAULT_INSTANCE);
+        return buildQueryStatement(context).executeQuery(ResultSetReaders.forScalars(context.getOrmContext()));
     }
 
     protected Object[] args() {
@@ -1204,7 +1208,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         public String buildSelectSql() {
             sql = new StringBuilder();
 
-            select().columns().from().join().where().groupBy().orderBy().forUpdate();
+            select().columns().from().join().where().groupBy().orderBy();
 
             return wrap(sql.toString());
         }
@@ -1311,7 +1315,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                     continue;
                 }
 
-                if(fm.isEmbedded()) {
+                if (fm.isEmbedded()) {
                     embedded.add(fm);
                     continue;
                 }
@@ -1333,21 +1337,21 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                 index++;
             }
 
-            if(embedded.size() > 0) {
-                final JsonColumnSupport jcs = dialect.getJsonColumnSupport();
-                final String[] keys = embedded.stream().map(f -> f.getFieldName()).toArray(String[]::new);
-                if(null == jcs) {
+            if (embedded.size() > 0) {
+                final JsonColumnSupport jcs  = dialect.getJsonColumnSupport();
+                final String[]          keys = embedded.stream().map(f -> f.getFieldName()).toArray(String[]::new);
+                if (null == jcs) {
                     throw new IllegalStateException("Update embedded fields [" + Strings.join(keys, ',') + "] by query not supported by current db");
                 }
 
-                if(index > 0) {
+                if (index > 0) {
                     sql.append(',');
                 }
 
                 final String column = em.getEmbeddedColumnName();
-                String alias1 = null;
+                String       alias1 = null;
                 if (useAlias && !dialect.useTableAliasAfterUpdate()) {
-                    alias1=alias;
+                    alias1 = alias;
                 }
                 sql.append(jcs.getUpdateExpr(alias1, column, keys, (n) -> {
                     final String param = "new_" + n;
@@ -1375,10 +1379,10 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                     index++;
                 } else {
                     for (String column : columns) {
-                        if(mayEmbedded) {
-                            if(column.equalsIgnoreCase(em.getEmbeddedColumnName())) {
+                        if (mayEmbedded) {
+                            if (column.equalsIgnoreCase(em.getEmbeddedColumnName())) {
                                 embeddedColumnExists = true;
-                            }else {
+                            } else {
                                 FieldMapping fm = em.tryGetFieldMappingByColumn(column);
                                 if (null != fm && fm.isEmbedded()) {
                                     embedded.add(fm);
@@ -1441,25 +1445,25 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                 }
             }
 
-            if(!embeddedColumnExists && embedded.size() > 0) {
+            if (!embeddedColumnExists && embedded.size() > 0) {
                 if (index > 0) {
                     sql.append(',');
                 }
 
                 final JsonColumnSupport jcs = dialect().getJsonColumnSupport();
-                if(null != jcs && jcs.supportsSelectByKeys()) {
+                if (null != jcs && jcs.supportsSelectByKeys()) {
                     final String column = em.getEmbeddedColumnName();
-                    for(int i=0;i<embedded.size();i++) {
-                        if(i > 0) {
+                    for (int i = 0; i < embedded.size(); i++) {
+                        if (i > 0) {
                             sql.append(',');
                         }
                         final FieldMapping fm = embedded.get(i);
                         sql.append("```").append(alias).append('.')
-                                .append(jcs.getSelectItemExpr(column, fm.getColumnName()))
+                                .append(jcs.getSelectItemExpr(column, fm.getFieldName()))
                                 .append("```")
                                 .append(" as ").append(fm.getFieldName());
                     }
-                }else {
+                } else {
                     sql.append(em.getEmbeddedColumnName());
                 }
             }
@@ -1559,13 +1563,6 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         protected SqlBuilder orderBy() {
             if (!Strings.isEmpty(orderBy)) {
                 sql.append(" order by ").append(orderBy);
-            }
-            return this;
-        }
-
-        protected SqlBuilder forUpdate() {
-            if (forUpdate) {
-                dialect().wrapSelectForUpdate(sql);
             }
             return this;
         }

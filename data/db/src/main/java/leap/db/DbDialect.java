@@ -20,6 +20,7 @@ import leap.db.change.SchemaChange;
 import leap.db.change.SchemaChangeContext;
 import leap.db.model.*;
 import leap.db.support.JsonColumnSupport;
+import leap.lang.convert.Converts;
 import leap.lang.jdbc.JdbcTypes;
 
 import java.sql.*;
@@ -491,7 +492,8 @@ public interface DbDialect {
     /**
      * Read the value of json column.
      */
-    default Object getJsonColumnValue(ResultSet rs, int column, int type) throws SQLException {
-        return getColumnValue(rs, column, type);
+    default String getJsonColumnValue(ResultSet rs, int column, int type) throws SQLException {
+        Object value = getColumnValue(rs, column, type);
+        return null == value ? null : Converts.toString(value);
     }
 }

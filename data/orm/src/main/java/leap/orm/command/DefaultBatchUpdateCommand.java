@@ -51,6 +51,8 @@ public class DefaultBatchUpdateCommand extends AbstractEntityDaoCommand implemen
             throw new IllegalStateException("No update fields");
         }
 
+        //todo: handle embedded fields.
+
         final SqlCommand primaryCommand =
                 context.getSqlFactory().createUpdateCommand(context, em, fields);
 

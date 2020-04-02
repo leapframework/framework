@@ -29,6 +29,7 @@ import leap.lang.Charsets;
 import leap.lang.Collections2;
 import leap.lang.New;
 import leap.lang.Strings;
+import leap.lang.convert.Converts;
 import leap.lang.io.IO;
 import leap.lang.value.Limit;
 
@@ -358,7 +359,7 @@ public class MySql5Dialect extends GenericDbDialect {
     }
 
     @Override
-    public Object getJsonColumnValue(ResultSet rs, int column, int type) throws SQLException {
+    public String getJsonColumnValue(ResultSet rs, int column, int type) throws SQLException {
         if(null == jsonColumnSupport) {
             return super.getJsonColumnValue(rs, column, type);
         }else {
@@ -373,7 +374,7 @@ public class MySql5Dialect extends GenericDbDialect {
                 value = IO.readString((ByteArrayInputStream)value, Charsets.UTF_8);
             }
 
-            return value;
+            return Converts.toString(value);
         }
     }
 

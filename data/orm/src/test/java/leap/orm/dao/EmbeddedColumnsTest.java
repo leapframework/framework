@@ -15,22 +15,18 @@
  *
  */
 
-package tests;
+package leap.orm.dao;
 
-import app.EmdEntity;
-import leap.core.annotation.Inject;
-import leap.core.junit.AppTestBase;
 import leap.lang.New;
-import leap.orm.dao.Dao;
+import leap.orm.OrmTestCase;
+import leap.orm.tested.EmdEntity;
 import org.junit.Test;
 
-public class EmbeddedColumnsTest extends AppTestBase {
-
-    @Inject
-    protected Dao dao;
+public class EmbeddedColumnsTest extends OrmTestCase {
 
     @Test
     public void testSimpleCRUD() {
+        //mysql's jdbc driver must use 8.0.x, 5.1.x will returns byte[] for any embedded field at json column.
         dao.deleteAll(EmdEntity.class);
 
         EmdEntity record = new EmdEntity();
@@ -60,17 +56,49 @@ public class EmbeddedColumnsTest extends AppTestBase {
         assertEquals("s2", dbRecord.getC1());
         assertEquals(new Integer(2), dbRecord.getC2());
 
-        assertEquals("s2", dao.createCriteriaQuery(EmdEntity.class).select("c1").scalar().getString());
-        assertEquals(new Integer(2), dao.createCriteriaQuery(EmdEntity.class).select("c2").scalar().getInteger());
+        if (db.getDialect().supportsJsonColumn()) {
+            assertEquals("s2", dao.createCriteriaQuery(EmdEntity.class).select("c1").scalar().getString());
+            assertEquals(new Integer(2), dao.createCriteriaQuery(EmdEntity.class).select("c2").scalar().getInteger());
+        }
+
+        assertEquals("s2", dao.createCriteriaQuery(EmdEntity.class).select("c1").first().getC1());
+        assertEquals(new Integer(2), dao.createCriteriaQuery(EmdEntity.class).select("c2").first().getC2());
 
         dbRecord = dao.createCriteriaQuery(EmdEntity.class).select("name", "c1", "c2").first();
         assertEquals("s2", dbRecord.getC1());
         assertEquals(new Integer(2), dbRecord.getC2());
 
         //update by criteria query
-        dao.createCriteriaQuery(EmdEntity.class).whereById("1").update(New.hashMap("name", "x", "c1", "s3", "c2", 3));
-        dbRecord = dao.find(EmdEntity.class, "1");
-        assertEquals("s3", dbRecord.getC1());
-        assertEquals(new Integer(3), dbRecord.getC2());
+        if (db.getDialect().supportsJsonColumn()) {
+            dao.createCriteriaQuery(EmdEntity.class).whereById("1").update(New.hashMap("name", "x", "c1", "s3", "c2", 3));
+            dbRecord = dao.find(EmdEntity.class, "1");
+            assertEquals("s3", dbRecord.getC1());
+            assertEquals(new Integer(3), dbRecord.getC2());
+        }
+    }
+
+    @Test
+    public void testBatchInsert() {
+        dao.deleteAll(EmdEntity.class);
+
+        EmdEntity r1 = new EmdEntity();
+        r1.setId("1");
+        r1.setC1("s1");
+        r1.setC2(1);
+
+        EmdEntity r2 = new EmdEntity();
+        r2.setId("2");
+        r2.setC1("s2");
+        r2.setC2(2);
+
+        dao.batchInsert(EmdEntity.class, New.arrayList(r1, r2));
+
+        EmdEntity dbRecord1 = dao.find(EmdEntity.class, "1");
+        assertEquals(r1.getC1(), dbRecord1.getC1());
+        assertEquals(r1.getC2(), dbRecord1.getC2());
+
+        EmdEntity dbRecord2 = dao.find(EmdEntity.class, "2");
+        assertEquals(r2.getC1(), dbRecord2.getC1());
+        assertEquals(r2.getC2(), dbRecord2.getC2());
     }
 }

@@ -15,41 +15,43 @@
  */
 package leap.core.jdbc;
 
+import leap.core.value.Scalars;
+import leap.core.value.SimpleScalars;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import leap.core.value.Scalars;
-import leap.core.value.SimpleScalars;
-
 public class SimpleScalarsReader implements ResultSetReader<Scalars> {
-	
-	public static final SimpleScalarsReader DEFAULT_INSTANCE = new SimpleScalarsReader(1);
-	
-	@SuppressWarnings({ "unchecked" })
-    private static final Scalars EMPTY_SCALARS = new SimpleScalars(Collections.EMPTY_LIST);
-	
-	private final int column;
-	
-	public SimpleScalarsReader(int column) {
-		this.column = column;
-	}
 
-	@Override
-	public Scalars read(ResultSet rs) throws SQLException {
-		if(rs.next()) {
-			List<Object> l = new ArrayList<Object>();
-			
-			do {
-				l.add(rs.getObject(column));
-			}while(rs.next());
-			
-			return new SimpleScalars(l);
-		}
-		
-		return EMPTY_SCALARS;
-	}
+    public static final SimpleScalarsReader DEFAULT_INSTANCE = new SimpleScalarsReader(1);
 
+    @SuppressWarnings({"unchecked"})
+    protected static final Scalars EMPTY_SCALARS = new SimpleScalars(Collections.EMPTY_LIST);
+
+    protected final int column;
+
+    public SimpleScalarsReader(int column) {
+        this.column = column;
+    }
+
+    @Override
+    public Scalars read(ResultSet rs) throws SQLException {
+        if (rs.next()) {
+            List<Object> l = new ArrayList<>();
+            do {
+                l.add(getColumnValue(rs));
+            } while (rs.next());
+
+            return new SimpleScalars(l);
+        }
+
+        return EMPTY_SCALARS;
+    }
+
+    protected Object getColumnValue(ResultSet rs) throws SQLException {
+        return rs.getObject(column);
+    }
 }

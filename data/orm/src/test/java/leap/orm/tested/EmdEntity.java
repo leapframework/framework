@@ -15,7 +15,7 @@
  *
  */
 
-package app;
+package leap.orm.tested;
 
 import leap.orm.annotation.Column;
 import leap.orm.annotation.Entity;

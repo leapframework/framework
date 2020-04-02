@@ -43,7 +43,7 @@ public class DbColumnTypes {
     public static final int TIMESTAMP     = Types.TIMESTAMP;
     public static final int BLOB          = Types.BLOB;
     public static final int CLOB          = Types.CLOB;
-    
+
     private static final int[] SUPPORTED_TYPES = new int[]{
         BOOLEAN,BIT,SMALLINT,INTEGER,BITINT,FLOAT,DOUBLE,DECIMAL,NUMERIC,CHAR,VARCHAR,LONGVARCHAR,BINARY,VARBINARY,LONGVARBINARY,DATE,TIME,TIMESTAMP,BLOB,CLOB
     };
