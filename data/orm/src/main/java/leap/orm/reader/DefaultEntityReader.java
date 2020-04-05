@@ -22,6 +22,7 @@ import leap.db.DbDialect;
 import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
+import leap.lang.beans.DynaProps;
 import leap.lang.convert.Converts;
 import leap.lang.jdbc.JdbcTypes;
 import leap.lang.json.JSON;
@@ -195,7 +196,8 @@ public class DefaultEntityReader implements EntityReader {
 		DbDialect dialect = context.getDb().getDialect();
 
 		Map<String, Object> embedded = null;
-		
+
+		final Map<String, Object> dynaProps = bean instanceof DynaProps ? ((DynaProps) bean).getDynaProperties() : null;
 		for(int i=0;i<rsm.getColumnCount();i++){
 			ResultColumnMapping cm = rsm.getColumnMapping(i);
 			FieldMapping  fm = cm.getFieldMapping();
@@ -226,6 +228,9 @@ public class DefaultEntityReader implements EntityReader {
 			if(null != bp){
                 Object value = readColumnValue(dialect, rs, cm, fm, i+1);
 				bp.setValue(bean, value);
+			}else if(null != dynaProps) {
+				Object value = readColumnValue(dialect, rs, cm, fm, i+1);
+				dynaProps.put(cm.getResultName(), value);
 			}
 		}
 
@@ -234,6 +239,8 @@ public class DefaultEntityReader implements EntityReader {
 				BeanProperty bp = beanType.tryGetProperty(n);
 				if(null != bp) {
 					bp.setValue(bean, v);
+				}else if(null != dynaProps) {
+					dynaProps.put(n, v);
 				}
 			});
 		}

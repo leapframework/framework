@@ -17,14 +17,42 @@
 
 package leap.orm.dao;
 
+import leap.core.value.Record;
+import leap.db.model.DbColumnBuilder;
+import leap.lang.New;
+import leap.lang.meta.MTypes;
 import leap.orm.OrmTestCase;
+import leap.orm.mapping.EntityMapping;
+import leap.orm.mapping.FieldMappingBuilder;
+import leap.orm.tested.EmdEntity;
 import org.junit.Test;
 
 public class DynamicFieldsTest extends OrmTestCase {
 
     @Test
     public void testSimpleCRUD() {
+        dao.deleteAll(EmdEntity.class);
 
+        final EntityMapping.Dynamic dynamic = new EntityMapping.Dynamic();
+        EntityMapping.withDynamic(dynamic, () -> {
+            addField(dynamic, "x1", String.class);
+
+            //create and find
+            dao.insert(EmdEntity.class, New.hashMap("id", "1", "x1", "a"));
+            EmdEntity record = dao.find(EmdEntity.class, "1");
+            assertEquals("a", record.get("x1"));
+        });
     }
 
+    protected void addField(EntityMapping.Dynamic dynamic, String name, Class<?> type) {
+        FieldMappingBuilder f = new FieldMappingBuilder(name, type);
+        f.setDataType(MTypes.getMType(type));
+        f.setEmbedded(true);
+
+        DbColumnBuilder c = f.getColumn();
+        c.setName(name);
+        c.setTypeCode(f.getDataType().asSimpleType().getJdbcType().getCode());
+
+        dynamic.getFieldMappings().add(f.build());
+    }
 }

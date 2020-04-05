@@ -725,21 +725,16 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
             DbTable               table          = buildTable(fields, relations, embeddedColumn);
             DbTable               secondaryTable = buildSecondaryTable(fields, relations);
 
-            if(null != dynamic) {
-                dynamic.getFieldMappings().forEach(fields::add);
-            }
-
             EntityMapping em =
                     new EntityMapping(this,
                             entityName, wideEntityName, dynamicTableName, entityClass, extendedEntityClass,
                             table, secondaryTable, embeddedColumn, queryView, fields,
                             insertHandler, updateHandler, deleteHandler,
                             insertInterceptor, updateInterceptor, deleteInterceptor, findInterceptor,
-                            modelClass, validators,
-                            relations,
+                            modelClass, validators, relations,
                             Builders.buildArray(relationProperties, new RelationProperty[0]),
                             autoCreateTable, queryFilterEnabled == null ? false : queryFilterEnabled, autoValidate,
-                            dynamicEnabled, logical, remote, remoteSettings, unionSettings,
+                            dynamicEnabled, dynamic, logical, remote, remoteSettings, unionSettings,
                             groupByExprs, selectExprs, orderByExprs, filtersExprs, aggregatesExprs,
                             listeners.build());
 

@@ -28,7 +28,7 @@ public abstract class AbstractEntityDaoCommand extends AbstractDaoCommand {
 	
 	public AbstractEntityDaoCommand(Dao dao,EntityMapping em) {
 		super(dao);
-		this.em = em;
+		this.em = em.withDynamic();
 	}
 
 	@Override

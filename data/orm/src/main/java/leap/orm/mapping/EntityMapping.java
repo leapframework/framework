@@ -136,6 +136,7 @@ public class EntityMapping extends ExtensibleBase {
     protected final boolean             queryFilterEnabled;
     protected final boolean             autoValidate;
     protected final boolean             dynamicEnabled;
+    protected final Dynamic             dynamic;
     protected final boolean             logical;
     protected final boolean             remote;
     protected final RemoteSettings      remoteSettings;
@@ -166,7 +167,8 @@ public class EntityMapping extends ExtensibleBase {
                          List<EntityValidator> validators,
                          List<RelationMapping> relationMappings,
                          RelationProperty[] relationProperties,
-                         boolean autoCreateTable, boolean queryFilterEnabled, boolean autoValidate, boolean dynamicEnabled,
+                         boolean autoCreateTable, boolean queryFilterEnabled, boolean autoValidate,
+                         boolean dynamicEnabled, Dynamic dynamic,
                          boolean logical, boolean remote, RemoteSettings remoteSettings, UnionSettings unionSettings,
                          Map<String, String> groupByExprs, Map<String, String> selectExprs, Map<String, String> orderByExprs,
                          Map<String, String> filtersExprs, Map<String, String> aggregatesExprs,
@@ -178,6 +180,10 @@ public class EntityMapping extends ExtensibleBase {
         Args.notNull(listeners);
         if (remote && null == remoteSettings) {
             throw new IllegalStateException("Remote settings must not be null for remote entity '" + entityName + "'");
+        }
+
+        if(null != dynamic) {
+            dynamic.getFieldMappings().forEach(fieldMappings::add);
         }
 
         this.builder = builder;
@@ -224,6 +230,7 @@ public class EntityMapping extends ExtensibleBase {
         this.queryFilterEnabled = queryFilterEnabled;
         this.autoValidate = autoValidate;
         this.dynamicEnabled = dynamicEnabled;
+        this.dynamic = dynamic;
         this.logical = logical;
         this.remote = remote;
         this.remoteSettings = remoteSettings;
@@ -256,16 +263,22 @@ public class EntityMapping extends ExtensibleBase {
      * Returns the {@link EntityMapping} with the {@link Dynamic} or self if no {@link Dynamic}.
      */
     public EntityMapping withDynamic() {
-        if(dynamicEnabled) {
-            DynamicAndMapping dynamicAndMapping = CONTEXT_DYNAMIC.get();
-            if(null != dynamicAndMapping) {
-                EntityMapping mapping = dynamicAndMapping.mapping;
-                if(null == mapping) {
+        if(null != dynamic) {
+            return this;
+        }
 
+        if (dynamicEnabled) {
+            DynamicAndMapping dynamicAndMapping = CONTEXT_DYNAMIC.get();
+            if (null != dynamicAndMapping) {
+                EntityMapping mapping = dynamicAndMapping.mapping;
+                if (null == mapping) {
+                    mapping = builder.build(dynamicAndMapping.dynamic);
+                    dynamicAndMapping.mapping = mapping;
                 }
                 return mapping;
             }
         }
+
         return this;
     }
 
@@ -551,6 +564,13 @@ public class EntityMapping extends ExtensibleBase {
      */
     public boolean isDynamicEnabled() {
         return dynamicEnabled;
+    }
+
+    /**
+     * Returns <code>true</code> if the field mappings contains dynamic fields.
+     */
+    public boolean hasDynamicFields() {
+       return null != dynamic && dynamic.getFieldMappings().size() > 0;
     }
 
     /**
@@ -973,7 +993,7 @@ public class EntityMapping extends ExtensibleBase {
 
     public static class Dynamic {
 
-        protected List<FieldMapping> fieldMappings = Collections.emptyList();
+        protected List<FieldMapping> fieldMappings = new ArrayList<>();
 
         public List<FieldMapping> getFieldMappings() {
             return fieldMappings;

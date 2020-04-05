@@ -71,6 +71,7 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 		Class<?> sourceClass = emb.getSourceClass();
 		if(null != sourceClass){
 			mappingEntityByAnnotation(context, emb, sourceClass.getAnnotation(Entity.class));
+            mappingEntityByAnnotation(context, emb, sourceClass.getAnnotation(EnableDynamic.class));
 			mappingEntityByAnnotation(context, emb, sourceClass.getAnnotation(Table.class));
             mappingEntityByAnnotation(context, emb, sourceClass.getAnnotation(AutoCreateTable.class));
             mappingEntityByAnnotation(context, emb, sourceClass.getAnnotation(AutoGenerateColumns.class));
@@ -144,6 +145,12 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
             mappingListenerByAnnotations(context, emb, a.listeners());
 		}
 	}
+
+    protected void mappingEntityByAnnotation(MetadataContext context, EntityMappingBuilder emb, EnableDynamic a){
+        if(null != a) {
+            emb.setDynamicEnabled(true);
+        }
+    }
 
     protected void mappingListenerByAnnotations(MetadataContext context, EntityMappingBuilder emb, Entity.Listener[] listeners) {
         for(Entity.Listener listener : listeners) {
