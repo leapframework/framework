@@ -54,6 +54,7 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
     protected Boolean             queryFilterEnabled;
     protected boolean             autoValidate;
     protected String              queryView;
+    protected boolean             dynamicEnabled;
     protected boolean             logical;
     protected boolean             remote;
     protected RemoteSettings      remoteSettings;
@@ -273,6 +274,14 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
 
     public void setQueryView(String queryView) {
         this.queryView = queryView;
+    }
+
+    public boolean isDynamicEnabled() {
+        return dynamicEnabled;
+    }
+
+    public void setDynamicEnabled(boolean dynamicEnabled) {
+        this.dynamicEnabled = dynamicEnabled;
     }
 
     public boolean isLogical() {
@@ -704,6 +713,10 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
             }
         }
 
+        return build(null);
+    }
+
+    protected EntityMapping build(EntityMapping.Dynamic dynamic) {
         try {
             final DbColumn embeddedColumn = null != this.embeddedColumn ? this.embeddedColumn.build() : null;
 
@@ -711,6 +724,10 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
             List<RelationMapping> relations      = Builders.buildList(relationMappings);
             DbTable               table          = buildTable(fields, relations, embeddedColumn);
             DbTable               secondaryTable = buildSecondaryTable(fields, relations);
+
+            if(null != dynamic) {
+                dynamic.getFieldMappings().forEach(fields::add);
+            }
 
             EntityMapping em =
                     new EntityMapping(this,
@@ -722,7 +739,7 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
                             relations,
                             Builders.buildArray(relationProperties, new RelationProperty[0]),
                             autoCreateTable, queryFilterEnabled == null ? false : queryFilterEnabled, autoValidate,
-                            logical, remote, remoteSettings, unionSettings,
+                            dynamicEnabled, logical, remote, remoteSettings, unionSettings,
                             groupByExprs, selectExprs, orderByExprs, filtersExprs, aggregatesExprs,
                             listeners.build());
 

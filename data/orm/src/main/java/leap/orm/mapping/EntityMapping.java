@@ -38,6 +38,7 @@ public class EntityMapping extends ExtensibleBase {
     private static final Log log = LogFactory.get(EntityMapping.class);
 
     private static final ThreadLocal<List<EntityListeners>> CONTEXT_LISTENERS = new ThreadLocal<>();
+    private static final ThreadLocal<DynamicAndMapping>     CONTEXT_DYNAMIC   = new ThreadLocal<>();
 
     public static List<EntityListeners> getContextListeners() {
         return CONTEXT_LISTENERS.get();
@@ -74,6 +75,24 @@ public class EntityMapping extends ExtensibleBase {
             return func.get();
         } finally {
             clearContextListeners();
+        }
+    }
+
+    public static void withDynamic(Dynamic dynamic, Runnable func) {
+        try {
+            CONTEXT_DYNAMIC.set(new DynamicAndMapping(dynamic));
+            func.run();
+        } finally {
+            CONTEXT_DYNAMIC.remove();
+        }
+    }
+
+    public static <T> T withDynamic(Dynamic dynamic, Supplier<T> func) {
+        try {
+            CONTEXT_DYNAMIC.set(new DynamicAndMapping(dynamic));
+            return func.get();
+        } finally {
+            CONTEXT_DYNAMIC.remove();
         }
     }
 
@@ -116,6 +135,7 @@ public class EntityMapping extends ExtensibleBase {
     protected final EntityListeners     listeners;
     protected final boolean             queryFilterEnabled;
     protected final boolean             autoValidate;
+    protected final boolean             dynamicEnabled;
     protected final boolean             logical;
     protected final boolean             remote;
     protected final RemoteSettings      remoteSettings;
@@ -146,8 +166,8 @@ public class EntityMapping extends ExtensibleBase {
                          List<EntityValidator> validators,
                          List<RelationMapping> relationMappings,
                          RelationProperty[] relationProperties,
-                         boolean autoCreateTable, boolean queryFilterEnabled, boolean autoValidate,
-                         boolean logical, boolean remote, RemoteSettings remoteSettings,UnionSettings unionSettings,
+                         boolean autoCreateTable, boolean queryFilterEnabled, boolean autoValidate, boolean dynamicEnabled,
+                         boolean logical, boolean remote, RemoteSettings remoteSettings, UnionSettings unionSettings,
                          Map<String, String> groupByExprs, Map<String, String> selectExprs, Map<String, String> orderByExprs,
                          Map<String, String> filtersExprs, Map<String, String> aggregatesExprs,
                          EntityListeners listeners) {
@@ -203,6 +223,7 @@ public class EntityMapping extends ExtensibleBase {
         this.autoCreateTable = autoCreateTable;
         this.queryFilterEnabled = queryFilterEnabled;
         this.autoValidate = autoValidate;
+        this.dynamicEnabled = dynamicEnabled;
         this.logical = logical;
         this.remote = remote;
         this.remoteSettings = remoteSettings;
@@ -226,9 +247,26 @@ public class EntityMapping extends ExtensibleBase {
             throw new IllegalStateException("Entity with secondary table must has one key field only");
         }
 
-        if(null != unionSettings) {
+        if (null != unionSettings) {
             this.unionSettings.initTypeAndEntityMap();
         }
+    }
+
+    /**
+     * Returns the {@link EntityMapping} with the {@link Dynamic} or self if no {@link Dynamic}.
+     */
+    public EntityMapping withDynamic() {
+        if(dynamicEnabled) {
+            DynamicAndMapping dynamicAndMapping = CONTEXT_DYNAMIC.get();
+            if(null != dynamicAndMapping) {
+                EntityMapping mapping = dynamicAndMapping.mapping;
+                if(null == mapping) {
+
+                }
+                return mapping;
+            }
+        }
+        return this;
     }
 
     /**
@@ -340,7 +378,7 @@ public class EntityMapping extends ExtensibleBase {
      * Returns the embedded column name or null.
      */
     public String getEmbeddedColumnName() {
-        return null == embeddedColumn? null : embeddedColumn.getName();
+        return null == embeddedColumn ? null : embeddedColumn.getName();
     }
 
     /**
@@ -506,6 +544,13 @@ public class EntityMapping extends ExtensibleBase {
      */
     public boolean isAutoValidate() {
         return autoValidate;
+    }
+
+    /**
+     * Is the {@link Dynamic} enabled.
+     */
+    public boolean isDynamicEnabled() {
+        return dynamicEnabled;
     }
 
     /**
@@ -924,5 +969,27 @@ public class EntityMapping extends ExtensibleBase {
     @Override
     public String toString() {
         return "Entity[name=" + getEntityName() + ",table=" + getTableName() + ",class=" + (entityClass == null ? "null" : entityClass.getName()) + "]";
+    }
+
+    public static class Dynamic {
+
+        protected List<FieldMapping> fieldMappings = Collections.emptyList();
+
+        public List<FieldMapping> getFieldMappings() {
+            return fieldMappings;
+        }
+
+        public void setFieldMappings(List<FieldMapping> fieldMappings) {
+            this.fieldMappings = fieldMappings;
+        }
+    }
+
+    private static class DynamicAndMapping {
+        private final Dynamic       dynamic;
+        private       EntityMapping mapping;
+
+        public DynamicAndMapping(Dynamic dynamic) {
+            this.dynamic = dynamic;
+        }
     }
 }
