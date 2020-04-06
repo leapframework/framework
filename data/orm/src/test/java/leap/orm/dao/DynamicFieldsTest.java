@@ -22,9 +22,13 @@ import leap.lang.New;
 import leap.lang.meta.MTypes;
 import leap.orm.OrmTestCase;
 import leap.orm.mapping.EntityMapping;
+import leap.orm.mapping.FieldMapping;
 import leap.orm.mapping.FieldMappingBuilder;
 import leap.orm.tested.EmdEntity;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class DynamicFieldsTest extends OrmTestCase {
 
@@ -32,7 +36,7 @@ public class DynamicFieldsTest extends OrmTestCase {
     public void testSimpleCRUD() {
         dao.deleteAll(EmdEntity.class);
 
-        final EntityMapping.Dynamic dynamic = new EntityMapping.Dynamic();
+        final DynamicImpl dynamic = new DynamicImpl();
         EntityMapping.withDynamic(dynamic, () -> {
             addField(dynamic, "x1", String.class);
             addField(dynamic, "x2", Integer.class);
@@ -63,5 +67,18 @@ public class DynamicFieldsTest extends OrmTestCase {
         c.setTypeCode(f.getDataType().asSimpleType().getJdbcType().getCode());
 
         dynamic.getFieldMappings().add(f.build());
+    }
+
+    protected static final class DynamicImpl implements EntityMapping.Dynamic {
+        protected List<FieldMapping> fieldMappings = new ArrayList<>();
+
+        @Override
+        public List<FieldMapping> getFieldMappings() {
+            return fieldMappings;
+        }
+
+        public void setFieldMappings(List<FieldMapping> fieldMappings) {
+            this.fieldMappings = fieldMappings;
+        }
     }
 }

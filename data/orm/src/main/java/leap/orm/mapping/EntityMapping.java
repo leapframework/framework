@@ -97,17 +97,17 @@ public class EntityMapping extends ExtensibleBase {
     }
 
     public static void tryWithDynamic(Dynamic dynamic, Runnable func) {
-        if(null == dynamic) {
+        if (null == dynamic) {
             func.run();
-        }else {
+        } else {
             withDynamic(dynamic, func);
         }
     }
 
     public static <T> T tryWithDynamic(Dynamic dynamic, Supplier<T> func) {
-        if(null == dynamic) {
+        if (null == dynamic) {
             return func.get();
-        }else {
+        } else {
             return withDynamic(dynamic, func);
         }
     }
@@ -206,7 +206,7 @@ public class EntityMapping extends ExtensibleBase {
             throw new IllegalStateException("Remote settings must not be null for remote entity '" + entityName + "'");
         }
 
-        if(null != dynamic) {
+        if (null != dynamic) {
             dynamic.getFieldMappings().forEach(fieldMappings::add);
         }
 
@@ -287,7 +287,7 @@ public class EntityMapping extends ExtensibleBase {
      * Returns the {@link EntityMapping} with the {@link Dynamic} or self if no {@link Dynamic}.
      */
     public EntityMapping withDynamic() {
-        if(null != dynamic) {
+        if (null != dynamic) {
             return this;
         }
 
@@ -522,9 +522,9 @@ public class EntityMapping extends ExtensibleBase {
      */
     public FieldMapping[] getFieldMappings() {
         EntityMapping em = withDynamic();
-        if(em == this) {
+        if (em == this) {
             return fieldMappings;
-        }else {
+        } else {
             return em.getFieldMappings();
         }
     }
@@ -599,7 +599,7 @@ public class EntityMapping extends ExtensibleBase {
      * Returns <code>true</code> if the field mappings contains dynamic fields.
      */
     public boolean hasDynamicFields() {
-       return null != dynamic && dynamic.getFieldMappings().size() > 0;
+        return null != dynamic && dynamic.getFieldMappings().size() > 0;
     }
 
     /**
@@ -642,9 +642,9 @@ public class EntityMapping extends ExtensibleBase {
 
     public FieldMapping tryGetFieldMapping(String fieldName) {
         EntityMapping em = withDynamic();
-        if(em == this) {
+        if (em == this) {
             return fieldNameToFields.get(fieldName.toLowerCase());
-        }else {
+        } else {
             return em.tryGetFieldMapping(fieldName);
         }
     }
@@ -1023,17 +1023,8 @@ public class EntityMapping extends ExtensibleBase {
         return "Entity[name=" + getEntityName() + ",table=" + getTableName() + ",class=" + (entityClass == null ? "null" : entityClass.getName()) + "]";
     }
 
-    public static class Dynamic {
-
-        protected List<FieldMapping> fieldMappings = new ArrayList<>();
-
-        public List<FieldMapping> getFieldMappings() {
-            return fieldMappings;
-        }
-
-        public void setFieldMappings(List<FieldMapping> fieldMappings) {
-            this.fieldMappings = fieldMappings;
-        }
+    public interface Dynamic {
+        Collection<FieldMapping> getFieldMappings();
     }
 
     private static class DynamicAndMapping {
