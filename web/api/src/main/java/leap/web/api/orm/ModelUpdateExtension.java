@@ -53,6 +53,17 @@ public class ModelUpdateExtension implements ModelUpdateInterceptor, ModelReplac
     }
 
     @Override
+    public ModelDynamic resolveUpdateDynamic(ModelExecutionContext context, Object id, Map<String, Object> properties) {
+        ModelDynamic dynamic = null;
+        for(ModelUpdateInterceptor interceptor : updateInterceptors) {
+            if(null != (dynamic = interceptor.resolveUpdateDynamic(context, id, properties))) {
+                break;
+            }
+        }
+        return dynamic;
+    }
+
+    @Override
     public boolean processUpdatePropertiesByKey(ModelExecutionContext context, Map<String, Object> filters, Map<String, Object> properties) {
         for(ModelUpdateInterceptor interceptor : updateInterceptors) {
             if(interceptor.processUpdatePropertiesByKey(context, filters, properties)) {

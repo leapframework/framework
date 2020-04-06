@@ -59,10 +59,10 @@ public class ModelCreateExtension implements ModelCreateInterceptor {
     }
 
     @Override
-    public ModelDynamic resolveCreationDynamic(ModelExecutionContext context, Map<String, Object> record) {
+    public ModelDynamic resolveCreateDynamic(ModelExecutionContext context, Map<String, Object> record) {
         ModelDynamic dynamic = null;
         for(ModelCreateInterceptor interceptor : interceptors) {
-            if(null != (dynamic = interceptor.resolveCreationDynamic(context, record))) {
+            if(null != (dynamic = interceptor.resolveCreateDynamic(context, record))) {
                 break;
             }
         }

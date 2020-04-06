@@ -43,7 +43,7 @@ public interface ModelCreateInterceptor {
     /**
      * Returns the {@link ModelDynamic} if exists.
      */
-    default ModelDynamic resolveCreationDynamic(ModelExecutionContext context, Map<String,Object> record) {
+    default ModelDynamic resolveCreateDynamic(ModelExecutionContext context, Map<String,Object> record) {
         return null;
     }
 

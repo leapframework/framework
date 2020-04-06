@@ -99,7 +99,7 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
             ex.handler.processCreationRecord(context, properties);
         }
 
-        final ModelDynamic dynamic = ex.resolveCreationDynamic(context, properties);
+        final ModelDynamic dynamic = ex.resolveCreateDynamic(context, properties);
         try {
             if(null != dynamic) {
                 context.setDynamic(dynamic);

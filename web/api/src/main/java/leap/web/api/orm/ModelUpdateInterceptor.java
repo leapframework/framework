@@ -28,6 +28,10 @@ public interface ModelUpdateInterceptor {
         return false;
     }
 
+    default ModelDynamic resolveUpdateDynamic(ModelExecutionContext context, Object id, Map<String, Object> properties) {
+        return null;
+    }
+
     /**
      * Process the update properties.
      */
