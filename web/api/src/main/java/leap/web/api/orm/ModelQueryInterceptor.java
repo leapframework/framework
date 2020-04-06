@@ -31,6 +31,10 @@ public interface ModelQueryInterceptor extends ModelFindInterceptor {
         return false;
     }
 
+    default ModelDynamic resolveQueryListDynamic(ModelExecutionContext context, QueryOptions options) {
+        return null;
+    }
+
     default boolean preProcessQueryListWhere(ModelExecutionContext context, QueryOptions options, CriteriaQuery query, WhereBuilder where, Map<String, Object> filters) {
         return preProcessQueryListWhere(context, options, where);
     }

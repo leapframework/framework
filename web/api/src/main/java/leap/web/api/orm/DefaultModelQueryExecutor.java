@@ -301,135 +301,147 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             ex.handler.processQueryListOptions(context, options);
         }
 
-        if (!Strings.isEmpty(options.getSqlView())) {
-            query.fromSqlView(options.getSqlView());
+        ModelDynamic dynamic = ex.resolveQueryListDynamic(context, options);
+        if(null != dynamic) {
+            context.setDynamic(dynamic);
+            EntityMapping.setDynamic(dynamic.getEntityDynamic());
         }
 
-        Map<String, Object> allParams = new HashMap<>();
-        if (null != this.context.getActionContext()) {
-            allParams.putAll(this.context.getActionContext().getMergedParameters());
-        }
-        if (null != options.getQueryParams()) {
-            allParams.putAll(options.getQueryParams());
-        }
-        query.params(allParams);
-
-        Join[] joins = options.getResolvedJoins();
-        if (null != joins && joins.length > 0) {
-            Set<String> relations = new HashSet<>();
-
-            for (Join join : joins) {
-
-                if (relations.contains(join.getRelation().toLowerCase())) {
-                    throw new BadRequestException("Duplicated join relation '" + join.getRelation() + "'");
-                }
-
-                if (joinModels.contains(join.getAlias())) {
-                    throw new BadRequestException("Duplicated join alias '" + join.getAlias() + "'");
-                }
-
-                if (join.getAlias().equalsIgnoreCase(query.alias())) {
-                    throw new BadRequestException("Alias '" + query.alias() + "' is reserved, please use another one");
-                }
-
-                RelationProperty rp = em.tryGetRelationProperty(join.getRelation());
-                if (null == rp) {
-                    throw new BadRequestException("No relation '" + join.getRelation() + "' in model '" + am.getName() +
-                            " or the relation is not joinable");
-                }
-
-                if (rp.isOptional()) {
-                    query.leftJoin(rp.getTargetEntityName(), rp.getRelationName(), join.getAlias());
-                } else {
-                    query.join(rp.getTargetEntityName(), rp.getRelationName(), join.getAlias());
-                }
-
-                relations.add(join.getRelation().toLowerCase());
-
-                ModelAndMapping joinModel = lookupModelAndMapping(rp.getTargetEntityName());
-                if (null == joinModel) {
-                    throw new BadRequestException("The joined model '" + rp.getTargetEntityName() + "' of relation '" + join.getRelation() + "' not found");
-                }
-                joinModels.add(join.getAlias(), joinModel);
+        try {
+            if (!Strings.isEmpty(options.getSqlView())) {
+                query.fromSqlView(options.getSqlView());
             }
-        }
 
-        applyOrderBy(query, options, joinModels);
-        applySelectOrAggregates(context, query, options, joinModels);
-        applyFilters(context, query, options.getParams(), options, joinModels, filters, filterByParams);
+            Map<String, Object> allParams = new HashMap<>();
+            if (null != this.context.getActionContext()) {
+                allParams.putAll(this.context.getActionContext().getMergedParameters());
+            }
+            if (null != options.getQueryParams()) {
+                allParams.putAll(options.getQueryParams());
+            }
+            query.params(allParams);
 
-        if (callback != null) {
-            callback.accept(query);
-        }
+            Join[] joins = options.getResolvedJoins();
+            if (null != joins && joins.length > 0) {
+                Set<String> relations = new HashSet<>();
 
-        final QueryOptions finalOptions = options;
-        return em.withContextListeners(listeners, () -> {
-            long         count = -1;
-            List<Record> list;
+                for (Join join : joins) {
 
-            try {
-                ex.preQueryList(context, query);
-                if (null != ex.handler) {
-                    ex.handler.preQueryList(context, query);
+                    if (relations.contains(join.getRelation().toLowerCase())) {
+                        throw new BadRequestException("Duplicated join relation '" + join.getRelation() + "'");
+                    }
+
+                    if (joinModels.contains(join.getAlias())) {
+                        throw new BadRequestException("Duplicated join alias '" + join.getAlias() + "'");
+                    }
+
+                    if (join.getAlias().equalsIgnoreCase(query.alias())) {
+                        throw new BadRequestException("Alias '" + query.alias() + "' is reserved, please use another one");
+                    }
+
+                    RelationProperty rp = em.tryGetRelationProperty(join.getRelation());
+                    if (null == rp) {
+                        throw new BadRequestException("No relation '" + join.getRelation() + "' in model '" + am.getName() +
+                                " or the relation is not joinable");
+                    }
+
+                    if (rp.isOptional()) {
+                        query.leftJoin(rp.getTargetEntityName(), rp.getRelationName(), join.getAlias());
+                    } else {
+                        query.join(rp.getTargetEntityName(), rp.getRelationName(), join.getAlias());
+                    }
+
+                    relations.add(join.getRelation().toLowerCase());
+
+                    ModelAndMapping joinModel = lookupModelAndMapping(rp.getTargetEntityName());
+                    if (null == joinModel) {
+                        throw new BadRequestException("The joined model '" + rp.getTargetEntityName() + "' of relation '" + join.getRelation() + "' not found");
+                    }
+                    joinModels.add(join.getAlias(), joinModel);
                 }
+            }
 
-                PageResult page = query.pageResult(finalOptions.getPage(ac.getDefaultPageSize()));
-                list = ex.executeQueryList(context, finalOptions, query);
-                if (null == list) {
-                    list = dao.withEvents(() -> page.list());
-                }
+            applyOrderBy(query, options, joinModels);
+            applySelectOrAggregates(context, query, options, joinModels);
+            applyFilters(context, query, options.getParams(), options, joinModels, filters, filterByParams);
 
-                if (null != ex.handler) {
-                    ex.handler.postQueryList(context, list);
-                }
+            if (callback != null) {
+                callback.accept(query);
+            }
 
-                List<ExpandError> expandErrors = new ArrayList<>();
-                if (!list.isEmpty()) {
-                    Expand[] expands = ExpandParser.parse(finalOptions.getExpand());
-                    if (expands.length > 0) {
-                        ResolvedExpand[] resolvedExpands = resolveExpands(expands);
+            final QueryOptions finalOptions = options;
+            return em.withContextListeners(listeners, () -> {
+                long         count = -1;
+                List<Record> list;
 
-                        int maxPageSize = ac.getMaxPageSizeWithExpandOne();
-                        for (ResolvedExpand expand : resolvedExpands) {
-                            if (expand.isEmbedded()) {
-                                continue;
+                try {
+                    ex.preQueryList(context, query);
+                    if (null != ex.handler) {
+                        ex.handler.preQueryList(context, query);
+                    }
+
+                    PageResult page = query.pageResult(finalOptions.getPage(ac.getDefaultPageSize()));
+                    list = ex.executeQueryList(context, finalOptions, query);
+                    if (null == list) {
+                        list = dao.withEvents(() -> page.list());
+                    }
+
+                    if (null != ex.handler) {
+                        ex.handler.postQueryList(context, list);
+                    }
+
+                    List<ExpandError> expandErrors = new ArrayList<>();
+                    if (!list.isEmpty()) {
+                        Expand[] expands = ExpandParser.parse(finalOptions.getExpand());
+                        if (expands.length > 0) {
+                            ResolvedExpand[] resolvedExpands = resolveExpands(expands);
+
+                            int maxPageSize = ac.getMaxPageSizeWithExpandOne();
+                            for (ResolvedExpand expand : resolvedExpands) {
+                                if (expand.isEmbedded()) {
+                                    continue;
+                                }
+                                if (expand.rm.isOneToMany() || expand.rm.isManyToMany()) {
+                                    maxPageSize = ac.getMaxPageSizeWithExpandMany();
+                                    break;
+                                }
                             }
-                            if (expand.rm.isOneToMany() || expand.rm.isManyToMany()) {
-                                maxPageSize = ac.getMaxPageSizeWithExpandMany();
-                                break;
+
+                            if (list.size() > maxPageSize) {
+                                throw new BadRequestException("The result size " + list.size() + " exceed max expand " + maxPageSize + ", please decrease your page_size");
                             }
-                        }
 
-                        if (list.size() > maxPageSize) {
-                            throw new BadRequestException("The result size " + list.size() + " exceed max expand " + maxPageSize + ", please decrease your page_size");
-                        }
-
-                        for (ResolvedExpand expand : resolvedExpands) {
-                            try {
-                                expand(context, expand, list);
-                            } catch (ExpandException e) {
-                                expandErrors.add(new ExpandError(expand.getName(), e.getMessage(), e.getCause()));
+                            for (ResolvedExpand expand : resolvedExpands) {
+                                try {
+                                    expand(context, expand, list);
+                                } catch (ExpandException e) {
+                                    expandErrors.add(new ExpandError(expand.getName(), e.getMessage(), e.getCause()));
+                                }
                             }
                         }
                     }
+
+                    if (finalOptions.isTotal()) {
+                        count = query.count();
+                    }
+
+                    Object entity = ex.processQueryListResult(context, page, count, list);
+
+                    QueryListResult result = new QueryListResult(list, count, entity, expandErrors);
+
+                    ex.completeQueryList(context, result, null);
+
+                    return result;
+                } catch (Throwable e) {
+                    ex.completeQueryList(context, null, e);
+                    throw e;
                 }
-
-                if (finalOptions.isTotal()) {
-                    count = query.count();
-                }
-
-                Object entity = ex.processQueryListResult(context, page, count, list);
-
-                QueryListResult result = new QueryListResult(list, count, entity, expandErrors);
-
-                ex.completeQueryList(context, result, null);
-
-                return result;
-            } catch (Throwable e) {
-                ex.completeQueryList(context, null, e);
-                throw e;
+            });
+        }finally {
+            if(null != dynamic) {
+                EntityMapping.removeDynamic();
             }
-        });
+        }
     }
 
     @Override
@@ -1239,7 +1251,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             for (Select.Item selectItem : selectItems) {
                 if (Strings.isEmpty(selectItem.joinAlias())) {
                     if (selectItem.name().equals("*")) {
-                        for (MApiProperty p : am.getProperties()) {
+                        for (MApiProperty p : getProperties(context, am)) {
                             if (p.isReference()) {
                                 continue;
                             }
@@ -1264,7 +1276,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                             }
                             items.add(exprSql.toString());
                         } else {
-                            MApiProperty p = am.tryGetProperty(selectItem.name());
+                            MApiProperty p = tryGetProperty(context, am, selectItem.name());
                             if (null == p) {
                                 throw new BadRequestException("Property '" + selectItem.name() + "' not exists, check the 'select' query param");
                             }
@@ -1356,7 +1368,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                         m = am;
                     }
 
-                    MApiProperty p = m.tryGetProperty(item.name());
+                    MApiProperty p = m == am ? tryGetProperty(context, am, item.name()) : m.tryGetProperty(item.name());
                     if (null == p) {
                         throw new BadRequestException("Property '" + m.getName() + "." + item.name() + "' not exists, check the 'groupby'");
                     }

@@ -517,6 +517,24 @@ public class EntityMapping extends ExtensibleBase {
         return null;
     }
 
+    public boolean hasEmbeddedFieldMappings() {
+        EntityMapping em = withDynamic();
+        if (em == this) {
+            return embeddedFieldMappings.length > 0;
+        } else {
+            return em.hasEmbeddedFieldMappings();
+        }
+    }
+
+    public FieldMapping[] getEmbeddedFieldMappings() {
+        EntityMapping em = withDynamic();
+        if (em == this) {
+            return embeddedFieldMappings;
+        } else {
+            return em.getEmbeddedFieldMappings();
+        }
+    }
+
     /**
      * Returns all the fields of entity.
      */
@@ -665,7 +683,12 @@ public class EntityMapping extends ExtensibleBase {
     }
 
     public FieldMapping tryGetFieldMappingByColumn(String columnName) {
-        return columnNameToFields.get(columnName.toLowerCase());
+        EntityMapping em = withDynamic();
+        if (em == this) {
+            return columnNameToFields.get(columnName.toLowerCase());
+        } else {
+            return em.tryGetFieldMappingByColumn(columnName);
+        }
     }
 
     public FieldMapping getFieldMappingByMetaName(ReservedMetaFieldName metaFieldName) throws ObjectNotFoundException {
@@ -721,14 +744,6 @@ public class EntityMapping extends ExtensibleBase {
 
     public FieldMapping[] getFilterFieldMappings() {
         return filterFieldMappings;
-    }
-
-    public boolean hasEmbeddedFieldMappings() {
-        return embeddedFieldMappings.length > 0;
-    }
-
-    public FieldMapping[] getEmbeddedFieldMappings() {
-        return embeddedFieldMappings;
     }
 
     public FieldMapping getOptimisticLockField() {

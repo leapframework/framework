@@ -141,6 +141,17 @@ public class ModelQueryExtension implements ModelQueryInterceptor {
     }
 
     @Override
+    public ModelDynamic resolveQueryListDynamic(ModelExecutionContext context, QueryOptions options) {
+        ModelDynamic dynamic = null;
+        for (ModelQueryInterceptor interceptor : interceptors) {
+            if (null != (dynamic = interceptor.resolveQueryListDynamic(context, options))) {
+                break;
+            }
+        }
+        return dynamic;
+    }
+
+    @Override
     public boolean preProcessQueryListWhere(ModelExecutionContext context, QueryOptions options, CriteriaQuery query, WhereBuilder where, Map<String, Object> filters) {
         for (ModelQueryInterceptor interceptor : interceptors) {
             if (interceptor.preProcessQueryListWhere(context, options, query, where, filters)) {
