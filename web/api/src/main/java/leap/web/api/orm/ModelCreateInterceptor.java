@@ -41,6 +41,13 @@ public interface ModelCreateInterceptor {
     }
 
     /**
+     * Returns the {@link ModelDynamic} if exists.
+     */
+    default ModelDynamic resolveModelDynamic(ModelExecutionContext context, Map<String,Object> record) {
+        return null;
+    }
+
+    /**
      * Handles not exists property.
      */
     default boolean handleCreationPropertyNotFound(ModelExecutionContext context, String name, Object value, Set<String> removes) {

@@ -96,6 +96,30 @@ public class EntityMapping extends ExtensibleBase {
         }
     }
 
+    public static void tryWithDynamic(Dynamic dynamic, Runnable func) {
+        if(null == dynamic) {
+            func.run();
+        }else {
+            withDynamic(dynamic, func);
+        }
+    }
+
+    public static <T> T tryWithDynamic(Dynamic dynamic, Supplier<T> func) {
+        if(null == dynamic) {
+            return func.get();
+        }else {
+            return withDynamic(dynamic, func);
+        }
+    }
+
+    public static void setDynamic(Dynamic dynamic) {
+        CONTEXT_DYNAMIC.set(new DynamicAndMapping(dynamic));
+    }
+
+    public static void removeDynamic() {
+        CONTEXT_DYNAMIC.remove();
+    }
+
     protected final EntityMappingBuilder       builder;
     protected final String                     entityName;
     protected final String                     dynamicTableName;

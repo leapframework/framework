@@ -96,6 +96,14 @@ public abstract class ModelExecutorBase<C extends ModelExecutorContext> {
         }
     }
 
+    protected MApiProperty tryGetProperty(MApiModel am, ModelDynamic dynamic, String name) {
+        MApiProperty p = am.tryGetProperty(name);
+        if(null == p && null != dynamic) {
+            p = dynamic.tryGetProperty(name);
+        }
+        return p;
+    }
+
     protected static class IdOrKey {
         protected final Object              id;
         protected final Map<String, Object> key;

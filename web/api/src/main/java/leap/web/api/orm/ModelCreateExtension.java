@@ -59,6 +59,17 @@ public class ModelCreateExtension implements ModelCreateInterceptor {
     }
 
     @Override
+    public ModelDynamic resolveModelDynamic(ModelExecutionContext context, Map<String, Object> record) {
+        ModelDynamic dynamic = null;
+        for(ModelCreateInterceptor interceptor : interceptors) {
+            if(null != (dynamic = interceptor.resolveModelDynamic(context, record))) {
+                break;
+            }
+        }
+        return dynamic;
+    }
+
+    @Override
     public boolean handleCreationPropertyNotFound(ModelExecutionContext context, String name, Object value, Set<String> removes) {
         for(ModelCreateInterceptor interceptor : interceptors) {
             if(interceptor.handleCreationPropertyNotFound(context, name, value, removes)) {
