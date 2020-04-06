@@ -18,4 +18,8 @@ package leap.web.api.orm;
 
 public interface ModelExecutionContext extends ModelExecutorContext {
 
+    ModelDynamic getDynamic();
+
+    void setDynamic(ModelDynamic dynamic);
+
 }

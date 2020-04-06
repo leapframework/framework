@@ -99,9 +99,10 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
             ex.handler.processCreationRecord(context, properties);
         }
 
-        final ModelDynamic dynamic = ex.resolveModelDynamic(context, properties);
+        final ModelDynamic dynamic = ex.resolveCreationDynamic(context, properties);
         try {
             if(null != dynamic) {
+                context.setDynamic(dynamic);
                 EntityMapping.setDynamic(dynamic.getEntityDynamic());
             }
 
@@ -111,7 +112,7 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
 
             for (Map.Entry<String, Object> entry : properties.entrySet()) {
                 String       name = entry.getKey();
-                MApiProperty p    = tryGetProperty(am, dynamic, name);
+                MApiProperty p    = tryGetProperty(context, am, name);
 
                 if (null == p) {
                     if (ex.handleCreationPropertyNotFound(context, name, entry.getValue(), removes)) {

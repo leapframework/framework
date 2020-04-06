@@ -18,6 +18,7 @@
 
 package leap.web.api.orm;
 
+import leap.lang.Arrays2;
 import leap.lang.Strings;
 import leap.lang.codec.Base64;
 import leap.lang.convert.Converts;
@@ -34,6 +35,7 @@ import leap.web.api.meta.model.MApiProperty;
 import leap.web.api.remote.RestResourceFactory;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 public abstract class ModelExecutorBase<C extends ModelExecutorContext> {
@@ -96,10 +98,18 @@ public abstract class ModelExecutorBase<C extends ModelExecutorContext> {
         }
     }
 
-    protected MApiProperty tryGetProperty(MApiModel am, ModelDynamic dynamic, String name) {
+    protected MApiProperty[] getProperties(ModelExecutionContext context, MApiModel am) {
+        if(null == context.getDynamic()) {
+            return am.getProperties();
+        }else {
+            return Arrays2.concat(am.getProperties(), context.getDynamic().getProperties());
+        }
+    }
+
+    protected MApiProperty tryGetProperty(ModelExecutionContext context, MApiModel am, String name) {
         MApiProperty p = am.tryGetProperty(name);
-        if(null == p && null != dynamic) {
-            p = dynamic.tryGetProperty(name);
+        if(null == p && null != context.getDynamic()) {
+            p = context.getDynamic().tryGetProperty(name);
         }
         return p;
     }

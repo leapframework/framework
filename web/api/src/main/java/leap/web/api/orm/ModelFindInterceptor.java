@@ -27,12 +27,28 @@ import java.util.Map;
 
 public interface ModelFindInterceptor {
 
+    /**
+     * @deprecated Use {@link #preQueryOne(ModelExecutionContext, Object, QueryOptionsBase)} instead.
+     */
+    @Deprecated
     default boolean processQueryOneOptions(ModelExecutionContext context, QueryOptionsBase options) {
         return false;
     }
 
+    /**
+     * @deprecated Use {@link #preQueryOne(ModelExecutionContext, Object, QueryOptionsBase)} instead.
+     */
+    @Deprecated
     default boolean preQueryOne(ModelExecutionContext context) {
         return false;
+    }
+
+    default boolean preQueryOne(ModelExecutionContext context, Object id, QueryOptionsBase options) {
+        return preQueryOne(context);
+    }
+
+    default ModelDynamic resolveQueryOneDynamic(ModelExecutionContext context, Object id, QueryOptionsBase options) {
+        return null;
     }
 
     default boolean preQueryOne(ModelExecutionContext context, Object id, CriteriaQuery query) {

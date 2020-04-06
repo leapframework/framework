@@ -56,13 +56,24 @@ public class ModelQueryExtension implements ModelQueryInterceptor {
     }
 
     @Override
-    public boolean preQueryOne(ModelExecutionContext context) {
+    public boolean preQueryOne(ModelExecutionContext context, Object id, QueryOptionsBase options) {
         for (ModelQueryInterceptor interceptor : interceptors) {
-            if (interceptor.preQueryOne(context)) {
+            if (interceptor.preQueryOne(context, id, options)) {
                 return true;
             }
         }
         return false;
+    }
+
+    @Override
+    public ModelDynamic resolveQueryOneDynamic(ModelExecutionContext context, Object id, QueryOptionsBase options) {
+        ModelDynamic dynamic = null;
+        for (ModelQueryInterceptor interceptor : interceptors) {
+            if (null != (dynamic = interceptor.resolveQueryOneDynamic(context, id, options))) {
+                break;
+            }
+        }
+        return dynamic;
     }
 
     @Override

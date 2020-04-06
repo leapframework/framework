@@ -123,19 +123,28 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         ModelExecutionContext context = new DefaultModelExecutionContext(this.context);
 
         return em.withContextListeners(listeners, () -> {
-            ex.processQueryOneOptions(context, options); //for compatibility only.
-            if (null != ex.handler) {
-                ex.handler.processQueryOneOptions(context, id, options);
-            }
+            ModelDynamic dynamic = null;
             try {
-                ex.preQueryOne(context);
+                ex.processQueryOneOptions(context, options); //for compatibility only.
+                if (null != ex.handler) {
+                    ex.handler.processQueryOneOptions(context, id, options);
+                }
+
+                ex.preQueryOne(context, id, options);
+
+                dynamic = ex.resolveQueryOneDynamic(context, id, options);
+                if(null != dynamic) {
+                    context.setDynamic(dynamic);
+                    EntityMapping.setDynamic(dynamic.getEntityDynamic());
+                }
+
                 Record record;
 
                 if (null != findHandler) {
                     record = queryOneByHandler(context, id, options);
                 } else {
                     CriteriaQuery<Record> query = createCriteriaQuery().whereById(id);
-                    applySelect(query, options, new JoinModels());
+                    applySelect(context, query, options, new JoinModels());
 
                     ex.preQueryOne(context, id, query);
                     if (null != ex.handler) {
@@ -160,6 +169,10 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             } catch (Throwable e) {
                 ex.completeQueryOne(context, null, e);
                 throw e;
+            }finally {
+                if(null != dynamic) {
+                    EntityMapping.removeDynamic();
+                }
             }
         });
     }
@@ -181,7 +194,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                 ex.preQueryOne(context);
 
                 CriteriaQuery<Record> query = createCriteriaQuery().where(key);
-                applySelect(query, options, new JoinModels());
+                applySelect(context, query, options, new JoinModels());
 
                 ex.preQueryOneByKey(context, key, query);
                 Record record = dao.withEvents(() -> query.firstOrNull());
@@ -342,7 +355,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
 
         applyOrderBy(query, options, joinModels);
-        applySelectOrAggregates(query, options, joinModels);
+        applySelectOrAggregates(context, query, options, joinModels);
         applyFilters(context, query, options.getParams(), options, joinModels, filters, filterByParams);
 
         if (callback != null) {
@@ -1198,17 +1211,17 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         query.select(fields.toArray(new String[fields.size()]));
     }
 
-    protected void applySelect(CriteriaQuery query, QueryOptionsBase options, JoinModels joins) {
+    protected void applySelect(ModelExecutionContext context, CriteriaQuery query, QueryOptionsBase options, JoinModels joins) {
         List<String> fields = new ArrayList<>();
-        applySelectItems(options, joins, fields);
+        applySelectItems(context, options, joins, fields);
         query.select(fields.toArray(new String[fields.size()]));
     }
 
-    protected void applySelectItems(QueryOptionsBase options, JoinModels joins, List<String> items) {
+    protected void applySelectItems(ModelExecutionContext context, QueryOptionsBase options, JoinModels joins, List<String> items) {
         String select = null == options ? null : options.getSelect();
 
         if (Strings.isEmpty(select) || "*".equals(select)) {
-            for (MApiProperty p : am.getProperties()) {
+            for (MApiProperty p : getProperties(context, am)) {
                 if (p.isReference()) {
                     continue;
                 }
@@ -1295,9 +1308,9 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
     }
 
-    protected void applySelectOrAggregates(CriteriaQuery query, QueryOptions options, JoinModels joins) {
+    protected void applySelectOrAggregates(ModelExecutionContext context, CriteriaQuery query, QueryOptions options, JoinModels joins) {
         if (Strings.isEmpty(options.getAggregates()) && Strings.isEmpty(options.getGroupBy())) {
-            applySelect(query, options, joins);
+            applySelect(context, query, options, joins);
             return;
         }
 

@@ -29,6 +29,8 @@ public class DefaultModelExecutionContext extends MapAttributeAccessor implement
 
     private final ModelExecutorContext context;
 
+    protected ModelDynamic dynamic;
+
     DefaultModelExecutionContext(ModelExecutorContext context) {
         this.context = context;
         this.attributes.putAll(context.getAttributes());
@@ -82,5 +84,15 @@ public class DefaultModelExecutionContext extends MapAttributeAccessor implement
     @Override
     public void setHelper(ModelExecutorHelper helper) {
         context.setHelper(helper);
+    }
+
+    @Override
+    public ModelDynamic getDynamic() {
+        return dynamic;
+    }
+
+    @Override
+    public void setDynamic(ModelDynamic dynamic) {
+        this.dynamic = dynamic;
     }
 }

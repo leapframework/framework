@@ -175,7 +175,7 @@ public class DefaultRelationQueryExecutor extends ModelExecutorBase<RelationExec
                     createCriteriaQuery().joinById(rm.getTargetEntityName(), rm.getName(), "j", relatedId);
 
             JoinModels joinModels = new JoinModels("j", new ModelAndMapping(am, em));
-            applySelect(query, options, joinModels);
+            applySelect(context, query, options, joinModels);
 
             Record record = query.firstOrNull();
 

@@ -32,4 +32,8 @@ public interface ModelDynamic {
      */
     MApiProperty tryGetProperty(String name);
 
+    /**
+     * Returns all dynamic properties.
+     */
+    MApiProperty[] getProperties();
 }
