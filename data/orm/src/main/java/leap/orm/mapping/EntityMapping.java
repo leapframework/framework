@@ -497,7 +497,12 @@ public class EntityMapping extends ExtensibleBase {
      * Returns all the fields of entity.
      */
     public FieldMapping[] getFieldMappings() {
-        return fieldMappings;
+        EntityMapping em = withDynamic();
+        if(em == this) {
+            return fieldMappings;
+        }else {
+            return em.getFieldMappings();
+        }
     }
 
     /**
@@ -612,8 +617,12 @@ public class EntityMapping extends ExtensibleBase {
     }
 
     public FieldMapping tryGetFieldMapping(String fieldName) {
-        Args.notNull(fieldName, "field name");
-        return fieldNameToFields.get(fieldName.toLowerCase());
+        EntityMapping em = withDynamic();
+        if(em == this) {
+            return fieldNameToFields.get(fieldName.toLowerCase());
+        }else {
+            return em.tryGetFieldMapping(fieldName);
+        }
     }
 
     /**
@@ -632,7 +641,6 @@ public class EntityMapping extends ExtensibleBase {
     }
 
     public FieldMapping tryGetFieldMappingByColumn(String columnName) {
-        Args.notNull(columnName, "column name");
         return columnNameToFields.get(columnName.toLowerCase());
     }
 

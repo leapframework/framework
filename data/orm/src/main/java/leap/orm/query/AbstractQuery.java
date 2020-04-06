@@ -69,7 +69,7 @@ public abstract class AbstractQuery<T> implements Query<T>, QueryContext {
         this.context = dao.getOrmContext();
         this.metadata = context.getMetadata();
         this.targetType = targetType;
-        this.em = entityMapping;
+        this.em = null == entityMapping ? null : entityMapping.withDynamic();
         this.eventHandler = dao.getOrmContext().getEntityEventHandler();
     }
 

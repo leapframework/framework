@@ -17,7 +17,6 @@
 
 package leap.orm.dao;
 
-import leap.core.value.Record;
 import leap.db.model.DbColumnBuilder;
 import leap.lang.New;
 import leap.lang.meta.MTypes;
@@ -36,10 +35,20 @@ public class DynamicFieldsTest extends OrmTestCase {
         final EntityMapping.Dynamic dynamic = new EntityMapping.Dynamic();
         EntityMapping.withDynamic(dynamic, () -> {
             addField(dynamic, "x1", String.class);
+            addField(dynamic, "x2", Integer.class);
 
             //create and find
             dao.insert(EmdEntity.class, New.hashMap("id", "1", "x1", "a"));
             EmdEntity record = dao.find(EmdEntity.class, "1");
+            assertEquals("a", record.get("x1"));
+
+            //update and find
+            dao.update(EmdEntity.class, "1", New.hashMap("x2", 100));
+            record = dao.find(EmdEntity.class, "1");
+            assertEquals("a", record.get("x1"));
+            assertEquals(new Integer(100), record.get("x2"));
+
+            record = dao.createCriteriaQuery(EmdEntity.class).select("x1").firstOrNull();
             assertEquals("a", record.get("x1"));
         });
     }
