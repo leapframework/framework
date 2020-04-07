@@ -1332,6 +1332,10 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
                 sql.append(fm.getColumnName()).append("=").append(':').append(param);
 
+                if(null != fm.getSerializer() && null != value) {
+                    value = fm.getSerializer().trySerialize(fm, value);
+                }
+
                 params.put(param, value);
 
                 index++;
