@@ -129,7 +129,7 @@ public class EntityMapping extends ExtensibleBase {
     protected final BeanType                   beanType;
     protected final DbTable                    table;
     protected final DbTable                    secondaryTable;
-    protected final DbColumn                   embeddedColumn;
+    protected final DbColumn                   embeddingColumn;
     protected final String                     queryView;
     protected final FieldMapping[]             fieldMappings;
     protected final FieldMapping[]             filterFieldMappings;
@@ -182,7 +182,7 @@ public class EntityMapping extends ExtensibleBase {
     public EntityMapping(EntityMappingBuilder builder,
                          String entityName, String wideEntityName, String dynamicTableName,
                          Class<?> entityClass, Class<?> extendedEntityClass, DbTable table, DbTable secondaryTable,
-                         DbColumn embeddedColumn,
+                         DbColumn embeddingColumn,
                          String queryView, List<FieldMapping> fieldMappings,
                          InsertHandler insertHandler, UpdateHandler updateHandler, DeleteHandler deleteHandler,
                          EntityExecutionInterceptor insertInterceptor, EntityExecutionInterceptor updateInterceptor,
@@ -219,7 +219,7 @@ public class EntityMapping extends ExtensibleBase {
         this.beanType = null == entityClass ? null : BeanType.of(entityClass);
         this.table = table;
         this.secondaryTable = secondaryTable;
-        this.embeddedColumn = embeddedColumn;
+        this.embeddingColumn = embeddingColumn;
         this.queryView = queryView;
         this.insertHandler = insertHandler;
         this.updateHandler = updateHandler;
@@ -412,17 +412,17 @@ public class EntityMapping extends ExtensibleBase {
     }
 
     /**
-     * Returns the embedded column name or null.
+     * Returns the embedding column name or null.
      */
-    public String getEmbeddedColumnName() {
-        return null == embeddedColumn ? null : embeddedColumn.getName();
+    public String getEmbeddingColumnName() {
+        return null == embeddingColumn ? null : embeddingColumn.getName();
     }
 
     /**
      * Returns the column that stores embedded fields.
      */
-    public DbColumn getEmbeddedColumn() {
-        return embeddedColumn;
+    public DbColumn getEmbeddingColumn() {
+        return embeddingColumn;
     }
 
     /**

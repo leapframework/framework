@@ -1025,16 +1025,16 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
         listeners.addPostDeleteListeners(postDeleteListeners);
         listeners.addPostLoadListeners(postLoadListeners);
 
-        //auto create embedded column
+        //auto create embedding column
 		if(emb.getFieldMappings().stream().anyMatch(f -> Boolean.TRUE.equals(f.getEmbedded()))) {
-			final OrmConfig.EmbeddedColumnConfig config = context.getConfig().getEmbeddedColumnConfig();
-			DbColumnBuilder column = emb.getEmbeddedColumn();
-			if(null == emb.getEmbeddedColumn()) {
+			final OrmConfig.EmbeddingColumnConfig config = context.getConfig().getEmbeddingColumnConfig();
+			DbColumnBuilder                       column = emb.getEmbeddingColumn();
+			if(null == emb.getEmbeddingColumn()) {
 				column = new DbColumnBuilder();
 				column.setName(config.getName());
 				column.setTypeName(config.getType());
 				column.setLength(config.getLength());
-				emb.setEmbeddedColumn(column);
+				emb.setEmbeddingColumn(column);
 			}
 
 			if(Strings.isEmpty(column.getNativeType())){

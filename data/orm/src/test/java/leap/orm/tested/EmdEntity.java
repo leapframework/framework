@@ -36,10 +36,10 @@ public class EmdEntity implements DynaProps {
     @Column
     protected String name;
 
-    @Column(embedded = true)
+    @Column(embedding = true)
     protected String c1;
 
-    @Column(embedded = true)
+    @Column(embedding = true)
     protected Integer c2;
 
     protected Map<String, Object> dynaProperties = new LinkedHashMap<>();

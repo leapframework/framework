@@ -149,7 +149,7 @@ public class DefaultEntityReader implements EntityReader {
             ResultColumnMapping cm = rsm.getColumnMapping(i);
             FieldMapping  fm = cm.getFieldMapping();
 
-			if(cm.isEmbeddedColumn()) {
+			if(cm.hasEmbeddingColumn()) {
 				Object value = dialect.getJsonColumnValue(rs, i+1, cm.getColumnType());
 				if(null != value) {
 					embedded = JSON.decodeMap(value.toString());
@@ -202,7 +202,7 @@ public class DefaultEntityReader implements EntityReader {
 			ResultColumnMapping cm = rsm.getColumnMapping(i);
 			FieldMapping  fm = cm.getFieldMapping();
 
-			if(cm.isEmbeddedColumn()) {
+			if(cm.hasEmbeddingColumn()) {
 				Object value = dialect.getJsonColumnValue(rs, i+1, cm.getColumnType());
 				if(null != value) {
 					embedded = JSON.decodeMap(value.toString());
@@ -263,7 +263,7 @@ public class DefaultEntityReader implements EntityReader {
                             readColumnValue(dialect, rs, cm, fm, i+1) :
                             readColumnValueForMap(dialect, rs, cm, fm, i+1);
 
-			if(cm.isEmbeddedColumn()) {
+			if(cm.hasEmbeddingColumn()) {
 				if(null != value) {
 					embedded = JSON.decodeMap(value.toString());
 				}

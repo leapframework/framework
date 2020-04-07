@@ -104,9 +104,9 @@ public @interface Column {
     boolean secondary() default false;
 
 	/**
-	 * Is a embedded column?
+	 * Is a embedding column?
 	 */
-	boolean embedded() default  false;
+	boolean embedding() default  false;
 
     /**
      * Sets the serialize format.

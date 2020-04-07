@@ -193,7 +193,7 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
         int result = handler.handleInsert(this, map, () -> {
             String[]   fields         = map.keySet().toArray(Arrays2.EMPTY_STRING_ARRAY);
             SqlCommand primaryCommand = sf.createInsertCommand(context, em, fields);
-            return primaryCommand.executeUpdate(this, withEmbeddedColumn(map), psHandler);
+            return primaryCommand.executeUpdate(this, withEmbeddingColumn(map), psHandler);
         });
 
         if (em.hasSecondaryTable()) {
@@ -262,12 +262,12 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
         entity.set(fm.getFieldName(), value);
     }
 
-    protected Map<String, Object> withEmbeddedColumn(Map<String, Object> map) {
-        return withEmbeddedColumn(db, em, map);
+    protected Map<String, Object> withEmbeddingColumn(Map<String, Object> map) {
+        return withEmbeddingColumn(db, em, map);
     }
 
-    protected static Map<String, Object> withEmbeddedColumn(Db db, EntityMapping em, Map<String, Object> map) {
-        if(null == em.getEmbeddedColumn() || !em.hasEmbeddedFieldMappings()) {
+    protected static Map<String, Object> withEmbeddingColumn(Db db, EntityMapping em, Map<String, Object> map) {
+        if(null == em.getEmbeddingColumn() || !em.hasEmbeddedFieldMappings()) {
             return map;
         }
 
@@ -282,7 +282,7 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
                 embedded.put(fm.getFieldName(), map.get(fm.getFieldName()));
             }
         }
-        map.put(em.getEmbeddedColumn().getName(), JSON.stringify(embedded));
+        map.put(em.getEmbeddingColumn().getName(), JSON.stringify(embedded));
         return map;
     }
 }

@@ -370,7 +370,7 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
                 f.setSecondary(true);
             }
 
-            if(a.embedded()) {
+            if(a.embedding()) {
                 f.setEmbedded(true);
             }
 

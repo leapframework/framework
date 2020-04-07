@@ -60,9 +60,9 @@ public class DefaultOrmConfig implements OrmConfig, PostConfigureBean, BeanFacto
     protected Map<String, SerializeConfig> serializeConfigs    = new HashMap<>();
     protected Map<String, SerializeConfig> serializeConfigsImv = Collections.unmodifiableMap(serializeConfigs);
 
-    protected FilterColumnConfig   filterColumnConfig   = new DefaultFilterColumnConfig();
-    protected QueryFilterConfig    queryFilterConfig    = new DefaultQueryFilterConfig();
-    protected EmbeddedColumnConfig embeddedColumnConfig = new DefaultEmbeddedConfig();
+    protected FilterColumnConfig    filterColumnConfig    = new DefaultFilterColumnConfig();
+    protected QueryFilterConfig     queryFilterConfig     = new DefaultQueryFilterConfig();
+    protected EmbeddingColumnConfig embeddingColumnConfig = new DefaultEmbeddingConfig();
 
     protected BeanFactory beanFactory;
 
@@ -193,8 +193,8 @@ public class DefaultOrmConfig implements OrmConfig, PostConfigureBean, BeanFacto
 
     @Override
     @Configurable.Nested
-    public EmbeddedColumnConfig getEmbeddedColumnConfig() {
-        return embeddedColumnConfig;
+    public EmbeddingColumnConfig getEmbeddingColumnConfig() {
+        return embeddingColumnConfig;
     }
 
 	public void setAutoGenerateOptimisticLock(boolean autoGenerateOptimisticLockField) {
@@ -363,7 +363,7 @@ public class DefaultOrmConfig implements OrmConfig, PostConfigureBean, BeanFacto
         }
     }
 
-    protected class DefaultEmbeddedConfig implements EmbeddedColumnConfig {
+    protected class DefaultEmbeddingConfig implements EmbeddingColumnConfig {
         protected String  name = "x_cols";
         protected String  type = "clob";
         protected Integer length;

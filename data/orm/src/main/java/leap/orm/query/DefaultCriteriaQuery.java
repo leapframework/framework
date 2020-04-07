@@ -17,7 +17,6 @@ package leap.orm.query;
 
 import leap.core.exception.TooManyRecordsException;
 import leap.core.jdbc.ResultSetReader;
-import leap.core.jdbc.SimpleScalarsReader;
 import leap.core.value.Scalar;
 import leap.core.value.Scalars;
 import leap.db.DbDialect;
@@ -1352,7 +1351,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                     sql.append(',');
                 }
 
-                final String column = em.getEmbeddedColumnName();
+                final String column = em.getEmbeddingColumnName();
                 String       alias1 = null;
                 if (useAlias && !dialect.useTableAliasAfterUpdate()) {
                     alias1 = alias;
@@ -1371,9 +1370,9 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         protected SqlBuilder columns() {
             sql.append(' ');
 
-            boolean                  mayEmbedded          = em.hasEmbeddedFieldMappings();
-            boolean                  embeddedColumnExists = false;
-            final List<FieldMapping> embedded             = new ArrayList<>();
+            boolean                  mayEmbedded           = em.hasEmbeddedFieldMappings();
+            boolean                  embeddingColumnExists = false;
+            final List<FieldMapping> embedded              = new ArrayList<>();
 
             int index = 0;
             if (!selectNone) {
@@ -1384,8 +1383,8 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                 } else {
                     for (String column : columns) {
                         if (mayEmbedded) {
-                            if (column.equalsIgnoreCase(em.getEmbeddedColumnName())) {
-                                embeddedColumnExists = true;
+                            if (column.equalsIgnoreCase(em.getEmbeddingColumnName())) {
+                                embeddingColumnExists = true;
                             } else {
                                 FieldMapping fm = em.tryGetFieldMappingByColumn(column);
                                 if (null != fm && fm.isEmbedded()) {
@@ -1449,14 +1448,14 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                 }
             }
 
-            if (!embeddedColumnExists && embedded.size() > 0) {
+            if (!embeddingColumnExists && embedded.size() > 0) {
                 if (index > 0) {
                     sql.append(',');
                 }
 
                 final JsonColumnSupport jcs = dialect().getJsonColumnSupport();
                 if (null != jcs && jcs.supportsSelectByKeys()) {
-                    final String column = em.getEmbeddedColumnName();
+                    final String column = em.getEmbeddingColumnName();
                     for (int i = 0; i < embedded.size(); i++) {
                         if (i > 0) {
                             sql.append(',');
@@ -1468,7 +1467,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                                 .append(" as ").append(fm.getFieldName());
                     }
                 } else {
-                    sql.append(em.getEmbeddedColumnName());
+                    sql.append(em.getEmbeddingColumnName());
                 }
             }
 
