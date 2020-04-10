@@ -17,7 +17,6 @@ package leap.orm.query;
 
 import leap.core.exception.TooManyRecordsException;
 import leap.core.jdbc.ResultSetReader;
-import leap.core.jdbc.SimpleScalarsReader;
 import leap.core.value.Scalar;
 import leap.core.value.Scalars;
 import leap.db.DbDialect;
@@ -47,6 +46,7 @@ import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements CriteriaQuery<T>, QueryContext {
 
@@ -1041,6 +1041,9 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     }
 
     protected class SqlBuilder {
+
+        private final Pattern SIMPLE_COLUMN_PATTERN = Pattern.compile("^[0-9a-zA-Z_]+$");
+
         protected String       alias = "t";
         protected String[]     columns;
         protected List<String> extraSelectItems;
@@ -1395,11 +1398,11 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                             sql.append(",");
                         }
 
-                        if (column.contains(".") || column.contains(" ") || column.contains("(")) {
-                            sql.append(column);
-                        } else {
-                            sql.append(alias).append(".").append(column);
+                        if (needAppendAlias(column)) {
+                            sql.append(alias).append(".");
                         }
+
+                        sql.append(column);
                         index++;
                     }
                 }
@@ -1469,6 +1472,24 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
             }
 
             return this;
+        }
+
+        protected boolean needAppendAlias(String column) {
+            if (column.contains(".") || column.contains("(")) {
+                return false;
+            }
+
+            if (column.contains(" ")) {
+                String[] items = column.split(" ");
+                if (items.length != 3 || !items[1].equalsIgnoreCase("as")) {
+                    return false;
+                }
+                if (!SIMPLE_COLUMN_PATTERN.matcher(items[0]).matches()) {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         protected SqlBuilder from() {
