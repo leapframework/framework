@@ -239,7 +239,7 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
                 prepareOptimisticLock(fm);
             } else {
                 Object value = entity.get(fm.getFieldName());
-                if (null == value) {
+                if (null == value && fm.isUpdate()) {
                     Expression expression = fm.getUpdateValue();
                     if (null != expression) {
                         value = expression.getValue(entity);
