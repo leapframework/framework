@@ -142,8 +142,8 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause,Sql
             }
         }
 
-        if(log.isDebugEnabled()) {
-            log.debug("Creating query statement... \n\noriginal -> \n\n  {}\n\nprocessed -> \n\n  {}\n", sql, sqls.sql);
+        if(log.isTraceEnabled()) {
+            log.trace("Creating query statement... \n\noriginal -> \n\n  {}\n\nprocessed -> \n\n  {}\n", sql, sqls.sql);
         }
 
 	    return doCreateStatement(context, sqls, params, true);
