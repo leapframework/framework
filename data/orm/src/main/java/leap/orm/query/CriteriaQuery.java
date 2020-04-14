@@ -162,6 +162,11 @@ public interface CriteriaQuery<T> extends Query<T> {
     CriteriaQuery<T> distinct();
 
     /**
+     * Select the items by {@link #addSelectItem(String)} or {@link #addSelectField(String)} or {@link #addSelectFields(String...)} only.
+     */
+    CriteriaQuery<T> selectNone();
+
+    /**
      * Sets the selected fields(columns) in the CriteriaQuery result.
      * <p>
      * <p>
@@ -442,6 +447,11 @@ public interface CriteriaQuery<T> extends Query<T> {
      * Sets the order by expression in descending order of the primary key.
      */
     CriteriaQuery<T> orderByIdDesc();
+
+    /**
+     * Select for update.
+     */
+    CriteriaQuery<T> forUpdate();
 
     /**
      * Sets the order by expression in descending order of createdAt column.

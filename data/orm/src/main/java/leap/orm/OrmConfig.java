@@ -59,6 +59,15 @@ public interface OrmConfig {
 	 */
 	boolean isAutoGenerateColumns();
 
+    /**
+     * Returns true if convert result set column name to field name.
+     *
+     * <p/>
+     * Default is false.
+     *
+     */
+	boolean isConvertFieldForJoin();
+
 	/**
 	 * Returns the names of auto generated fields for {@link leap.orm.model.Model}.
 	 */
@@ -133,6 +142,11 @@ public interface OrmConfig {
      * Returns the {@link QueryFilterConfig}.
      */
     QueryFilterConfig getQueryFilterConfig();
+
+    /**
+     * Returns the {@link EmbeddedColumnConfig}.
+     */
+    EmbeddedColumnConfig getEmbeddedColumnConfig();
 
     /**
      * zero means no limitation.
@@ -232,5 +246,23 @@ public interface OrmConfig {
          */
         Expression getFilteredIf();
 
+    }
+
+    interface EmbeddedColumnConfig {
+
+        /**
+         * Returns the default column name.
+         */
+        String getName();
+
+        /**
+         * Returns the default column type name.
+         */
+        String getType();
+
+        /**
+         * Returns the default column length.
+         */
+        Integer getLength();
     }
 }

@@ -86,8 +86,11 @@ public class EntityMapping extends ExtensibleBase {
     protected final BeanType                   beanType;
     protected final DbTable                    table;
     protected final DbTable                    secondaryTable;
+    protected final DbColumn                   embeddedColumn;
+    protected final String                     queryView;
     protected final FieldMapping[]             fieldMappings;
     protected final FieldMapping[]             filterFieldMappings;
+    protected final FieldMapping[]             embeddedFieldMappings;
     protected final FieldMapping[]             keyFieldMappings;
     protected final String[]                   keyFieldNames;
     protected final String[]                   keyColumnNames;
@@ -113,8 +116,10 @@ public class EntityMapping extends ExtensibleBase {
     protected final EntityListeners     listeners;
     protected final boolean             queryFilterEnabled;
     protected final boolean             autoValidate;
+    protected final boolean             logical;
     protected final boolean             remote;
     protected final RemoteSettings      remoteSettings;
+    protected final UnionSettings       unionSettings;
     protected final Map<String, String> groupByExprs;
     protected final Map<String, String> selectExprs;
     protected final Map<String, String> orderByExprs;
@@ -131,7 +136,9 @@ public class EntityMapping extends ExtensibleBase {
 
     public EntityMapping(EntityMappingBuilder builder,
                          String entityName, String wideEntityName, String dynamicTableName,
-                         Class<?> entityClass, Class<?> extendedEntityClass, DbTable table, DbTable secondaryTable, List<FieldMapping> fieldMappings,
+                         Class<?> entityClass, Class<?> extendedEntityClass, DbTable table, DbTable secondaryTable,
+                         DbColumn embeddedColumn,
+                         String queryView, List<FieldMapping> fieldMappings,
                          InsertHandler insertHandler, UpdateHandler updateHandler, DeleteHandler deleteHandler,
                          EntityExecutionInterceptor insertInterceptor, EntityExecutionInterceptor updateInterceptor,
                          EntityExecutionInterceptor deleteInterceptor, EntityExecutionInterceptor findInterceptor,
@@ -139,8 +146,8 @@ public class EntityMapping extends ExtensibleBase {
                          List<EntityValidator> validators,
                          List<RelationMapping> relationMappings,
                          RelationProperty[] relationProperties,
-                         boolean autoCreateTable,
-                         boolean queryFilterEnabled, boolean autoValidate, boolean remote, RemoteSettings remoteSettings,
+                         boolean autoCreateTable, boolean queryFilterEnabled, boolean autoValidate,
+                         boolean logical, boolean remote, RemoteSettings remoteSettings,UnionSettings unionSettings,
                          Map<String, String> groupByExprs, Map<String, String> selectExprs, Map<String, String> orderByExprs,
                          Map<String, String> filtersExprs, Map<String, String> aggregatesExprs,
                          EntityListeners listeners) {
@@ -162,6 +169,8 @@ public class EntityMapping extends ExtensibleBase {
         this.beanType = null == entityClass ? null : BeanType.of(entityClass);
         this.table = table;
         this.secondaryTable = secondaryTable;
+        this.embeddedColumn = embeddedColumn;
+        this.queryView = queryView;
         this.insertHandler = insertHandler;
         this.updateHandler = updateHandler;
         this.deleteHandler = deleteHandler;
@@ -183,6 +192,7 @@ public class EntityMapping extends ExtensibleBase {
         this.targetEntityRelations = createTargetEntityRelations();
         this.referenceToRelations = createReferenceToRelations();
         this.filterFieldMappings = evalFilterFieldMappings();
+        this.embeddedFieldMappings = evalEmbeddedFieldMappings();
         this.keyFieldMappings = evalKeyFieldMappings();
         this.keyFieldNames = evalKeyFieldNames();
         this.keyColumnNames = evalKeyColumnNames();
@@ -193,8 +203,10 @@ public class EntityMapping extends ExtensibleBase {
         this.autoCreateTable = autoCreateTable;
         this.queryFilterEnabled = queryFilterEnabled;
         this.autoValidate = autoValidate;
+        this.logical = logical;
         this.remote = remote;
         this.remoteSettings = remoteSettings;
+        this.unionSettings = unionSettings;
         this.groupByExprs = null == groupByExprs ? Collections.emptyMap() : Collections.unmodifiableMap(groupByExprs);
         this.selectExprs = null == selectExprs ? Collections.emptyMap() : Collections.unmodifiableMap(selectExprs);
         this.orderByExprs = null == orderByExprs ? Collections.emptyMap() : Collections.unmodifiableMap(orderByExprs);
@@ -212,6 +224,10 @@ public class EntityMapping extends ExtensibleBase {
 
         if (null != secondaryTable && keyFieldNames.length != 1) {
             throw new IllegalStateException("Entity with secondary table must has one key field only");
+        }
+
+        if(null != unionSettings) {
+            this.unionSettings.initTypeAndEntityMap();
         }
     }
 
@@ -255,6 +271,20 @@ public class EntityMapping extends ExtensibleBase {
      */
     public String getTableName() {
         return table.getName();
+    }
+
+    /**
+     * Returns true if query view defined.
+     */
+    public boolean hasQueryView() {
+        return null != queryView;
+    }
+
+    /**
+     * Returns the sql as query view.
+     */
+    public String getQueryView() {
+        return queryView;
     }
 
     /**
@@ -304,6 +334,20 @@ public class EntityMapping extends ExtensibleBase {
      */
     public boolean hasSecondaryTable() {
         return null != secondaryTable;
+    }
+
+    /**
+     * Returns the embedded column name or null.
+     */
+    public String getEmbeddedColumnName() {
+        return null == embeddedColumn? null : embeddedColumn.getName();
+    }
+
+    /**
+     * Returns the column that stores embedded fields.
+     */
+    public DbColumn getEmbeddedColumn() {
+        return embeddedColumn;
     }
 
     /**
@@ -465,6 +509,13 @@ public class EntityMapping extends ExtensibleBase {
     }
 
     /**
+     * Is a logical entity?
+     */
+    public boolean isLogical() {
+        return logical;
+    }
+
+    /**
      * Returns true if this entity is an reference entity.
      */
     public boolean isRemote() {
@@ -575,6 +626,14 @@ public class EntityMapping extends ExtensibleBase {
         return filterFieldMappings;
     }
 
+    public boolean hasEmbeddedFieldMappings() {
+        return embeddedFieldMappings.length > 0;
+    }
+
+    public FieldMapping[] getEmbeddedFieldMappings() {
+        return embeddedFieldMappings;
+    }
+
     public FieldMapping getOptimisticLockField() {
         return optimisticLockField;
     }
@@ -628,6 +687,14 @@ public class EntityMapping extends ExtensibleBase {
         return remoteSettings;
     }
 
+    public boolean isUnionEntity() {
+        return null != unionSettings;
+    }
+
+    public UnionSettings getUnionSettings() {
+        return unionSettings;
+    }
+
     public Map<String, String> getGroupByExprs() {
         return groupByExprs;
     }
@@ -675,6 +742,17 @@ public class EntityMapping extends ExtensibleBase {
             }
         }
 
+        return list.toArray(new FieldMapping[list.size()]);
+    }
+
+    private FieldMapping[] evalEmbeddedFieldMappings() {
+        List<FieldMapping> list = New.arrayList();
+
+        for (FieldMapping fm : this.fieldMappings) {
+            if (fm.isEmbedded()) {
+                list.add(fm);
+            }
+        }
         return list.toArray(new FieldMapping[list.size()]);
     }
 

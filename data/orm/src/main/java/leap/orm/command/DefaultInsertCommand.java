@@ -19,9 +19,11 @@ import leap.core.jdbc.PreparedStatementHandler;
 import leap.core.validation.Errors;
 import leap.core.validation.ValidationException;
 import leap.db.Db;
+import leap.db.support.JsonColumnSupport;
 import leap.lang.Arrays2;
 import leap.lang.Strings;
 import leap.lang.expression.Expression;
+import leap.lang.json.JSON;
 import leap.orm.OrmContext;
 import leap.orm.dao.Dao;
 import leap.orm.event.EntityEvent;
@@ -191,7 +193,7 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
         int result = handler.handleInsert(this, map, () -> {
             String[]   fields         = map.keySet().toArray(Arrays2.EMPTY_STRING_ARRAY);
             SqlCommand primaryCommand = sf.createInsertCommand(context, em, fields);
-            return primaryCommand.executeUpdate(this, map, psHandler);
+            return primaryCommand.executeUpdate(this, withEmbeddedColumn(map), psHandler);
         });
 
         if (em.hasSecondaryTable()) {
@@ -258,5 +260,29 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
 
     protected void setGeneratedValue(FieldMapping fm, Object value) {
         entity.set(fm.getFieldName(), value);
+    }
+
+    protected Map<String, Object> withEmbeddedColumn(Map<String, Object> map) {
+        return withEmbeddedColumn(db, em, map);
+    }
+
+    protected static Map<String, Object> withEmbeddedColumn(Db db, EntityMapping em, Map<String, Object> map) {
+        if(null == em.getEmbeddedColumn() || !em.hasEmbeddedFieldMappings()) {
+            return map;
+        }
+
+        final JsonColumnSupport jcs = db.getDialect().getJsonColumnSupport();
+        if(null != jcs && jcs.isInsertByKeys()) {
+            return map;
+        }
+
+        Map<String, Object> embedded = new LinkedHashMap<>();
+        for(FieldMapping fm : em.getEmbeddedFieldMappings()) {
+            if(map.containsKey(fm.getFieldName())) {
+                embedded.put(fm.getFieldName(), map.get(fm.getFieldName()));
+            }
+        }
+        map.put(em.getEmbeddedColumn().getName(), JSON.stringify(embedded));
+        return map;
     }
 }

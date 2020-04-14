@@ -336,6 +336,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
             if(properties.containsKey(INIT_PROPERTY_BASE_PACKAGE)) {
                 config.basePackage = properties.get(INIT_PROPERTY_BASE_PACKAGE).getValue();
+                log.info("Use base package '{}' from init properties", config.basePackage);
             }
 
             if(properties.containsKey(INIT_PROPERTY_DEBUG)) {
@@ -375,7 +376,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
             //base package
             if(Strings.isEmpty(config.basePackage)){
-                config.basePackage = getInitialProperty(String.class, DEFAULT_BASE_PACKAGE,
+                config.basePackage = getInitialProperty(String.class, INIT_PROPERTY_BASE_PACKAGE,
                                         () -> Strings.firstNotEmpty(AppContextInitializer.getBasePackage(), DEFAULT_BASE_PACKAGE));
                 config.properties.put(INIT_PROPERTY_BASE_PACKAGE,config.basePackage);
             }

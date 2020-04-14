@@ -32,10 +32,7 @@ import leap.lang.text.scel.ScelName;
 import leap.lang.text.scel.ScelNode;
 import leap.lang.text.scel.ScelToken;
 import leap.orm.event.EntityListeners;
-import leap.orm.mapping.EntityMapping;
-import leap.orm.mapping.FieldMapping;
-import leap.orm.mapping.RelationMapping;
-import leap.orm.mapping.RelationProperty;
+import leap.orm.mapping.*;
 import leap.orm.query.CriteriaQuery;
 import leap.orm.query.PageResult;
 import leap.web.Params;
@@ -173,7 +170,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             throw new IllegalStateException("Can't query one by key for remote entity");
         }
 
-        if(key.isEmpty()) {
+        if (key.isEmpty()) {
             throw new IllegalStateException("Can't query one by empty key");
         }
 
@@ -598,6 +595,11 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             return;
         }
 
+        if (expand.getTargetEntity().isUnionEntity()) {
+            expandByDbUnion(expand, records);
+            return;
+        }
+
         ex.preExpand(context);
         try {
             final RelationProperty rp          = expand.rp;
@@ -836,6 +838,94 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                 }
             }
             record.put(expand.rp.getName(), expandedList);
+        }
+    }
+
+    protected void expandByDbUnion(ResolvedExpand expand, List<Record> records) {
+        final RelationMapping relation = expand.getRelation();
+        final UnionSettings   union    = expand.getTargetEntity().getUnionSettings();
+
+        final String typeField = union.getTypeField();
+        final String idField   = union.getIdField();
+
+        String localTypeField = null;
+        String localIdField   = null;
+
+        final Record record0 = records.get(0);
+        for (JoinFieldMapping jf : relation.getJoinFields()) {
+            if (!record0.containsKey(jf.getLocalFieldName())) {
+                throw new BadRequestException("Property '" + jf.getLocalFieldName() +
+                        " must in select items for expanding relation '" + relation.getName() + "'");
+            }
+            if (jf.getReferencedFieldName().equalsIgnoreCase(typeField)) {
+                localTypeField = jf.getLocalFieldName();
+            } else if (jf.getReferencedFieldName().equalsIgnoreCase(idField)) {
+                localIdField = jf.getLocalFieldName();
+            }
+        }
+        final Map<String, UnionExpand> unionExpands = new LinkedHashMap<>();
+        for (Record record : records) {
+            String type = (String) record.get(localTypeField);
+            if (null == type) {
+                continue;
+            }
+            Object id = record.get(localIdField);
+            if (null == id) {
+                continue;
+            }
+
+            UnionSettings.UnionEntityMapping ue = union.getEntityByType(type);
+            if (null == ue) {
+                //todo: handle type not found
+                continue;
+            }
+
+            UnionExpand unionExpand = unionExpands.get(ue.getEntityName());
+            if (null == unionExpand) {
+                final EntityMapping mapping = dao.getEntityMapping(ue.getEntityName());
+                unionExpand = new UnionExpand(ue, mapping);
+                unionExpands.put(ue.getEntityName(), unionExpand);
+            }
+            if (!unionExpand.ids.contains(id)) {
+                unionExpand.ids.add(id);
+            }
+            unionExpand.mapIdAndRecord(id, record);
+        }
+
+        for (UnionExpand unionExpand : unionExpands.values()) {
+            expandUnion(expand, unionExpand);
+        }
+    }
+
+    protected void expandUnion(ResolvedExpand expand, UnionExpand union) {
+        CriteriaQuery<Record> query = dao.createCriteriaQuery(union.mapping).selectNone().where(union.inIds());
+
+        final Select select = expand.getResolvedSelect();
+        if (null != select) {
+            for (Select.Item item : select.items()) {
+                UnionSettings.UnionFieldMapping field = union.entity.getField(item.name());
+                query.addSelectItem(field.getName() + " as " + item.name());
+            }
+        } else {
+            union.fields().forEach((name, uf) -> {
+                query.addSelectItem(uf.getName() + " as " + name);
+            });
+        }
+
+        query.param("ids", union.ids);
+
+        final List<Record> expandedRecords = query.list();
+        if (expandedRecords.isEmpty()) {
+            return;
+        }
+
+        final String idField = union.entity.getIdField();
+        for(Record expandedRecord : expandedRecords) {
+            Object id = expandedRecord.get(idField);
+            List<Record> records = union.idRecordMap.get(id);
+            for(Record record : records) {
+                record.put(expand.rp.getName(), expandedRecord);
+            }
         }
     }
 
@@ -1192,7 +1282,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                     if (Strings.isEmpty(selectItem.alias())) {
                         items.add(selectItem.joinAlias() + "." + fm.getColumnName());
                     } else {
-                        items.add(selectItem.joinAlias() + "." + fm.getColumnName() + " " + selectItem.alias());
+                        items.add(selectItem.joinAlias() + "." + fm.getColumnName() + " as " + selectItem.alias());
                     }
                 }
             }
@@ -1267,11 +1357,9 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                     } else {
                         sql.append(p.getName());
                     }
+                    groupBy.append(sql);
                     if (null != item.alias()) {
                         sql.append(" as " + item.alias());
-                        groupBy.append(item.alias());
-                    } else {
-                        groupBy.append(sql);
                     }
                     select.add(sql.toString());
                 }
@@ -1320,7 +1408,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
     protected void applyFilters(ModelExecutionContext context, CriteriaQuery query, Params params,
                                 QueryOptions options, JoinModels jms, Map<String, Object> fields, boolean filterByParams) {
-        if(null == fields) {
+        if (null == fields) {
             fields = new HashMap<>();
         }
 
@@ -1797,6 +1885,14 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             return rm.isEmbedded();
         }
 
+        public RelationMapping getRelation() {
+            return rm;
+        }
+
+        public EntityMapping getTargetEntity() {
+            return tem;
+        }
+
         public Select getResolvedSelect() {
             if (null == resolvedSelect && Strings.isNotEmpty(select)) {
                 resolvedSelect = SelectParser.parse(select);
@@ -1834,5 +1930,34 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             this.resolvedOrderBy = resolvedOrderBy;
         }
 
+    }
+
+    protected static class UnionExpand {
+        protected final UnionSettings.UnionEntityMapping entity;
+        protected final EntityMapping                    mapping;
+        protected final Map<Object, List<Record>>        idRecordMap = new HashMap<>();
+        protected final Set<Object>                      ids         = new HashSet<>();
+
+        public UnionExpand(UnionSettings.UnionEntityMapping entity, EntityMapping mapping) {
+            this.entity = entity;
+            this.mapping = mapping;
+        }
+
+        public String inIds() {
+            return entity.getIdField() + " in :ids";
+        }
+
+        public Map<String, UnionSettings.UnionFieldMapping> fields() {
+            return entity.getFields();
+        }
+
+        public void mapIdAndRecord(Object id, Record record) {
+            List<Record> records = idRecordMap.get(id);
+            if(null == records) {
+                records = new ArrayList<>();
+                idRecordMap.put(id, records);
+            }
+            records.add(record);
+        }
     }
 }

@@ -15,15 +15,11 @@
  */
 package leap.db.platform.derby;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Types;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import leap.core.validation.Valid;
 import leap.db.DbLimitQuery;
 import leap.db.change.ColumnDefinitionChange;
 import leap.db.change.ColumnPropertyChange;
@@ -38,6 +34,7 @@ import leap.db.platform.GenericDbMetadataReader;
 import leap.lang.Collections2;
 import leap.lang.New;
 import leap.lang.Strings;
+import leap.lang.jdbc.SimpleClob;
 import leap.lang.value.Limit;
 
 public class Derby10Dialect extends GenericDbDialect {
@@ -51,6 +48,15 @@ public class Derby10Dialect extends GenericDbDialect {
 	public Derby10Dialect() {
 	    super();
     }
+
+	@Override
+	protected Object nativeToJava(Object v, int type) throws SQLException {
+		if(v instanceof Clob) {
+			//Can't read the clob if result set closed, so we read it immediately.
+			return new SimpleClob(clobToString((Clob) v));
+		}
+		return super.nativeToJava(v, type);
+	}
 
 	@Override
     public String getDefaultSchemaName(Connection connection, DatabaseMetaData dm) throws SQLException {

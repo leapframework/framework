@@ -16,7 +16,9 @@
 package leap.orm.sql.ast;
 
 import leap.lang.Args;
+import leap.lang.params.Params;
 import leap.orm.sql.Sql;
+import leap.orm.sql.SqlStatementBuilder;
 
 public abstract class NamedParamNode extends ParamBase {
 	
@@ -33,4 +35,20 @@ public abstract class NamedParamNode extends ParamBase {
 		return name;
 	}
 
+	public Object eval(SqlStatementBuilder stm, Params params){
+		if(params.contains(name)) {
+			return params.get(name);
+		}
+
+		if(params.isArray()){
+			return params.get(stm.increaseAndGetParameterIndex());
+		}else{
+			return null;
+		}
+	}
+
+	@Override
+	protected Object getParameterValue(SqlStatementBuilder stm, Params params) {
+		return params.get(name);
+	}
 }

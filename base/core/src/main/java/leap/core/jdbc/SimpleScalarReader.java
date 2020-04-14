@@ -26,9 +26,9 @@ public class SimpleScalarReader implements ResultSetReader<Scalar> {
 	
 	public static SimpleScalarReader DEFAULT_INSTANCE = new SimpleScalarReader(1);
 	
-	private static final SimpleScalar NULL_SCALAR = new SimpleScalar(null);
+	protected static final SimpleScalar NULL_SCALAR = new SimpleScalar(null);
 	
-	private final int column;
+	protected final int column;
 
 	public SimpleScalarReader(int column){
 		this.column = column;
@@ -38,7 +38,7 @@ public class SimpleScalarReader implements ResultSetReader<Scalar> {
     public Scalar read(ResultSet rs) throws SQLException {
 		if(rs.next()){
 			
-			Object value = rs.getObject(column);
+			Object value = getColumnValue(rs);
 			
 			if(rs.next()){
 				throw new TooManyRecordsException("Two or more rows returned for reading scalar value");
@@ -54,4 +54,7 @@ public class SimpleScalarReader implements ResultSetReader<Scalar> {
         return null;
     }
 
+    protected Object getColumnValue(ResultSet rs) throws SQLException {
+		return rs.getObject(column);
+	}
 }

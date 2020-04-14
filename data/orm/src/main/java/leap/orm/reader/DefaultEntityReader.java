@@ -24,6 +24,7 @@ import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.convert.Converts;
 import leap.lang.jdbc.JdbcTypes;
+import leap.lang.json.JSON;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.reflect.Reflection;
@@ -141,11 +142,21 @@ public class DefaultEntityReader implements EntityReader {
 
         DbDialect dialect = context.getDb().getDialect();
 
+		Map<String, Object> embedded = null;
+
         for(int i=0;i<rsm.getColumnCount();i++){
             ResultColumnMapping cm = rsm.getColumnMapping(i);
             FieldMapping  fm = cm.getFieldMapping();
 
-            String name  = null != fm ? fm.getFieldName() : cm.getNormalizedName();
+			if(cm.isEmbeddedColumn()) {
+				Object value = dialect.getJsonColumnValue(rs, i+1, cm.getColumnType());
+				if(null != value) {
+					embedded = JSON.decodeMap(value.toString());
+				}
+				continue;
+			}
+
+			String name  = null != fm ? fm.getFieldName() : cm.getNormalizedName();
             Object value = readColumnValue(dialect, rs, cm, fm, i+1);
 
             model.set(name, value);
@@ -154,6 +165,16 @@ public class DefaultEntityReader implements EntityReader {
                 model.set(cm.getAliasName(), value);
             }
         }
+
+		if(null != embedded) {
+			embedded.forEach((n, v) -> {
+				if(model.contains(n)) {
+					log.warn("The embedded field '{}' duplicated with the select columns", n);
+				}else {
+					model.set(n, v);
+				}
+			});
+		}
 
 		return model;
 	}
@@ -172,10 +193,21 @@ public class DefaultEntityReader implements EntityReader {
 		T bean = beanType.newInstance();
 		
 		DbDialect dialect = context.getDb().getDialect();
+
+		Map<String, Object> embedded = null;
 		
 		for(int i=0;i<rsm.getColumnCount();i++){
 			ResultColumnMapping cm = rsm.getColumnMapping(i);
 			FieldMapping  fm = cm.getFieldMapping();
+
+			if(cm.isEmbeddedColumn()) {
+				Object value = dialect.getJsonColumnValue(rs, i+1, cm.getColumnType());
+				if(null != value) {
+					embedded = JSON.decodeMap(value.toString());
+				}
+				continue;
+			}
+
 			BeanProperty  bp;
 			
 			if(null != fm && beanClass.equals(cm.getEntityMapping().getEntityClass())){
@@ -196,6 +228,15 @@ public class DefaultEntityReader implements EntityReader {
 				bp.setValue(bean, value);
 			}
 		}
+
+		if(null != embedded) {
+			embedded.forEach((n, v) -> {
+				BeanProperty bp = beanType.tryGetProperty(n);
+				if(null != bp) {
+					bp.setValue(bean, v);
+				}
+			});
+		}
 		
 		return bean;
 	}
@@ -204,6 +245,8 @@ public class DefaultEntityReader implements EntityReader {
 		DbDialect dialect = context.getDb().getDialect();
 
 		final boolean convertForMap = context.getConfig().isConvertPropertyForReadMap();
+
+		Map<String, Object> embedded = null;
 		
 		for(int i=0;i<rsm.getColumnCount();i++){
 			ResultColumnMapping cm = rsm.getColumnMapping(i);
@@ -213,7 +256,23 @@ public class DefaultEntityReader implements EntityReader {
                             readColumnValue(dialect, rs, cm, fm, i+1) :
                             readColumnValueForMap(dialect, rs, cm, fm, i+1);
 
-            map.put(cm.getResultName(), value);
+			if(cm.isEmbeddedColumn()) {
+				if(null != value) {
+					embedded = JSON.decodeMap(value.toString());
+				}
+				continue;
+			}
+			map.put(cm.getResultName(), value);
+		}
+
+		if(null != embedded) {
+			embedded.forEach((n, v) -> {
+				if(map.containsKey(n)) {
+					log.warn("The embedded field '{}' duplicated with the select columns", n);
+				}else {
+					map.put(n, v);
+				}
+			});
 		}
 	}
 

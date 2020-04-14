@@ -30,6 +30,7 @@ public class SqlObjectName extends SqlObjectNameBase {
     protected EntityMapping entityMapping;
 	protected FieldMapping  fieldMapping;
 	protected SqlObjectName referenceTo;
+	protected String        alias;
 	
 	public SqlObjectName() {
 
@@ -61,7 +62,15 @@ public class SqlObjectName extends SqlObjectNameBase {
 		this.referenceTo = referenceTo;
 	}
 
-	public boolean isField(){
+    public String getAlias() {
+        return alias;
+    }
+
+    public void setAlias(String alias) {
+        this.alias = alias;
+    }
+
+    public boolean isField(){
 		return null != fieldMapping;
 	}
 	

@@ -35,6 +35,9 @@ public class MySqlPlatform extends GenericDbPlatform {
 	
 	@Override
     protected GenericDbDialect createDialect(DatabaseMetaData jdbcMetadata) throws SQLException {
+		if (jdbcMetadata.getDatabaseMajorVersion() >= 8) {
+			return new MySql8Dialect();
+		}
 		return new MySql5Dialect();
     }
 

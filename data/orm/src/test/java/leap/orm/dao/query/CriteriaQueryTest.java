@@ -16,14 +16,13 @@
 package leap.orm.dao.query;
 
 import java.util.List;
+import java.util.Map;
 
 import leap.junit.contexual.Contextual;
+import leap.lang.New;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.sql.SqlFragment;
-import leap.orm.tested.model.api.Api;
-import leap.orm.tested.model.api.ApiCategory;
-import leap.orm.tested.model.api.ApiPath;
-import leap.orm.tested.model.api.Category;
+import leap.orm.tested.model.api.*;
 import leap.orm.tested.model.file.Directory;
 import leap.orm.tested.model.product.Product;
 import org.junit.Test;
@@ -258,6 +257,37 @@ public class CriteriaQueryTest extends OrmTestCase {
 		}finally {
 			ApiPath.deleteAll();
 			Api.deleteAll();
+		}
+	}
+
+	@Test
+	public void testColumnAlias() {
+		try {
+			Api api = new Api();
+			api.setName("Hello");
+			api.setTitle("Hello");
+			api.create();
+
+			ApiPath apiPath = new ApiPath();
+			apiPath.setFullPath("/");
+			apiPath.setApiId(api.getId());
+			apiPath.create();
+
+			ApiOperation apiOperation = new ApiOperation();
+			apiOperation.setName("test1");
+			apiOperation.setApiId(api.getId());
+			apiOperation.setPathId(apiPath.getId());
+			apiOperation.create();
+
+			Map result = dao.createCriteriaQuery(ApiOperation.class, Map.class).select("name", "name as n", "api.name as apiName")
+					.join(Api.class, "api").firstOrNull();
+			assertEquals("Hello", result.get("apiName"));
+			assertEquals("test1", result.get("name"));
+			assertEquals("test1", result.get("n"));
+		} finally {
+			deleteAll(ApiOperation.class);
+			deleteAll(ApiPath.class);
+			deleteAll(Api.class);
 		}
 	}
 

@@ -46,6 +46,7 @@ public class FieldMapping extends ExtensibleBase {
 	protected final Integer          scale;
 	protected final boolean          insert;
 	protected final boolean          update;
+	protected final boolean			 embedded;
     protected final boolean          filtered;
     protected final Expression       filteredIf;
 	protected final Expression       defaultValue;
@@ -73,7 +74,7 @@ public class FieldMapping extends ExtensibleBase {
 						String sequenceName,
 						boolean nullable,
 						Integer maxLength, Integer precision, Integer scale,
-						boolean insert, boolean update,
+						boolean insert, boolean update, boolean embedded,
 						boolean filtered, Expression filteredIf,
 						Expression defaultValue,
 						Expression insertValue,
@@ -106,6 +107,7 @@ public class FieldMapping extends ExtensibleBase {
 	    this.scale		    = scale;
 	    this.insert         = insert;
 	    this.update         = update;
+	    this.embedded       = embedded;
         this.filtered       = filtered;
         this.filteredIf = filteredIf;
 	    this.defaultValue   = defaultValue;
@@ -210,7 +212,11 @@ public class FieldMapping extends ExtensibleBase {
 		return update;
 	}
 
-    public boolean isFiltered() {
+	public boolean isEmbedded() {
+		return embedded;
+	}
+
+	public boolean isFiltered() {
         return filtered;
     }
 

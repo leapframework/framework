@@ -15,65 +15,93 @@
  */
 package leap.db.platform.mysql;
 
-import java.io.BufferedReader;
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import leap.db.DbLimitQuery;
+import leap.db.DbMetadata;
+import leap.db.DbVersion;
 import leap.db.change.ColumnDefinitionChange;
 import leap.db.change.SchemaChangeContext;
 import leap.db.model.DbColumn;
 import leap.db.model.DbColumnBuilder;
-import leap.db.model.DbSchemaName;
 import leap.db.model.DbSchemaObjectName;
 import leap.db.platform.GenericDbDialect;
+import leap.db.support.JsonColumnSupport;
+import leap.lang.Charsets;
 import leap.lang.Collections2;
 import leap.lang.New;
 import leap.lang.Strings;
+import leap.lang.convert.Converts;
+import leap.lang.io.IO;
 import leap.lang.value.Limit;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
+
 public class MySql5Dialect extends GenericDbDialect {
-	
+
     /**
      * the reserved sql keywords not defined in {@link leap.db.platform.GenericDbDialectBase#SQL92_RESERVED_WORDS}. <p/>
-     * 
+     *
      * <p>
      * see：http://www.mysql.com/doc/en/Reserved_words.html.
      */
-    private static final String[] NONSQL92_RESERVED_WORDS = new String[] { 
-        "ANALYZE","AUTO_INCREMENT","BDB","BERKELEYDB","BIGINT","BINARY","BLOB","BTREE",
-        "CHANGE","COLUMNS","DATABASE","DATABASES","DAY_HOUR","DAY_MINUTE","DAY_SECOND",
-        "DELAYED","DISTINCTROW","DIV","ENCLOSED","ERRORS","ESCAPED","EXPLAIN","FIELDS",
-        "FORCE","FULLTEXT","FUNCTION","GEOMETRY","HASH","HELP","HIGH_PRIORITY",
-        "HOUR_MINUTE","HOUR_SECOND","IF","IGNORE","INDEX","INFILE","INNODB","KEYS","KEY","KILL",
-        "LIMIT","LINES","LOAD","LOCALTIME","LOCALTIMESTAMP","LOCK","LONG","LONGBLOB",
-        "LONGTEXT","LOW_PRIORITY","MASTER_SERVER_ID","MEDIUMBLOB","MEDIUMINT",
-        "MEDIUMTEXT","MIDDLEINT","MINUTE_SECOND","MOD","MRG_MYISAM","OPTIMIZE",
-        "OPTIONALLY","OUTFILE","PURGE","REGEXP","RENAME","REPLACE","REQUIRE","RETURNS",
-        "RLIKE","RTREE","SHOW","SONAME","SPATIAL","SQL_BIG_RESULT","SQL_CALC_FOUND_ROWS",
-        "SQL_SMALL_RESULT","SSL","STARTING","STRAIGHT_JOIN","STRIPED","TABLES",
-        "TERMINATED","TINYBLOB","TINYINT","TINYTEXT","TYPES","UNLOCK","UNSIGNED","USE",
-        "USER_RESOURCES","VARBINARY","VARCHARACTER","WARNINGS","XOR","YEAR_MONTH",
-        "ZEROFILL","INT","INT1","INT2","INT3","INT4","INT8","USAGE",
-        // MySQL 8.0 New Keywords and Reserved Words    
-        "ACTIVE", "ADMIN", "ARRAY", "BUCKETS", "CLONE", "COMPONENT", "CUME_DIST", "DEFINITION", "DENSE_RANK", 
-        "DESCRIPTION", "EMPTY", "ENFORCED","EXCEPT", "EXCLUDE", "FAILED_LOGIN_ATTEMPTS","FIRST_VALUE", "FOLLOWING",
-        "GEOMCOLLECTION","GET_MASTER_PUBLIC_KEY", "GROUPING", "GROUPS", "HISTOGRAM", "HISTORY", "INACTIVE","INVISIBLE",
-        "JSON_TABLE","JSON_VALUE", "LAG", "LAST_VALUE", "LATERAL", "LEAD", "LOCKED", "MASTER_COMPRESSION_ALGORITHMS",
-        "MASTER_PUBLIC_KEY_PATH", "MASTER_TLS_CIPHERSUITES", "MASTER_ZSTD_COMPRESSION_LEVEL","MEMBER",
-        "NESTED", "NETWORK_NAMESPACE", "NOWAIT", "NTH_VALUE", "NTILE", "NULLS", "OF", "OFF", "OJ", "OLD",
-        "OPTIONAL", "ORDINALITY", "ORGANIZATION", "OTHERS", "OVER", "PASSWORD_LOCK_TIME", "PATH", "PERCENT_RANK",
-        "PERSIST", "PERSIST_ONLY","PRECEDING", "PRIVILEGE_CHECKS_USER", "PROCESS", "RANDOM", "RANK", "RECURSIVE", "REFERENCE",
-        "REQUIRE_ROW_FORMAT", "RESOURCE", "RESPECT", "RESTART", "RETAIN", "RETURNING", "REUSE","ROLE",
-        "ROW_NUMBER", "SECONDARY", "SECONDARY_ENGINE", "SECONDARY_LOAD", "SECONDARY_UNLOAD", "SKIP", "SRID",
-        "STREAM", "SYSTEM","THREAD_PRIORITY", "TIES", "UNBOUNDED", "VCPU", "VISIBLE","WINDOW"};
-    
-    private static final String[] SYSTEM_SCHEMAS = new String[]{"INFORMATION_SCHEMA","PERFORMANCE_SCHEMA"};
+    private static final String[] NONSQL92_RESERVED_WORDS = new String[]{
+            "ANALYZE", "AUTO_INCREMENT", "BDB", "BERKELEYDB", "BIGINT", "BINARY", "BLOB", "BTREE",
+            "CHANGE", "COLUMNS", "DATABASE", "DATABASES", "DAY_HOUR", "DAY_MINUTE", "DAY_SECOND",
+            "DELAYED", "DISTINCTROW", "DIV", "ENCLOSED", "ERRORS", "ESCAPED", "EXPLAIN", "FIELDS",
+            "FORCE", "FULLTEXT", "FUNCTION", "GEOMETRY", "HASH", "HELP", "HIGH_PRIORITY",
+            "HOUR_MINUTE", "HOUR_SECOND", "IF", "IGNORE", "INDEX", "INFILE", "INNODB", "KEYS", "KEY", "KILL",
+            "LIMIT", "LINES", "LOAD", "LOCALTIME", "LOCALTIMESTAMP", "LOCK", "LONG", "LONGBLOB",
+            "LONGTEXT", "LOW_PRIORITY", "MASTER_SERVER_ID", "MEDIUMBLOB", "MEDIUMINT",
+            "MEDIUMTEXT", "MIDDLEINT", "MINUTE_SECOND", "MOD", "MRG_MYISAM", "OPTIMIZE",
+            "OPTIONALLY", "OUTFILE", "PURGE", "REGEXP", "RENAME", "REPLACE", "REQUIRE", "RETURNS",
+            "RLIKE", "RTREE", "SHOW", "SONAME", "SPATIAL", "SQL_BIG_RESULT", "SQL_CALC_FOUND_ROWS",
+            "SQL_SMALL_RESULT", "SSL", "STARTING", "STRAIGHT_JOIN", "STRIPED", "TABLES",
+            "TERMINATED", "TINYBLOB", "TINYINT", "TINYTEXT", "TYPES", "UNLOCK", "UNSIGNED", "USE",
+            "USER_RESOURCES", "VARBINARY", "VARCHARACTER", "WARNINGS", "XOR", "YEAR_MONTH",
+            "ZEROFILL", "INT", "INT1", "INT2", "INT3", "INT4", "INT8", "USAGE"};
 
-    protected MySql5Dialect(){
-    	
+    private static final String[] SYSTEM_SCHEMAS = new String[]{"INFORMATION_SCHEMA", "PERFORMANCE_SCHEMA"};
+
+    protected DbVersion         version;
+    protected JsonColumnSupport jsonColumnSupport;
+
+    protected MySql5Dialect() {
+
+    }
+
+    @Override
+    protected void registerMetadata(DbMetadata metadata) {
+        super.registerMetadata(metadata);
+
+        version = DbVersion.of(metadata.getProductMajorVersion(),
+                metadata.getProductMinorVersion(),
+                getProductRevision());
+
+        //json support starts from 5.7.8, but better support starts from 5.7.13
+        //https://dev.mysql.com/doc/refman/5.7/en/json-search-functions.html#operator_json-inline-path
+        if (version.ge(DbVersion.of(5, 7, 13))) {
+            jsonColumnSupport = new MySqlJsonColumnSupport();
+        }
+    }
+
+    protected int getProductRevision() {
+        //5.7.22-log
+        String v     = metadata.getProductVersion();
+        int    index = v.indexOf('-');
+        if (index > 0) {
+            v = v.substring(0, index);
+        }
+        int      revision = 0;
+        String[] parts    = Strings.split(v, '.');
+        if (parts.length == 3) {
+            revision = Integer.parseInt(parts[2]);
+        }
+        return revision;
     }
 
     @Override
@@ -83,15 +111,15 @@ public class MySql5Dialect extends GenericDbDialect {
 
     @Override
     protected String getAutoIncrementColumnDefinitionEnd(DbColumn column) {
-	    return "AUTO_INCREMENT";
+        return "AUTO_INCREMENT";
     }
 
-	@Override
+    @Override
     protected String getTestDriverSupportsGetParameterTypeSQL() {
-	    return "select 1 from dual where 1 = ?";
+        return "select 1 from dual where 1 = ?";
     }
 
-	@Override
+    @Override
     public String getDefaultSchemaName(Connection connection, DatabaseMetaData dm) throws SQLException {
         return connection.getCatalog();
     }
@@ -111,7 +139,7 @@ public class MySql5Dialect extends GenericDbDialect {
             This means that they have no character set, and sorting and comparison are
              based on the numeric values of the bytes in the values
          */
-        if(type == Types.BINARY || type == Types.VARBINARY) {
+        if (type == Types.BINARY || type == Types.VARBINARY) {
             return rs.getString(index);
         }
 
@@ -120,7 +148,7 @@ public class MySql5Dialect extends GenericDbDialect {
 
     @Override
     protected Object getColumnValueTypeKnown(ResultSet rs, String name, int type) throws SQLException {
-        if(type == Types.BINARY || type == Types.VARBINARY) {
+        if (type == Types.BINARY || type == Types.VARBINARY) {
             return rs.getString(name);
         }
 
@@ -134,8 +162,8 @@ public class MySql5Dialect extends GenericDbDialect {
 
     @Override
     protected String getColumnDefaultDefinition(DbColumn column) {
-        if(Types.TIMESTAMP == column.getTypeCode()) {
-            if((!column.isNullable()) && !column.isDatetime() && Strings.isEmpty(column.getDefaultValue())) {
+        if (Types.TIMESTAMP == column.getTypeCode()) {
+            if ((!column.isNullable()) && !column.isDatetime() && Strings.isEmpty(column.getDefaultValue())) {
                 return "DEFAULT CURRENT_TIMESTAMP";
             }
         }
@@ -151,64 +179,64 @@ public class MySql5Dialect extends GenericDbDialect {
     public String readDefaultValue(int typeCode, String nativeDefaultValue) {
         // MySQL converts illegal date/time/timestamp values to "0000-00-00 00:00:00", but this
         // is an illegal ISO value, so we replace it with NULL
-		if ((typeCode == Types.TIMESTAMP) && "0000-00-00 00:00:00".equals(nativeDefaultValue)) {
-			return null;
-		}else if(Strings.equals("b'0'",nativeDefaultValue)){
-    		return "0";
-    	}else if(Strings.equals("b'1'", nativeDefaultValue)){
-    		return "1";
-    	}		
-		return super.readDefaultValue(typeCode, nativeDefaultValue);
+        if ((typeCode == Types.TIMESTAMP) && "0000-00-00 00:00:00".equals(nativeDefaultValue)) {
+            return null;
+        } else if (Strings.equals("b'0'", nativeDefaultValue)) {
+            return "0";
+        } else if (Strings.equals("b'1'", nativeDefaultValue)) {
+            return "1";
+        }
+        return super.readDefaultValue(typeCode, nativeDefaultValue);
     }
-	
-	@Override
+
+    @Override
     public String getLimitQuerySql(DbLimitQuery query) {
-		//[LIMIT {[offset,] row_count | row_count OFFSET offset}]
-		//The offset of the initial row is 0 (not 1):
-		
-		Limit limit = query.getLimit();
-		
-		int offset = limit.getStart() - 1;
-		int rows   = limit.getEnd()   - offset;
-		
+        //[LIMIT {[offset,] row_count | row_count OFFSET offset}]
+        //The offset of the initial row is 0 (not 1):
+
+        Limit limit = query.getLimit();
+
+        int offset = limit.getStart() - 1;
+        int rows   = limit.getEnd() - offset;
+
         String sql = query.getSql(db) + " limit ?,?";
         query.getArgs().add(offset);
         query.getArgs().add(rows);
-		
-		return sql;
+
+        return sql;
     }
-	
-	@Override
+
+    @Override
     protected List<String> createSafeAlterColumnSqlsForChange(SchemaChangeContext context, ColumnDefinitionChange change) {
-		List<String> sqls = new ArrayList<String>();
-	
-		if(change.isUniqueChanged()){
-			sqls.add(getAddUniqueColumnSql(change.getTable(), change.getOldColumn().getName()));
-			
-			if(change.getPropertyChanges().size() > 1){
-				DbColumn c = new DbColumnBuilder(change.getNewColumn()).setUnique(false).build();
-				sqls.add(getAlterColumnSql(change.getTable(), c));
-			}
-		}else{
-			sqls.add(getAlterColumnSql(change.getTable(), change.getNewColumn()));
-		}
+        List<String> sqls = new ArrayList<String>();
 
-		return sqls;
-	}
+        if (change.isUniqueChanged()) {
+            sqls.add(getAddUniqueColumnSql(change.getTable(), change.getOldColumn().getName()));
 
-	protected String getAddUniqueColumnSql(DbSchemaObjectName tableName,String columnName) {
-		return "ALTER TABLE " + qualifySchemaObjectName(tableName) + 
-				 " ADD UNIQUE(" + quoteIdentifier(columnName) + ")";
-	}
-	
-	protected String getAlterColumnSql(DbSchemaObjectName tableName,DbColumn column){
-		return "ALTER TABLE " + qualifySchemaObjectName(tableName) + 
-		 	 	 " MODIFY COLUMN " + getColumnDefinitionForAlterTable(column);
-	}
-	
-	@Override
+            if (change.getPropertyChanges().size() > 1) {
+                DbColumn c = new DbColumnBuilder(change.getNewColumn()).setUnique(false).build();
+                sqls.add(getAlterColumnSql(change.getTable(), c));
+            }
+        } else {
+            sqls.add(getAlterColumnSql(change.getTable(), change.getNewColumn()));
+        }
+
+        return sqls;
+    }
+
+    protected String getAddUniqueColumnSql(DbSchemaObjectName tableName, String columnName) {
+        return "ALTER TABLE " + qualifySchemaObjectName(tableName) +
+                " ADD UNIQUE(" + quoteIdentifier(columnName) + ")";
+    }
+
+    protected String getAlterColumnSql(DbSchemaObjectName tableName, DbColumn column) {
+        return "ALTER TABLE " + qualifySchemaObjectName(tableName) +
+                " MODIFY COLUMN " + getColumnDefinitionForAlterTable(column);
+    }
+
+    @Override
     public List<String> getDropForeignKeySqls(DbSchemaObjectName tableName, String fkName) {
-	    return New.arrayList("ALTER TABLE " + qualifySchemaObjectName(tableName) + " DROP FOREIGN KEY " + fkName);
+        return New.arrayList("ALTER TABLE " + qualifySchemaObjectName(tableName) + " DROP FOREIGN KEY " + fkName);
     }
 
     @Override
@@ -218,70 +246,70 @@ public class MySql5Dialect extends GenericDbDialect {
 
     @Override
     protected void registerSQLKeyWords() {
-	    super.registerSQLKeyWords();
-	    this.sqlKeyWords.addAll(Arrays.asList(NONSQL92_RESERVED_WORDS));
+        super.registerSQLKeyWords();
+        this.sqlKeyWords.addAll(Arrays.asList(NONSQL92_RESERVED_WORDS));
     }
 
-	@Override
+    @Override
     protected void registerSystemSchemas() {
-		Collections2.addAll(systemSchemas, SYSTEM_SCHEMAS);
+        Collections2.addAll(systemSchemas, SYSTEM_SCHEMAS);
     }
 
-	@Override
+    @Override
     protected void registerColumnTypes() {
-		//see http://dev.mysql.com/doc/refman/5.6/en/storage-requirements.html
-		
-        columnTypes.add(Types.BOOLEAN,       "boolean",0,0,Types.BIT);
-        columnTypes.add(Types.BIT,           "bit");
-        
-        columnTypes.add(Types.TINYINT,       "tinyint");
-        columnTypes.add(Types.SMALLINT,      "smallint");
-        columnTypes.add(Types.INTEGER,       "integer");
-        columnTypes.add(Types.BIGINT,        "bigint"  );
+        //see http://dev.mysql.com/doc/refman/5.6/en/storage-requirements.html
+
+        columnTypes.add(Types.BOOLEAN, "boolean", 0, 0, Types.BIT);
+        columnTypes.add(Types.BIT, "bit");
+
+        columnTypes.add(Types.TINYINT, "tinyint");
+        columnTypes.add(Types.SMALLINT, "smallint");
+        columnTypes.add(Types.INTEGER, "integer");
+        columnTypes.add(Types.BIGINT, "bigint");
 
         //JDBC's real type mapping to java's float, JDBC's float type mapping to java's double
-        columnTypes.add(Types.REAL,          "float");  			
-        columnTypes.add(Types.FLOAT,         "double precision");	
-        columnTypes.add(Types.DOUBLE,        "double precision");
-        
-        columnTypes.add(Types.DECIMAL,       "decimal($p,$s)");
-        columnTypes.add(Types.NUMERIC,       "decimal($p,$s)");
-        
-        columnTypes.add(Types.CHAR,          "char($l)",0,255);
-        columnTypes.add(Types.VARCHAR,       "varchar($l)",0,65535);
-        columnTypes.add(Types.VARCHAR,       "longtext");
-        columnTypes.add(Types.LONGVARCHAR,   "longtext");
+        columnTypes.add(Types.REAL, "float");
+        columnTypes.add(Types.FLOAT, "double precision");
+        columnTypes.add(Types.DOUBLE, "double precision");
 
-        columnTypes.add(Types.BINARY,        "binary($l)",1,255);
-        columnTypes.add(Types.BINARY,        "longblob");
-        columnTypes.add(Types.VARBINARY,     "varbinary($l)",1,65535);
-        columnTypes.add(Types.VARBINARY,     "longblob");
+        columnTypes.add(Types.DECIMAL, "decimal($p,$s)");
+        columnTypes.add(Types.NUMERIC, "decimal($p,$s)");
+
+        columnTypes.add(Types.CHAR, "char($l)", 0, 255);
+        columnTypes.add(Types.VARCHAR, "varchar($l)", 0, 65535);
+        columnTypes.add(Types.VARCHAR, "longtext");
+        columnTypes.add(Types.LONGVARCHAR, "longtext");
+
+        columnTypes.add(Types.BINARY, "binary($l)", 1, 255);
+        columnTypes.add(Types.BINARY, "longblob");
+        columnTypes.add(Types.VARBINARY, "varbinary($l)", 1, 65535);
+        columnTypes.add(Types.VARBINARY, "longblob");
         columnTypes.add(Types.LONGVARBINARY, "longblob");
-        
-        columnTypes.add(Types.DATE,          "date");
-        columnTypes.add(Types.TIME,          "time");
 
-        columnTypes.add(Types.BLOB,          "blob");
-        columnTypes.add(Types.CLOB,          "text");
+        columnTypes.add(Types.DATE, "date");
+        columnTypes.add(Types.TIME, "time");
+
+        columnTypes.add(Types.BLOB, "blob");
+        columnTypes.add(Types.CLOB, "text");
 
         //https://dev.mysql.com/doc/refman/5.6/en/timestamp-initialization.html
         //Before 5.6.5, this is true only for TIMESTAMP, and for at most one TIMESTAMP column per table.
-        if(metadata.getProductMinorVersion() >= 6) {
+        if (metadata.getProductMinorVersion() >= 6) {
             //5.7.19-log
             try {
                 String[] parts = Strings.split(metadata.getProductVersion(), ".");
                 if (parts.length >= 3) {
-                    String v = parts[2];
-                    int sep = v.indexOf('-');
-                    if(sep > 0) {
+                    String v   = parts[2];
+                    int    sep = v.indexOf('-');
+                    if (sep > 0) {
                         v = v.substring(0, sep);
                     }
-                    if(Integer.parseInt(v) >= 5) {
+                    if (Integer.parseInt(v) >= 5) {
                         columnTypes.add(Types.TIMESTAMP, "timestamp");
                         return;
                     }
                 }
-            }catch (Exception e) {
+            } catch (Exception e) {
                 log.error("Unable the recognize the mysql version '" + metadata.getProductVersion() + "'", e);
             }
         }
@@ -289,27 +317,27 @@ public class MySql5Dialect extends GenericDbDialect {
         columnTypes.add(Types.TIMESTAMP, "datetime");
     }
 
-	@Override
+    @Override
     protected String getOpenQuoteString() {
-	    return "`";
+        return "`";
     }
 
-	@Override
+    @Override
     protected String getCloseQuoteString() {
-	    return "`";
+        return "`";
     }
 
     @Override
     protected String parseDelimiter(BufferedReader reader, String delimiter, String line) {
 
-        if(Strings.startsWithIgnoreCase(line, "delimiter ")) {
+        if (Strings.startsWithIgnoreCase(line, "delimiter ")) {
             String newDelimiter = Strings.removeStartIgnoreCase(line, "delimiter").trim();
 
-            while(newDelimiter.length() > 0 && newDelimiter.endsWith(delimiter)) {
+            while (newDelimiter.length() > 0 && newDelimiter.endsWith(delimiter)) {
                 newDelimiter = Strings.removeEnd(newDelimiter, delimiter);
             }
 
-            if(newDelimiter.length() > 0) {
+            if (newDelimiter.length() > 0) {
                 return newDelimiter;
             }
         }
@@ -319,10 +347,67 @@ public class MySql5Dialect extends GenericDbDialect {
 
     @Override
     public String quoteIdentifier(String identifier, boolean quoteKeywordOnly) {
-	    if(Strings.equalsIgnoreCase(identifier,"dual")){
-	        return identifier;
+        if (Strings.equalsIgnoreCase(identifier, "dual")) {
+            return identifier;
         }
-	    return super.quoteIdentifier(identifier,quoteKeywordOnly);
+        return super.quoteIdentifier(identifier, quoteKeywordOnly);
     }
 
+    @Override
+    public JsonColumnSupport getJsonColumnSupport() {
+        return jsonColumnSupport;
+    }
+
+    @Override
+    public String getJsonColumnValue(ResultSet rs, int column, int type) throws SQLException {
+        if(null == jsonColumnSupport) {
+            return super.getJsonColumnValue(rs, column, type);
+        }else {
+            Object value = super.getJsonColumnValue(rs, column, type);
+            if(null == value) {
+                return null;
+            }
+
+            if(value instanceof byte[]) {
+                value = Strings.newStringUtf8((byte[])value);
+            }else if(value instanceof ByteArrayInputStream) {
+                value = IO.readString((ByteArrayInputStream)value, Charsets.UTF_8);
+            }
+
+            return Converts.toString(value);
+        }
+    }
+
+    protected class MySqlJsonColumnSupport implements JsonColumnSupport {
+        @Override
+        public String getUpdateExpr(String alias, String column, String[] keys, Function<String, String> nameToParam) {
+            final StringBuilder s = new StringBuilder();
+
+            if(null != alias) {
+                s.append(alias).append('.');
+            }
+            s.append(column);
+            s.append(" = JSON_SET(");
+            if(null != alias) {
+                s.append(alias).append('.');
+            }
+            s.append(column);
+
+            for(String key : keys) {
+                s.append(',');
+                s.append("'$.").append(key).append("',");
+                s.append(nameToParam.apply(key));
+            }
+
+            s.append(')');
+
+            return s.toString();
+        }
+
+        @Override
+        public String getSelectItemExpr(String column, String key) {
+            return column + "->>'$." + key + "'";
+        }
+
+    }
 }

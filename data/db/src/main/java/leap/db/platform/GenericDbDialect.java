@@ -21,6 +21,7 @@ import leap.db.change.*;
 import leap.db.model.*;
 import leap.lang.*;
 import leap.lang.convert.Converts;
+import leap.lang.io.IO;
 import leap.lang.jdbc.JDBC;
 import leap.lang.jdbc.JdbcType;
 import leap.lang.jdbc.JdbcTypeKind;
@@ -34,10 +35,10 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
-import java.sql.*;
 import java.sql.Types;
-import java.util.*;
+import java.sql.*;
 import java.util.Date;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
@@ -167,7 +168,7 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 
         StringBuilder sb = new StringBuilder();
 
-        if(isQualifyFullSchemaObjectName()) {
+        if (isQualifyFullSchemaObjectName()) {
             if (!Strings.isEmpty(catalog)) {
                 sb.append(quoteIdentifier(catalog)).append('.');
 
@@ -941,11 +942,13 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
     }
 
     protected Object getColumnValueTypeUnknown(ResultSet rs, int index) throws SQLException {
-        return rs.getObject(index);
+        final Object v = rs.getObject(index);
+        return null == v ? null : nativeToJava(v, JdbcTypes.UNKNOWN_TYPE_CODE);
     }
 
     protected Object getColumnValueTypeUnknown(ResultSet rs, String name) throws SQLException {
-        return rs.getObject(name);
+        final Object v = rs.getObject(name);
+        return null == v ? null : nativeToJava(v, JdbcTypes.UNKNOWN_TYPE_CODE);
     }
 
     protected Object getColumnValueTypeKnown(ResultSet rs, int index, int type) throws SQLException {
@@ -964,7 +967,8 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
             return rs.getBinaryStream(index);
         }
 
-        return rs.getObject(index);
+        final Object v = rs.getObject(index);
+        return null == v ? null : nativeToJava(v, type);
     }
 
     protected Object getColumnValueTypeKnown(ResultSet rs, String name, int type) throws SQLException {
@@ -976,7 +980,16 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
             return rs.getBinaryStream(name);
         }
 
-        return rs.getObject(name);
+        final Object v = rs.getObject(name);
+        return null == v ? null : nativeToJava(v, type);
+    }
+
+    protected String clobToString(Clob clob) throws SQLException {
+        return IO.readString(clob.getCharacterStream());
+    }
+
+    protected Object nativeToJava(Object v, int type) throws SQLException {
+        return v;
     }
 
     public int setNullParameter(PreparedStatement ps, int index, int type) throws SQLException {
@@ -1205,6 +1218,10 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
     }
 
     protected String getColumnTypeDefinition(DbColumn column) {
+        if (!Strings.isEmpty(column.getNativeType())) {
+            return column.getNativeType();
+        }
+
         if (column.isDatetime()) {
             String datetimeDef = getColumnDatetimeDef(column);
             if (!Strings.isEmpty(datetimeDef)) {
@@ -1232,10 +1249,9 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
         JdbcType jdbcType = JdbcTypes.forTypeCode(column.getTypeCode());
 
         DbColumnType columnType = columnTypes.get(jdbcType.getCode(), column.getLength());
-
         if (null == columnType) {
-            throw new DbException(Strings.format(
-                    "Unsupported column type '{0}' defined in column '{1}'", jdbcType.getName(), column.getName()));
+            log.warn("Found unsupported column type {} defined in column {}", jdbcType.getName(), column.getName());
+            return new DbColumnType(jdbcType.getCode(), jdbcType.getName());
         }
 
         if (!columnType.matchesLength(column.getLength())) {
@@ -1458,4 +1474,5 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
     protected abstract String getCloseQuoteString();
 
     protected abstract void registerColumnTypes();
+
 }

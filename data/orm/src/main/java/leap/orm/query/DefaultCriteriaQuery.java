@@ -17,14 +17,12 @@ package leap.orm.query;
 
 import leap.core.exception.TooManyRecordsException;
 import leap.core.jdbc.ResultSetReader;
-import leap.core.jdbc.SimpleScalarReader;
-import leap.core.jdbc.SimpleScalarsReader;
 import leap.core.value.Scalar;
 import leap.core.value.Scalars;
 import leap.db.DbDialect;
+import leap.db.support.JsonColumnSupport;
 import leap.lang.*;
 import leap.lang.beans.DynaBean;
-import leap.lang.collection.WrappedCaseInsensitiveMap;
 import leap.lang.params.ArrayParams;
 import leap.lang.params.MapArrayParams;
 import leap.lang.params.Params;
@@ -48,12 +46,14 @@ import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements CriteriaQuery<T>, QueryContext {
 
     protected SqlBuilder               builder;
     protected String                   sqlView;
     protected List<JoinBuilder>        joins = new ArrayList<>(1);
+    protected boolean                  selectNone;
     protected String[]                 selects;
     protected String                   where;
     protected ArrayParams              whereParameters;
@@ -63,6 +63,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     protected boolean                  distinct;
     protected String                   groupBy;
     protected String                   having;
+    protected boolean                  forUpdate;
     protected Function<String, String> sqlWrapper;
 
     public DefaultCriteriaQuery(Dao dao, EntityMapping em, Class<T> targetType) {
@@ -468,12 +469,12 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
         StringBuilder s = new StringBuilder();
 
-        if(rm.getJoinFields().length == 1) {
+        if (rm.getJoinFields().length == 1) {
             s.append(builder.alias).append('.')
                     .append(rm.getJoinFields()[0].getLocalFieldName())
                     .append("=?");
             return where(s.toString(), id);
-        }else {
+        } else {
             EntityMapping targetEntity =
                     dao.getOrmContext().getMetadata().getEntityMapping(rm.getTargetEntityName());
             Map m = Mappings.getIdAsMap(targetEntity, id);
@@ -490,7 +491,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                         .append("=?");
 
                 final String refName = jf.getReferencedFieldName();
-                if(!m.containsKey(refName)) {
+                if (!m.containsKey(refName)) {
                     throw new IllegalStateException("The referenced field '" + refName + "' must be provided");
                 }
                 args[i] = m.get(refName);
@@ -508,9 +509,9 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     public CriteriaQuery<T> where(Map<String, Object> fields) {
         StringBuilder where = new StringBuilder();
 
-        int i=0;
-        for(String name : fields.keySet()) {
-            if(i > 0) {
+        int i = 0;
+        for (String name : fields.keySet()) {
+            if (i > 0) {
                 where.append(" and ");
             }
             where.append(name).append(" = :").append(name);
@@ -550,9 +551,9 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
     @Override
     public CriteriaQuery<T> whereAnd(String expr, Object... args) {
-        if(Strings.isEmpty(where)) {
+        if (Strings.isEmpty(where)) {
             where = expr;
-        }else {
+        } else {
             where = "(" + where + ") and (" + expr + ")";
         }
         if (null == this.whereExtraArgs) {
@@ -570,9 +571,9 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
     @Override
     public CriteriaQuery<T> whereOr(String expr, Object... args) {
-        if(Strings.isEmpty(where)) {
+        if (Strings.isEmpty(where)) {
             where = expr;
-        }else {
+        } else {
             where = "(" + where + ") or (" + expr + ")";
         }
         if (null == this.whereExtraArgs) {
@@ -586,6 +587,12 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     @Override
     public CriteriaQuery<T> distinct() {
         this.distinct = true;
+        return this;
+    }
+
+    @Override
+    public CriteriaQuery<T> selectNone() {
+        this.selectNone = true;
         return this;
     }
 
@@ -687,6 +694,17 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         return this;
     }
 
+    @Override
+    public CriteriaQuery<T> forUpdate() {
+        this.forUpdate = true;
+        return this;
+    }
+
+    @Override
+    public boolean isForUpdate() {
+        return forUpdate;
+    }
+
     protected void orderById(String order) {
         StringBuilder s = new StringBuilder();
 
@@ -778,12 +796,12 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
     @Override
     protected Scalar executeQueryForScalar(QueryContext context) throws TooManyRecordsException {
-        return buildQueryStatement(context).executeQuery(SimpleScalarReader.DEFAULT_INSTANCE);
+        return buildQueryStatement(context).executeQuery(ResultSetReaders.forScalar(context.getOrmContext()));
     }
 
     @Override
     protected Scalars executeQueryForScalars(QueryContext context) throws TooManyRecordsException {
-        return buildQueryStatement(context).executeQuery(SimpleScalarsReader.DEFAULT_INSTANCE);
+        return buildQueryStatement(context).executeQuery(ResultSetReaders.forScalars(context.getOrmContext()));
     }
 
     protected Object[] args() {
@@ -804,13 +822,13 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     }
 
     protected Object[] whereArgs() {
-        if(null == whereParameters && whereExtraArgs == null) {
+        if (null == whereParameters && whereExtraArgs == null) {
             return null;
         }
-        if(null == whereParameters) {
+        if (null == whereParameters) {
             return whereExtraArgs;
         }
-        if(null == whereExtraArgs) {
+        if (null == whereExtraArgs) {
             return whereParameters.array();
         }
         return Arrays2.concat(whereParameters.array(), whereExtraArgs);
@@ -1023,6 +1041,9 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     }
 
     protected class SqlBuilder {
+
+        private final Pattern SIMPLE_COLUMN_PATTERN = Pattern.compile("^[0-9a-zA-Z_]+$");
+
         protected String       alias = "t";
         protected String[]     columns;
         protected List<String> extraSelectItems;
@@ -1222,9 +1243,9 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         }
 
         protected String wrap(String sql) {
-            if(null != sqlWrapper) {
+            if (null != sqlWrapper) {
                 return sqlWrapper.apply(sql);
-            }else {
+            } else {
                 return sql;
             }
         }
@@ -1285,6 +1306,8 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
             sql.append(" set ");
 
+            final List<FieldMapping> embedded = new ArrayList<>();
+
             int index = 0;
             for (Entry<String, Object> entry : fields.entrySet()) {
                 String field = entry.getKey();
@@ -1292,6 +1315,11 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
                 FieldMapping fm = em.getFieldMapping(field);
                 if (!fm.matchSecondary(secondary)) {
+                    continue;
+                }
+
+                if (fm.isEmbedded()) {
+                    embedded.add(fm);
                     continue;
                 }
 
@@ -1312,53 +1340,164 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                 index++;
             }
 
+            if (embedded.size() > 0) {
+                final JsonColumnSupport jcs  = dialect.getJsonColumnSupport();
+                final String[]          keys = embedded.stream().map(f -> f.getFieldName()).toArray(String[]::new);
+                if (null == jcs) {
+                    throw new IllegalStateException("Update embedded fields [" + Strings.join(keys, ',') + "] by query not supported by current db");
+                }
+
+                if (index > 0) {
+                    sql.append(',');
+                }
+
+                final String column = em.getEmbeddedColumnName();
+                String       alias1 = null;
+                if (useAlias && !dialect.useTableAliasAfterUpdate()) {
+                    alias1 = alias;
+                }
+                sql.append(jcs.getUpdateExpr(alias1, column, keys, (n) -> {
+                    final String param = "new_" + n;
+                    params.put(param, fields.get(n));
+                    return ":" + param;
+                }));
+                index += embedded.size();
+            }
+
             return index > 0;
         }
 
         protected SqlBuilder columns() {
             sql.append(' ');
 
-            if (null == columns || columns.length == 0) {
-                SqlFactory sf = dao.getOrmContext().getSqlFactory();
-                sql.append(sf.createSelectColumns(dao.getOrmContext(), em, alias));
-            } else {
-                int index = 0;
-                for (String column : columns) {
-                    if (index > 0) {
-                        sql.append(",");
-                    }
+            boolean                  mayEmbedded          = em.hasEmbeddedFieldMappings();
+            boolean                  embeddedColumnExists = false;
+            final List<FieldMapping> embedded             = new ArrayList<>();
 
-                    if (column.contains(".") || column.contains(" ") || column.contains("(")) {
+            int index = 0;
+            if (!selectNone) {
+                if (null == columns || columns.length == 0) {
+                    SqlFactory sf = dao.getOrmContext().getSqlFactory();
+                    sql.append(sf.createSelectColumns(dao.getOrmContext(), em, alias));
+                    index++;
+                } else {
+                    for (String column : columns) {
+                        if (mayEmbedded) {
+                            if (column.equalsIgnoreCase(em.getEmbeddedColumnName())) {
+                                embeddedColumnExists = true;
+                            } else {
+                                FieldMapping fm = em.tryGetFieldMappingByColumn(column);
+                                if (null != fm && fm.isEmbedded()) {
+                                    embedded.add(fm);
+                                    continue;
+                                }
+                            }
+                        }
+
+                        if (index > 0) {
+                            sql.append(",");
+                        }
+
+                        if (needAppendAlias(column)) {
+                            sql.append(alias).append(".");
+                        }
+
                         sql.append(column);
-                    } else {
-                        sql.append(alias).append(".").append(column);
+                        index++;
+                    }
+                }
+            }
+
+            if (null != extraSelectColumns) {
+                for (String column : extraSelectColumns) {
+                    if (Arrays2.containsIgnoreCase(columns, column)) {
+                        continue;
                     }
 
+                    if (mayEmbedded) {
+                        FieldMapping fm = em.tryGetFieldMappingByColumn(column);
+                        if (null != fm && fm.isEmbedded()) {
+                            embedded.add(fm);
+                            continue;
+                        }
+                    }
+
+                    if (index > 0) {
+                        sql.append(',');
+                    }
+                    sql.append(alias).append('.').append(column);
                     index++;
                 }
             }
-            if (null != extraSelectColumns) {
-                for(String column : extraSelectColumns) {
-                    if(Arrays2.containsIgnoreCase(columns, column)) {
-                        continue;
-                    }
-                    sql.append(',');
-                    sql.append(alias).append('.').append(column);
-                }
-            }
+
             if (null != extraSelectItems) {
                 for (String item : extraSelectItems) {
-                    sql.append(",");
+                    if (mayEmbedded) {
+                        FieldMapping fm = em.tryGetFieldMapping(item);
+                        if (null != fm && fm.isEmbedded()) {
+                            embedded.add(fm);
+                            continue;
+                        }
+                    }
+
+                    if (index > 0) {
+                        sql.append(",");
+                    }
                     sql.append(item);
+                    index++;
                 }
             }
+
+            if (!embeddedColumnExists && embedded.size() > 0) {
+                if (index > 0) {
+                    sql.append(',');
+                }
+
+                final JsonColumnSupport jcs = dialect().getJsonColumnSupport();
+                if (null != jcs && jcs.supportsSelectByKeys()) {
+                    final String column = em.getEmbeddedColumnName();
+                    for (int i = 0; i < embedded.size(); i++) {
+                        if (i > 0) {
+                            sql.append(',');
+                        }
+                        final FieldMapping fm = embedded.get(i);
+                        sql.append("```").append(alias).append('.')
+                                .append(jcs.getSelectItemExpr(column, fm.getFieldName()))
+                                .append("```")
+                                .append(" as ").append(fm.getFieldName());
+                    }
+                } else {
+                    sql.append(em.getEmbeddedColumnName());
+                }
+            }
+
             return this;
+        }
+
+        protected boolean needAppendAlias(String column) {
+            if (column.contains(".") || column.contains("(")) {
+                return false;
+            }
+
+            if (column.contains(" ")) {
+                String[] items = column.split(" ");
+                if (items.length != 3 || !items[1].equalsIgnoreCase("as")) {
+                    return false;
+                }
+                if (!SIMPLE_COLUMN_PATTERN.matcher(items[0]).matches()) {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         protected SqlBuilder from() {
             sql.append(" from ");
             if (!Strings.isEmpty(sqlView)) {
                 sql.append("(").append(sqlView).append(")");
+            } else if (em.hasQueryView()) {
+                sql.append("(").append(em.getQueryView()).append(")");
             } else {
                 sql.append(em.getEntityName());
             }

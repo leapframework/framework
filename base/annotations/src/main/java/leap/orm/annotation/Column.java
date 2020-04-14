@@ -103,6 +103,11 @@ public @interface Column {
      */
     boolean secondary() default false;
 
+	/**
+	 * Is a embedded column?
+	 */
+	boolean embedded() default  false;
+
     /**
      * Sets the serialize format.
      */
