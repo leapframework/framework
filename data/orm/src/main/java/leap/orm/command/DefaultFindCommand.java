@@ -34,7 +34,6 @@ public class DefaultFindCommand<T> extends AbstractEntityDaoCommand implements F
     protected final Class<T>           resultClass;
     protected final SqlCommand         sqlCommand;
     protected final Object             id;
-    protected final Params             idParameters;
     protected final boolean            checkNotFound;
     protected final EntityEventHandler eventHandler;
 
@@ -44,7 +43,6 @@ public class DefaultFindCommand<T> extends AbstractEntityDaoCommand implements F
         this.resultClass = resultClass;
         this.sqlCommand = metadata.getSqlCommand(em.getEntityName(), SqlCommand.FIND_COMMAND_NAME);
         this.id = id;
-        this.idParameters = context.getParameterStrategy().createIdParameters(context, em, id);
         this.checkNotFound = checkNotFound;
         this.eventHandler = context.getEntityEventHandler();
     }
@@ -68,7 +66,14 @@ public class DefaultFindCommand<T> extends AbstractEntityDaoCommand implements F
     public T execute() throws TooManyRecordsException {
         ResultSetReader<T> reader = ResultSetReaders.forSingleEntity(context, this, em, resultClass);
 
-        T result = sqlCommand.executeQuery(this, idParameters, reader);
+        T result;
+
+        if(em.hasDynamicFields()) {
+            result = dao.createCriteriaQuery(em, resultClass).whereById(id).firstOrNull();
+        }else {
+            final Params idParams = context.getParameterStrategy().createIdParameters(context, em, id);
+            result = sqlCommand.executeQuery(this, idParams, reader);
+        }
 
         if (null == result && checkNotFound) {
             throw new RecordNotFoundException("Record not found for the id '" + id + "'");

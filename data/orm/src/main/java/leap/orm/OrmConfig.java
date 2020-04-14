@@ -144,9 +144,9 @@ public interface OrmConfig {
     QueryFilterConfig getQueryFilterConfig();
 
     /**
-     * Returns the {@link EmbeddedColumnConfig}.
+     * Returns the {@link EmbeddingColumnConfig}.
      */
-    EmbeddedColumnConfig getEmbeddedColumnConfig();
+    EmbeddingColumnConfig getEmbeddingColumnConfig();
 
     /**
      * zero means no limitation.
@@ -248,7 +248,7 @@ public interface OrmConfig {
 
     }
 
-    interface EmbeddedColumnConfig {
+    interface EmbeddingColumnConfig {
 
         /**
          * Returns the default column name.

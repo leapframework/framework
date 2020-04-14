@@ -38,6 +38,7 @@ public class EntityMapping extends ExtensibleBase {
     private static final Log log = LogFactory.get(EntityMapping.class);
 
     private static final ThreadLocal<List<EntityListeners>> CONTEXT_LISTENERS = new ThreadLocal<>();
+    private static final ThreadLocal<DynamicAndMapping>     CONTEXT_DYNAMIC   = new ThreadLocal<>();
 
     public static List<EntityListeners> getContextListeners() {
         return CONTEXT_LISTENERS.get();
@@ -77,6 +78,48 @@ public class EntityMapping extends ExtensibleBase {
         }
     }
 
+    public static void withDynamic(Dynamic dynamic, Runnable func) {
+        try {
+            CONTEXT_DYNAMIC.set(new DynamicAndMapping(dynamic));
+            func.run();
+        } finally {
+            CONTEXT_DYNAMIC.remove();
+        }
+    }
+
+    public static <T> T withDynamic(Dynamic dynamic, Supplier<T> func) {
+        try {
+            CONTEXT_DYNAMIC.set(new DynamicAndMapping(dynamic));
+            return func.get();
+        } finally {
+            CONTEXT_DYNAMIC.remove();
+        }
+    }
+
+    public static void tryWithDynamic(Dynamic dynamic, Runnable func) {
+        if (null == dynamic) {
+            func.run();
+        } else {
+            withDynamic(dynamic, func);
+        }
+    }
+
+    public static <T> T tryWithDynamic(Dynamic dynamic, Supplier<T> func) {
+        if (null == dynamic) {
+            return func.get();
+        } else {
+            return withDynamic(dynamic, func);
+        }
+    }
+
+    public static void setDynamic(Dynamic dynamic) {
+        CONTEXT_DYNAMIC.set(new DynamicAndMapping(dynamic));
+    }
+
+    public static void removeDynamic() {
+        CONTEXT_DYNAMIC.remove();
+    }
+
     protected final EntityMappingBuilder       builder;
     protected final String                     entityName;
     protected final String                     dynamicTableName;
@@ -86,7 +129,7 @@ public class EntityMapping extends ExtensibleBase {
     protected final BeanType                   beanType;
     protected final DbTable                    table;
     protected final DbTable                    secondaryTable;
-    protected final DbColumn                   embeddedColumn;
+    protected final DbColumn                   embeddingColumn;
     protected final String                     queryView;
     protected final FieldMapping[]             fieldMappings;
     protected final FieldMapping[]             filterFieldMappings;
@@ -116,6 +159,8 @@ public class EntityMapping extends ExtensibleBase {
     protected final EntityListeners     listeners;
     protected final boolean             queryFilterEnabled;
     protected final boolean             autoValidate;
+    protected final boolean             dynamicEnabled;
+    protected final Dynamic             dynamic;
     protected final boolean             logical;
     protected final boolean             remote;
     protected final RemoteSettings      remoteSettings;
@@ -137,7 +182,7 @@ public class EntityMapping extends ExtensibleBase {
     public EntityMapping(EntityMappingBuilder builder,
                          String entityName, String wideEntityName, String dynamicTableName,
                          Class<?> entityClass, Class<?> extendedEntityClass, DbTable table, DbTable secondaryTable,
-                         DbColumn embeddedColumn,
+                         DbColumn embeddingColumn,
                          String queryView, List<FieldMapping> fieldMappings,
                          InsertHandler insertHandler, UpdateHandler updateHandler, DeleteHandler deleteHandler,
                          EntityExecutionInterceptor insertInterceptor, EntityExecutionInterceptor updateInterceptor,
@@ -147,7 +192,8 @@ public class EntityMapping extends ExtensibleBase {
                          List<RelationMapping> relationMappings,
                          RelationProperty[] relationProperties,
                          boolean autoCreateTable, boolean queryFilterEnabled, boolean autoValidate,
-                         boolean logical, boolean remote, RemoteSettings remoteSettings,UnionSettings unionSettings,
+                         boolean dynamicEnabled, Dynamic dynamic,
+                         boolean logical, boolean remote, RemoteSettings remoteSettings, UnionSettings unionSettings,
                          Map<String, String> groupByExprs, Map<String, String> selectExprs, Map<String, String> orderByExprs,
                          Map<String, String> filtersExprs, Map<String, String> aggregatesExprs,
                          EntityListeners listeners) {
@@ -160,6 +206,10 @@ public class EntityMapping extends ExtensibleBase {
             throw new IllegalStateException("Remote settings must not be null for remote entity '" + entityName + "'");
         }
 
+        if (null != dynamic) {
+            dynamic.getFieldMappings().forEach(fieldMappings::add);
+        }
+
         this.builder = builder;
         this.entityName = entityName;
         this.wideEntityName = wideEntityName;
@@ -169,7 +219,7 @@ public class EntityMapping extends ExtensibleBase {
         this.beanType = null == entityClass ? null : BeanType.of(entityClass);
         this.table = table;
         this.secondaryTable = secondaryTable;
-        this.embeddedColumn = embeddedColumn;
+        this.embeddingColumn = embeddingColumn;
         this.queryView = queryView;
         this.insertHandler = insertHandler;
         this.updateHandler = updateHandler;
@@ -203,6 +253,8 @@ public class EntityMapping extends ExtensibleBase {
         this.autoCreateTable = autoCreateTable;
         this.queryFilterEnabled = queryFilterEnabled;
         this.autoValidate = autoValidate;
+        this.dynamicEnabled = dynamicEnabled;
+        this.dynamic = dynamic;
         this.logical = logical;
         this.remote = remote;
         this.remoteSettings = remoteSettings;
@@ -226,9 +278,32 @@ public class EntityMapping extends ExtensibleBase {
             throw new IllegalStateException("Entity with secondary table must has one key field only");
         }
 
-        if(null != unionSettings) {
+        if (null != unionSettings) {
             this.unionSettings.initTypeAndEntityMap();
         }
+    }
+
+    /**
+     * Returns the {@link EntityMapping} with the {@link Dynamic} or self if no {@link Dynamic}.
+     */
+    public EntityMapping withDynamic() {
+        if (null != dynamic) {
+            return this;
+        }
+
+        if (dynamicEnabled) {
+            DynamicAndMapping dynamicAndMapping = CONTEXT_DYNAMIC.get();
+            if (null != dynamicAndMapping) {
+                EntityMapping mapping = dynamicAndMapping.mapping;
+                if (null == mapping) {
+                    mapping = builder.build(dynamicAndMapping.dynamic);
+                    dynamicAndMapping.mapping = mapping;
+                }
+                return mapping;
+            }
+        }
+
+        return this;
     }
 
     /**
@@ -337,17 +412,17 @@ public class EntityMapping extends ExtensibleBase {
     }
 
     /**
-     * Returns the embedded column name or null.
+     * Returns the embedding column name or null.
      */
-    public String getEmbeddedColumnName() {
-        return null == embeddedColumn? null : embeddedColumn.getName();
+    public String getEmbeddingColumnName() {
+        return null == embeddingColumn ? null : embeddingColumn.getName();
     }
 
     /**
      * Returns the column that stores embedded fields.
      */
-    public DbColumn getEmbeddedColumn() {
-        return embeddedColumn;
+    public DbColumn getEmbeddingColumn() {
+        return embeddingColumn;
     }
 
     /**
@@ -442,11 +517,34 @@ public class EntityMapping extends ExtensibleBase {
         return null;
     }
 
+    public boolean hasEmbeddedFieldMappings() {
+        EntityMapping em = withDynamic();
+        if (em == this) {
+            return embeddedFieldMappings.length > 0;
+        } else {
+            return em.hasEmbeddedFieldMappings();
+        }
+    }
+
+    public FieldMapping[] getEmbeddedFieldMappings() {
+        EntityMapping em = withDynamic();
+        if (em == this) {
+            return embeddedFieldMappings;
+        } else {
+            return em.getEmbeddedFieldMappings();
+        }
+    }
+
     /**
      * Returns all the fields of entity.
      */
     public FieldMapping[] getFieldMappings() {
-        return fieldMappings;
+        EntityMapping em = withDynamic();
+        if (em == this) {
+            return fieldMappings;
+        } else {
+            return em.getFieldMappings();
+        }
     }
 
     /**
@@ -509,6 +607,20 @@ public class EntityMapping extends ExtensibleBase {
     }
 
     /**
+     * Is the {@link Dynamic} enabled.
+     */
+    public boolean isDynamicEnabled() {
+        return dynamicEnabled;
+    }
+
+    /**
+     * Returns <code>true</code> if the field mappings contains dynamic fields.
+     */
+    public boolean hasDynamicFields() {
+        return null != dynamic && dynamic.getFieldMappings().size() > 0;
+    }
+
+    /**
      * Is a logical entity?
      */
     public boolean isLogical() {
@@ -547,8 +659,12 @@ public class EntityMapping extends ExtensibleBase {
     }
 
     public FieldMapping tryGetFieldMapping(String fieldName) {
-        Args.notNull(fieldName, "field name");
-        return fieldNameToFields.get(fieldName.toLowerCase());
+        EntityMapping em = withDynamic();
+        if (em == this) {
+            return fieldNameToFields.get(fieldName.toLowerCase());
+        } else {
+            return em.tryGetFieldMapping(fieldName);
+        }
     }
 
     /**
@@ -567,8 +683,12 @@ public class EntityMapping extends ExtensibleBase {
     }
 
     public FieldMapping tryGetFieldMappingByColumn(String columnName) {
-        Args.notNull(columnName, "column name");
-        return columnNameToFields.get(columnName.toLowerCase());
+        EntityMapping em = withDynamic();
+        if (em == this) {
+            return columnNameToFields.get(columnName.toLowerCase());
+        } else {
+            return em.tryGetFieldMappingByColumn(columnName);
+        }
     }
 
     public FieldMapping getFieldMappingByMetaName(ReservedMetaFieldName metaFieldName) throws ObjectNotFoundException {
@@ -624,14 +744,6 @@ public class EntityMapping extends ExtensibleBase {
 
     public FieldMapping[] getFilterFieldMappings() {
         return filterFieldMappings;
-    }
-
-    public boolean hasEmbeddedFieldMappings() {
-        return embeddedFieldMappings.length > 0;
-    }
-
-    public FieldMapping[] getEmbeddedFieldMappings() {
-        return embeddedFieldMappings;
     }
 
     public FieldMapping getOptimisticLockField() {
@@ -924,5 +1036,18 @@ public class EntityMapping extends ExtensibleBase {
     @Override
     public String toString() {
         return "Entity[name=" + getEntityName() + ",table=" + getTableName() + ",class=" + (entityClass == null ? "null" : entityClass.getName()) + "]";
+    }
+
+    public interface Dynamic {
+        Collection<FieldMapping> getFieldMappings();
+    }
+
+    private static class DynamicAndMapping {
+        private final Dynamic       dynamic;
+        private       EntityMapping mapping;
+
+        public DynamicAndMapping(Dynamic dynamic) {
+            this.dynamic = dynamic;
+        }
     }
 }

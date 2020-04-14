@@ -21,13 +21,13 @@ public class ResultColumnMapping {
 	
 	protected String        columnName;
 	protected String        columnLabel;
-	protected String		aliasName;
+	protected String        aliasName;
 	protected int           columnType;
     protected String        resultName;
     protected String        normalizedName; //the normalized name of result name.
-    protected EntityMapping	entityMapping;
+    protected EntityMapping entityMapping;
     protected FieldMapping  fieldMapping;
-    protected DbColumn		embeddedColumn;
+    protected DbColumn      embeddingColumn;
 
 	protected ResultColumnMapping() {
 
@@ -97,15 +97,15 @@ public class ResultColumnMapping {
 		this.aliasName = aliasName;
 	}
 
-	public boolean isEmbeddedColumn() {
-		return null != embeddedColumn;
+	public boolean hasEmbeddingColumn() {
+		return null != embeddingColumn;
 	}
 
-	public DbColumn getEmbeddedColumn() {
-		return embeddedColumn;
+	public DbColumn getEmbeddingColumn() {
+		return embeddingColumn;
 	}
 
-	public void setEmbeddedColumn(DbColumn embeddedColumn) {
-		this.embeddedColumn = embeddedColumn;
+	public void setEmbeddingColumn(DbColumn embeddingColumn) {
+		this.embeddingColumn = embeddingColumn;
 	}
 }

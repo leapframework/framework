@@ -161,7 +161,7 @@ public class DefaultSqlFactory implements SqlFactory {
             }
         }
 
-        addInsertEmbeddedColumn(context, em, embedded, index, sql, values);
+        addInsertEmbeddingColumn(context, em, embedded, index, sql, values);
 
         if (index == 0) {
             log.warn("Cannot create insert sql for entity '{}' : no insert columns", em.getEntityName());
@@ -231,7 +231,7 @@ public class DefaultSqlFactory implements SqlFactory {
             }
         }
 
-        addInsertEmbeddedColumn(context, em, embedded, index, sql, values);
+        addInsertEmbeddingColumn(context, em, embedded, index, sql, values);
 
         sql.append(") values (").append(values).append(")");
 
@@ -292,7 +292,7 @@ public class DefaultSqlFactory implements SqlFactory {
         }
 
         if (embedded.size() > 0) {
-            addUpdateEmbeddedColumn(context, em, embedded, index, sql);
+            addUpdateEmbeddingColumn(context, em, embedded, index, sql);
             index++;
         }
 
@@ -369,7 +369,7 @@ public class DefaultSqlFactory implements SqlFactory {
         }
 
         if (embedded.size() > 0) {
-            addUpdateEmbeddedColumn(context, em, embedded, index, sql);
+            addUpdateEmbeddingColumn(context, em, embedded, index, sql);
             index++;
         }
 
@@ -557,14 +557,14 @@ public class DefaultSqlFactory implements SqlFactory {
             if (!Strings.isEmpty(alias)) {
                 s.append(alias).append('.');
             }
-            s.append(em.getEmbeddedColumn().getName());
+            s.append(em.getEmbeddingColumn().getName());
         }
 
         return s.toString();
     }
 
-	protected void addInsertEmbeddedColumn(MetadataContext context, EntityMapping em, List<FieldMapping> embedded,
-										   int index, StringBuilder sql, StringBuilder values) {
+	protected void addInsertEmbeddingColumn(MetadataContext context, EntityMapping em, List<FieldMapping> embedded,
+                                            int index, StringBuilder sql, StringBuilder values) {
 		if (embedded.isEmpty()) {
 			return;
 		}
@@ -574,7 +574,7 @@ public class DefaultSqlFactory implements SqlFactory {
 			values.append(",");
 		}
 
-		final String   column = em.getEmbeddedColumn().getName();
+		final String   column = em.getEmbeddingColumn().getName();
 		final String[] fields = embedded.stream().map(f -> f.getFieldName()).toArray(String[]::new);
 
 		final JsonColumnSupport jcs = context.getDb().getDialect().getJsonColumnSupport();
@@ -589,7 +589,7 @@ public class DefaultSqlFactory implements SqlFactory {
 		}
 	}
 
-	protected void addUpdateEmbeddedColumn(MetadataContext context, EntityMapping em, List<FieldMapping> embedded, int index, StringBuilder sql) {
+	protected void addUpdateEmbeddingColumn(MetadataContext context, EntityMapping em, List<FieldMapping> embedded, int index, StringBuilder sql) {
 		if (embedded.isEmpty()) {
 			return;
 		}
@@ -598,7 +598,7 @@ public class DefaultSqlFactory implements SqlFactory {
 			sql.append(",");
 		}
 
-		final String   column = em.getEmbeddedColumn().getName();
+		final String   column = em.getEmbeddingColumn().getName();
 		final String[] fields = embedded.stream().map(f -> f.getFieldName()).toArray(String[]::new);
 
 		final JsonColumnSupport jcs = context.getDb().getDialect().getJsonColumnSupport();

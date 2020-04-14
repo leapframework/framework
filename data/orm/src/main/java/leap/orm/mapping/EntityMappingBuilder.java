@@ -46,7 +46,7 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
     protected DbTableBuilder      secondaryTable;
     protected String              tablePrefix;
     protected String              dynamicTableName;
-    protected DbColumnBuilder     embeddedColumn;
+    protected DbColumnBuilder     embeddingColumn;
     protected boolean             tableNameDeclared;
     protected boolean             idDeclared;
     protected boolean             autoCreateTable;
@@ -54,6 +54,7 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
     protected Boolean             queryFilterEnabled;
     protected boolean             autoValidate;
     protected String              queryView;
+    protected boolean             dynamicEnabled;
     protected boolean             logical;
     protected boolean             remote;
     protected RemoteSettings      remoteSettings;
@@ -64,18 +65,18 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
     protected Map<String, String> filtersExprs    = new SimpleCaseInsensitiveMap<>();
     protected Map<String, String> aggregatesExprs = new SimpleCaseInsensitiveMap<>();
 
-    protected List<FieldMappingBuilder>    fieldMappings      = new ArrayList<>();
-    protected InsertHandler                insertHandler;
-    protected UpdateHandler                updateHandler;
-    protected DeleteHandler                deleteHandler;
-    protected EntityExecutionInterceptor   insertInterceptor;
-    protected EntityExecutionInterceptor   updateInterceptor;
-    protected EntityExecutionInterceptor   deleteInterceptor;
-    protected EntityExecutionInterceptor   findInterceptor;
-    protected Class<? extends Model>       modelClass;
-    protected DbTable                      physicalTable;
-    protected List<EntityValidator>        validators;
-    protected List<RelationMappingBuilder> relationMappings   = new ArrayList<>();
+    protected List<FieldMappingBuilder>     fieldMappings      = new ArrayList<>();
+    protected InsertHandler                 insertHandler;
+    protected UpdateHandler                 updateHandler;
+    protected DeleteHandler                 deleteHandler;
+    protected EntityExecutionInterceptor    insertInterceptor;
+    protected EntityExecutionInterceptor    updateInterceptor;
+    protected EntityExecutionInterceptor    deleteInterceptor;
+    protected EntityExecutionInterceptor    findInterceptor;
+    protected Class<? extends Model>        modelClass;
+    protected DbTable                       physicalTable;
+    protected List<EntityValidator>         validators;
+    protected List<RelationMappingBuilder>  relationMappings   = new ArrayList<>();
     protected List<RelationPropertyBuilder> relationProperties = new ArrayList<>();
     protected List<UniqueKeyBuilder>        keys               = new ArrayList<>();
     protected EntityListenersBuilder        listeners          = new EntityListenersBuilder();
@@ -239,12 +240,12 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
         return this;
     }
 
-    public DbColumnBuilder getEmbeddedColumn() {
-        return embeddedColumn;
+    public DbColumnBuilder getEmbeddingColumn() {
+        return embeddingColumn;
     }
 
-    public void setEmbeddedColumn(DbColumnBuilder embeddedColumn) {
-        this.embeddedColumn = embeddedColumn;
+    public void setEmbeddingColumn(DbColumnBuilder embeddingColumn) {
+        this.embeddingColumn = embeddingColumn;
     }
 
     public Boolean getQueryFilterEnabled() {
@@ -273,6 +274,14 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
 
     public void setQueryView(String queryView) {
         this.queryView = queryView;
+    }
+
+    public boolean isDynamicEnabled() {
+        return dynamicEnabled;
+    }
+
+    public void setDynamicEnabled(boolean dynamicEnabled) {
+        this.dynamicEnabled = dynamicEnabled;
     }
 
     public boolean isLogical() {
@@ -694,35 +703,38 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
     public EntityMapping build() {
         Collections.sort(fieldMappings, Comparators.ORDERED_COMPARATOR);
 
-        if(remote) {
+        if (remote) {
             logical = true;
         }
 
-        if(fieldMappings.stream().anyMatch(f -> Boolean.TRUE.equals(f.getEmbedded()))) {
-            if(null == embeddedColumn) {
-                throw new IllegalStateException("The embedded column must be specified at entity '" + entityName + "'");
+        if (fieldMappings.stream().anyMatch(f -> Boolean.TRUE.equals(f.getEmbedded()))) {
+            if (null == embeddingColumn) {
+                throw new IllegalStateException("The embedding column must be specified at entity '" + entityName + "'");
             }
         }
 
+        return build(null);
+    }
+
+    protected EntityMapping build(EntityMapping.Dynamic dynamic) {
         try {
-            final DbColumn embeddedColumn = null != this.embeddedColumn ? this.embeddedColumn.build() : null;
+            final DbColumn embeddingColumn = null != this.embeddingColumn ? this.embeddingColumn.build() : null;
 
             List<FieldMapping>    fields         = Builders.buildList(fieldMappings);
             List<RelationMapping> relations      = Builders.buildList(relationMappings);
-            DbTable               table          = buildTable(fields, relations, embeddedColumn);
+            DbTable               table          = buildTable(fields, relations, embeddingColumn);
             DbTable               secondaryTable = buildSecondaryTable(fields, relations);
 
             EntityMapping em =
                     new EntityMapping(this,
                             entityName, wideEntityName, dynamicTableName, entityClass, extendedEntityClass,
-                            table, secondaryTable, embeddedColumn, queryView, fields,
+                            table, secondaryTable, embeddingColumn, queryView, fields,
                             insertHandler, updateHandler, deleteHandler,
                             insertInterceptor, updateInterceptor, deleteInterceptor, findInterceptor,
-                            modelClass, validators,
-                            relations,
+                            modelClass, validators, relations,
                             Builders.buildArray(relationProperties, new RelationProperty[0]),
                             autoCreateTable, queryFilterEnabled == null ? false : queryFilterEnabled, autoValidate,
-                            logical, remote, remoteSettings, unionSettings,
+                            dynamicEnabled, dynamic, logical, remote, remoteSettings, unionSettings,
                             groupByExprs, selectExprs, orderByExprs, filtersExprs, aggregatesExprs,
                             listeners.build());
 
@@ -739,7 +751,7 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
         return new DbSchemaObjectName(getTableCatalog(), getTableSchema(), getTableNameWithPrefix());
     }
 
-    protected DbTable buildTable(List<FieldMapping> fields, List<RelationMapping> relations, DbColumn embeddedColumn) {
+    protected DbTable buildTable(List<FieldMapping> fields, List<RelationMapping> relations, DbColumn embeddingColumn) {
         DbTableBuilder table = getTable();
 
         if (!Strings.isEmpty(tablePrefix)) {
@@ -748,7 +760,7 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
 
         //columns
         for (FieldMapping fm : fields) {
-            if(fm.isEmbedded()) {
+            if (fm.isEmbedded()) {
                 continue;
             }
 
@@ -757,8 +769,8 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
             }
         }
 
-        if(null != embeddedColumn && table.findColumn(embeddedColumn.getName()) == null) {
-            table.addColumn(embeddedColumn);
+        if (null != embeddingColumn && table.findColumn(embeddingColumn.getName()) == null) {
+            table.addColumn(embeddingColumn);
         }
 
         //uniques

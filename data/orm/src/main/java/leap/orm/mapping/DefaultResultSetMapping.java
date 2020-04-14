@@ -105,8 +105,8 @@ public class DefaultResultSetMapping implements ResultSetMapping {
 					cm.setResultName(fm.getFieldName());
 					cm.setNormalizedName(fm.getFieldName());
                 }
-			}else if(cm.getColumnName().equalsIgnoreCase(primaryEntityMapping.getEmbeddedColumnName())) {
-				cm.setEmbeddedColumn(primaryEntityMapping.getEmbeddedColumn());
+			}else if(cm.getColumnName().equalsIgnoreCase(primaryEntityMapping.getEmbeddingColumnName())) {
+				cm.setEmbeddingColumn(primaryEntityMapping.getEmbeddingColumn());
 			}else {
                 if(null == cm.getResultName()) {
                     String name = Strings.firstNotEmpty(cm.getColumnLabel(), cm.getColumnName());

@@ -17,12 +17,18 @@
 
 package leap.orm.tested;
 
+import leap.lang.beans.DynaProps;
 import leap.orm.annotation.Column;
+import leap.orm.annotation.EnableDynamic;
 import leap.orm.annotation.Entity;
 import leap.orm.annotation.Id;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 @Entity
-public class EmdEntity {
+@EnableDynamic
+public class EmdEntity implements DynaProps {
 
     @Id
     protected String id;
@@ -30,11 +36,13 @@ public class EmdEntity {
     @Column
     protected String name;
 
-    @Column(embedded = true)
+    @Column(embedding = true)
     protected String c1;
 
-    @Column(embedded = true)
+    @Column(embedding = true)
     protected Integer c2;
+
+    protected Map<String, Object> dynaProperties = new LinkedHashMap<>();
 
     public String getId() {
         return id;
@@ -66,5 +74,19 @@ public class EmdEntity {
 
     public void setC2(Integer c2) {
         this.c2 = c2;
+    }
+
+    public <T> T get(String name) {
+        return (T)dynaProperties.get(name);
+    }
+
+    @Override
+    public Map<String, Object> getDynaProperties() {
+        return dynaProperties;
+    }
+
+    @Override
+    public void setDynaProperties(Map<String, Object> dynaProperties) {
+        this.dynaProperties = dynaProperties;
     }
 }

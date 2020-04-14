@@ -17,7 +17,6 @@ package leap.orm.dao;
 
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
-import leap.core.annotation.M;
 import leap.core.exception.EmptyRecordsException;
 import leap.core.exception.TooManyRecordsException;
 import leap.core.ioc.PreInjectBean;
@@ -62,12 +61,11 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 
     private final Readonly _readonly = new Readonly("this dao aleady inited,can not change the internal state");
 
-    protected @Inject
-    @M
-    EntityValidator   entityValidator;
-    protected @Inject
-    @M
-    ValidationManager validationManager;
+    @Inject
+    protected EntityValidator entityValidator;
+
+    @Inject
+    protected ValidationManager validationManager;
 
     protected SqlContext simpleSqlContext = new SimpleSqlContext();
 

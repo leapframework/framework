@@ -172,15 +172,15 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
                         map.putAll(updateEmbedded);
                         return primaryCommand.executeUpdate(this, map);
                     }else if(null != jcs) {
-                        map.put(em.getEmbeddedColumnName(), JSON.stringify(updateEmbedded));
+                        map.put(em.getEmbeddingColumnName(), JSON.stringify(updateEmbedded));
                         return primaryCommand.executeUpdate(this, map);
                     }else {
                         return dao.doTransaction((s) -> {
                             String dbEmbedded =
-                                    dao.createCriteriaQuery(em).select(em.getEmbeddedColumnName()).whereById(id).forUpdate()
+                                    dao.createCriteriaQuery(em).select(em.getEmbeddingColumnName()).whereById(id).forUpdate()
                                             .scalarOrNull().getString();
                             Map<String, Object> mergedEmbedded = mergeEmbeddedFields(updateEmbedded, dbEmbedded);
-                            map.put(em.getEmbeddedColumnName(), JSON.stringify(mergedEmbedded));
+                            map.put(em.getEmbeddingColumnName(), JSON.stringify(mergedEmbedded));
                             return primaryCommand.executeUpdate(this, map);
                         });
                     }
@@ -239,7 +239,7 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
                 prepareOptimisticLock(fm);
             } else {
                 Object value = entity.get(fm.getFieldName());
-                if (null == value) {
+                if (null == value && fm.isUpdate()) {
                     Expression expression = fm.getUpdateValue();
                     if (null != expression) {
                         value = expression.getValue(entity);
@@ -283,7 +283,7 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
     }
 
     protected Map<String, Object> extractEmbeddedFields(Map<String, Object> map) {
-        if(null == em.getEmbeddedColumn() || !em.hasEmbeddedFieldMappings()) {
+        if(null == em.getEmbeddingColumn() || !em.hasEmbeddedFieldMappings()) {
             return null;
         }
 

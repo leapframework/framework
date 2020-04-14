@@ -139,9 +139,14 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
             ex.handler.processUpdateProperties(context, id, properties);
         }
 
+        ModelDynamic dynamic = ex.resolveUpdateDynamic(context, id, properties);
         int affected;
-
         try {
+            if(null != dynamic) {
+                context.setDynamic(dynamic);
+                EntityMapping.setDynamic(dynamic.getEntityDynamic());
+            }
+
             ex.preUpdate(context, id, properties);
 
             if (!em.isRemoteRest()) {
@@ -171,6 +176,10 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
         }catch (Throwable e) {
             ex.completeUpdate(context, null, e);
             throw e;
+        }finally {
+            if(null != dynamic) {
+                EntityMapping.removeDynamic();
+            }
         }
     }
 
@@ -215,7 +224,7 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
         for (Map.Entry<String, Object> entry : properties.entrySet()) {
             String name = entry.getKey();
 
-            MApiProperty p = am.tryGetProperty(name);
+            MApiProperty p = tryGetProperty(context, am, name);
 
             if (null == p) {
                 if (partial) {

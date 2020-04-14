@@ -20,6 +20,8 @@ public class DefaultRelationExecutionContext extends DefaultModelExecutionContex
 
     private final RelationExecutorContext executorContext;
 
+    protected ModelDynamic dynamic;
+
     public DefaultRelationExecutionContext(RelationExecutorContext executorContext) {
         super(executorContext);
         this.executorContext = executorContext;
@@ -28,5 +30,15 @@ public class DefaultRelationExecutionContext extends DefaultModelExecutionContex
     @Override
     public RelationExecutorContext getExecutorContext() {
         return executorContext;
+    }
+
+    @Override
+    public ModelDynamic getDynamic() {
+        return dynamic;
+    }
+
+    @Override
+    public void setDynamic(ModelDynamic dynamic) {
+        this.dynamic = dynamic;
     }
 }

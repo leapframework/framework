@@ -99,101 +99,113 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
             ex.handler.processCreationRecord(context, properties);
         }
 
-        Map<RelationProperty, Object[]> relationProperties = new LinkedHashMap<>();
-
-        Set<String> removes = new HashSet<>();
-
-        for (Map.Entry<String, Object> entry : properties.entrySet()) {
-            String       name = entry.getKey();
-            MApiProperty p    = am.tryGetProperty(name);
-
-            if (null == p) {
-                if (ex.handleCreationPropertyNotFound(context, name, entry.getValue(), removes)) {
-                    continue;
-                }
-                throw new BadRequestException("Property '" + name + "' not exists!");
+        final ModelDynamic dynamic = ex.resolveCreateDynamic(context, properties);
+        try {
+            if(null != dynamic) {
+                context.setDynamic(dynamic);
+                EntityMapping.setDynamic(dynamic.getEntityDynamic());
             }
 
-            if (p.isNotCreatableExplicitly()) {
-                if (null == properties.get(name)) {
-                    removes.add(name);
-                } else {
-                    if (ex.handleCreationPropertyReadonly(context, name, entry.getValue(), removes)) {
+            Map<RelationProperty, Object[]> relationProperties = new LinkedHashMap<>();
+
+            Set<String> removes = new HashSet<>();
+
+            for (Map.Entry<String, Object> entry : properties.entrySet()) {
+                String       name = entry.getKey();
+                MApiProperty p    = tryGetProperty(context, am, name);
+
+                if (null == p) {
+                    if (ex.handleCreationPropertyNotFound(context, name, entry.getValue(), removes)) {
                         continue;
                     }
-                    throw new BadRequestException("Property '" + name + "' is not creatable!");
+                    throw new BadRequestException("Property '" + name + "' not exists!");
                 }
+
+                if (p.isNotCreatableExplicitly()) {
+                    if (null == properties.get(name)) {
+                        removes.add(name);
+                    } else {
+                        if (ex.handleCreationPropertyReadonly(context, name, entry.getValue(), removes)) {
+                            continue;
+                        }
+                        throw new BadRequestException("Property '" + name + "' is not creatable!");
+                    }
+                }
+
+                if (null != p.getMetaProperty() && p.getMetaProperty().isReference()) {
+                    v = properties.get(name);
+                    if (null == v) {
+                        continue;
+                    }
+
+                    RelationProperty rp = em.getRelationProperty(name);
+
+                    Enumerable e = Enumerables.tryOf(v);
+                    if (null == e) {
+                        relationProperties.put(rp, new Object[]{v});
+                    } else {
+                        relationProperties.put(rp, e.toArray());
+                    }
+                }
+
+                tryHandleSpecialValue(entry, p);
             }
 
-            if (null != p.getMetaProperty() && p.getMetaProperty().isReference()) {
-                v = properties.get(name);
-                if (null == v) {
-                    continue;
-                }
+            //Removes the not creatable properties.
+            removes.forEach(properties::remove);
 
-                RelationProperty rp = em.getRelationProperty(name);
-
-                Enumerable e = Enumerables.tryOf(v);
-                if (null == e) {
-                    relationProperties.put(rp, new Object[]{v});
-                } else {
-                    relationProperties.put(rp, e.toArray());
-                }
+            Errors errors = dao.validate(em, properties);
+            if (!errors.isEmpty()) {
+                throw new ValidationException(errors);
             }
 
-            tryHandleSpecialValue(entry, p);
-        }
-
-        //Removes the not creatable properties.
-        removes.forEach(properties::remove);
-
-        Errors errors = dao.validate(em, properties);
-        if (!errors.isEmpty()) {
-            throw new ValidationException(errors);
-        }
-
-        ex.preCreateRecord(context, properties);
-        if (null != ex.handler) {
-            ex.handler.preCreateRecord(context, properties);
-        }
-
-        CreationImpl creation = new CreationImpl(id, properties, relationProperties);
-
-        Object createdId = null;
-        Record record    = null;
-
-        if (!em.isRemoteRest()) {
-            createdId = em.withContextListeners(listeners, () -> {
-                if (null != createOneHandler) {
-                    return createOneHandler.create(context, creation);
-                } else {
-                    return createByDb(creation);
-                }
-            });
-
-            if(null != createdId) {
-                record = dao.find(em, createdId);
+            ex.preCreateRecord(context, properties);
+            if (null != ex.handler) {
+                ex.handler.preCreateRecord(context, properties);
             }
-        } else {
-            RestResource restResource =
-                    restResourceFactory.createResource(dao.getOrmContext(), em);
-            record = restResource.create(properties);
-            createdId = Mappings.getId(em, record);
-        }
 
-        if (null == createdId) {
-            return new CreateOneResult(null, null);
-        }
+            CreationImpl creation = new CreationImpl(id, properties, relationProperties);
 
-        if (null != record) {
-            record.put("$id", createdId);
-        }
+            Object createdId = null;
+            Record record    = null;
 
-        Object entity = ex.postCreateRecord(context, createdId, record);
-        if (null != entity) {
-            return new CreateOneResult(createdId, entity);
-        } else {
-            return new CreateOneResult(createdId, record);
+            if (!em.isRemoteRest()) {
+                createdId = em.withContextListeners(listeners, () -> {
+                    if (null != createOneHandler) {
+                        return createOneHandler.create(context, creation);
+                    } else {
+                        return createByDb(creation);
+                    }
+                });
+
+                if (null != createdId) {
+                    record = dao.find(em, createdId);
+                }
+            } else {
+                RestResource restResource =
+                        restResourceFactory.createResource(dao.getOrmContext(), em);
+                record = restResource.create(properties);
+                createdId = Mappings.getId(em, record);
+            }
+
+            if (null == createdId) {
+                return new CreateOneResult(null, null);
+            }
+
+            if (null != record) {
+                record.put("$id", createdId);
+            }
+
+            Object entity = ex.postCreateRecord(context, createdId, record);
+            if (null != entity) {
+                return new CreateOneResult(createdId, entity);
+            } else {
+                return new CreateOneResult(createdId, record);
+            }
+        }finally {
+            if(null != dynamic) {
+                EntityMapping.removeDynamic();
+            }
         }
     }
 

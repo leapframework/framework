@@ -22,7 +22,7 @@ import leap.orm.OrmTestCase;
 import leap.orm.tested.EmdEntity;
 import org.junit.Test;
 
-public class EmbeddedColumnsTest extends OrmTestCase {
+public class EmbeddedFieldsTest extends OrmTestCase {
 
     @Test
     public void testSimpleCRUD() {
