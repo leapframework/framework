@@ -18,6 +18,7 @@ package app.models;
 
 import leap.lang.meta.annotation.Filterable;
 import leap.orm.annotation.AutoCreateTable;
+import leap.orm.annotation.Column;
 import leap.orm.model.Model;
 
 @AutoCreateTable
@@ -25,6 +26,8 @@ public class Author extends Model {
 
     protected String id;
     protected String name;
+    @Column
+    protected AuthorInfo info;
 
     public String getId() {
         return id;
@@ -43,4 +46,12 @@ public class Author extends Model {
         this.name = name;
     }
 
+    @Filterable
+    public AuthorInfo getInfo() {
+        return info;
+    }
+
+    public void setInfo(AuthorInfo info) {
+        this.info = info;
+    }
 }

@@ -16,10 +16,7 @@
 
 package leap.web.api.orm;
 
-import app.models.Author;
-import app.models.Book;
-import app.models.BookTag;
-import app.models.Tag;
+import app.models.*;
 import leap.core.value.Record;
 import leap.orm.mapping.EntityMapping;
 import leap.web.api.meta.model.MApiModel;
@@ -60,10 +57,17 @@ public class DefaultModelQueryExecutorTest extends ModelExecutorTestBase {
 
         Author author1 = new Author();
         author1.setName("Author1");
+        AuthorInfo authorInfo1 = new AuthorInfo();
+        authorInfo1.setCity("guangzhou");
+        authorInfo1.setAddress("none");
+        author1.setInfo(authorInfo1);
         author1.create();
 
         Author author2 = new Author();
         author2.setName("Author2");
+        AuthorInfo authorInfo2 = new AuthorInfo();
+        authorInfo2.setCity("shanghai");
+        author2.setInfo(authorInfo2);
         author2.create();
 
         Book book1 = new Book();
@@ -95,6 +99,17 @@ public class DefaultModelQueryExecutorTest extends ModelExecutorTestBase {
     @Override
     protected void setUp() throws Exception {
         initData();
+    }
+
+    @Test
+    public void testFilters() {
+        DefaultModelQueryExecutor executor = newExecutor(Author.class);
+
+        QueryOptions options = new QueryOptions();
+        options.setFilters("info like %guangzhou%");
+        List<Record> authors = executor.queryList(options).getList();
+        assertEquals(1, authors.size());
+        assertEquals("none", authors.get(0).get("info", AuthorInfo.class).getAddress());
     }
 
     @Test
