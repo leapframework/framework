@@ -521,6 +521,13 @@ public class DefaultAppConfigSource implements AppConfigSource {
         }
 
         protected String resolveProperty(String name) {
+            for(AppConfigSupport support : configSupports) {
+                String value = support.getProperty(name);
+                if(null != value) {
+                    return value;
+                }
+            }
+
             if(resolvingProperties.contains(name)) {
                 throw new AppConfigException("Found cyclic reference property '" + name + "'");
             }

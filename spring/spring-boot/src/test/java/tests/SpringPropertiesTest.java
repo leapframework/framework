@@ -17,6 +17,7 @@
 package tests;
 
 import app.beans.IfBean;
+import app.beans.TestAppConfigProcessor;
 import leap.core.BeanFactory;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,4 +34,8 @@ public class SpringPropertiesTest extends AbstractTest {
         assertNotNull(factory.tryGetBean(IfBean.class, "if3"));
     }
 
+    @Test
+    public void testSpringPropertyAtConfigProcessor() {
+        assertEquals("b", TestAppConfigProcessor.getProperties().get("name"));
+    }
 }

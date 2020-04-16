@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xsd:schema xmlns="http://www.leapframework.org/schema/test/config"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://www.leapframework.org/schema/test/config"
+            elementFormDefault="qualified"
+            attributeFormDefault="unqualified">
+    <xsd:element name="e">
+        <xsd:complexType>
+            <xsd:attribute name="name" type="xsd:string"></xsd:attribute>
+        </xsd:complexType>
+    </xsd:element>
+</xsd:schema>
