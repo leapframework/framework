@@ -17,6 +17,7 @@ package leap.core.ioc;
 
 import leap.core.*;
 import leap.core.annotation.*;
+import leap.core.bean.BeanAutowirer;
 import leap.core.config.AppConfigInitializer;
 import leap.core.config.AppPropertyPrinter;
 import leap.core.config.dyna.PropertyProvider;
@@ -85,6 +86,7 @@ public class BeanContainer implements BeanFactory {
     protected BeanFactorySupport[]       postSupports = new BeanFactorySupport[0];
     protected BeanProcessor[]            processors;
     protected BeanInjector[]             injectors;
+    protected BeanAutowirer              autowirer;
     private   boolean                    initializing;
     private   boolean                    containerInited;
     private   boolean                    appInited;
@@ -1202,6 +1204,12 @@ public class BeanContainer implements BeanFactory {
         }
         this.injectors = injectorList.toArray(new BeanInjector[0]);
 
+        //bean autowirer
+        this.autowirer = tryGetBean(BeanAutowirer.class);
+        if(null != autowirer && autowirer.isBeanFactoryWrapper()) {
+            this.autowirer = null;
+        }
+
         //bean processors
         List<BeanProcessor> processorList = new ArrayList<>();
         for (BeanDefinitionBase bd : processorBeans) {
@@ -1543,6 +1551,10 @@ public class BeanContainer implements BeanFactory {
 
         if (bean instanceof PreInjectBean) {
             ((PreInjectBean) bean).preInject(factory);
+        }
+
+        if(null != autowirer) {
+            autowirer.autowire(bean);
         }
 
         for (BeanProperty bp : bt.getProperties()) {
