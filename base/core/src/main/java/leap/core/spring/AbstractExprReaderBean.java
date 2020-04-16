@@ -104,8 +104,7 @@ public abstract class AbstractExprReaderBean {
                 if (p.equals("$") || p.endsWith(".$")) {
                     continue;
                 }
-                throw new IllegalStateException("Invalid property '" + missingProperties.iterator().next() +
-                        "' at '" + source + "'");
+                throw new IllegalStateException("Invalid property '" + p + "' at '" + source + "'");
             }
         }
     }
