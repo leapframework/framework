@@ -25,7 +25,7 @@ import leap.orm.annotation.ColumnType;
 
 public interface OAuth2Entity {
     
-    @ADomain(length=50)
+    @ADomain(length=190)
     @Retention(RetentionPolicy.RUNTIME)
     @interface Token {}
 
@@ -45,7 +45,7 @@ public interface OAuth2Entity {
     @Retention(RetentionPolicy.RUNTIME)
     @interface ClientId {}
     
-    @ADomain(type=ColumnType.TIMESTAMP, nullable=Bool.FALSE, order=Column.ORDER_LAST)
+    @ADomain(type=ColumnType.TIMESTAMP, nullable=Bool.FALSE, order=Column.ORDER_LAST, defaultValue = "${env.timestamp}")
     @Retention(RetentionPolicy.RUNTIME)
     @interface Created {}
     

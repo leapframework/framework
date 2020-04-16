@@ -30,6 +30,7 @@ import leap.orm.dmo.Dmo;
 import leap.orm.sql.SqlCommand;
 import leap.web.security.user.UserDetails;
 
+import java.sql.Timestamp;
 import java.util.Date;
 
 public class DefaultJdbcAuthzTokenStore extends AbstractJdbcAuthzStore implements AuthzTokenStore {
@@ -114,6 +115,7 @@ public class DefaultJdbcAuthzTokenStore extends AbstractJdbcAuthzStore implement
         entity.setTimeExpirable(token);
         entity.setScope(token.getScope());
         entity.setAuthenticated(token.isAuthenticated());
+        entity.setCreated(new Timestamp(System.currentTimeMillis()));
         if(token.getExtendedParameters()!=null){
         	entity.setExData(token.getExtendedParameters());
         }
