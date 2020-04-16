@@ -1577,28 +1577,34 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                                 continue;
                             }
 
-                            if (op == ScelToken.SW) {
-                                value = "%" + value;
-                            } else if (op == ScelToken.EW) {
-                                value = value + "%";
-                            } else if (op == ScelToken.CO) {
-                                value = "%" + value + "%";
-                            }
-
-                            //env
                             if (op == ScelToken.IN || op == ScelToken.NOT_IN) {
                                 applyFieldFilterIn(expr, alias, modelAndProp.field, nodes[i].values(), sqlOperator);
-                            } else if (value.endsWith("()") && value.length() > 2) {
-                                String envName = value.substring(0, value.length() - 2);
-                                //todo: check env is valid or allowed?
-                                String valueExpr = "#{env." + envName + "}";
-                                applyFieldFilterExpr(expr, alias, modelAndProp.field, valueExpr, sqlOperator);
-                            } else if (value.startsWith("env.")) {
-                                //todo: check env is valid or allowed?
-                                String valueExpr = "#{" + value + "}";
-                                applyFieldFilterExpr(expr, alias, modelAndProp.field, valueExpr, sqlOperator);
                             } else {
-                                applyFieldFilter(expr, alias, modelAndProp.field, value, sqlOperator);
+                                String envExpr = resolveEnvExpr(value);
+                                boolean isEnv = null != envExpr;
+                                if (isEnv) {
+                                    value = envExpr;
+                                }
+
+                                if (Strings.equalsIgnoreCase(sqlOperator, ScelToken.LIKE.name())) {
+                                    if (op == ScelToken.SW) {
+                                        value = splicingValueOrExpr(isEnv, "%", value);
+                                    } else if (op == ScelToken.EW) {
+                                        value = splicingValueOrExpr(isEnv, value, "%");
+                                    } else if (op == ScelToken.CO) {
+                                        value = splicingValueOrExpr(isEnv, "%", value, "%");
+                                    }
+
+                                    if (!isEnv) {
+                                        applyFieldFilterOrArg(expr, alias, modelAndProp.field, sqlOperator, "?", value);
+                                        continue;
+                                    }
+                                } else if (!isEnv) {
+                                    applyFieldFilter(expr, alias, modelAndProp.field, value, sqlOperator);
+                                    continue;
+                                }
+                                value = "#{" + value + "}";
+                                applyFieldFilterOrArg(expr, alias, modelAndProp.field, sqlOperator, value, null);
                             }
                         }
                     }
@@ -1614,6 +1620,38 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         if (!where.isEmpty()) {
             query.where(where.getWhere().toString(), where.getArgs().toArray());
         }
+    }
+
+    protected String splicingValueOrExpr(boolean isEnv, String... items) {
+        StringBuilder expr = new StringBuilder();
+        for (int i = 0; i < items.length; i++) {
+            String item = items[i];
+            if (isEnv) {
+                if (i > 0) {
+                    expr.append("+");
+                }
+                if (item.startsWith("env.")) {
+                    expr.append(item);
+                } else {
+                    expr.append("'").append(item).append("'");
+                }
+                continue;
+            }
+            expr.append(item);
+        }
+        return expr.toString();
+    }
+
+    protected String resolveEnvExpr(String value) {
+        if (value.endsWith("()") && value.length() > 2) {
+            String envName = value.substring(0, value.length() - 2);
+            //todo: check env is valid or allowed?
+            return "env." + envName;
+        } else if (value.startsWith("env.")) {
+            //todo: check env is valid or allowed?
+            return value;
+        }
+        return null;
     }
 
     protected void applyFilters(CriteriaQuery query, ResolvedExpand expand) {
@@ -1683,22 +1721,15 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
     }
 
     protected void applyFieldFilter(WhereBuilder.Expr expr, String alias, FieldMapping fm, Object value, String op) {
-        expr.append(alias).append('.').append(fm.getFieldName()).append(' ').append(op).append(" ?");
-        expr.arg(Converts.convert(value, fm.getJavaType()));
-    }
-
-    protected void applyFieldFilterExpr(WhereBuilder.Expr expr, String alias, FieldMapping fm, String filterExpr, String op) {
-        expr.append(alias).append('.').append(fm.getFieldName()).append(' ').append(op).append(" ").append(filterExpr);
+        applyFieldFilterOrArg(expr, alias, fm, op, "?", Converts.convert(value, fm.getJavaType()));
     }
 
     protected void applyFieldFilterIn(WhereBuilder.Expr expr, String alias, FieldMapping fm, String[] values) {
-        expr.append(alias).append('.').append(fm.getFieldName()).append(' ').append("in").append(" ?");
-        expr.arg(Converts.convert(values, Array.newInstance(((FieldMapping) fm).getJavaType(), 0).getClass()));
+        Object arg = Converts.convert(values, Array.newInstance(fm.getJavaType(), 0).getClass());
+        applyFieldFilterOrArg(expr, alias, fm, "in", "?", arg);
     }
 
     protected void applyFieldFilterIn(WhereBuilder.Expr expr, String alias, FieldMapping fm, List<ScelNode> values, String sqlOperator) {
-        expr.append(alias).append('.').append(fm.getFieldName()).append(' ').append(sqlOperator).append(" ?");
-
         final Class<?> type = ((FieldMapping) fm).getJavaType();
 
         Object[] args = new Object[values.size()];
@@ -1710,8 +1741,14 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                 args[i] = Converts.convert(value.literal(), type);
             }
         }
+        applyFieldFilterOrArg(expr, alias, fm, sqlOperator, "?", args);
+    }
 
-        expr.arg(args);
+    protected void applyFieldFilterOrArg(WhereBuilder.Expr expr, String alias, FieldMapping fm, String op, String filterExpr, Object arg) {
+        expr.append(alias).append('.').append(fm.getFieldName()).append(' ').append(op).append(" ").append(filterExpr);
+        if (null != arg) {
+            expr.arg(arg);
+        }
     }
 
     protected String toSqlOperator(ScelToken op) {

@@ -40,12 +40,10 @@ public class AuthzAccessTokenEntity extends OAuth2ExpirableEntity {
     protected String userId;
 
     @Token
-    @Column("refresh_token")
     protected String refreshToken;
 
     @Column("ex_data")
 	private Map<String,Object> exData=new HashMap<>();
-
     protected Boolean authenticated;
 
     @Column

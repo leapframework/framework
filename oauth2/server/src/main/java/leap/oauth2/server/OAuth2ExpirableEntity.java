@@ -15,9 +15,9 @@
  */
 package leap.oauth2.server;
 
-import java.sql.Timestamp;
-
 import leap.lang.expirable.TimeExpirable;
+
+import java.sql.Timestamp;
 
 public abstract class OAuth2ExpirableEntity implements OAuth2Entity {
 
