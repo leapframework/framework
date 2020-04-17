@@ -45,7 +45,7 @@ public interface OAuth2Entity {
     @Retention(RetentionPolicy.RUNTIME)
     @interface ClientId {}
     
-    @ADomain(type=ColumnType.TIMESTAMP, nullable=Bool.FALSE, order=Column.ORDER_LAST, defaultValue = "${env.timestamp}")
+    @ADomain(type=ColumnType.TIMESTAMP, nullable=Bool.FALSE, order=Column.ORDER_LAST, update = Bool.FALSE, insertValue = "${env.timestamp}")
     @Retention(RetentionPolicy.RUNTIME)
     @interface Created {}
     
