@@ -229,7 +229,11 @@ public class Paths {
      * </pre>
      */
     public static String getDirName(String filepath) {
-        String dirPath = Paths.suffixWithoutSlash(getDirPath(normalize(filepath)));
+        return getDirNameByDirPath(getDirPath(normalize(filepath)));
+    }
+
+    public static String getDirNameByDirPath(String dirPath) {
+        dirPath = Paths.suffixWithoutSlash(dirPath);
         int lastIndex = dirPath.lastIndexOf('/');
         if(lastIndex >= 0) {
             return dirPath.substring(lastIndex+1);

@@ -197,7 +197,17 @@ public class Resources {
         	return scan(locationPatterns[0]);
         }
 	}
-	
+
+	/**
+	 * Scans the directories at the root dir.
+	 */
+	public static ResourceSet scanDirs(Resource rootDirResource) throws NestedIOException{
+		return scan(rootDirResource, "*/");
+	}
+
+	/**
+	 * Note: The subPattern must ends with '/' if scans dir.
+	 */
 	public static ResourceSet scan(Resource rootDirResource,String subPattern) throws NestedIOException{
 		Args.notNull(rootDirResource,"rootDirResource");
 		Args.notEmpty(subPattern, "subPattern");

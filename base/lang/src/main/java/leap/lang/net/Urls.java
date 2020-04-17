@@ -71,7 +71,7 @@ public class Urls {
             throw Exceptions.wrap(e);
         }
     }
-	
+
 	public static String decode(String s) {
 	    if(null == s) {
 	        return s;

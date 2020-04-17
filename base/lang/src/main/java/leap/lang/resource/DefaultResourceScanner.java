@@ -438,6 +438,13 @@ class DefaultResourceScanner implements ResourceScanner {
 				// The Sun JRE does not return a slash here, but BEA JRockit does.
 				rootEntryPath = rootEntryPath + "/";
 			}
+
+			if(!rootDirResource.getURLString().endsWith("/")) {
+				// Root dir resource must end with slash to createRelative correctly.
+				final String dirName = Paths.getDirNameByDirPath(rootEntryPath);
+				rootDirResource = rootDirResource.createRelative(dirName + "/");
+			}
+
 			Set<Resource> result = new LinkedHashSet<Resource>(8);
 			for (Enumeration<JarEntry> entries = jarFile.entries(); entries.hasMoreElements();) {
 				JarEntry entry = entries.nextElement();

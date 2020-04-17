@@ -121,7 +121,7 @@ public class DefaultThemeManager implements ThemeManager,PostCreateBean {
                     }
                 }
             }else {
-                for(Resource resource : Resources.scan(themesDir, "*") ){
+                for(Resource resource : Resources.scanDirs(themesDir) ){
                     String themePath = Strings.removeStart(Urls.decode(resource.getURLString()), Urls.decode(themesDir.getURLString()));
                     if(themePath.endsWith("/")){
                         loadTheme(themePath, resource);

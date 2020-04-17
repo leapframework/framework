@@ -125,4 +125,15 @@ public class ResourceTest1 extends ConcurrentTestCase {
 		});
 		assertEquals(2,classes.length);
 	}
+
+	@Test
+	public void testScanDirsInJar() {
+		Resource root = Resources.getResource("classpath:/junit");
+		ResourceSet rs = Resources.scanDirs(root);
+		assertTrue(!rs.isEmpty());
+		for(Resource resource : rs) {
+			assertTrue(resource.exists());
+			assertTrue(resource.getClasspath().startsWith("junit"));
+		}
+	}
 }
