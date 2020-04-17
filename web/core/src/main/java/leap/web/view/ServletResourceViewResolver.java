@@ -15,10 +15,11 @@
  */
 package leap.web.view;
 
+import leap.lang.resource.Resource;
 import java.util.Locale;
 
 public interface ServletResourceViewResolver extends ViewResolver {
 
-	View resolveView(String location,String viewName,Locale locale) throws Throwable;
+	View resolveView(String location, String viewName, Locale locale, Resource dir) throws Throwable;
 	
 }

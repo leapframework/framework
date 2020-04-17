@@ -22,12 +22,14 @@ import leap.core.annotation.M;
 import leap.core.annotation.R;
 import leap.core.cache.Cache;
 import leap.core.cache.SimpleLRUCache;
+import leap.lang.resource.Resource;
 
 public class ServletResourceViewSource extends AbstractCachingViewSource {
 	
     protected @R String                             location;
     protected @M Cache<Object, View>                viewCache;
     protected @Inject ServletResourceViewResolver[] viewResolvers;
+	protected Resource                              dirResource;
 	
 	public void setLocation(String location) {
 		this.location = location;
@@ -36,7 +38,11 @@ public class ServletResourceViewSource extends AbstractCachingViewSource {
 	public void setViewCache(Cache<Object, View> viewCache) {
 		this.viewCache = viewCache;
 	}
-	
+
+	public void setDirResource(Resource dirResource) {
+		this.dirResource = dirResource;
+	}
+
 	@Override
 	protected Cache<Object, View> getViewCache() {
 		if(null == viewCache){
@@ -49,7 +55,7 @@ public class ServletResourceViewSource extends AbstractCachingViewSource {
 	protected View resolveView(String viewName, Locale locale) throws Throwable {
 		View view = null;
 		for(int i=0;i<viewResolvers.length;i++){
-			if((view = viewResolvers[i].resolveView(location, viewName, locale)) != null){
+			if((view = viewResolvers[i].resolveView(location, viewName, locale, dirResource)) != null){
 				break;
 			}
 		}

@@ -20,11 +20,13 @@ import java.util.Locale;
 import leap.core.cache.Cache;
 import leap.core.cache.SimpleLRUCache;
 import leap.core.validation.annotations.NotNull;
+import leap.lang.resource.Resource;
 
 public class SimpleCachingAssetSource extends AbstractCachingAssetSource {
 	
 	protected @NotNull Cache<Object, Asset> assetCache;
 	protected @NotNull AssetResolver 		resolver;
+	protected Resource                      dirResource;
 	
 	@Override
     protected Cache<Object, Asset> getAssetCache() {
@@ -41,10 +43,14 @@ public class SimpleCachingAssetSource extends AbstractCachingAssetSource {
 	public void setResolver(AssetResolver resolver) {
 		this.resolver = resolver;
 	}
-	
-    @Override
+
+	public void setDirResource(Resource dirResource) {
+		this.dirResource = dirResource;
+	}
+
+	@Override
 	protected Asset loadAsset(String assetPath, Locale locale) throws Throwable {
-		return resolver.resolveAsset(assetPath, locale);
+		return resolver.resolveAsset(assetPath, locale, dirResource);
 	}
 
 }

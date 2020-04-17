@@ -26,6 +26,7 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.path.Paths;
 import leap.lang.resource.Resource;
+import leap.lang.resource.Resources;
 
 import java.util.Locale;
 
@@ -55,23 +56,23 @@ public abstract class AbstractResourceViewResolver<R extends Resource>
     }
 
     @Override
-    public View resolveView(String location, String viewName, Locale locale) throws Throwable {
-        return doResolveView(location, viewName, locale);
+    public View resolveView(String location, String viewName, Locale locale, Resource dir) throws Throwable {
+        return doResolveView(location, viewName, locale, dir);
     }
 
     @Override
     public View resolveView(String viewName, Locale locale) throws Throwable {
-        return doResolveView(prefix, viewName, locale);
+        return doResolveView(prefix, viewName, locale, null);
     }
 
-    protected View doResolveView(String prefix, String viewName, Locale locale) throws Throwable {
-        R resource = getLocaleResource(prefix, suffix, viewName, locale);
+    protected View doResolveView(String prefix, String viewName, Locale locale, Resource dir) throws Throwable {
+        R resource = getLocaleResource(prefix, suffix, viewName, locale, dir);
         if(null == resource || !resource.exists()){
 
             String[] candidateViewPaths = viewStrategy.getCandidateViewPaths(viewName);
 
             for(String candidateViewPath : candidateViewPaths){
-                resource = getLocaleResource(prefix,suffix, candidateViewPath, locale);
+                resource = getLocaleResource(prefix,suffix, candidateViewPath, locale, dir);
 
                 if(null != resource && resource.exists()){
                     break;
@@ -86,14 +87,31 @@ public abstract class AbstractResourceViewResolver<R extends Resource>
         return loadView(prefix, suffix, viewName, locale, resource.getPath(), resource);
     }
 
-    protected R getLocaleResource(String prefix, String suffix, String viewPath,Locale locale) {
+    protected R getLocaleResource(String prefix, String suffix, String viewPath, Locale locale) {
+        return getLocaleResource(prefix, suffix, viewPath, locale, null);
+    }
+
+    protected R getLocaleResource(String prefix, String suffix, String viewPath, Locale locale, Resource dir) {
+        String[] paths;
+
+        if (null != dir) {
+            paths = Locales.getLocalePaths(locale, Strings.trimStart(viewPath, '/'), suffix);
+            for(String path : paths){
+
+                Resource r = Resources.getResource(dir, path);
+                if(null != r && r.exists()){
+                    return (R) r;
+                }
+            }
+        }
+
         String pathPrefix = Paths.suffixWithoutSlash(prefix) + Paths.prefixWithSlash(viewPath);
 
         if(!Strings.isEmpty(suffix) && pathPrefix.endsWith(suffix)){
             return loadResource(pathPrefix);
         }
 
-        String[] paths = Locales.getLocalePaths(locale, pathPrefix, suffix);
+        paths = Locales.getLocalePaths(locale, pathPrefix, suffix);
         for(String path : paths){
             R r = loadResource(path);
             if(null != r && r.exists()){

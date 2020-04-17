@@ -15,13 +15,17 @@
  */
 package leap.web.assets;
 
+import leap.lang.resource.Resource;
+
 import java.util.Locale;
 
 public interface AssetResolver {
 
+	Asset resolveAsset(String path, Locale locale) throws Throwable;
+
 	/**
 	 * Returns <code>null</code> if the given asset path not resolved by this resolver.
 	 */
-	Asset resolveAsset(String path, Locale locale) throws Throwable;
+	Asset resolveAsset(String path, Locale locale, Resource dir) throws Throwable;
 	
 }

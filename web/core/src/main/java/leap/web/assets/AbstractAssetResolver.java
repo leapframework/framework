@@ -19,6 +19,7 @@ import leap.core.annotation.Inject;
 import leap.lang.Strings;
 import leap.lang.path.Paths;
 import leap.lang.resource.Resource;
+import leap.lang.resource.Resources;
 
 import java.util.Locale;
 
@@ -29,16 +30,29 @@ public abstract class AbstractAssetResolver implements AssetResolver {
 
     @Override
     public Asset resolveAsset(String path, Locale locale) throws Throwable {
+        return resolveAsset(path, locale, null);
+    }
+
+    @Override
+    public Asset resolveAsset(String path, Locale locale, Resource dir) throws Throwable {
         path = Paths.prefixWithoutSlash(path);
         if(isExcluded(path)) {
             return null;
         }
 
-        final String resourcePath = getResourcePath(path);
+        Resource resource = null;
+        if (null != dir) {
+            resource = Resources.getResource(dir, Strings.trimStart(path, '/'));
+        }
 
-        Resource resource = getLocaleResource(resourcePath,locale);
-        if(null == resource || !resource.exists()){
-            return null;
+        if (null == resource || !resource.exists()) {
+            final String resourcePath = getResourcePath(path);
+
+            resource = getLocaleResource(resourcePath,locale);
+
+            if(null == resource || !resource.exists()){
+                return null;
+            }
         }
 
         return resolveAsset(path, resource);

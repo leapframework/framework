@@ -27,12 +27,12 @@ import leap.lang.Strings;
 import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.lang.net.Urls;
 import leap.lang.path.Paths;
 import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
 import leap.lang.resource.Resources;
 import leap.lang.servlet.ServletResource;
-import leap.lang.servlet.Servlets;
 import leap.web.App;
 import leap.web.Request;
 import leap.web.Utils;
@@ -45,7 +45,6 @@ import leap.web.config.WebConfigurator;
 import leap.web.view.ServletResourceViewSource;
 import leap.web.view.View;
 import leap.web.view.ViewSource;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -118,21 +117,21 @@ public class DefaultThemeManager implements ThemeManager,PostCreateBean {
                 Set<String> themePaths = app.getServletContext().getResourcePaths(webConfig.getThemesLocation());
                 for(String themePath : themePaths){
                     if(themePath.endsWith("/")){
-                        loadTheme(themePath);
+                        loadTheme(themePath, null);
                     }
                 }
             }else {
                 for(Resource resource : Resources.scan(themesDir, "*") ){
-                    String themePath = Strings.removeStart(resource.getURLString(), themesDir.getURLString());
+                    String themePath = Strings.removeStart(Urls.decode(resource.getURLString()), Urls.decode(themesDir.getURLString()));
                     if(themePath.endsWith("/")){
-                        loadTheme(themePath);
+                        loadTheme(themePath, resource);
                     }
                 }
             }
 		}
 	}
 	
-	protected void loadTheme(String path) throws Throwable {
+	protected void loadTheme(String path, Resource dir) throws Throwable {
         String themeName;
 	    if(path.startsWith(webConfig.getThemesLocation() + "/")) {
             themeName = Paths.suffixWithoutSlash(Strings.removeStart(path, webConfig.getThemesLocation() + "/"));
@@ -140,8 +139,10 @@ public class DefaultThemeManager implements ThemeManager,PostCreateBean {
 	        themeName = Paths.prefixAndSuffixWithoutSlash(path);
         }
 		log.debug("Found theme '" + themeName + "' in path '" + path + "'");
-		
-		Resource dir = Utils.getResource(app.getServletContext(), path);
+
+	    if(null == dir) {
+			dir = Utils.getResource(app.getServletContext(), path);
+		}
 
 		SimpleTheme.Builder theme = new SimpleTheme.Builder();
 		
@@ -174,13 +175,14 @@ public class DefaultThemeManager implements ThemeManager,PostCreateBean {
 		Resource assetsDir = themeDir.createRelative("static");
 		if(null != assetsDir && assetsDir.exists()){
 			String location = assetsDir.getPath();
-			
+
 			ServletAssetResolver resolver = app.factory().createBean(ServletAssetResolver.class);
 			resolver.setPrefix(Paths.prefixAndSuffixWithSlash(location));
-			
+
 			SimpleCachingAssetSource themeAssetSource = new SimpleCachingAssetSource();
 			themeAssetSource.setAssetCache(cacheManager.<Object,Asset>createSimpleLRUCache(Theme.class.getName() + "$assets." + themeName));
 			themeAssetSource.setResolver(resolver);
+			themeAssetSource.setDirResource(assetsDir);
 			app.factory().inject(themeAssetSource);
 			
 			return new ThemeOrDefaultAssetSource(themeAssetSource, assetSource);
@@ -194,12 +196,13 @@ public class DefaultThemeManager implements ThemeManager,PostCreateBean {
 		Resource viewsDir = themeDir.createRelative("views");
 		if(null != viewsDir && viewsDir.exists()){
 			String location = viewsDir.getPath();
-			
+
 			ServletResourceViewSource themeViewSource = new ServletResourceViewSource();
 			themeViewSource.setLocation(location);
 			themeViewSource.setViewCache(cacheManager.<Object,View>createSimpleLRUCache(Theme.class.getName() + "$views." + themeName));
+			themeViewSource.setDirResource(viewsDir);
 			app.factory().inject(themeViewSource);
-			
+
 			return new ThemeOrDefaultViewSource(themeViewSource, viewSource);
 		}
 		return null;
