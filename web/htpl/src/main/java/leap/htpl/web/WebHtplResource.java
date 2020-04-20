@@ -63,9 +63,10 @@ public class WebHtplResource extends SimpleHtplResource {
             }
         }
 
-        if (ensureTemplate && null != r && !r.getFileName().endsWith(suffix)) {
+        if(isNotSureTemplate(r, ensureTemplate)) {
             return null;
         }
+
         return r;
     }
 
@@ -94,10 +95,21 @@ public class WebHtplResource extends SimpleHtplResource {
             }
         }
 
-        if (ensureTemplate && null != r && !r.getFileName().endsWith(suffix)) {
+        if(isNotSureTemplate(r, ensureTemplate)) {
             return null;
         }
+
         return r;
+    }
+
+    protected boolean isNotSureTemplate(HtplResource r, boolean ensureTemplate) {
+        if(!ensureTemplate) {
+            return false;
+        }
+        if(null == r || null == r.getFileName()) {
+            return true;
+        }
+        return !r.getFileName().endsWith(suffix);
     }
 
 }

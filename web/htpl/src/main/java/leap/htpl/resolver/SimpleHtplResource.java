@@ -15,7 +15,6 @@
  */
 package leap.htpl.resolver;
 
-import leap.htpl.HtplException;
 import leap.htpl.HtplResource;
 import leap.lang.Args;
 import leap.lang.Locales;
@@ -43,7 +42,7 @@ public class SimpleHtplResource implements HtplResource {
         this.locale = locale;
         this.source = resource.getPath();
         this.file = resource.isFile() ? resource.getFile() : null;
-        if(null != file) {
+        if (null != file) {
             this.lastModified = file.lastModified();
         }
     }
@@ -75,7 +74,11 @@ public class SimpleHtplResource implements HtplResource {
 
     @Override
     public String getFileName() {
-        return null != file ? file.getName() : null;
+        if(null != file) {
+            return file.getName();
+        }else {
+            return resource.getFilename();
+        }
     }
 
     @Override
