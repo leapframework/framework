@@ -156,7 +156,7 @@ public class DefaultThemeManager implements ThemeManager,PostCreateBean {
 	
 	protected MessageSource getThemeBasedMessageSource(String themeName, Resource themeDir) throws Throwable {
 		//TODO : config theme based messages directory
-		Resource messagesDir = themeDir.createRelative("messages");
+		Resource messagesDir = themeDir.createRelative("messages/");
 		if(null != messagesDir && messagesDir.exists()){
 			ResourceSet rs = Resources.scan(messagesDir, "**/*.*");
 			if(!rs.isEmpty()){
@@ -172,7 +172,7 @@ public class DefaultThemeManager implements ThemeManager,PostCreateBean {
 	
 	protected AssetSource getThemeBasedAssetSource(String themeName, Resource themeDir) throws Throwable {
 		//TODO: config theme based assets directory
-		Resource assetsDir = themeDir.createRelative("static");
+		Resource assetsDir = themeDir.createRelative("static/");
 		if(null != assetsDir && assetsDir.exists()){
 			String location = assetsDir.getPath();
 
@@ -193,7 +193,7 @@ public class DefaultThemeManager implements ThemeManager,PostCreateBean {
 	
 	protected ViewSource getThemeBasedViewSource(String themeName,Resource themeDir) throws Throwable {
 		//TODO : config theme based views directory
-		Resource viewsDir = themeDir.createRelative("views");
+		Resource viewsDir = themeDir.createRelative("views/");
 		if(null != viewsDir && viewsDir.exists()){
 			String location = viewsDir.getPath();
 
