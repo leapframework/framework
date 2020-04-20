@@ -17,11 +17,12 @@
 package leap.orm.event;
 
 import leap.core.transaction.TransactionStatus;
+import leap.lang.accessor.AttributeAccessor;
 import leap.orm.OrmContext;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
 
-public interface EntityEvent {
+public interface EntityEvent extends AttributeAccessor {
 
     enum Type {
         CREATE,

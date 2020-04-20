@@ -17,10 +17,11 @@
 package leap.orm.event;
 
 import leap.core.transaction.TransactionStatus;
+import leap.lang.accessor.MapAttributeAccessor;
 import leap.orm.OrmContext;
 import leap.orm.mapping.EntityMapping;
 
-public abstract class EntityEventBase implements EntityEvent {
+public abstract class EntityEventBase extends MapAttributeAccessor implements EntityEvent {
 
     protected final OrmContext    context;
     protected final EntityMapping mapping;
