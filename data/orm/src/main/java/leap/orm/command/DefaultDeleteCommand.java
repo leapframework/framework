@@ -60,6 +60,7 @@ public class DefaultDeleteCommand extends AbstractEntityDaoCommand implements De
                     int affected = doExecuteDelete();
 
                     //post with transaction.
+                    e.setAffected(affected);
                     eventHandler.postDeleteEntityInTrans(context, em, e);
 
                     e.setTransactionStatus(null);
@@ -69,6 +70,7 @@ public class DefaultDeleteCommand extends AbstractEntityDaoCommand implements De
 
             } else {
                 result = doExecuteDelete();
+                e.setAffected(result);
             }
 
             //post without transaction.

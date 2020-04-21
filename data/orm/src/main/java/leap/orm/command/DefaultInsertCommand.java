@@ -157,6 +157,7 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
                 int affected = doExecuteUpdate();
 
                 //post with transaction.
+                e.setAffected(affected);
                 eventHandler.postCreateEntityInTrans(context, em, e);
 
                 e.setTransactionStatus(null);
@@ -166,6 +167,7 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
 
         } else {
             result = doExecuteUpdate();
+            e.setAffected(result);
         }
 
         //post without transaction.

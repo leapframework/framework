@@ -77,6 +77,13 @@ public interface EntityEvent extends AttributeAccessor {
     }
 
     /**
+     * Returns the affected rows for create, update and delete events.
+     */
+    default int getAffected() {
+        return -1;
+    }
+
+    /**
      * Required.
      */
     EntityMapping getMapping();

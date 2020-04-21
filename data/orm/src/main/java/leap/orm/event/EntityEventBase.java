@@ -26,6 +26,7 @@ public abstract class EntityEventBase extends MapAttributeAccessor implements En
     protected final OrmContext    context;
     protected final EntityMapping mapping;
 
+    private int               affected = -1;
     private TransactionStatus transactionStatus;
 
     public EntityEventBase(OrmContext context, EntityMapping em) {
@@ -52,4 +53,12 @@ public abstract class EntityEventBase extends MapAttributeAccessor implements En
         this.transactionStatus = transactionStatus;
     }
 
+    @Override
+    public int getAffected() {
+        return affected;
+    }
+
+    public void setAffected(int affected) {
+        this.affected = affected;
+    }
 }

@@ -134,6 +134,7 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
                 int affected = doExecuteUpdate();
 
                 //post with transaction.
+                e.setAffected(affected);
                 eventHandler.postUpdateEntityInTrans(context, em, e);
 
                 e.setTransactionStatus(null);
@@ -143,6 +144,7 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
 
         } else {
             result = doExecuteUpdate();
+            e.setAffected(result);
         }
 
         //post without transaction.
