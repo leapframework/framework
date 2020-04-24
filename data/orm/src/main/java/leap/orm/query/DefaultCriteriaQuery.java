@@ -1491,6 +1491,9 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                 if (!SIMPLE_COLUMN_PATTERN.matcher(items[0]).matches()) {
                     return false;
                 }
+                if (null == em.tryGetFieldMapping(items[0])) {
+                    return false;
+                }
             }
 
             return true;
