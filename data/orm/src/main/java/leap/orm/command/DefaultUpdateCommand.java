@@ -168,15 +168,15 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
             SqlCommand primaryCommand = sf.createUpdateCommand(context, em, fields);
             if (null != primaryCommand) {
                 final Map<String, Object> updateEmbedded = extractEmbeddedFields(map);
-                if(null != updateEmbedded && updateEmbedded.size() > 0) {
+                if (null != updateEmbedded && updateEmbedded.size() > 0) {
                     final JsonColumnSupport jcs = db.getDialect().getJsonColumnSupport();
-                    if(null != jcs && jcs.isUpdateByKeys()) {
+                    if (null != jcs && jcs.isUpdateByKeys()) {
                         map.putAll(updateEmbedded);
                         return primaryCommand.executeUpdate(this, map);
-                    }else if(null != jcs) {
+                    } else if (null != jcs) {
                         map.put(em.getEmbeddingColumnName(), JSON.stringify(updateEmbedded));
                         return primaryCommand.executeUpdate(this, map);
-                    }else {
+                    } else {
                         return dao.doTransaction((s) -> {
                             String dbEmbedded =
                                     dao.createCriteriaQuery(em).select(em.getEmbeddingColumnName()).whereById(id).forUpdate()
@@ -186,7 +186,7 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
                             return primaryCommand.executeUpdate(this, map);
                         });
                     }
-                }else {
+                } else {
                     return primaryCommand.executeUpdate(this, map);
                 }
             } else {
@@ -194,10 +194,10 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
             }
         });
 
-        if(em.hasSecondaryTable()) {
+        if (em.hasSecondaryTable()) {
             String[]   fields           = map.keySet().toArray(Arrays2.EMPTY_STRING_ARRAY);
             SqlCommand secondaryCommand = sf.createUpdateCommand(context, em, fields, true);
-            if(null != secondaryCommand) {
+            if (null != secondaryCommand) {
                 if (null == result) {
                     result = secondaryCommand.executeUpdate(this, map);
                 } else if (result > 0) {
@@ -247,6 +247,9 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
                         value = expression.getValue(entity);
                         setGeneratedValue(fm, value);
                     }
+                } else if (value instanceof Expression) {
+                    value = ((Expression) value).getValue(entity);
+                    setGeneratedValue(fm, value);
                 }
             }
         }
@@ -285,14 +288,14 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
     }
 
     protected Map<String, Object> extractEmbeddedFields(Map<String, Object> map) {
-        if(null == em.getEmbeddingColumn() || !em.hasEmbeddedFieldMappings()) {
+        if (null == em.getEmbeddingColumn() || !em.hasEmbeddedFieldMappings()) {
             return null;
         }
 
         Map<String, Object> embedded = new LinkedHashMap<>();
-        map.forEach((n,v) -> {
+        map.forEach((n, v) -> {
             FieldMapping fm = em.tryGetFieldMapping(n);
-            if(null != fm && fm.isEmbedded()) {
+            if (null != fm && fm.isEmbedded()) {
                 embedded.put(n, v);
             }
         });
@@ -301,7 +304,7 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
     }
 
     protected Map<String, Object> mergeEmbeddedFields(Map<String, Object> toUpdate, String dbValue) {
-        if(Strings.isEmpty(dbValue)) {
+        if (Strings.isEmpty(dbValue)) {
             return toUpdate;
         }
 

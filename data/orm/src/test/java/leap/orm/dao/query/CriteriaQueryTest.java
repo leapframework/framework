@@ -18,6 +18,7 @@ package leap.orm.dao.query;
 import java.util.List;
 import java.util.Map;
 
+import leap.core.value.Record;
 import leap.junit.contexual.Contextual;
 import leap.lang.New;
 import leap.orm.mapping.EntityMapping;
@@ -279,12 +280,12 @@ public class CriteriaQueryTest extends OrmTestCase {
 			apiOperation.setPathId(apiPath.getId());
 			apiOperation.create();
 
-			Map result = dao.createCriteriaQuery(ApiOperation.class, Map.class).select("name", "name as n", "api.name as apiName", "1 as param")
+			Record result = dao.createCriteriaQuery(ApiOperation.class, Record.class).select("name", "name as n", "api.name as apiName", "1 as param")
 					.join(Api.class, "api").firstOrNull();
 			assertEquals("Hello", result.get("apiName"));
 			assertEquals("test1", result.get("name"));
 			assertEquals("test1", result.get("n"));
-			assertEquals(1, result.get("param"));
+			assertEquals(new Integer(1), result.getInteger("param"));
 		} finally {
 			deleteAll(ApiOperation.class);
 			deleteAll(ApiPath.class);

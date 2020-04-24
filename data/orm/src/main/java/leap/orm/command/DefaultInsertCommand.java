@@ -201,7 +201,7 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
         if (em.hasSecondaryTable()) {
             String[]   fields           = map.keySet().toArray(Arrays2.EMPTY_STRING_ARRAY);
             SqlCommand secondaryCommand = sf.createInsertCommand(context, em, fields, true);
-            if(null != secondaryCommand) {
+            if (null != secondaryCommand) {
                 secondaryCommand.executeUpdate(this, withGeneratedId(map));
             }
         }
@@ -248,6 +248,9 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
                         }
                     }
                 }
+            } else if (value instanceof Expression) {
+                value = ((Expression) value).getValue(entity);
+                setGeneratedValue(fm, value);
             }
         }
 
@@ -269,18 +272,18 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
     }
 
     protected static Map<String, Object> withEmbeddingColumn(Db db, EntityMapping em, Map<String, Object> map) {
-        if(null == em.getEmbeddingColumn() || !em.hasEmbeddedFieldMappings()) {
+        if (null == em.getEmbeddingColumn() || !em.hasEmbeddedFieldMappings()) {
             return map;
         }
 
         final JsonColumnSupport jcs = db.getDialect().getJsonColumnSupport();
-        if(null != jcs && jcs.isInsertByKeys()) {
+        if (null != jcs && jcs.isInsertByKeys()) {
             return map;
         }
 
         Map<String, Object> embedded = new LinkedHashMap<>();
-        for(FieldMapping fm : em.getEmbeddedFieldMappings()) {
-            if(map.containsKey(fm.getFieldName())) {
+        for (FieldMapping fm : em.getEmbeddedFieldMappings()) {
+            if (map.containsKey(fm.getFieldName())) {
                 embedded.put(fm.getFieldName(), map.get(fm.getFieldName()));
             }
         }
