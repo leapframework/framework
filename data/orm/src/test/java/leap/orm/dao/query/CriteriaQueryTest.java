@@ -280,7 +280,7 @@ public class CriteriaQueryTest extends OrmTestCase {
 			apiOperation.setPathId(apiPath.getId());
 			apiOperation.create();
 
-			Record result = dao.createCriteriaQuery(ApiOperation.class, Record.class).select("name", "name as n", "api.name as apiName", "1 as param")
+			Record result = dao.createCriteriaQuery(ApiOperation.class, Record.class).select("name", "name as n", "api.name as apiName", "1 as param", "1")
 					.join(Api.class, "api").firstOrNull();
 			assertEquals("Hello", result.get("apiName"));
 			assertEquals("test1", result.get("name"));
