@@ -32,6 +32,35 @@ import java.util.function.Consumer;
  */
 public interface DbDialect {
 
+    String TIMESTAMP_ADD_INTERVAL = "#interval#";
+    String TIMESTAMP_ADD_TS       = "#ts#";
+
+    /**
+     * Returns the property or <code>null</code>.
+     */
+    String getProperty(String name);
+
+    /**
+     * Returns the property as the given type.
+     */
+    <T> T getProperty(String name, Class<T> type);
+
+    /**
+     * Returns the property or <code>null</code>.
+     */
+    default String getProperty(String name, String defaults) {
+        String v = getProperty(name);
+        return null == v ? defaults : v;
+    }
+
+    /**
+     * Returns the property as the given type.
+     */
+    default <T> T getProperty(String name, Class<T> type, T defaults) {
+        T v = getProperty(name, type);
+        return null == v ? defaults : v;
+    }
+
     /**
      * returns the default schema name of the given {@link Connection}.
      */
@@ -473,6 +502,28 @@ public interface DbDialect {
      */
     default void wrapSelectForUpdate(StringBuilder sql) {
         sql.append(" for update");
+    }
+
+    /**
+     * Returns the expr or function of current_timestamp.
+     */
+    default String getCurrentTimestampExpr() {
+        return getProperty("exprs.current_timestamp", "CURRENT_TIMESTAMP");
+    }
+
+    /**
+     *  Returns expr for adding interval in milliseconds from a timestamp expr.
+     *
+     *  <pre>
+     *      formats: TIMESTAMPADD(MS, #interval#, #ts#)
+     *  </pre>
+     */
+    default String getTimestampAddMsExpr() {
+        String v = getProperty("funcs.timestampadd_ms");
+        if(null == v) {
+            throw new IllegalStateException("Timestamp add not supported yet");
+        }
+        return v;
     }
 
 	/**

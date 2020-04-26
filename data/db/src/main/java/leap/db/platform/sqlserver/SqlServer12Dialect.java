@@ -13,6 +13,7 @@
 
 package leap.db.platform.sqlserver;
 
+import leap.db.Db;
 import leap.db.DbLimitQuery;
 import leap.db.change.ColumnDefinitionChange;
 import leap.db.change.SchemaChangeContext;
@@ -33,6 +34,11 @@ import java.util.List;
  * 12 means 2012
  */
 public class SqlServer12Dialect extends GenericDbDialect {
+
+    @Override
+    protected String getConfigName(Db db) {
+        return "sqlserver";
+    }
 
     @Override
     protected String getTestDriverSupportsGetParameterTypeSQL() {

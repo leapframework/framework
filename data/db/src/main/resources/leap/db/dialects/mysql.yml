@@ -1,0 +1,3 @@
+defaults:
+  funcs:
+    timestampadd_ms: 'TIMESTAMPADD(MICROSECOND, #interval# * 1000, #ts#)'

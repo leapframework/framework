@@ -17,7 +17,38 @@
 
 package leap.db;
 
+import leap.lang.Strings;
+
+import java.util.Comparator;
+
 public class DbVersion {
+    public static Comparator<DbVersion> SORT_COMPARATOR = (o1, o2) -> !o1.ge(o2) ? -1 : 1;
+
+    public static DbVersion parseDot(String v) {
+        final String[] parts = v.indexOf('.') > 0 ? Strings.split(v, '.') : new String[]{v};
+        return parse(v, parts);
+    }
+
+    public static DbVersion parseUnderscore(String v) {
+        final String[] parts = v.indexOf('_') > 0 ? Strings.split(v, '_') : new String[]{v};
+        return parse(v, parts);
+    }
+
+    private static DbVersion parse(String v, String[] parts) {
+        if(parts.length < 2 || parts.length > 3) {
+            throw new IllegalStateException("Invalid version '" + v + "'");
+        }
+        try {
+            int major    = Integer.parseInt(parts[0]);
+            int minor    = parts.length > 1 ? Integer.parseInt(parts[1]) : 0;
+            int revision = parts.length > 2 ? Integer.parseInt(parts[2]) : 0;
+
+            return of(major, minor, revision);
+        }catch (Exception e) {
+            throw new IllegalStateException("Invalid version '" + v + "'");
+        }
+    }
+
     public static DbVersion of(int major, int minor, int revision) {
         return new DbVersion(major, minor, revision);
     }
@@ -49,5 +80,9 @@ public class DbVersion {
             return false;
         }
         return true;
+    }
+
+    public String getDotExpr() {
+        return major + "." + minor + "." + revision;
     }
 }

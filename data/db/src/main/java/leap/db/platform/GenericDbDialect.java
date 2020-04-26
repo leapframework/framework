@@ -56,9 +56,11 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
     protected final Set<DbCascadeAction> supportedOnDeleteActions = new HashSet<>(5);
     protected final Set<String>          disconnectSqlStates      = new HashSet<>(10);
 
-    protected GenericDb         db;
-    protected GenericDbMetadata metadata;
-    protected String            statementDelimiter = ";";
+    protected GenericDb           db;
+    protected GenericDbMetadata   metadata;
+    protected DbVersion           version;
+    protected Map<String, Object> properties;
+    protected String              statementDelimiter = ";";
 
     protected GenericDbDialect() {
 
@@ -70,7 +72,24 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
         this.db = (GenericDb) db;
         this.metadata = (GenericDbMetadata) db.getMetadata();
         this.log = this.db.getLog(this.getClass());
+        this.version = resolveDbVersion(metadata);
+        this.properties = loadProperties(getConfigName(db));
         this.registerMetadata(metadata);
+    }
+
+    @Override
+    public String getProperty(String name) {
+        return Converts.toString(properties.get(name));
+    }
+
+    @Override
+    public <T> T getProperty(String name, Class<T> type) {
+        Object v = properties.get(name);
+        return null == v ? null : Converts.convert(v, type);
+    }
+
+    protected String getConfigName(Db db) {
+        return db.getType().toLowerCase();
     }
 
     public String getDefaultSchemaName(Connection connection, DatabaseMetaData dm) throws SQLException {
@@ -1401,6 +1420,40 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 
     protected String getIdentifierQuoteString() {
         return metadata.getIdentifierQuoteString();
+    }
+
+    protected DbVersion resolveDbVersion(DbMetadata metadata) {
+        return DbVersion.of(metadata.getProductMajorVersion(),
+                metadata.getProductMinorVersion(),
+                getProductRevision(metadata));
+    }
+
+    @Override
+    protected DbVersion getVersion() {
+        return version;
+    }
+
+    protected int getProductRevision(DbMetadata metadata) {
+        try {
+            final StringBuilder s = new StringBuilder();
+            for (char c : metadata.getProductVersion().toCharArray()) {
+                if (c == '.' || Character.isDigit(c)) {
+                    s.append(c);
+                    continue;
+                }
+                break;
+            }
+
+            String[] parts = Strings.split(s.toString(), ".");
+            if(parts.length >= 3) {
+                return Integer.parseInt(parts[2]);
+            }else {
+                return 0;
+            }
+        }catch (Exception e) {
+            log.warn("Can't determinate the revision at version string '" + metadata.getProductVersion() + "'", e);
+            return 0;
+        }
     }
 
     protected void registerMetadata(DbMetadata metadata) {

@@ -67,7 +67,6 @@ public class MySql5Dialect extends GenericDbDialect {
 
     private static final String[] SYSTEM_SCHEMAS = new String[]{"INFORMATION_SCHEMA", "PERFORMANCE_SCHEMA"};
 
-    protected DbVersion         version;
     protected JsonColumnSupport jsonColumnSupport;
 
     protected MySql5Dialect() {
@@ -78,30 +77,11 @@ public class MySql5Dialect extends GenericDbDialect {
     protected void registerMetadata(DbMetadata metadata) {
         super.registerMetadata(metadata);
 
-        version = DbVersion.of(metadata.getProductMajorVersion(),
-                metadata.getProductMinorVersion(),
-                getProductRevision());
-
         //json support starts from 5.7.8, but better support starts from 5.7.13
         //https://dev.mysql.com/doc/refman/5.7/en/json-search-functions.html#operator_json-inline-path
         if (version.ge(DbVersion.of(5, 7, 13))) {
             jsonColumnSupport = new MySqlJsonColumnSupport();
         }
-    }
-
-    protected int getProductRevision() {
-        //5.7.22-log
-        String v     = metadata.getProductVersion();
-        int    index = v.indexOf('-');
-        if (index > 0) {
-            v = v.substring(0, index);
-        }
-        int      revision = 0;
-        String[] parts    = Strings.split(v, '.');
-        if (parts.length == 3) {
-            revision = Integer.parseInt(parts[2]);
-        }
-        return revision;
     }
 
     @Override

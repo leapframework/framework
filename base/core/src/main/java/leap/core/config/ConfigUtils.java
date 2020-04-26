@@ -19,11 +19,181 @@ package leap.core.config;
 import leap.core.AppConfig;
 import leap.lang.Strings;
 import leap.lang.convert.Converts;
+import leap.lang.json.JSON;
+import leap.lang.path.Paths;
+import leap.lang.resource.Resource;
+import leap.lang.yaml.YAML;
+import leap.lang.yaml.YamlValue;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 
 public class ConfigUtils {
+
+    public static boolean isJsonOrYaml(Resource resource) {
+        if (null == resource || !resource.exists() || resource.isDirectory()) {
+            return false;
+        }
+        String filename = resource.getFilename();
+        if (Strings.endsWithIgnoreCase(filename, ".json")
+                || Strings.endsWithIgnoreCase(filename, ".yml") || Strings.endsWithIgnoreCase(filename, ".yaml")) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean isJsonOrYaml(Resource resource, String name) {
+        return isNameMatchedJsonOrYaml(resource, (n) -> n.equals(name));
+    }
+
+    public static boolean isNameMatchedJsonOrYaml(Resource resource, Function<String, Boolean> nameMatcher) {
+        if (!isJsonOrYaml(resource)) {
+            return false;
+        }
+        String name = Paths.getFileNameWithoutExtension(resource.getFilename());
+        if (nameMatcher.apply(name)) {
+            return true;
+        }
+        return false;
+    }
+
+    public static Map<String, Object> decodeMap(Resource resource) {
+        if (null == resource || !resource.exists() || resource.isDirectory()) {
+            return null;
+        }
+        return decodeMap(resource.getFilename(), resource.getContent());
+    }
+
+    public static Map<String, Object> decodeMap(String filename, String content) {
+        if (Strings.isEmpty(content)) {
+            return null;
+        }
+        if (Strings.endsWithIgnoreCase(filename, ".json")) {
+            return JSON.decodeMap(content);
+        } else if (Strings.endsWithIgnoreCase(filename, ".yaml") || Strings.endsWithIgnoreCase(filename, ".yml")) {
+            YamlValue v = YAML.parse(content);
+            return v.isNull() ? null : v.asMap();
+        } else {
+            return null;
+        }
+    }
+
+    public static Object decodeObj(Resource resource) {
+        if (null == resource || !resource.exists() || resource.isDirectory()) {
+            return null;
+        }
+        return decodeObj(resource.getFilename(), resource.getContent());
+    }
+
+    public static Object decodeObj(String filename, String content) {
+        if (Strings.isEmpty(content)) {
+            return null;
+        }
+        if (Strings.endsWithIgnoreCase(filename, ".json")) {
+            return JSON.decode(content);
+        } else if (Strings.endsWithIgnoreCase(filename, ".yaml") || Strings.endsWithIgnoreCase(filename, ".yml")) {
+            return YAML.parse(content).raw();
+        } else {
+            return null;
+        }
+    }
+
+    public static List<Object> decodeList(Resource resource) {
+        if (null == resource || !resource.exists() || resource.isDirectory()) {
+            return null;
+        }
+        return decodeList(resource.getFilename(), resource.getContent());
+    }
+
+    public static List<Object> decodeList(String filename, String content) {
+        if (Strings.isEmpty(content)) {
+            return null;
+        }
+        if (Strings.endsWithIgnoreCase(filename, ".json")) {
+            return JSON.parse(content).asList();
+        } else if (Strings.endsWithIgnoreCase(filename, ".yaml") || Strings.endsWithIgnoreCase(filename, ".yml")) {
+            return YAML.parse(content).asList();
+        } else {
+            return null;
+        }
+    }
+
+    public static <T> T decodeJsonMap(Map map, Class<T> type) {
+        if (null == map || map.isEmpty()) {
+            return null;
+        }
+
+        Set<String> missingProperties = JSON.checkMissingProperties(type, map);
+
+        if (!missingProperties.isEmpty()) {
+
+            for (String p : missingProperties) {
+                if (p.equals("$") || p.endsWith(".$")) {
+                    continue;
+                }
+
+                throw new IllegalStateException("Invalid property '" + missingProperties.iterator().next() + "'");
+            }
+        }
+
+        return (T) Converts.toBean(map, type);
+    }
+
+    public static Map<String,Object> toObjectProperties(Map<String, Object> map) {
+        return toObjectProperties(map, "");
+    }
+
+    public static Map<String,Object> toObjectProperties(Map<String, Object> map, String prefix) {
+        Map<String, Object> props = new LinkedHashMap<>();
+        putObjectProperties(prefix, map, props);
+        return props;
+    }
+
+    protected static void putObjectProperties(String prefix, Map map, Map<String, Object> props) {
+        map.forEach((k,v) -> {
+            if(v instanceof Map) {
+                putObjectProperties(prefix + k + ".", (Map)v, props);
+            }else {
+                props.put(prefix + k, v);
+            }
+        });
+    }
+
+    public static Map<String, String> toProperties(Map<String, Object> map) {
+        return toProperties(map, "");
+    }
+
+    public static Map<String, String> toProperties(Map<String, Object> map, String prefix) {
+        Map<String, String> props = new LinkedHashMap<>();
+        putProperties(prefix, map, props);
+        return props;
+    }
+
+    private static void putProperties(String prefix, Map map, Map<String, String> props) {
+        map.forEach((k, v) -> {
+            if (v instanceof Map) {
+                putProperties(prefix + k + ".", (Map) v, props);
+            } else {
+                props.put(prefix + k, Converts.toString(v));
+            }
+        });
+    }
+
+    public static String extractKeyPrefix(String key) {
+        int index = key.indexOf(".");
+        if(index > 0) {
+            return key.substring(0, index);
+        }else {
+            return null;
+        }
+    }
+
+    public static String removeKeyPrefix(String key, String prefix) {
+        return key.substring(prefix.length() + 1);
+    }
 
     public static Map<String, Object> extractMap(AppConfig config) {
         Map<String, Object> map = new LinkedHashMap<>();
@@ -46,12 +216,12 @@ public class ConfigUtils {
         final String keyPrefix = prefix.endsWith(".") ? prefix : prefix + ".";
 
         config.getPropertyNames().forEach(key -> {
-            if(key.startsWith(keyPrefix)) {
+            if (key.startsWith(keyPrefix)) {
                 props.put(key.substring(keyPrefix.length()), config.getProperty(key));
             }
         });
 
-        if(null != extraConfig) {
+        if (null != extraConfig) {
             extraConfig.forEach((key, value) -> {
                 if (key.startsWith(keyPrefix)) {
                     props.put(key.substring(keyPrefix.length()), value);
@@ -67,26 +237,26 @@ public class ConfigUtils {
     }
 
     protected static void extractMap(Map map, String key, String value) {
-        if(null == value) {
+        if (null == value) {
             return;
         }
 
         String[] parts = Strings.split(key, '.');
-        if(parts.length == 1) {
+        if (parts.length == 1) {
             map.put(key, value);
-        }else {
+        } else {
             Map parent = map;
-            for(int i=0;i<parts.length-1;i++) {
+            for (int i = 0; i < parts.length - 1; i++) {
                 String name = parts[i];
 
                 Object v = parent.get(name);
-                if(v instanceof Map) {
-                    parent = (Map)v;
-                }else {
+                if (v instanceof Map) {
+                    parent = (Map) v;
+                } else {
                     Map nested = new LinkedHashMap();
                     parent.put(name, nested);
                     parent = nested;
-                    if(null != v) {
+                    if (null != v) {
                         map.put(key(parts, i), v);
                     }
                 }
@@ -97,8 +267,8 @@ public class ConfigUtils {
 
     protected static String key(String[] parts, int index) {
         StringBuilder s = new StringBuilder();
-        for(int i=0;i<=index;i++) {
-            if(i > 0) {
+        for (int i = 0; i <= index; i++) {
+            if (i > 0) {
                 s.append('.');
             }
             s.append(parts[i]);
