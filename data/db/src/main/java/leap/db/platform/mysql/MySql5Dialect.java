@@ -144,7 +144,7 @@ public class MySql5Dialect extends GenericDbDialect {
     protected String getColumnDefaultDefinition(DbColumn column) {
         if (Types.TIMESTAMP == column.getTypeCode()) {
             if ((!column.isNullable()) && !column.isDatetime() && Strings.isEmpty(column.getDefaultValue())) {
-                return "DEFAULT CURRENT_TIMESTAMP";
+                return "DEFAULT CURRENT_TIMESTAMP(3)";
             }
         }
         return super.getColumnDefaultDefinition(column);
@@ -274,27 +274,11 @@ public class MySql5Dialect extends GenericDbDialect {
 
         //https://dev.mysql.com/doc/refman/5.6/en/timestamp-initialization.html
         //Before 5.6.5, this is true only for TIMESTAMP, and for at most one TIMESTAMP column per table.
-        if (metadata.getProductMinorVersion() >= 6) {
-            //5.7.19-log
-            try {
-                String[] parts = Strings.split(metadata.getProductVersion(), ".");
-                if (parts.length >= 3) {
-                    String v   = parts[2];
-                    int    sep = v.indexOf('-');
-                    if (sep > 0) {
-                        v = v.substring(0, sep);
-                    }
-                    if (Integer.parseInt(v) >= 5) {
-                        columnTypes.add(Types.TIMESTAMP, "timestamp");
-                        return;
-                    }
-                }
-            } catch (Exception e) {
-                log.error("Unable the recognize the mysql version '" + metadata.getProductVersion() + "'", e);
-            }
+        if (version.ge(DbVersion.of(5, 6, 5))) {
+            columnTypes.add(Types.TIMESTAMP, "timestamp(3)");
+        } else {
+            columnTypes.add(Types.TIMESTAMP, "datetime");
         }
-
-        columnTypes.add(Types.TIMESTAMP, "datetime");
     }
 
     @Override
@@ -340,18 +324,18 @@ public class MySql5Dialect extends GenericDbDialect {
 
     @Override
     public String getJsonColumnValue(ResultSet rs, int column, int type) throws SQLException {
-        if(null == jsonColumnSupport) {
+        if (null == jsonColumnSupport) {
             return super.getJsonColumnValue(rs, column, type);
-        }else {
+        } else {
             Object value = super.getJsonColumnValue(rs, column, type);
-            if(null == value) {
+            if (null == value) {
                 return null;
             }
 
-            if(value instanceof byte[]) {
-                value = Strings.newStringUtf8((byte[])value);
-            }else if(value instanceof ByteArrayInputStream) {
-                value = IO.readString((ByteArrayInputStream)value, Charsets.UTF_8);
+            if (value instanceof byte[]) {
+                value = Strings.newStringUtf8((byte[]) value);
+            } else if (value instanceof ByteArrayInputStream) {
+                value = IO.readString((ByteArrayInputStream) value, Charsets.UTF_8);
             }
 
             return Converts.toString(value);
@@ -363,17 +347,17 @@ public class MySql5Dialect extends GenericDbDialect {
         public String getUpdateExpr(String alias, String column, String[] keys, Function<String, String> nameToParam) {
             final StringBuilder s = new StringBuilder();
 
-            if(null != alias) {
+            if (null != alias) {
                 s.append(alias).append('.');
             }
             s.append(column);
             s.append(" = JSON_SET(");
-            if(null != alias) {
+            if (null != alias) {
                 s.append(alias).append('.');
             }
             s.append(column);
 
-            for(String key : keys) {
+            for (String key : keys) {
                 s.append(',');
                 s.append("'$.").append(key).append("',");
                 s.append(nameToParam.apply(key));

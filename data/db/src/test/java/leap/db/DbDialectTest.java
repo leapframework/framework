@@ -32,6 +32,7 @@ public class DbDialectTest extends DbTestCase {
     @Test
     @Contextual("mysql")
     public void testMySQLDialectProperties() {
+        assertEquals("CURRENT_TIMESTAMP(3)", dialect.getCurrentTimestampExpr());
         assertNotEmpty(dialect.getTimestampAddMsExpr());
     }
 }

@@ -1,3 +1,5 @@
 defaults:
+  exprs:
+    current_timestamp: CURRENT_TIMESTAMP(3)
   funcs:
     timestampadd_ms: 'TIMESTAMPADD(MICROSECOND, #interval# * 1000, #ts#)'

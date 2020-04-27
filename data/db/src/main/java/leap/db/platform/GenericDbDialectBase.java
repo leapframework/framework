@@ -253,10 +253,10 @@ public abstract class GenericDbDialectBase implements DbDialect {
                 if(!currVer.ge(v)) {
                     return;
                 }
-                VerMap verMap = versions.get(v.getDotExpr());
+                VerMap verMap = versions.get(v.toDotExpr());
                 if(null == verMap) {
                     verMap = new VerMap(v);
-                    versions.put(v.getDotExpr(), verMap);
+                    versions.put(v.toDotExpr(), verMap);
                 }
                 verMap.put(name, value);
             }

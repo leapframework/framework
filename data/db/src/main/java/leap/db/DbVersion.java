@@ -63,6 +63,18 @@ public class DbVersion {
         this.revision = revision;
     }
 
+    public int getMajor() {
+        return major;
+    }
+
+    public int getMinor() {
+        return minor;
+    }
+
+    public int getRevision() {
+        return revision;
+    }
+
     public boolean ge(DbVersion ver) {
         if(major < ver.major) {
             return false;
@@ -82,7 +94,7 @@ public class DbVersion {
         return true;
     }
 
-    public String getDotExpr() {
+    public String toDotExpr() {
         return major + "." + minor + "." + revision;
     }
 }
