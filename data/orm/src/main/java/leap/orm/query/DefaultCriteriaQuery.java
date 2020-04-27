@@ -1479,6 +1479,10 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         }
 
         protected boolean needAppendAlias(String column) {
+            if (column.equals("*")) {
+                return true;
+            }
+
             if (column.contains(".") || column.contains("(")) {
                 return false;
             }

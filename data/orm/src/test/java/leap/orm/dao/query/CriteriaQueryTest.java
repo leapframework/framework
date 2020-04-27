@@ -286,6 +286,10 @@ public class CriteriaQueryTest extends OrmTestCase {
 			assertEquals("test1", result.get("name"));
 			assertEquals("test1", result.get("n"));
 			assertEquals(new Integer(1), result.getInteger("param"));
+
+			result = dao.createCriteriaQuery(ApiOperation.class, Record.class).select("*")
+					.join(Api.class, "api").firstOrNull();
+			assertEquals(11, result.size());
 		} finally {
 			deleteAll(ApiOperation.class);
 			deleteAll(ApiPath.class);
