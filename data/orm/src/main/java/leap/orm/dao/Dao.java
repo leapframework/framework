@@ -768,6 +768,13 @@ public abstract class Dao implements JdbcExecutor {
     public abstract <T> Query<T> createQuery(Class<T> resultClass, SqlCommand command);
 
     /**
+     * Creates a new {@link SqlCommand}.
+     */
+    public SqlCommand createSqlCommand(String sql) {
+        return getOrmContext().getSqlFactory().createSqlCommand(getOrmContext(), sql);
+    }
+
+    /**
      * Creates a new {@link Query} object for executing the given query sql.
      */
     public abstract Query<Record> createSqlQuery(String sql);
