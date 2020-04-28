@@ -1,3 +1,5 @@
 defaults:
-  funcs:
-    timestampadd_ms: 'TIMESTAMPADD(MS, #interval#, #ts#)'
+  #http://www.h2database.com/html/functions.html
+  functions:
+    timestamp_add_millis: 'TIMESTAMPADD(MS, :interval, :timestamp)'
+    timestamp_add_seconds: 'TIMESTAMPADD(S, :interval, :timestamp)'

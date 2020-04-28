@@ -19,6 +19,7 @@ import leap.core.jdbc.PreparedStatementHandler;
 import leap.db.change.SchemaChange;
 import leap.db.change.SchemaChangeContext;
 import leap.db.model.*;
+import leap.db.support.FunctionSupport;
 import leap.db.support.JsonColumnSupport;
 import leap.lang.convert.Converts;
 import leap.lang.jdbc.JdbcTypes;
@@ -31,9 +32,6 @@ import java.util.function.Consumer;
  * a dialect interface of the underlying db platform.
  */
 public interface DbDialect {
-
-    String TIMESTAMP_ADD_INTERVAL = "#interval#";
-    String TIMESTAMP_ADD_TS       = "#ts#";
 
     /**
      * Returns the property or <code>null</code>.
@@ -505,31 +503,14 @@ public interface DbDialect {
     }
 
     /**
-     * Returns the expr or function of current_timestamp.
+     * Required. Returns the {@link FunctionSupport}.
      */
-    default String getCurrentTimestampExpr() {
-        return getProperty("exprs.current_timestamp", "CURRENT_TIMESTAMP");
-    }
+    FunctionSupport getFunctions();
 
     /**
-     *  Returns expr for adding interval in milliseconds from a timestamp expr.
-     *
-     *  <pre>
-     *      formats: TIMESTAMPADD(MS, #interval#, #ts#)
-     *  </pre>
+     * Returns <code>true</code> if the db supports json column.
      */
-    default String getTimestampAddMsExpr() {
-        String v = getProperty("funcs.timestampadd_ms");
-        if(null == v) {
-            throw new IllegalStateException("Timestamp add not supported yet");
-        }
-        return v;
-    }
-
-	/**
-	 * Returns <code>true</code> if the db supports json column.
-	 */
-	default boolean supportsJsonColumn() {
+    default boolean supportsJsonColumn() {
         return null != getJsonColumnSupport();
     }
 

@@ -15,23 +15,28 @@
  *
  */
 
-package leap.db;
+package leap.db.platform;
 
-import leap.junit.contexual.Contextual;
-import org.junit.Test;
+import leap.db.DbDialect;
+import leap.db.support.FunctionSupport;
 
-public class DbDialectTest extends DbTestCase {
+public class GenericFunctionSupport implements FunctionSupport {
 
-    @Test
-    @Contextual("h2")
-    public void testH2DialectProperties() {
-        assertNotEmpty(dialect.getFunctions().getTimestampAddMilliseconds());
-        assertEquals("v3_1", dialect.getProperty("p1"));
+    protected static final String PROPERTY_PREFIX = "functions.";
+
+    protected final DbDialect dialect;
+
+    public GenericFunctionSupport(DbDialect dialect) {
+        this.dialect = dialect;
     }
 
-    @Test
-    @Contextual("mysql")
-    public void testMySQLDialectProperties() {
-        assertNotEmpty(dialect.getFunctions().getTimestampAddMilliseconds());
+    @Override
+    public DbDialect dialect() {
+        return dialect;
+    }
+
+    @Override
+    public String get(String name) {
+        return dialect.getProperty(PROPERTY_PREFIX + name.toLowerCase());
     }
 }

@@ -19,6 +19,7 @@ import leap.core.jdbc.PreparedStatementHandler;
 import leap.db.*;
 import leap.db.change.*;
 import leap.db.model.*;
+import leap.db.support.FunctionSupport;
 import leap.lang.*;
 import leap.lang.convert.Converts;
 import leap.lang.io.IO;
@@ -60,6 +61,7 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
     protected GenericDbMetadata   metadata;
     protected DbVersion           version;
     protected Map<String, Object> properties;
+    protected FunctionSupport     functions;
     protected String              statementDelimiter = ";";
 
     protected GenericDbDialect() {
@@ -74,6 +76,7 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
         this.log = this.db.getLog(this.getClass());
         this.version = resolveDbVersion(metadata);
         this.properties = loadProperties(getConfigName(db));
+        this.functions = new GenericFunctionSupport(this);
         this.registerMetadata(metadata);
     }
 
@@ -86,6 +89,11 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
     public <T> T getProperty(String name, Class<T> type) {
         Object v = properties.get(name);
         return null == v ? null : Converts.convert(v, type);
+    }
+
+    @Override
+    public FunctionSupport getFunctions() {
+        return functions;
     }
 
     protected String getConfigName(Db db) {
@@ -1445,12 +1453,12 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
             }
 
             String[] parts = Strings.split(s.toString(), ".");
-            if(parts.length >= 3) {
+            if (parts.length >= 3) {
                 return Integer.parseInt(parts[2]);
-            }else {
+            } else {
                 return 0;
             }
-        }catch (Exception e) {
+        } catch (Exception e) {
             log.warn("Can't determinate the revision at version string '" + metadata.getProductVersion() + "'", e);
             return 0;
         }

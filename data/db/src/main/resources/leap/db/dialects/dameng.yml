@@ -1,3 +1,0 @@
-defaults:
-  funcs:
-    timestampadd_ms: 'TIMESTAMPADD(ms, #interval#, #ts#)'
