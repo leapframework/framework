@@ -144,7 +144,7 @@ public class MySql5Dialect extends GenericDbDialect {
     protected String getColumnDefaultDefinition(DbColumn column) {
         if (Types.TIMESTAMP == column.getTypeCode()) {
             if ((!column.isNullable()) && !column.isDatetime() && Strings.isEmpty(column.getDefaultValue())) {
-                return "DEFAULT CURRENT_TIMESTAMP(3)";
+                return "DEFAULT CURRENT_TIMESTAMP";
             }
         }
         return super.getColumnDefaultDefinition(column);
@@ -274,11 +274,8 @@ public class MySql5Dialect extends GenericDbDialect {
 
         //https://dev.mysql.com/doc/refman/5.6/en/timestamp-initialization.html
         //Before 5.6.5, this is true only for TIMESTAMP, and for at most one TIMESTAMP column per table.
-        if (version.ge(DbVersion.of(5, 6, 5))) {
-            columnTypes.add(Types.TIMESTAMP, "timestamp(3)");
-        } else {
-            columnTypes.add(Types.TIMESTAMP, "datetime");
-        }
+        //default not use timestamp(3) for poor update performance.
+        columnTypes.add(Types.TIMESTAMP, "datetime");
     }
 
     @Override
