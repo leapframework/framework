@@ -795,7 +795,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     }
 
     @Override
-    protected T executeQuery(QueryContext context, ResultSetReader<T> reader) {
+    protected <R> R executeQuery(QueryContext context, ResultSetReader<R> reader) {
         String       sql       = builder.buildSelectSql();
         SqlStatement statement = createQueryStatement(context, sql);
         return statement.executeQuery(reader);

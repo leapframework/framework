@@ -228,7 +228,7 @@ public abstract class AbstractQuery<T> implements Query<T>, QueryContext {
     }
 
     @Override
-    public T executeQuery(ResultSetReader<T> reader) {
+    public <R> R executeQuery(ResultSetReader<R> reader) {
         return executeQuery(this, reader);
     }
 
@@ -274,7 +274,7 @@ public abstract class AbstractQuery<T> implements Query<T>, QueryContext {
 
     protected abstract QueryResult<T> executeQuery(QueryContext context);
 
-    protected abstract T executeQuery(QueryContext context, ResultSetReader<T> reader);
+    protected abstract <R> R executeQuery(QueryContext context, ResultSetReader<R> reader);
 
     protected abstract Scalar executeQueryForScalar(QueryContext context) throws TooManyRecordsException;
 

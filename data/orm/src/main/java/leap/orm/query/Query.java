@@ -143,17 +143,7 @@ public interface Query<T> extends QueryBase<T> {
     /**
      * Executes query and use the given {@link ResultSetReader} to read the result.
      */
-    default void executeQueryWithoutResult(ResultSetReader reader) {
-        executeQuery(rs -> {
-            reader.read(rs);
-            return null;
-        });
-    }
-
-    /**
-     * Executes query and use the given {@link ResultSetReader} to read the result.
-     */
-    T executeQuery(ResultSetReader<T> reader);
+    <R> R executeQuery(ResultSetReader<R> reader);
 
     /**
      * Executes a count(*) query and returns the total count of records.

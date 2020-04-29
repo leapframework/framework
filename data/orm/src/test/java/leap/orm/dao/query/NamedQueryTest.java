@@ -28,6 +28,7 @@ import leap.orm.tested.model.petclinic.Owner1;
 import leap.orm.tested.model.product.Product;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -35,32 +36,32 @@ public class NamedQueryTest extends OrmTestCase {
 
     protected @Inject DaoCommand findOwnerByLastNameWithAlias;
 
-	@Test
-	public void testFindOwnersByLastName() {
-		deleteAll(Owner.class);
+    @Test
+    public void testFindOwnersByLastName() {
+        deleteAll(Owner.class);
 
-		assertTrue(dao.createNamedQuery(Owner.class, "findOwnerByLastName").param("lastName", "test").result().isEmpty());
+        assertTrue(dao.createNamedQuery(Owner.class, "findOwnerByLastName").param("lastName", "test").result().isEmpty());
 
-		Owner older = dmo.getDataFactory().generate(Owner.class);
-		older.setLastName("test");
+        Owner older = dmo.getDataFactory().generate(Owner.class);
+        older.setLastName("test");
 
-		dao.insert(older);
+        dao.insert(older);
 
-		Owner newer = dao.createNamedQuery(Owner.class, "findOwnerByLastName").params(older).single();
-		newer.getPets();//force to create pets set
+        Owner newer = dao.createNamedQuery(Owner.class, "findOwnerByLastName").params(older).single();
+        newer.getPets();//force to create pets set
 
-		compareFields(older, newer.fields());
-	}
+        compareFields(older, newer.fields());
+    }
 
-	@Test
-	public void testFindOwner1WithNotMatchedColumnName() {
-	    deleteAll(Owner1.class);
+    @Test
+    public void testFindOwner1WithNotMatchedColumnName() {
+        deleteAll(Owner1.class);
 
-	    Owner1 owner = dmo.getDataFactory().generate(Owner1.class);
-	    dao.insert(owner);
+        Owner1 owner = dmo.getDataFactory().generate(Owner1.class);
+        dao.insert(owner);
 
-	    Record record = dao.createNamedQuery("findOwner1ByName").param("name", owner.getName()).first();
-	    assertNotEmpty(record.getString("id"));
+        Record record = dao.createNamedQuery("findOwner1ByName").param("name", owner.getName()).first();
+        assertNotEmpty(record.getString("id"));
     }
 
     @Test
@@ -73,74 +74,89 @@ public class NamedQueryTest extends OrmTestCase {
         assertEquals("a", found.getFirstName());
     }
 
-	@Test
-	public void testFindOwnersByLastNameForMap() {
-		deleteAll(Owner.class);
+    @Test
+    public void testFindOwnersByLastNameForMap() {
+        deleteAll(Owner.class);
 
-		assertTrue(dao.createNamedQuery("findOwnerByLastName").param("lastName", "test").result().isEmpty());
-		assertTrue(dao.createNamedQuery("findOwnerByLastNameSimple").param("lastName", "test").result().isEmpty());
+        assertTrue(dao.createNamedQuery("findOwnerByLastName").param("lastName", "test").result().isEmpty());
+        assertTrue(dao.createNamedQuery("findOwnerByLastNameSimple").param("lastName", "test").result().isEmpty());
 
-		Owner older = dmo.getDataFactory().generate(Owner.class);
-		older.setLastName("test");
+        Owner older = dmo.getDataFactory().generate(Owner.class);
+        older.setLastName("test");
 
-		dao.insert(older);
+        dao.insert(older);
 
         Map<String, Object> newer = dao.createNamedQuery("findOwnerByLastName").params(older).single();
         compareFields(older, newer);
 
         newer = dao.createNamedQuery("findOwnerByLastNameSimple").params(older).single();
         compareFields(older, newer);
-	}
+    }
 
-	@Test
-	public void testQueryWithResultClass(){
-		Product.deleteAll();
-		Product p = new Product();
-		p.setId("id");
-		p.setTypeId(1);
-		p.create();
-		List<Product> prdts = dao.createNamedQuery("queryProductWithResultClass",Product.class).list();
-		prdts.forEach((prdt)->{
-			assertNotNull(prdt.getId());
-		});
-		prdts = dao.createSqlQuery(Product.class,"select * from product").list();
-		prdts.forEach((prdt)->{
-			assertNotNull(prdt.getId());
-		});
-	}
+    @Test
+    public void testQueryWithResultClass() {
+        Product.deleteAll();
+        Product p = new Product();
+        p.setId("id");
+        p.setTypeId(1);
+        p.create();
+        List<Product> prdts = dao.createNamedQuery("queryProductWithResultClass", Product.class).list();
+        prdts.forEach((prdt) -> {
+            assertNotNull(prdt.getId());
+        });
+        prdts = dao.createSqlQuery(Product.class, "select * from product").list();
+        prdts.forEach((prdt) -> {
+            assertNotNull(prdt.getId());
+        });
 
-	@Test
-	public void testQueryDirSqlWithResultFile(){
-		dao.deleteAll(Directory.class);
-		dao.deleteAll(File.class);
-		Directory dir = new Directory();
-		dir.setName("name");
-		dir.setScopeId("scopeId");
-		dao.cmdInsert(Directory.class).from(dir).execute();
-		List<File> files = dao.createNamedQuery("queryDirSqlWithResultFile",File.class).list();
-		assertEquals(1,files.size());
-		assertEquals(dir.getScopeId(),files.get(0).getDirectoryId());
-		assertEquals(dir.getName(),files.get(0).getScopeId());
-		assertEquals(dir.getId(),files.get(0).getId());
-	}
+        List<Product> prdts1 = dao.createSqlQuery(Product.class, "select id from product").executeQuery((rs) -> {
+            final List<Product> list = new ArrayList<>();
+            while (rs.next()) {
+                Product product = new Product();
+                product.setId(rs.getString(1));
+                list.add(product);
+            }
+            return list;
+        });
 
-	@Test
-	@Contextual("mysql")
-	public void testBracketsExpression(){
-		dao.createNamedQuery("testBracketsExpression").list();
-	}
+        assertEquals(prdts.size(), prdts1.size());
+        prdts1.forEach((prdt) -> {
+            assertNotNull(prdt.getId());
+        });
+    }
 
-	@Test
-	public void testUpperCaseSqlWithLowerCaseField(){
-		Product.deleteAll();
-		Product product = new Product();
-		product.create();
-		List<Product> products = Product.<Product>query("testUpperCaseSqlWithLowerCaseField").list();
-		assertEquals(1,products.size());
-		assertEquals(product.getId(),products.get(0).getId());
-	}
+    @Test
+    public void testQueryDirSqlWithResultFile() {
+        dao.deleteAll(Directory.class);
+        dao.deleteAll(File.class);
+        Directory dir = new Directory();
+        dir.setName("name");
+        dir.setScopeId("scopeId");
+        dao.cmdInsert(Directory.class).from(dir).execute();
+        List<File> files = dao.createNamedQuery("queryDirSqlWithResultFile", File.class).list();
+        assertEquals(1, files.size());
+        assertEquals(dir.getScopeId(), files.get(0).getDirectoryId());
+        assertEquals(dir.getName(), files.get(0).getScopeId());
+        assertEquals(dir.getId(), files.get(0).getId());
+    }
 
-	protected void compareFields(Owner older, Map<String, Object> newer) {
+    @Test
+    @Contextual("mysql")
+    public void testBracketsExpression() {
+        dao.createNamedQuery("testBracketsExpression").list();
+    }
+
+    @Test
+    public void testUpperCaseSqlWithLowerCaseField() {
+        Product.deleteAll();
+        Product product = new Product();
+        product.create();
+        List<Product> products = Product.<Product>query("testUpperCaseSqlWithLowerCaseField").list();
+        assertEquals(1, products.size());
+        assertEquals(product.getId(), products.get(0).getId());
+    }
+
+    protected void compareFields(Owner older, Map<String, Object> newer) {
         Map<String, Object> olderFields = older.fields();
         Map<String, Object> newerFields = newer;
 
@@ -153,7 +169,7 @@ public class NamedQueryTest extends OrmTestCase {
         }
 
         assertMapEquals(olderFields, newerFields);
-	}
+    }
 
     @Test
     public void testBug() {
@@ -161,19 +177,19 @@ public class NamedQueryTest extends OrmTestCase {
     }
 
     @Test
-    public void testQueryWithSlash(){
-		Owner.query("testQueryWithSlash").list();
-	}
+    public void testQueryWithSlash() {
+        Owner.query("testQueryWithSlash").list();
+    }
 
-	@Test
-	@Contextual("mysql")
-	public void testGetTotalCountWithUnion(){
-		Owner.deleteAll();
-		new Owner().setFullName("f1","l1").create();
-		new Owner().setFullName("f2","l2").create();
-		PageResult<Owner> pageResult = Owner.<Owner>query("testGetTotalCountWithUnion").pageResult(1,10);
-		List<Owner> owners = pageResult.list();
-		long count = pageResult.getTotalCount();
-		assertEquals(owners.size(),count);
-	}
+    @Test
+    @Contextual("mysql")
+    public void testGetTotalCountWithUnion() {
+        Owner.deleteAll();
+        new Owner().setFullName("f1", "l1").create();
+        new Owner().setFullName("f2", "l2").create();
+        PageResult<Owner> pageResult = Owner.<Owner>query("testGetTotalCountWithUnion").pageResult(1, 10);
+        List<Owner>       owners     = pageResult.list();
+        long              count      = pageResult.getTotalCount();
+        assertEquals(owners.size(), count);
+    }
 }

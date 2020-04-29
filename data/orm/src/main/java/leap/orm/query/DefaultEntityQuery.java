@@ -62,7 +62,7 @@ public class DefaultEntityQuery<T> extends AbstractQuery<T> implements EntityQue
     }
 
 	@Override
-	protected T executeQuery(QueryContext context, ResultSetReader<T> reader) {
+	protected <R> R executeQuery(QueryContext context, ResultSetReader<R> reader) {
 		return command.executeQuery(context, params(), reader);
 	}
 

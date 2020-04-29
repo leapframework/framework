@@ -48,7 +48,7 @@ public class DefaultCommandQuery<T> extends AbstractQuery<T> {
     }
 
 	@Override
-	protected T executeQuery(QueryContext context, ResultSetReader<T> reader) {
+	protected <R> R executeQuery(QueryContext context, ResultSetReader<R> reader) {
 		return command.executeQuery(context, params(), reader);
 	}
 
