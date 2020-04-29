@@ -62,6 +62,11 @@ public class DefaultEntityQuery<T> extends AbstractQuery<T> implements EntityQue
     }
 
 	@Override
+	protected T executeQuery(QueryContext context, ResultSetReader<T> reader) {
+		return command.executeQuery(context, params(), reader);
+	}
+
+	@Override
     protected Scalar executeQueryForScalar(QueryContext context) throws TooManyRecordsException {
 	    return command.executeQuery(context, params(), ResultSetReaders.forScalar(context.getOrmContext()));
     }

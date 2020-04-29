@@ -795,6 +795,13 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     }
 
     @Override
+    protected T executeQuery(QueryContext context, ResultSetReader<T> reader) {
+        String       sql       = builder.buildSelectSql();
+        SqlStatement statement = createQueryStatement(context, sql);
+        return statement.executeQuery(reader);
+    }
+
+    @Override
     protected Scalar executeQueryForScalar(QueryContext context) throws TooManyRecordsException {
         return buildQueryStatement(context).executeQuery(ResultSetReaders.forScalar(context.getOrmContext()));
     }
@@ -1335,7 +1342,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
                 sql.append(fm.getColumnName()).append("=").append(':').append(param);
 
-                if(null != fm.getSerializer() && null != value) {
+                if (null != fm.getSerializer() && null != value) {
                     value = fm.getSerializer().trySerialize(fm, value);
                 }
 

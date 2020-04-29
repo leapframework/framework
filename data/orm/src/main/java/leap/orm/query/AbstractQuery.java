@@ -19,6 +19,7 @@ import leap.core.exception.EmptyRecordsException;
 import leap.core.exception.TooManyColumnsException;
 import leap.core.exception.TooManyRecordsException;
 import leap.core.jdbc.JdbcExecutor;
+import leap.core.jdbc.ResultSetReader;
 import leap.core.value.Scalar;
 import leap.core.value.Scalars;
 import leap.lang.Args;
@@ -226,6 +227,11 @@ public abstract class AbstractQuery<T> implements Query<T>, QueryContext {
         return executeResult(limit);
     }
 
+    @Override
+    public T executeQuery(ResultSetReader<T> reader) {
+        return executeQuery(this, reader);
+    }
+
     protected QueryResult<T> executeResult(Limit limit) {
         QueryResult result = null == limit ? executeQuery(this) : executeQuery(new LimitQueryContext(limit));
 
@@ -267,6 +273,8 @@ public abstract class AbstractQuery<T> implements Query<T>, QueryContext {
     }
 
     protected abstract QueryResult<T> executeQuery(QueryContext context);
+
+    protected abstract T executeQuery(QueryContext context, ResultSetReader<T> reader);
 
     protected abstract Scalar executeQueryForScalar(QueryContext context) throws TooManyRecordsException;
 

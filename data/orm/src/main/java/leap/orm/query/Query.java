@@ -15,6 +15,7 @@
  */
 package leap.orm.query;
 
+import leap.core.jdbc.ResultSetReader;
 import leap.lang.annotation.Nullable;
 import leap.lang.beans.DynaBean;
 import leap.lang.params.ArrayParams;
@@ -138,6 +139,21 @@ public interface Query<T> extends QueryBase<T> {
     default PageResult<T> pageResult(int index, int size) {
         return pageResult(Page.indexOf(index, size));
     }
+
+    /**
+     * Executes query and use the given {@link ResultSetReader} to read the result.
+     */
+    default void executeQueryWithoutResult(ResultSetReader reader) {
+        executeQuery(rs -> {
+            reader.read(rs);
+            return null;
+        });
+    }
+
+    /**
+     * Executes query and use the given {@link ResultSetReader} to read the result.
+     */
+    T executeQuery(ResultSetReader<T> reader);
 
     /**
      * Executes a count(*) query and returns the total count of records.
