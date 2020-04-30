@@ -1,6 +1,6 @@
 defaults:
   #https://dev.mysql.com/doc/refman/5.7/en/functions.html
   functions:
-    now: 'NOW()'
+    now: 'NOW(3)'
     timestamp_add_millis: 'TIMESTAMPADD(MICROSECOND, :interval * 1000, :timestamp)'
     timestamp_add_seconds: 'TIMESTAMPADD(SECOND, :interval, :timestamp)'

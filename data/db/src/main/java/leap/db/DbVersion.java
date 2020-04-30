@@ -75,6 +75,14 @@ public class DbVersion {
         return revision;
     }
 
+    public boolean ge(int major, int minor, int revision) {
+        return ge(DbVersion.of(major, minor, revision));
+    }
+
+    public boolean ge(int major, int minor) {
+        return ge(DbVersion.of(major, minor, 0));
+    }
+
     public boolean ge(DbVersion ver) {
         if(major < ver.major) {
             return false;
