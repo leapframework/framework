@@ -45,7 +45,7 @@ import java.util.function.Consumer;
 
 public abstract class GenericDbDialect extends GenericDbDialectBase implements DbAware {
 
-    protected static final String NATIVE_TYPE_PROPERTY_PREFIX = "types";
+    protected static final String TYPES_PROPERTY_PREFIX = "types";
 
     protected Log log;
 
@@ -94,8 +94,8 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
     }
 
     @Override
-    public String getNativeType(String name) {
-        return getProperty(NATIVE_TYPE_PROPERTY_PREFIX + "." + name.toLowerCase());
+    public String getSpecialType(String name) {
+        return getProperty(TYPES_PROPERTY_PREFIX + "." + name.toLowerCase());
     }
 
     @Override
@@ -1253,11 +1253,13 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 
     protected String getColumnTypeDefinition(DbColumn column) {
         if (!Strings.isEmpty(column.getNativeType())) {
-            String realNativeType = getNativeType(column.getNativeType());
-            if (!Strings.isEmpty(realNativeType)) {
-                return resolveColumnTypeDef(column, realNativeType);
-            }else {
-                return resolveColumnTypeDef(column, column.getNativeType());
+            return resolveColumnTypeDef(column, column.getNativeType());
+        }
+
+        if (!Strings.isEmpty(column.getSpecialType())) {
+            String specialType = getSpecialType(column.getSpecialType());
+            if (!Strings.isEmpty(specialType)) {
+                return resolveColumnTypeDef(column, specialType);
             }
         }
 

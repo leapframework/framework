@@ -71,6 +71,7 @@ public class DbColumnBuilder implements Buildable<DbColumn>,JsonParsable {
 	protected String  name;
 	protected Integer typeCode;
 	protected String  typeName;
+	protected String  specialType;
 	protected String  nativeType;
 	protected Integer length;
 	protected Integer precision;
@@ -90,6 +91,8 @@ public class DbColumnBuilder implements Buildable<DbColumn>,JsonParsable {
         this.name = template.name;
         this.typeCode = template.typeCode;
         this.typeName = template.typeName;
+        this.specialType = template.specialType;
+        this.nativeType = template.nativeType;
         this.length = template.length;
         this.precision = template.precision;
         this.scale = template.scale;
@@ -127,6 +130,7 @@ public class DbColumnBuilder implements Buildable<DbColumn>,JsonParsable {
 		this.name          = cloneFrom.getName();
 		this.typeCode      = cloneFrom.getTypeCode();
 		this.typeName      = cloneFrom.getTypeName();
+		this.specialType   = cloneFrom.getSpecialType();
 		this.nativeType    = cloneFrom.getNativeType();
 		this.length        = cloneFrom.getLength();
 		this.precision     = cloneFrom.getPrecision();
@@ -205,6 +209,14 @@ public class DbColumnBuilder implements Buildable<DbColumn>,JsonParsable {
 			this.setTypeName(typeName);
 		}
 		return this;
+	}
+
+	public String getSpecialType() {
+		return specialType;
+	}
+
+	public void setSpecialType(String specialType) {
+		this.specialType = specialType;
 	}
 
 	public String getNativeType() {
@@ -412,7 +424,7 @@ public class DbColumnBuilder implements Buildable<DbColumn>,JsonParsable {
 			autoIncrement = false;
 		}
 		
-	    return new DbColumn(name, typeCode,typeName,nativeType,
+	    return new DbColumn(name, typeCode,typeName, specialType, nativeType,
 				length, precision, scale, nullable, primaryKey, unique, autoIncrement, defaultValue, comment);
     }
 
@@ -422,6 +434,7 @@ public class DbColumnBuilder implements Buildable<DbColumn>,JsonParsable {
 		this.name          = o.getString("name");
 		this.typeCode      = o.getInteger("typeCode");
 		this.typeName      = o.getString("typeName");
+		this.specialType   = o.getString("specialType");
 		this.nativeType    = o.getString("nativeType");
 		this.length        = o.getInteger("length");
 		this.precision     = o.getInteger("precision");

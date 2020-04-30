@@ -46,7 +46,7 @@ public interface DbDialect {
     /**
      * Returns the native type def mapping to the given type name.
      */
-    String getNativeType(String name);
+    String getSpecialType(String name);
 
     /**
      * Returns the property or <code>null</code>.

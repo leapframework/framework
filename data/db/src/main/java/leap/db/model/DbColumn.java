@@ -24,97 +24,103 @@ import leap.lang.json.JsonWriter;
 import java.sql.Types;
 
 public class DbColumn extends DbNamedObject implements JsonStringable {
-	
-	protected final int     typeCode;
-	protected final String  typeName;
-	protected final String	nativeType;
-	protected final int     length;
-	protected final int     precision;
-	protected final int     scale;
-	protected final boolean nullable;
-	protected final boolean primaryKey;
-	protected final boolean unique;
-	protected final boolean autoIncrement;
-	protected final String	defaultValue;
-	protected final String  comment;
-	
-	public DbColumn(String name,
-					int typeCode,String typeName, String nativeType,
-					int length,int precision,int scale,
-					boolean nullable,boolean primaryKey,boolean unique,
-					boolean autoIncrement,String defaultValue,String comment) {
-		
-	    super(name);
-	    
-	    Args.notEmpty(typeName,"type name");
-	    
-	    this.typeCode      = typeCode;
-	    this.typeName      = typeName;
-	    this.nativeType	   = nativeType;
-	    this.length        = length;
-	    this.precision     = precision;
-	    this.scale         = scale;
-	    this.nullable      = nullable;
-	    this.primaryKey    = primaryKey;
-	    this.unique        = unique;
-	    this.autoIncrement = autoIncrement;
-	    this.defaultValue  = Strings.trimToNull(defaultValue);
-	    this.comment       = Strings.trimToNull(comment);
+
+    protected final int     typeCode;
+    protected final String  typeName;
+    protected final String  specialType;
+    protected final String  nativeType;
+    protected final int     length;
+    protected final int     precision;
+    protected final int     scale;
+    protected final boolean nullable;
+    protected final boolean primaryKey;
+    protected final boolean unique;
+    protected final boolean autoIncrement;
+    protected final String  defaultValue;
+    protected final String  comment;
+
+    public DbColumn(String name,
+                    int typeCode, String typeName, String specialType, String nativeType,
+                    int length, int precision, int scale,
+                    boolean nullable, boolean primaryKey, boolean unique,
+                    boolean autoIncrement, String defaultValue, String comment) {
+
+        super(name);
+
+        Args.notEmpty(typeName, "type name");
+
+        this.typeCode = typeCode;
+        this.typeName = typeName;
+        this.specialType = specialType;
+        this.nativeType = nativeType;
+        this.length = length;
+        this.precision = precision;
+        this.scale = scale;
+        this.nullable = nullable;
+        this.primaryKey = primaryKey;
+        this.unique = unique;
+        this.autoIncrement = autoIncrement;
+        this.defaultValue = Strings.trimToNull(defaultValue);
+        this.comment = Strings.trimToNull(comment);
     }
 
-	public int getTypeCode() {
-		return typeCode;
-	}
-	
-	public String getTypeName() {
-		return typeName;
-	}
-
-	public String getNativeType() {
-		return nativeType;
-	}
-
-	public int getLength() {
-		return length;
-	}
-
-	public int getPrecision() {
-		return precision;
-	}
-
-	public int getScale() {
-		return scale;
-	}
-
-	public boolean isNullable() {
-		return nullable;
-	}
-
-	public boolean isPrimaryKey() {
-		return primaryKey;
-	}
-
-	public boolean isUnique() {
-		return unique;
-	}
-
-	public boolean isAutoIncrement() {
-		return autoIncrement;
-	}
-
-	public String getDefaultValue() {
-		return defaultValue;
-	}
-
-	public String getComment() {
-		return comment;
-	}
-
-	public boolean isDatetime() {
-	    return typeCode == Types.TIMESTAMP && JdbcTypes.DATETIME.equals(typeName);
+    public int getTypeCode() {
+        return typeCode;
     }
-	
-	@Override
+
+    public String getTypeName() {
+        return typeName;
+    }
+
+    public String getSpecialType() {
+        return specialType;
+    }
+
+    public String getNativeType() {
+        return nativeType;
+    }
+
+    public int getLength() {
+        return length;
+    }
+
+    public int getPrecision() {
+        return precision;
+    }
+
+    public int getScale() {
+        return scale;
+    }
+
+    public boolean isNullable() {
+        return nullable;
+    }
+
+    public boolean isPrimaryKey() {
+        return primaryKey;
+    }
+
+    public boolean isUnique() {
+        return unique;
+    }
+
+    public boolean isAutoIncrement() {
+        return autoIncrement;
+    }
+
+    public String getDefaultValue() {
+        return defaultValue;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public boolean isDatetime() {
+        return typeCode == Types.TIMESTAMP && JdbcTypes.DATETIME.equals(typeName);
+    }
+
+    @Override
     public String toString() {
         StringBuffer result = new StringBuffer();
 
@@ -127,39 +133,42 @@ public class DbColumn extends DbNamedObject implements JsonStringable {
         return result.toString();
     }
 
-	@Override
+    @Override
     public void toJson(JsonWriter writer) {
-		writer.startObject();
-		
-		
-		writer.property("name", name)
-			  .property("typeCode", typeCode)
-			  .property("typeName", typeName);
+        writer.startObject();
 
-		if(length > 0){
-			writer.property("length", length);
-		}else{
-			writer.property("precision", precision)
-			      .property("scale", scale);
-		}
-		
-		writer.property("nullable", nullable);
-		
-		if(primaryKey){
-			writer.property("primaryKey", primaryKey);
-		}
-		
-		if(unique){
-			writer.property("unique", unique);
-		}
-		
-		if(autoIncrement){
-			writer.property("autoIncrement", autoIncrement);
-		}
-		
-		writer.propertyOptional("defaultValue", defaultValue)
-		      .propertyOptional("comment",comment);
-		
-		writer.endObject();
+
+        writer.property("name", name)
+                .property("typeCode", typeCode)
+                .property("typeName", typeName)
+                .propertyOptional("specialType", specialType)
+                .propertyOptional("nativeType", nativeType);
+
+
+        if (length > 0) {
+            writer.property("length", length);
+        } else {
+            writer.property("precision", precision)
+                    .property("scale", scale);
+        }
+
+        writer.property("nullable", nullable);
+
+        if (primaryKey) {
+            writer.property("primaryKey", primaryKey);
+        }
+
+        if (unique) {
+            writer.property("unique", unique);
+        }
+
+        if (autoIncrement) {
+            writer.property("autoIncrement", autoIncrement);
+        }
+
+        writer.propertyOptional("defaultValue", defaultValue)
+                .propertyOptional("comment", comment);
+
+        writer.endObject();
     }
 }
