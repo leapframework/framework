@@ -45,6 +45,8 @@ import java.util.function.Consumer;
 
 public abstract class GenericDbDialect extends GenericDbDialectBase implements DbAware {
 
+    protected static final String NATIVE_TYPE_PROPERTY_PREFIX = "types";
+
     protected Log log;
 
     private final Map<Class<?>, Method> schemaChangeMethods = new ConcurrentHashMap<>();
@@ -89,6 +91,11 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
     public <T> T getProperty(String name, Class<T> type) {
         Object v = properties.get(name);
         return null == v ? null : Converts.convert(v, type);
+    }
+
+    @Override
+    public String getNativeType(String name) {
+        return getProperty(NATIVE_TYPE_PROPERTY_PREFIX + "." + name.toLowerCase());
     }
 
     @Override
@@ -1246,7 +1253,12 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 
     protected String getColumnTypeDefinition(DbColumn column) {
         if (!Strings.isEmpty(column.getNativeType())) {
-            return column.getNativeType();
+            String realNativeType = getNativeType(column.getNativeType());
+            if (!Strings.isEmpty(realNativeType)) {
+                return resolveColumnTypeDef(column, realNativeType);
+            }else {
+                return resolveColumnTypeDef(column, column.getNativeType());
+            }
         }
 
         if (column.isDatetime()) {
@@ -1263,13 +1275,14 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
     }
 
     protected String getColumnTypeDefinition(DbColumn column, DbColumnType type) {
-        String dataType = type.getTypeDef();
+        return resolveColumnTypeDef(column, type.getTypeDef());
+    }
 
-        dataType = Strings.replaceOnce(dataType, "$l", column.getLength() < 0 ? "" : String.valueOf(column.getLength()));
-        dataType = Strings.replaceOnce(dataType, "$p", column.getPrecision() < 0 ? "" : String.valueOf(column.getPrecision()));
-        dataType = Strings.replaceOnce(dataType, "$s", column.getScale() < 0 ? "" : String.valueOf(column.getScale()));
-
-        return dataType;
+    protected String resolveColumnTypeDef(DbColumn column, String typeDef) {
+        typeDef = Strings.replaceOnce(typeDef, "$l", column.getLength() < 0 ? "" : String.valueOf(column.getLength()));
+        typeDef = Strings.replaceOnce(typeDef, "$p", column.getPrecision() < 0 ? "" : String.valueOf(column.getPrecision()));
+        typeDef = Strings.replaceOnce(typeDef, "$s", column.getScale() < 0 ? "" : String.valueOf(column.getScale()));
+        return typeDef;
     }
 
     protected DbColumnType getColumnType(DbColumn column) {

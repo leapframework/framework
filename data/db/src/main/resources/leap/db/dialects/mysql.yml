@@ -4,3 +4,7 @@ defaults:
     now: 'NOW(3)'
     timestamp_add_millis: 'TIMESTAMPADD(MICROSECOND, :interval * 1000, :timestamp)'
     timestamp_add_seconds: 'TIMESTAMPADD(SECOND, :interval, :timestamp)'
+  types:
+    timestamp3: timestamp(3)
+    datetime: datetime
+    datetime3: datetime(3)

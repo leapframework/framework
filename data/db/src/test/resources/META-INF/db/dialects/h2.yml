@@ -1,14 +1,17 @@
-v1_4:
+v_1_4:
   p1: v4
 
-v1_3_1:
+v_1_3_1:
   p1: v3_1
 
-v1_3:
+v_1_3:
   p1: v3
 
-v1_2:
+v_1_2:
   p1: v2
 
 defaults:
   p1: v1
+
+  types:
+    timestamp3: timestamp

@@ -44,6 +44,11 @@ public interface DbDialect {
     <T> T getProperty(String name, Class<T> type);
 
     /**
+     * Returns the native type def mapping to the given type name.
+     */
+    String getNativeType(String name);
+
+    /**
      * Returns the property or <code>null</code>.
      */
     default String getProperty(String name, String defaults) {

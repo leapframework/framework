@@ -27,11 +27,14 @@ public class DbDialectTest extends DbTestCase {
     public void testH2DialectProperties() {
         assertNotEmpty(dialect.getFunctions().getTimestampAddMilliseconds());
         assertEquals("v3_1", dialect.getProperty("p1"));
+        assertEquals("timestamp", dialect.getNativeType("Timestamp3"));
     }
 
     @Test
     @Contextual("mysql")
     public void testMySQLDialectProperties() {
         assertNotEmpty(dialect.getFunctions().getTimestampAddMilliseconds());
+        assertEquals("datetime", dialect.getNativeType("datetime"));
+        assertEquals("TIMESTAMP(3)", dialect.getNativeType("timestamp3"));
     }
 }

@@ -1,0 +1,2 @@
+types:
+  timestamp3: TIMESTAMP(3)

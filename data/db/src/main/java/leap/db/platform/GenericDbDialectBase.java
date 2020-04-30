@@ -248,18 +248,21 @@ public abstract class GenericDbDialectBase implements DbDialect {
                 return;
             }
 
-            if(prefix.startsWith("v")) {
-                DbVersion v = DbVersion.parseUnderscore(prefix.substring(1));
-                if(!currVer.ge(v)) {
+            if (prefix.startsWith("v_")) {
+                DbVersion v = DbVersion.parseUnderscore(prefix.substring(2));
+                if (!currVer.ge(v)) {
                     return;
                 }
                 VerMap verMap = versions.get(v.toDotExpr());
-                if(null == verMap) {
+                if (null == verMap) {
                     verMap = new VerMap(v);
                     versions.put(v.toDotExpr(), verMap);
                 }
                 verMap.put(name, value);
+                return;
             }
+
+            currMap.put(key, value);
         });
 
         final List<VerMap> verMaps = new ArrayList<>(versions.values());
