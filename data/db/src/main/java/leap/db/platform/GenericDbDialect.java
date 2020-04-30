@@ -1256,8 +1256,8 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
             return resolveColumnTypeDef(column, column.getNativeType());
         }
 
-        if (!Strings.isEmpty(column.getSpecialType())) {
-            String specialType = getSpecialType(column.getSpecialType());
+        if (!Strings.isEmpty(column.getPossibleType())) {
+            String specialType = getSpecialType(column.getPossibleType());
             if (!Strings.isEmpty(specialType)) {
                 return resolveColumnTypeDef(column, specialType);
             }

@@ -27,43 +27,43 @@ import leap.lang.json.JsonValue;
 import java.sql.Types;
 
 public class DbColumnBuilder implements Buildable<DbColumn>,JsonParsable {
-	
+
 	public static DbColumnBuilder guid(String name){
 		return new DbColumnBuilder(name, Types.VARCHAR, 38);
 	}
-	
+
 	public static DbColumnBuilder varchar(String name,int length){
 		return new DbColumnBuilder(name, Types.VARCHAR, length);
 	}
-	
+
 	public static DbColumnBuilder bool(String name){
 		return new DbColumnBuilder(name, Types.BOOLEAN);
 	}
-	
+
 	public static DbColumnBuilder clob(String name){
 		return new DbColumnBuilder(name, Types.CLOB);
 	}
-	
+
 	public static DbColumnBuilder blob(String name){
 		return new DbColumnBuilder(name, Types.BLOB);
 	}
-	
+
 	public static DbColumnBuilder smallint(String name){
 		return new DbColumnBuilder(name, Types.SMALLINT);
 	}
-	
+
 	public static DbColumnBuilder integer(String name){
 		return new DbColumnBuilder(name, Types.INTEGER);
 	}
-	
+
 	public static DbColumnBuilder bigint(String name){
 		return new DbColumnBuilder(name, Types.BIGINT);
 	}
-	
+
 	public static DbColumnBuilder decimal(String name){
 		return new DbColumnBuilder(name, Types.DECIMAL).setPrecision(19).setScale(4);
 	}
-	
+
 	public static DbColumnBuilder timestamp(String name){
 		return new DbColumnBuilder(name, Types.TIMESTAMP);
 	}
@@ -71,7 +71,7 @@ public class DbColumnBuilder implements Buildable<DbColumn>,JsonParsable {
 	protected String  name;
 	protected Integer typeCode;
 	protected String  typeName;
-	protected String  specialType;
+	protected String  possibleType;
 	protected String  nativeType;
 	protected Integer length;
 	protected Integer precision;
@@ -84,14 +84,14 @@ public class DbColumnBuilder implements Buildable<DbColumn>,JsonParsable {
 	protected String  comment;
 
 	public DbColumnBuilder(){
-		
+
 	}
 
     public DbColumnBuilder(DbColumnBuilder template) {
         this.name = template.name;
         this.typeCode = template.typeCode;
         this.typeName = template.typeName;
-        this.specialType = template.specialType;
+        this.possibleType = template.possibleType;
         this.nativeType = template.nativeType;
         this.length = template.length;
         this.precision = template.precision;
@@ -103,19 +103,19 @@ public class DbColumnBuilder implements Buildable<DbColumn>,JsonParsable {
         this.defaultValue = template.defaultValue;
         this.comment = template.comment;
     }
-	
+
 	public DbColumnBuilder(String name){
 		this.name = name;
 	}
-	
+
 	public DbColumnBuilder(String name,int typeCode){
 		this(name,typeCode,0);
 	}
-	
+
 	public DbColumnBuilder(String name,int typeCode,int length) {
 		this(name,typeCode,length,true);
 	}
-	
+
 	public DbColumnBuilder(String name,int typeCode,int length,boolean nullable) {
 		this.name     = name;
 		this.typeCode = typeCode;
@@ -123,14 +123,14 @@ public class DbColumnBuilder implements Buildable<DbColumn>,JsonParsable {
 		this.length   = length;
 		this.nullable = nullable;
 	}
-	
+
 	public DbColumnBuilder(DbColumn cloneFrom){
 		Args.notNull(cloneFrom,"the clone from");
-		
+
 		this.name          = cloneFrom.getName();
 		this.typeCode      = cloneFrom.getTypeCode();
 		this.typeName      = cloneFrom.getTypeName();
-		this.specialType   = cloneFrom.getSpecialType();
+		this.possibleType = cloneFrom.getPossibleType();
 		this.nativeType    = cloneFrom.getNativeType();
 		this.length        = cloneFrom.getLength();
 		this.precision     = cloneFrom.getPrecision();
@@ -142,19 +142,19 @@ public class DbColumnBuilder implements Buildable<DbColumn>,JsonParsable {
 		this.defaultValue  = cloneFrom.getDefaultValue();
 		this.comment	   = cloneFrom.getComment();
 	}
-	
+
 	public DbColumnBuilder notNull(){
 		return setNullable(false);
 	}
-	
+
 	public DbColumnBuilder unique(){
 		return setUnique(true);
 	}
-	
+
 	public DbColumnBuilder primaryKey(){
 		return setPrimaryKey(true);
 	}
-	
+
 	public String getName() {
 		return name;
 	}
@@ -163,14 +163,14 @@ public class DbColumnBuilder implements Buildable<DbColumn>,JsonParsable {
 		this.name = name;
 		return this;
 	}
-	
+
 	public DbColumnBuilder trySetName(String name){
 		if(Strings.isEmpty(this.name)){
 			this.name = name;
 		}
 		return this;
 	}
-	
+
 	public Integer getTypeCode() {
 		return typeCode;
 	}
@@ -178,21 +178,21 @@ public class DbColumnBuilder implements Buildable<DbColumn>,JsonParsable {
 	public DbColumnBuilder setTypeCode(Integer typeCode) {
 		this.typeCode = typeCode;
 		if(null != typeCode){
-			this.typeName = JdbcTypes.forTypeCode(typeCode).getName();	
+			this.typeName = JdbcTypes.forTypeCode(typeCode).getName();
 		}else{
 			this.typeName = null;
 		}
-		
+
 		return this;
 	}
-	
+
 	public DbColumnBuilder trySetTypeCode(Integer typeCode){
 		if(null == this.typeCode){
 			this.setTypeCode(typeCode);
 		}
 		return this;
 	}
-	
+
 	public String getTypeName() {
 		return typeName;
 	}
@@ -211,12 +211,12 @@ public class DbColumnBuilder implements Buildable<DbColumn>,JsonParsable {
 		return this;
 	}
 
-	public String getSpecialType() {
-		return specialType;
+	public String getPossibleType() {
+		return possibleType;
 	}
 
-	public void setSpecialType(String specialType) {
-		this.specialType = specialType;
+	public void setPossibleType(String possibleType) {
+		this.possibleType = possibleType;
 	}
 
 	public String getNativeType() {
@@ -242,7 +242,7 @@ public class DbColumnBuilder implements Buildable<DbColumn>,JsonParsable {
 		}
 		return this;
 	}
-	
+
 	public Integer getPrecision() {
 		return precision;
 	}
@@ -251,7 +251,7 @@ public class DbColumnBuilder implements Buildable<DbColumn>,JsonParsable {
 		this.precision = precision;
 		return this;
 	}
-	
+
 	public DbColumnBuilder trySetPrecision(Integer precision){
 		if(null == this.precision){
 			this.precision = precision;
@@ -267,14 +267,14 @@ public class DbColumnBuilder implements Buildable<DbColumn>,JsonParsable {
 		this.scale = scale;
 		return this;
 	}
-	
+
 	public DbColumnBuilder trySetScale(Integer scale){
 		if(null == this.scale){
 			this.scale = scale;
 		}
 		return this;
 	}
-	
+
 	public boolean isNullable(){
 		return null != nullable && nullable;
 	}
@@ -287,14 +287,14 @@ public class DbColumnBuilder implements Buildable<DbColumn>,JsonParsable {
 		this.nullable = nullable;
 		return this;
 	}
-	
+
 	public DbColumnBuilder trySetNullable(Boolean nullable){
 		if(null == this.nullable){
 			this.nullable = nullable;
 		}
 		return this;
 	}
-	
+
 	public boolean isPrimaryKey(){
 		return null != primaryKey && primaryKey;
 	}
@@ -305,21 +305,21 @@ public class DbColumnBuilder implements Buildable<DbColumn>,JsonParsable {
 
 	public DbColumnBuilder setPrimaryKey(Boolean primaryKey) {
 		this.primaryKey = primaryKey;
-		
+
 		if(null != primaryKey && primaryKey){
 			this.nullable   = false;
 		}
-		
+
 		return this;
 	}
-	
+
 	public DbColumnBuilder trySetPrimaryKey(Boolean primaryKey){
 		if(null == this.primaryKey){
 			this.setPrimaryKey(primaryKey);
 		}
 		return this;
 	}
-	
+
 	public boolean isUnique(){
 		return null != unique && unique;
 	}
@@ -327,19 +327,19 @@ public class DbColumnBuilder implements Buildable<DbColumn>,JsonParsable {
 	public Boolean getUnique() {
 		return unique;
 	}
-	
+
 	public DbColumnBuilder setUnique(Boolean unique) {
 		this.unique = unique;
 		return this;
 	}
-	
+
 	public DbColumnBuilder trySetUnique(Boolean unique){
 		if(null == this.unique){
 			this.unique = unique;
 		}
 		return this;
 	}
-	
+
 	public boolean isAutoIncrement(){
 		return null != autoIncrement && autoIncrement;
 	}
@@ -352,7 +352,7 @@ public class DbColumnBuilder implements Buildable<DbColumn>,JsonParsable {
 		this.autoIncrement = autoIncrement;
 		return this;
 	}
-	
+
 	public DbColumnBuilder trySetAutoIncrement(Boolean autoIncrement){
 		if(null == this.autoIncrement){
 			this.autoIncrement = autoIncrement;
@@ -368,7 +368,7 @@ public class DbColumnBuilder implements Buildable<DbColumn>,JsonParsable {
 		this.defaultValue = defaultValue;
 		return this;
 	}
-	
+
 	public DbColumnBuilder trySetDefaultValue(String defaultValue){
 		if(Strings.isEmpty(this.defaultValue)){
 			this.defaultValue = defaultValue;
@@ -384,7 +384,7 @@ public class DbColumnBuilder implements Buildable<DbColumn>,JsonParsable {
 		this.comment = comment;
 		return this;
 	}
-	
+
 	public DbColumnBuilder trySetComment(String comment){
 		if(Strings.isEmpty(this.comment)){
 			this.comment = comment;
@@ -395,36 +395,36 @@ public class DbColumnBuilder implements Buildable<DbColumn>,JsonParsable {
 	@Override
     public DbColumn build() {
 		Assert.notNull(typeCode,"type code");
-		
+
 		if(length == null){
 			length = 0;
 		}
-		
+
 		if(precision == null){
 			precision = 0;
 		}
-		
+
 		if(scale == null){
 			scale = 0;
 		}
-		
+
 		if(primaryKey == null){
 			primaryKey = false;
 		}
-		
+
 		if(nullable == null){
 			nullable = true;
 		}
-		
+
 		if(unique == null){
 			unique = false;
 		}
-		
+
 		if(autoIncrement == null){
 			autoIncrement = false;
 		}
-		
-	    return new DbColumn(name, typeCode,typeName, specialType, nativeType,
+
+	    return new DbColumn(name, typeCode,typeName, possibleType, nativeType,
 				length, precision, scale, nullable, primaryKey, unique, autoIncrement, defaultValue, comment);
     }
 
@@ -434,7 +434,7 @@ public class DbColumnBuilder implements Buildable<DbColumn>,JsonParsable {
 		this.name          = o.getString("name");
 		this.typeCode      = o.getInteger("typeCode");
 		this.typeName      = o.getString("typeName");
-		this.specialType   = o.getString("specialType");
+		this.possibleType = o.getString("possibleType");
 		this.nativeType    = o.getString("nativeType");
 		this.length        = o.getInteger("length");
 		this.precision     = o.getInteger("precision");

@@ -8,3 +8,4 @@ defaults:
     timestamp3: timestamp(3)
     datetime: datetime
     datetime3: datetime(3)
+    json: json

@@ -27,7 +27,7 @@ public class DbColumn extends DbNamedObject implements JsonStringable {
 
     protected final int     typeCode;
     protected final String  typeName;
-    protected final String  specialType;
+    protected final String  possibleType;
     protected final String  nativeType;
     protected final int     length;
     protected final int     precision;
@@ -40,10 +40,10 @@ public class DbColumn extends DbNamedObject implements JsonStringable {
     protected final String  comment;
 
     public DbColumn(String name,
-                    int typeCode, String typeName, String specialType, String nativeType,
-                    int length, int precision, int scale,
-                    boolean nullable, boolean primaryKey, boolean unique,
-                    boolean autoIncrement, String defaultValue, String comment) {
+					int typeCode, String typeName, String possibleType, String nativeType,
+					int length, int precision, int scale,
+					boolean nullable, boolean primaryKey, boolean unique,
+					boolean autoIncrement, String defaultValue, String comment) {
 
         super(name);
 
@@ -51,7 +51,7 @@ public class DbColumn extends DbNamedObject implements JsonStringable {
 
         this.typeCode = typeCode;
         this.typeName = typeName;
-        this.specialType = specialType;
+        this.possibleType = possibleType;
         this.nativeType = nativeType;
         this.length = length;
         this.precision = precision;
@@ -72,8 +72,8 @@ public class DbColumn extends DbNamedObject implements JsonStringable {
         return typeName;
     }
 
-    public String getSpecialType() {
-        return specialType;
+    public String getPossibleType() {
+        return possibleType;
     }
 
     public String getNativeType() {
@@ -141,7 +141,7 @@ public class DbColumn extends DbNamedObject implements JsonStringable {
         writer.property("name", name)
                 .property("typeCode", typeCode)
                 .property("typeName", typeName)
-                .propertyOptional("specialType", specialType)
+                .propertyOptional("possibleType", possibleType)
                 .propertyOptional("nativeType", nativeType);
 
 
