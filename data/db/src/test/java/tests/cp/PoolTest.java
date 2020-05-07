@@ -77,7 +77,7 @@ public class PoolTest extends PoolTestBase {
     @Test
     public void testInitializationFailRetry() throws SQLException {
         PoolProperties properties = new PoolProperties();
-        properties.setJdbcUrl("jdbc:h2:tcp://localhost/mem:test");
+        properties.setJdbcUrl("jdbc:h2:tcp://localhost:9123/mem:test");
         properties.setDriverClassName("org.h2.Driver");
         properties.setUsername("root");
         properties.setPassword("1");
@@ -87,7 +87,7 @@ public class PoolTest extends PoolTestBase {
             Threads.sleep(2000);
             try {
                 System.out.println("Start tcp server");
-                Server.createTcpServer(new String[]{}).start();
+                Server.createTcpServer(new String[]{"-tcpPort", "9123"}).start();
             }catch (Exception e) {
                 throw new RuntimeException(e);
             }
