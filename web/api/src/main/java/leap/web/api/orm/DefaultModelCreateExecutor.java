@@ -132,7 +132,7 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
                     }
                 }
 
-                if (null != p.getMetaProperty() && p.getMetaProperty().isReference()) {
+                if (p.isReference()) {
                     v = properties.get(name);
                     if (null == v) {
                         continue;
@@ -229,14 +229,32 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
                 executeInsert(insert);
 
                 for (Map.Entry<RelationProperty, Object[]> entry : creation.getRelationProperties().entrySet()) {
-                    //valid for many-to-many only ?
-
                     RelationProperty rp = entry.getKey();
-
                     RelationMapping rm = em.getRelationMapping(rp.getRelationName());
-                    if (rm.isManyToMany()) {
-                        EntityMapping joinEntity = md.getEntityMapping(rm.getJoinEntityName());
 
+                    if (!rm.isNestedCreatable() || entry.getValue().length <= 0) {
+                        continue;
+                    }
+
+                    if (rm.isOneToMany()) {
+                        EntityMapping targetEntity = md.getEntityMapping(rm.getTargetEntityName());
+                        RelationMapping oneToMany = targetEntity.tryGetRelationMapping(rm.getInverseRelationName());
+
+                        String localName = oneToMany.getJoinFields()[0].getLocalFieldName();
+                        Object localId = insert.id();
+
+                        List<Map> batchList = new ArrayList<>();
+                        for (Object targetValue : entry.getValue()) {
+                            if (targetValue instanceof Map) {
+                                Map targetMap = (Map) targetValue;
+                                targetMap.put(localName, localId);
+                                batchList.add(targetMap);
+                            }
+                        }
+
+                        dao.batchInsert(targetEntity, batchList);
+                    } else if (rm.isManyToMany()) {
+                        EntityMapping joinEntity = md.getEntityMapping(rm.getJoinEntityName());
                         RelationMapping manyToOne1 = joinEntity.tryGetKeyRelationMappingOfTargetEntity(em.getEntityName());
 
                         String localName;
@@ -261,7 +279,6 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
                         dao.batchInsert(joinEntity, batchId);
                     }
                 }
-
             });
         }
 
