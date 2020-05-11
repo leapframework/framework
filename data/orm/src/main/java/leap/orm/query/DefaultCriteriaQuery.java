@@ -30,6 +30,8 @@ import leap.lang.value.Limit;
 import leap.orm.OrmContext;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.*;
+import leap.orm.reader.RecordSetReader;
+import leap.orm.reader.Result2RecordSetReader;
 import leap.orm.reader.ResultSetReaders;
 import leap.orm.sql.SqlClause;
 import leap.orm.sql.SqlFactory;
@@ -792,6 +794,11 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         ResultSetReader<List<T>> reader = ResultSetReaders.forListEntity(dao.getOrmContext(), qc, em, targetType, targetType);
 
         return new DefaultQueryResult<T>(sql, statement.executeQuery(reader));
+    }
+
+    @Override
+    public <R> R executeQuery(RecordSetReader<R> reader) {
+        return executeQuery(this, new Result2RecordSetReader<>(this, em, reader));
     }
 
     @Override

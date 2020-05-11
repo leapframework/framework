@@ -26,6 +26,7 @@ import leap.lang.value.Page;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
 import leap.orm.mapping.RelationMapping;
+import leap.orm.reader.RecordSetReader;
 
 import java.util.Map;
 import java.util.function.Consumer;
@@ -69,7 +70,7 @@ public interface CriteriaQuery<T> extends Query<T> {
 
     /**
      * Sets the sql of from.
-     *
+     * <p>
      * <p/>
      * select * from (sql view) t.
      */
@@ -201,10 +202,10 @@ public interface CriteriaQuery<T> extends Query<T> {
      * Appends a select fields, skip if exists.
      */
     default CriteriaQuery<T> addSelectFields(String... fields) {
-        if(null == fields || fields.length == 0) {
+        if (null == fields || fields.length == 0) {
             return this;
         }
-        for(String field : fields) {
+        for (String field : fields) {
             addSelectField(field);
         }
         return this;
@@ -363,7 +364,7 @@ public interface CriteriaQuery<T> extends Query<T> {
 
     /**
      * Just like where("parentId = ?", parentId).
-     *
+     * <p>
      * <p/>
      * The relation must be many-to-one.
      */
@@ -372,7 +373,7 @@ public interface CriteriaQuery<T> extends Query<T> {
 
     /**
      * Just like where("parentId = ?", parentId).
-     *
+     * <p>
      * <p/>
      * The relation must be many-to-one.
      */
@@ -381,7 +382,7 @@ public interface CriteriaQuery<T> extends Query<T> {
 
     /**
      * Just like where("parentId = ?", parentId).
-     *
+     * <p>
      * <p/>
      * The relation must be many-to-one.
      */
@@ -480,6 +481,11 @@ public interface CriteriaQuery<T> extends Query<T> {
     default CriteriaQuery<T> lastUpdated(Integer limit) {
         return lastUpdated().limit(limit);
     }
+
+    /**
+     * Executes query and use the given {@link leap.orm.reader.RecordSetReader} to read the result.
+     */
+    <R> R executeQuery(RecordSetReader<R> reader);
 
     /**
      * Executes a delete operation on this CriteriaQuery.
