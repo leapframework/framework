@@ -75,6 +75,10 @@ public class ScelWhere {
                         throw new IllegalStateException("Invalid filter expr in '" + name + "'");
                     }
 
+                    if(null == alias) {
+                        alias = query.alias();
+                    }
+
                     final FieldMapping field = em.getFieldMapping(name);
 
                     String sqlOperator = toSqlOperator(op);
