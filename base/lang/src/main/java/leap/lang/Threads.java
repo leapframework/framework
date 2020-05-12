@@ -77,15 +77,15 @@ public class Threads {
         wait(func, maxWait, 100);
     }
 
-    public static boolean waitTimeout(Supplier<Boolean> func) throws TimeoutException {
+    public static boolean waitTimeout(Supplier<Boolean> func) {
         return waitTimeout(func, 1000L, 100);
     }
 
-    public static boolean waitTimeout(Supplier<Boolean> func, long maxWait) throws TimeoutException {
+    public static boolean waitTimeout(Supplier<Boolean> func, long maxWait) {
         return waitTimeout(func, maxWait, 100);
     }
 
-    public static boolean waitTimeout(Supplier<Boolean> func, long maxWait, int sleep) throws TimeoutException {
+    public static boolean waitTimeout(Supplier<Boolean> func, long maxWait, int sleep) {
         try {
             wait(func, maxWait, sleep);
             return false;
