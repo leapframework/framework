@@ -153,6 +153,9 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause,Sql
         DynamicSqlLimitQuery limitQuery = new DynamicSqlLimitQuery(context, sqls, params);
 		
 		String sql = context.dialect().getLimitQuerySql(limitQuery);
+		if(context.isForUpdate()) {
+			sql = context.getOrmContext().getDb().getDialect().wrapSelectForUpdate(sql);
+		}
 	    
 		return new DefaultSqlStatement(context, limitQuery.sql, sql, limitQuery.getArgs().toArray(), Arrays2.EMPTY_INT_ARRAY);
 	}

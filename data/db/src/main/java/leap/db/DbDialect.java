@@ -508,6 +508,15 @@ public interface DbDialect {
     }
 
     /**
+     * Wraps the query sql with for update.
+     */
+    default String wrapSelectForUpdate(String sql) {
+        StringBuilder s = new StringBuilder(sql);
+        wrapSelectForUpdate(s);
+        return s.toString();
+    }
+
+    /**
      * Required. Returns the {@link FunctionSupport}.
      */
     FunctionSupport getFunctions();
