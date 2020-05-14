@@ -347,11 +347,11 @@ public class MySql5Dialect extends GenericDbDialect {
                 s.append(alias).append('.');
             }
             s.append(column);
-            s.append(" = JSON_SET(");
+            s.append(" = JSON_SET(COALESCE(");
             if (null != alias) {
                 s.append(alias).append('.');
             }
-            s.append(column);
+            s.append(column).append(",'{}')");
 
             for (String key : keys) {
                 s.append(',');
