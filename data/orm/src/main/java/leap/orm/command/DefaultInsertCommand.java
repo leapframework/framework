@@ -272,12 +272,17 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
     }
 
     protected static Map<String, Object> withEmbeddingColumn(Db db, EntityMapping em, Map<String, Object> map) {
-        if (null == em.getEmbeddingColumn() || !em.hasEmbeddedFieldMappings()) {
+        if (null == em.getEmbeddingColumn()) {
             return map;
         }
 
         final JsonColumnSupport jcs = db.getDialect().getJsonColumnSupport();
         if (null != jcs && jcs.isInsertByKeys()) {
+            return map;
+        }
+
+        if(!em.hasEmbeddedFieldMappings()){
+            map.put(em.getEmbeddingColumn().getName(), "{}");
             return map;
         }
 
