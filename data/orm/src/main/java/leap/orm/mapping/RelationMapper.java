@@ -727,8 +727,9 @@ public class RelationMapper implements Mapper {
                 rp.setTargetEntityName(targetEntity.getEntityName());
 
                 //Resolve the relation mapping.
+                Boolean nestedCreatable = a.nestedCreatable() ? true : null;
                 if(many) {
-                    resolveToManyRelation(context, emb, targetEntity, rp, relation);
+                    resolveToManyRelation(context, emb, targetEntity, rp, relation, nestedCreatable);
                 }else{
                     resolveToOneRelation(context, emb, targetEntity, rp, relation);
                 }
@@ -762,28 +763,28 @@ public class RelationMapper implements Mapper {
 
     protected void resolveToManyRelation(MappingConfigContext context,
                                          EntityMappingBuilder emb, EntityMappingBuilder target,
-                                         RelationPropertyBuilder rp, String relation) {
+                                         RelationPropertyBuilder rp, String relation, Boolean nestedCreatable) {
 
         if(!Strings.isEmpty(relation)) {
             RelationMappingBuilder rm = emb.getRelationMapping(relation);
             if(null == rm) {
                 throw new MappingConfigException("No relation '" + relation + "' exists at entity '" + emb.getEntityName());
             }
-            updateToManyRelationProperty(context, rp, rm);
+            updateToManyRelationProperty(context, rp, rm, nestedCreatable);
             return;
         }
 
         //find many-to-one relation in local entity
         RelationMappingBuilder rm = emb.findSingleOrNullByTargetEntity(RelationType.ONE_TO_MANY, target.getEntityName());
         if(null != rm) {
-            updateToManyRelationProperty(context, rp, rm);
+            updateToManyRelationProperty(context, rp, rm, nestedCreatable);
             return;
         }
 
         //find many-to-many relation in local entity.
         rm = emb.findSingleOrNullByTargetEntity(RelationType.MANY_TO_MANY, target.getEntityName());
         if(null != rm) {
-            updateToManyRelationProperty(context, rp, rm);
+            updateToManyRelationProperty(context, rp, rm, nestedCreatable);
             return ;
         }
 
@@ -801,7 +802,7 @@ public class RelationMapper implements Mapper {
                 emb.addRelationMapping(rm);
                 target.addRelationMapping(createInverseManyToManyRelation(emb, target, join, rm));
 
-                updateToManyRelationProperty(context, rp, rm);
+                updateToManyRelationProperty(context, rp, rm, nestedCreatable);
                 return;
             }
         }
@@ -811,7 +812,9 @@ public class RelationMapper implements Mapper {
                                         target.getEntityName() + "'");
     }
 
-    protected void updateToManyRelationProperty(MappingConfigContext context, RelationPropertyBuilder rp, RelationMappingBuilder rm) {
+    protected void updateToManyRelationProperty(MappingConfigContext context,
+                                                RelationPropertyBuilder rp, RelationMappingBuilder rm,
+                                                Boolean nestedCreatable) {
         if(rm.getType() == RelationType.ONE_TO_MANY) {
             rp.setRelationName(rm.getName());
             rp.setOptional(rm.isOptional());
@@ -819,6 +822,10 @@ public class RelationMapper implements Mapper {
             rp.setRelationName(rm.getName());
             rp.setOptional(rm.isOptional());
             setManyToManyJoinEntity(rp, context.getEntityMapping(rm.getJoinEntityName()));
+        }
+
+        if(null != nestedCreatable) {
+            rm.setNestedCreatable(nestedCreatable);
         }
     }
 

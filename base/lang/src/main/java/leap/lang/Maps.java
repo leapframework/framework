@@ -248,7 +248,28 @@ public class Maps {
 			}
 		});
 	}
-	
+
+	public static void simpleDeepMerge(Map target, Map source) {
+		if (null == source || source.isEmpty()) {
+			return;
+		}
+
+		if (null == target) {
+			target.putAll(source);
+		} else {
+			source.forEach((k, v) -> {
+				Object tv = target.get(k);
+				if (null != tv) {
+					if (tv instanceof Map && v instanceof Map) {
+						simpleDeepMerge((Map)tv, (Map)v);
+					}
+				} else {
+					target.put(k, v);
+				}
+			});
+		}
+	}
+
 	protected Maps(){
 		
 	}

@@ -114,6 +114,11 @@ public interface Query<T> extends QueryBase<T> {
     Query<T> limit(Limit limit);
 
     /**
+     * Select for update.
+     */
+    Query<T> forUpdate();
+
+    /**
      * todo : doc
      */
     Query<T> withoutFilterColumn();

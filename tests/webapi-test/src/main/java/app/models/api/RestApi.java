@@ -63,7 +63,7 @@ public class RestApi extends ModelWithDesc {
     @NonColumn
     protected List<RestModel> models;
 
-    @Relational
+    @Relational(nestedCreatable = true)
     protected List<Category> categories;
 
     public String getName() {

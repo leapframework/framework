@@ -138,12 +138,19 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
                         continue;
                     }
 
-                    RelationProperty rp = em.getRelationProperty(name);
+                    final RelationProperty rp = em.getRelationProperty(name);
+                    final RelationMapping rm = em.getRelationMapping(rp.getRelationName());
 
-                    Enumerable e = Enumerables.tryOf(v);
+                    final Enumerable e = Enumerables.tryOf(v);
                     if (null == e) {
+                        if(!rm.isNestedCreatable()) {
+                            throw new BadRequestException("Relation '" + rm.getName() + "' is not nested creatable!");
+                        }
                         relationProperties.put(rp, new Object[]{v});
                     } else {
+                        if(e.size() > 0 && !rm.isNestedCreatable()) {
+                            throw new BadRequestException("Relation '" + rm.getName() + "' is not nested creatable!");
+                        }
                         relationProperties.put(rp, e.toArray());
                     }
                 }

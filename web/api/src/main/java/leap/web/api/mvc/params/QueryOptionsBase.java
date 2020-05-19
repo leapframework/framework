@@ -22,11 +22,16 @@ import leap.lang.Strings;
 import leap.lang.json.JsonIgnore;
 import leap.web.Params;
 import leap.web.Request;
+import leap.web.action.ActionContext;
+import leap.web.action.ActionParams;
 import leap.web.annotation.NonParam;
 import leap.web.annotation.ParamsWrapper;
 import leap.web.annotation.QueryParam;
 import leap.web.api.query.Expand;
 import leap.web.api.query.ExpandParser;
+
+import java.util.Collections;
+import java.util.Map;
 
 @ParamsWrapper
 public class QueryOptionsBase {
@@ -34,7 +39,8 @@ public class QueryOptionsBase {
     protected @QueryParam("select") String select;
     protected @QueryParam("expand") String expand;
 
-    protected Params params;
+    protected Params        params;
+    protected ActionContext actionContext;
 
     @NonParam
     @JsonIgnore
@@ -61,7 +67,7 @@ public class QueryOptionsBase {
     }
 
     /**
-     * The request params from {@link Request#params()}.
+     * The request params (path variables not included) from {@link Request#params()}.
      */
     public Params getParams() {
         return params;
@@ -72,6 +78,33 @@ public class QueryOptionsBase {
      */
     public void setParams(Params params) {
         this.params = params;
+    }
+
+    /**
+     * Returns all parameters( request params, path variables, action arguments).
+     */
+    public Map<String, Object> getAllParams() {
+        if(null != actionContext) {
+            return actionContext.getMergedParametersWithArgs();
+        }
+        if(null != params) {
+            return params.asMap();
+        }
+        return Collections.emptyMap();
+    }
+
+    /**
+     * Returns the {@link ActionContext}
+     */
+    public ActionContext getActionContext() {
+        return actionContext;
+    }
+
+    /**
+     * Auto set by {@link leap.web.action.ContextArgumentResolver}.
+     */
+    public void setActionContext(ActionContext actionContext) {
+        this.actionContext = actionContext;
     }
 
     public String getSqlView() {

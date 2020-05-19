@@ -31,4 +31,8 @@ public @interface Relational {
      */
     String value() default "";
 
+    /**
+     * Is nested creatable?
+     */
+    boolean nestedCreatable() default false;
 }

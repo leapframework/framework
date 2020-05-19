@@ -983,6 +983,16 @@ public class DefaultRequest extends Request {
     protected final class SimpleParams implements Params {
 
         @Override
+        public Map<String, Object> asMap() {
+            return (Map)req.getParameterMap();
+        }
+
+        @Override
+        public boolean exists(String name) {
+            return req.getParameterMap().containsKey(name);
+        }
+
+        @Override
         public Iterable<String> names() {
             final Enumeration<String> names = req.getParameterNames();
             return () -> new Iterator<String>() {

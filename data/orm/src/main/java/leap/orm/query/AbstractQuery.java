@@ -58,6 +58,7 @@ public abstract class AbstractQuery<T> implements Query<T>, QueryContext {
     protected Limit  limit;
     protected String orderBy;
     protected String having;
+    protected boolean forUpdate;
 
     private Sql querySql;
 
@@ -169,6 +170,17 @@ public abstract class AbstractQuery<T> implements Query<T>, QueryContext {
     @Override
     public Query<T> limit(Limit limit) {
         this.limit = limit;
+        return this;
+    }
+
+    @Override
+    public boolean isForUpdate() {
+        return forUpdate;
+    }
+
+    @Override
+    public Query<T> forUpdate() {
+        this.forUpdate = true;
         return this;
     }
 
@@ -323,6 +335,11 @@ public abstract class AbstractQuery<T> implements Query<T>, QueryContext {
         @Override
         public String getOrderBy() {
             return orderBy;
+        }
+
+        @Override
+        public boolean isForUpdate() {
+            return forUpdate;
         }
     }
 }
