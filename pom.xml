@@ -395,7 +395,7 @@
         <!--
             Oracle jdbc driver cannot public access, download it and install locally.
 
-            url : http://download.oracle.com/otn/utilities_drivers/jdbc/121020/ojdbc7.jar
+            url : https://www.oracle.com/database/technologies/jdbc-upc-downloads.html
 
             $ mvn install:install-file -Dfile={path/ojdbc7.jar} -DgroupId=com.oracle.jdbc -DartifactId=ojdbc7 -Dversion=12.1.0.2 -Dpackaging=jar
         -->
