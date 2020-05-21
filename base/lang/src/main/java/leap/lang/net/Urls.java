@@ -117,7 +117,7 @@ public class Urls {
 	}
 	
 	public static String appendQueryString(String url, String queryString) {
-	    if(null == url) {
+	    if(null == url || null == queryString) {
 	        return url;
 	    }
 	    
