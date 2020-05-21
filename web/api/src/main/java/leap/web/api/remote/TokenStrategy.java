@@ -19,6 +19,17 @@ package leap.web.api.remote;
 public interface TokenStrategy {
 
     /**
+     * The strategy type enum.
+     */
+    enum Type {
+        DEFAULT,
+        ORIGINAL,
+        FORCE_WITH_APP,
+        TRY_WITH_APP,
+        APP_ONLY
+    }
+
+    /**
      * Returns the {@link Token} of <code>null</code>.
      */
     Token getToken();

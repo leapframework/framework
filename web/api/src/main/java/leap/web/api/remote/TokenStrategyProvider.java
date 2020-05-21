@@ -19,6 +19,28 @@ package leap.web.api.remote;
 public interface TokenStrategyProvider {
 
     /**
+     * Returns the strategy of the given type.
+     */
+    default TokenStrategy getStrategy(TokenStrategy.Type type) {
+        if (null == type) {
+            type = TokenStrategy.Type.DEFAULT;
+        }
+        if (type == TokenStrategy.Type.DEFAULT) {
+            return getDefaultStrategy();
+        }
+        if (type == TokenStrategy.Type.FORCE_WITH_APP) {
+            return getForceWithAppStrategy();
+        }
+        if (type == TokenStrategy.Type.TRY_WITH_APP) {
+            return getTryWithAppStrategy();
+        }
+        if (type == TokenStrategy.Type.APP_ONLY) {
+            return getAppOnlyStrategy();
+        }
+        throw new IllegalStateException("No supported type '" + type + "'");
+    }
+
+    /**
      * Returns the default strategy.
      */
     default TokenStrategy getDefaultStrategy() {
