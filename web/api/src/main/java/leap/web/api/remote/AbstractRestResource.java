@@ -42,7 +42,7 @@ public abstract class AbstractRestResource implements RestResource {
     }
 
     protected Token getAccessToken() {
-        return tokenStrategy.get();
+        return tokenStrategy.getToken();
     }
 
     protected abstract String getEndpoint();

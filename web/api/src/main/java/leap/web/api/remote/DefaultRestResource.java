@@ -12,7 +12,6 @@ import leap.lang.json.JSON;
 import leap.lang.json.JsonSettings;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
-import leap.oauth2.webapp.token.at.AccessToken;
 import leap.orm.mapping.EntityMapping;
 import leap.web.api.mvc.params.CountOptions;
 import leap.web.api.mvc.params.DeleteOptions;

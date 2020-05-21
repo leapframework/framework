@@ -28,6 +28,11 @@ public interface TokenStrategyProvider {
     /**
      * todo: doc
      */
+    TokenStrategy getOriginalStrategy();
+
+    /**
+     * todo: doc
+     */
     TokenStrategy getForceWithAppStrategy();
 
     /**
@@ -38,6 +43,6 @@ public interface TokenStrategyProvider {
     /**
      * todo: doc
      */
-    TokenStrategy getForceAppOnlyStrategy();
+    TokenStrategy getAppOnlyStrategy();
 
 }

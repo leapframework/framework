@@ -21,6 +21,6 @@ public interface TokenStrategy {
     /**
      * Returns the {@link Token} of <code>null</code>.
      */
-    Token get();
+    Token getToken();
 
 }

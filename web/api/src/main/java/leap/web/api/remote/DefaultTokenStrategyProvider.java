@@ -36,9 +36,15 @@ public class DefaultTokenStrategyProvider extends DefaultCodeVerifier implements
 
     private static final Log log = LogFactory.get(DefaultTokenStrategyProvider.class);
 
+    protected TokenStrategy originalTokenStrategy     = new OriginalTokenStrategy();
     protected TokenStrategy forceWithAppTokenStrategy = new WithAppTokenStrategy(true);
     protected TokenStrategy tryWithAppTokenStrategy   = new WithAppTokenStrategy(false);
     protected TokenStrategy appOnlyTokenStrategy      = new AppOnlyTokenStrategy();
+
+    @Override
+    public TokenStrategy getOriginalStrategy() {
+        return originalTokenStrategy;
+    }
 
     @Override
     public TokenStrategy getForceWithAppStrategy() {
@@ -51,12 +57,12 @@ public class DefaultTokenStrategyProvider extends DefaultCodeVerifier implements
     }
 
     @Override
-    public TokenStrategy getForceAppOnlyStrategy() {
+    public TokenStrategy getAppOnlyStrategy() {
         return appOnlyTokenStrategy;
     }
 
     protected AccessToken fetchAccessTokenWithApp(String at) {
-        if(null == config.getTokenUrl()) {
+        if (null == config.getTokenUrl()) {
             return null;
         }
 
@@ -69,7 +75,7 @@ public class DefaultTokenStrategyProvider extends DefaultCodeVerifier implements
     }
 
     protected AccessToken fetchAppOnlyAccessToken() {
-        if(null == config.getTokenUrl()) {
+        if (null == config.getTokenUrl()) {
             return null;
         }
 
@@ -88,7 +94,29 @@ public class DefaultTokenStrategyProvider extends DefaultCodeVerifier implements
         return fetchAccessToken(request);
     }
 
-    protected class WithAppTokenStrategy implements TokenStrategy {
+    protected class OriginalTokenStrategy implements TokenStrategy {
+
+        @Override
+        public Token getToken() {
+            final Request request = Request.tryGetCurrent();
+            if (null == request) {
+                return appOnlyTokenStrategy.getToken();
+            }
+
+            final Authentication authc = request.getAuthentication();
+            if (null == authc || !(authc instanceof OAuth2Authentication)) {
+                return appOnlyTokenStrategy.getToken();
+            }
+
+            return doGetToken((OAuth2Authentication) authc);
+        }
+
+        protected Token doGetToken(OAuth2Authentication oauthc) {
+            return new TokenImpl(new SimpleAccessToken(oauthc.getToken()));
+        }
+    }
+
+    protected class WithAppTokenStrategy extends OriginalTokenStrategy {
         private boolean                        force;
         private ExpiringMap<String, TokenImpl> tokens =
                 ExpiringMap.builder().maxSize(5000).expiration(8, TimeUnit.HOURS).build(); //todo: configure it
@@ -97,30 +125,20 @@ public class DefaultTokenStrategyProvider extends DefaultCodeVerifier implements
             this.force = force;
         }
 
-        public Token get() {
-            final Request request = Request.tryGetCurrent();
-            if (null == request) {
-                return appOnlyTokenStrategy.get();
-            }
-
-            final Authentication authc = request.getAuthentication();
-            if (null == authc || !(authc instanceof OAuth2Authentication)) {
-                return appOnlyTokenStrategy.get();
-            }
-
-            final OAuth2Authentication oauthc = (OAuth2Authentication) authc;
-            final String               at     = oauthc.getCredentials().getToken();
-            if (force || !authc.hasClient()) {
+        @Override
+        protected Token doGetToken(OAuth2Authentication oauthc) {
+            final String at = oauthc.getCredentials().getToken();
+            if (force || !oauthc.hasClient()) {
                 TokenImpl token = tokens.get(at);
                 if (null == token || token.isExpired()) {
                     final AccessToken appAccessToken = fetchAccessTokenWithApp(at);
-                    if(null != appAccessToken) {
+                    if (null != appAccessToken) {
                         final AccessToken newAccessToken = new WithAppAccessToken(oauthc.getTokenInfo(), appAccessToken);
                         token = new TokenImpl(newAccessToken);
                         tokens.put(at, token);
                     }
                 }
-                if(null != token) {
+                if (null != token) {
                     return token;
                 }
             }
@@ -131,7 +149,7 @@ public class DefaultTokenStrategyProvider extends DefaultCodeVerifier implements
     protected class AppOnlyTokenStrategy implements TokenStrategy {
         private volatile TokenImpl token;
 
-        public Token get() {
+        public Token getToken() {
             if (null == token || token.isExpired()) {
                 return fetch();
             } else {
