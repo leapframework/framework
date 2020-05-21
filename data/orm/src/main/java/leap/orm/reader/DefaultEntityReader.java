@@ -37,7 +37,6 @@ import leap.orm.naming.NamingStrategy;
 import leap.orm.sql.SqlContext;
 import leap.orm.value.Entity;
 import leap.orm.value.EntityBase;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -269,6 +268,11 @@ public class DefaultEntityReader implements EntityReader {
 				}
 				continue;
 			}
+
+			if (null != fm && fm.isEmbedded() && null != value) {
+				value = dialect.getJsonColumnSupport().readValue(value);
+			}
+
 			map.put(cm.getResultName(), value);
 		}
 

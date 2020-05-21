@@ -17,6 +17,10 @@
 
 package leap.db.support;
 
+import leap.lang.Charsets;
+import leap.lang.Strings;
+import leap.lang.io.IO;
+import java.io.ByteArrayInputStream;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -79,5 +83,17 @@ public interface JsonColumnSupport {
      */
     default String getSelectItemExpr(String column, String key) {
         throw new IllegalStateException("Not implemented");
+    }
+
+    /**
+     * Read value, converting if value is a special type.
+     */
+    default Object readValue(Object value) {
+        if (value instanceof byte[]) {
+            return Strings.newStringUtf8((byte[]) value);
+        } else if (value instanceof ByteArrayInputStream) {
+            return IO.readString((ByteArrayInputStream) value, Charsets.UTF_8);
+        }
+        return value;
     }
 }
