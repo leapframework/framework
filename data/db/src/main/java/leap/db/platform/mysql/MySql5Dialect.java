@@ -25,16 +25,12 @@ import leap.db.model.DbColumnBuilder;
 import leap.db.model.DbSchemaObjectName;
 import leap.db.platform.GenericDbDialect;
 import leap.db.support.JsonColumnSupport;
-import leap.lang.Charsets;
 import leap.lang.Collections2;
 import leap.lang.New;
 import leap.lang.Strings;
 import leap.lang.convert.Converts;
-import leap.lang.io.IO;
 import leap.lang.value.Limit;
-
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -328,11 +324,7 @@ public class MySql5Dialect extends GenericDbDialect {
                 return null;
             }
 
-            if (value instanceof byte[]) {
-                value = Strings.newStringUtf8((byte[]) value);
-            } else if (value instanceof ByteArrayInputStream) {
-                value = IO.readString((ByteArrayInputStream) value, Charsets.UTF_8);
-            }
+            value = jsonColumnSupport.readValue(value);
 
             return Converts.toString(value);
         }
