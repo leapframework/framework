@@ -13,27 +13,33 @@
  *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  * See the License for the specific language governing permissions and
  *  * limitations under the License.
- *  
+ *
  */
 
 package leap.oauth2.webapp.variable;
 
+import leap.core.security.Authentication;
 import leap.core.variable.Variable;
-import leap.oauth2.webapp.authc.DefaultOAuth2Authenticator;
-import leap.oauth2.webapp.token.TokenInfo;
+import leap.oauth2.webapp.authc.OAuth2Authentication;
 import leap.web.Request;
-
-import java.util.Optional;
 
 /**
  * @author kael.
  */
 public class TokenInfoVariable implements Variable {
+
     @Override
     public Object getValue() {
-        TokenInfo tokenInfo = Optional.ofNullable(Request.tryGetCurrent())
-                .map(request -> (TokenInfo)request.getAttribute(DefaultOAuth2Authenticator.TOKENINFO_ATTR_NAME))
-                .orElse(null);
-        return tokenInfo;
+        Request request = Request.tryGetCurrent();
+        if (null == request) {
+            return null;
+        }
+
+        Authentication authc = request.getAuthentication();
+        if (null == authc || !(authc instanceof OAuth2Authentication)) {
+            return null;
+        }
+
+        return ((OAuth2Authentication) authc).getTokenInfo();
     }
 }

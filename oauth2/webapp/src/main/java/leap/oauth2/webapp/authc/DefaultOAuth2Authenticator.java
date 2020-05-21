@@ -46,8 +46,6 @@ import java.util.Optional;
  * Default implementation of {@link OAuth2Authenticator}.
  */
 public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCreateBean {
-    public static final String TOKENINFO_ATTR_NAME = DefaultOAuth2Authenticator.class.getName() + "$tokeninfo";
-
     private static final Log log = LogFactory.get(DefaultOAuth2Authenticator.class);
 
     protected @Inject OAuth2Config      config;
@@ -94,8 +92,6 @@ public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCrea
                 removeCachedAuthentication(at, cached);
             } else {
                 log.debug("Returns the cached authentication of access token : {}", at.getToken());
-                Optional.ofNullable(Request.tryGetCurrent())
-                        .ifPresent(request -> request.setAttribute(TOKENINFO_ATTR_NAME, cached.tokenInfo));
                 return cached.newAuthentication();
             }
         }
@@ -149,15 +145,12 @@ public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCrea
             client = new OAuth2Client(clientId, tokenInfo.getClaims());
         }
 
-        OAuth2Authentication authc = new SimpleOAuth2Authentication(at, user, client);
+        OAuth2Authentication authc = new SimpleOAuth2Authentication(at, tokenInfo, user, client);
         if (null != tokenInfo.getScope()) {
             authc.setPermissions(Strings.split(tokenInfo.getScope(), ',', ' '));
         }
 
-        cacheAuthentication(at, tokenInfo, authc);
-        Optional.ofNullable(Request.tryGetCurrent())
-                .ifPresent(request -> request.setAttribute(TOKENINFO_ATTR_NAME, tokenInfo));
-        return authc;
+        return cacheAuthentication(at, tokenInfo, authc).newAuthentication();
     }
 
     protected boolean isUserDetailsLookupEnabled() {
@@ -178,12 +171,14 @@ public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCrea
         return cache.get(at.getToken());
     }
 
-    protected void cacheAuthentication(Token at, TokenInfo tokenDetails, OAuth2Authentication authc) {
+    protected CachedAuthentication cacheAuthentication(Token at, TokenInfo tokenDetails, OAuth2Authentication authc) {
         int cachedMs = cacheExpiresInMs;
         if (tokenDetails instanceof TimeExpirableSeconds) {
             cachedMs = ((TimeExpirableSeconds) tokenDetails).getExpiresInFormNow() * 1000;
         }
-        cache.put(at.getToken(), new CachedAuthentication(tokenDetails, authc, cachedMs));
+        final CachedAuthentication cached = new CachedAuthentication(authc, cachedMs);
+        cache.put(at.getToken(), cached);
+        return cached;
     }
 
     protected void removeCachedAuthentication(Token at, CachedAuthentication cached) {
@@ -191,18 +186,16 @@ public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCrea
     }
 
     protected static final class CachedAuthentication {
-        private final TokenInfo            tokenInfo;
         private final OAuth2Authentication authentication;
         private final TimeExpirableMs      expirable;
 
-        public CachedAuthentication(TokenInfo info, OAuth2Authentication a, int expiresInMs) {
-            this.tokenInfo = info;
+        public CachedAuthentication(OAuth2Authentication a, int expiresInMs) {
             this.authentication = a;
             this.expirable = new TimeExpirableMs(expiresInMs);
         }
 
         public boolean isTokenExpired() {
-            return tokenInfo.isExpired();
+            return authentication.getTokenInfo().isExpired();
         }
 
         public boolean isCacheExpired() {

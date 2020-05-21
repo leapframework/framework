@@ -19,16 +19,19 @@ import leap.core.security.Authentication;
 import leap.core.security.ClientPrincipal;
 import leap.core.security.UserPrincipal;
 import leap.oauth2.webapp.token.Token;
+import leap.oauth2.webapp.token.TokenInfo;
 import leap.web.security.authc.AbstractAuthentication;
 
 public class SimpleOAuth2Authentication extends AbstractAuthentication implements Authentication, OAuth2Authentication {
 
     protected final Token           credentials;
+    protected final TokenInfo       tokenInfo;
     protected final UserPrincipal   user;
     protected final ClientPrincipal client;
 
-    public SimpleOAuth2Authentication(Token credentials, UserPrincipal user, ClientPrincipal client) {
+    public SimpleOAuth2Authentication(Token credentials, TokenInfo tokenInfo, UserPrincipal user, ClientPrincipal client) {
         this.credentials = credentials;
+        this.tokenInfo = tokenInfo;
         this.user = user;
         this.client = client;
     }
@@ -36,6 +39,11 @@ public class SimpleOAuth2Authentication extends AbstractAuthentication implement
     @Override
     public Token getCredentials() {
         return credentials;
+    }
+
+    @Override
+    public TokenInfo getTokenInfo() {
+        return tokenInfo;
     }
 
     @Override
@@ -50,7 +58,7 @@ public class SimpleOAuth2Authentication extends AbstractAuthentication implement
 
     @Override
     public OAuth2Authentication newAuthentication() {
-        SimpleOAuth2Authentication authc = new SimpleOAuth2Authentication(credentials, user, client);
+        SimpleOAuth2Authentication authc = new SimpleOAuth2Authentication(credentials, tokenInfo, user, client);
         authc.setPermissions(permissions);
         authc.setRoles(roles);
         authc.setAccessMode(accessMode);
