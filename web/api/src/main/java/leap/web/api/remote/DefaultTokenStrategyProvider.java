@@ -41,17 +41,17 @@ public class DefaultTokenStrategyProvider extends DefaultCodeVerifier implements
     protected TokenStrategy appOnlyTokenStrategy      = new AppOnlyTokenStrategy();
 
     @Override
-    public TokenStrategy forceWithApp() {
+    public TokenStrategy getForceWithAppStrategy() {
         return forceWithAppTokenStrategy;
     }
 
     @Override
-    public TokenStrategy tryWithApp() {
+    public TokenStrategy getTryWithAppStrategy() {
         return tryWithAppTokenStrategy;
     }
 
     @Override
-    public TokenStrategy forceAppOnly() {
+    public TokenStrategy getForceAppOnlyStrategy() {
         return appOnlyTokenStrategy;
     }
 

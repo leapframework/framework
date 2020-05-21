@@ -19,18 +19,25 @@ package leap.web.api.remote;
 public interface TokenStrategyProvider {
 
     /**
-     * todo: doc
+     * Returns the default strategy.
      */
-    TokenStrategy forceWithApp();
+    default TokenStrategy getDefaultStrategy() {
+        return getTryWithAppStrategy();
+    }
 
     /**
      * todo: doc
      */
-    TokenStrategy tryWithApp();
+    TokenStrategy getForceWithAppStrategy();
 
     /**
      * todo: doc
      */
-    TokenStrategy forceAppOnly();
+    TokenStrategy getTryWithAppStrategy();
+
+    /**
+     * todo: doc
+     */
+    TokenStrategy getForceAppOnlyStrategy();
 
 }
