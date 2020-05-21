@@ -6,6 +6,7 @@ import leap.lang.Out;
 import leap.lang.Strings;
 import leap.lang.http.ContentTypes;
 import leap.lang.http.HTTP.Method;
+import leap.lang.http.client.HttpClient;
 import leap.lang.http.client.HttpRequest;
 import leap.lang.json.JSON;
 import leap.lang.json.JsonSettings;
@@ -29,32 +30,16 @@ public class DefaultRestResource extends AbstractRestResource {
     private final Log log = LogFactory.get(DefaultRestResource.class);
 
     protected final EntityMapping em;
+    protected final String        endpoint;
 
-    protected String      endpoint;
-    protected AccessToken at;
-
-    public DefaultRestResource(EntityMapping em) {
+    public DefaultRestResource(HttpClient httpClient, TokenStrategy tokenStrategy, EntityMapping em, String endpoint) {
+        super(httpClient, tokenStrategy);
         this.em = em;
-    }
-
-    public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
     }
 
     public String getEndpoint() {
         return endpoint;
-    }
-
-    @Override
-    protected AccessToken getAccessToken() {
-        if (at != null) {
-            return at;
-        }
-        return super.getAccessToken();
-    }
-
-    public void setAccessToken(AccessToken token){
-        this.at=token;
     }
 
     @Override
@@ -116,8 +101,8 @@ public class DefaultRestResource extends AbstractRestResource {
 
     protected <T> T doFind(Class<T> resultClass, String url, QueryOptionsBase options) {
         HttpRequest request = httpClient.request(url)
-                                        .ajax()
-                                        .setMethod(Method.GET);
+                .ajax()
+                .setMethod(Method.GET);
 
         buildQueryOption(request, options);
 
@@ -142,8 +127,8 @@ public class DefaultRestResource extends AbstractRestResource {
 
     protected <T> RestQueryListResult<T> doQueryList(Class<T> resultElementClass, String url, QueryOptions options) {
         HttpRequest request = httpClient.request(url)
-                                        .ajax()
-                                        .setMethod(Method.GET);
+                .ajax()
+                .setMethod(Method.GET);
 
         buildQueryOption(request, options);
 
@@ -200,7 +185,7 @@ public class DefaultRestResource extends AbstractRestResource {
             return;
         }
         StringBuilder filtersBuilder = new StringBuilder();
-        String opFilters = options.getFilters();
+        String        opFilters      = options.getFilters();
 
         if (!Strings.isEmpty(opFilters)) {
             filtersBuilder.append(opFilters);
@@ -224,5 +209,4 @@ public class DefaultRestResource extends AbstractRestResource {
 
         options.setFilters(filtersBuilder.toString());
     }
-
 }

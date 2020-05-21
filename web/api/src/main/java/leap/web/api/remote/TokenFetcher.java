@@ -12,6 +12,10 @@ import leap.oauth2.webapp.token.at.AccessToken;
 import leap.oauth2.webapp.token.at.SimpleAccessToken;
 import leap.web.Request;
 
+/**
+ * @deprecated Use {@link TokenStrategy}.
+ */
+@Deprecated
 public class TokenFetcher extends DefaultCodeVerifier {
 
     @Inject

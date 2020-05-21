@@ -1,9 +1,7 @@
 package leap.web.api.remote;
 
-import leap.core.annotation.Inject;
 import leap.lang.Out;
 import leap.lang.Strings;
-import leap.lang.expirable.TimeExpirableSeconds;
 import leap.lang.http.ContentTypes;
 import leap.lang.http.HTTP;
 import leap.lang.http.Headers;
@@ -16,12 +14,8 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.path.Paths;
 import leap.oauth2.webapp.OAuth2Constants;
-import leap.oauth2.webapp.token.at.AccessToken;
-import leap.web.Request;
 import leap.web.api.mvc.params.QueryOptions;
 import leap.web.api.mvc.params.QueryOptionsBase;
-import leap.web.api.remote.json.TypeReference;
-import leap.web.exception.UnauthorizedException;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -35,12 +29,23 @@ import java.util.stream.Collectors;
 public abstract class AbstractRestResource implements RestResource {
     private final Log log = LogFactory.get(AbstractRestResource.class);
 
-    protected @Inject HttpClient   httpClient;
-    protected @Inject TokenFetcher tokenFetcher;
+    protected final HttpClient    httpClient;
+    protected final TokenStrategy tokenStrategy;
 
-    private boolean canNewAccessToken;
+    private boolean                canNewAccessToken;
     private Consumer<HttpRequest>  preSendHandler;
     private Consumer<HttpResponse> postSendHandler;
+
+    public AbstractRestResource(HttpClient httpClient, TokenStrategy tokenStrategy) {
+        this.httpClient = httpClient;
+        this.tokenStrategy = tokenStrategy;
+    }
+
+    protected Token getAccessToken() {
+        return tokenStrategy.get();
+    }
+
+    protected abstract String getEndpoint();
 
     @Override
     public boolean isCanNewAccessToken() {
@@ -50,14 +55,6 @@ public abstract class AbstractRestResource implements RestResource {
     @Override
     public void setCanNewAccessToken(boolean canNewAccessToken) {
         this.canNewAccessToken = canNewAccessToken;
-    }
-
-    public void setHttpClient(HttpClient httpClient) {
-        this.httpClient = httpClient;
-    }
-
-    public void setTokenFetcher(TokenFetcher tokenFetcher) {
-        this.tokenFetcher = tokenFetcher;
     }
 
     public Consumer<HttpRequest> getPreSendHandler() {
@@ -76,23 +73,6 @@ public abstract class AbstractRestResource implements RestResource {
         this.postSendHandler = postSendHandler;
     }
 
-    protected abstract String getEndpoint();
-
-    protected AccessToken getAccessToken() {
-        Request request = Request.tryGetCurrent();
-        if (request == null) {
-            return null;
-        }
-        AccessToken at = tokenFetcher.getAccessToken(request, canNewAccessToken);
-        return at;
-    }
-
-    /**
-     * 构造要调用的服务的请求地址
-     *
-     * @param relativePath
-     * @return
-     */
     protected String buildOperationPath(String relativePath) {
         String baseUrl = getEndpoint();
         return mergePath(baseUrl, relativePath);
@@ -109,38 +89,32 @@ public abstract class AbstractRestResource implements RestResource {
         return parentPath + relativePath;
     }
 
-    protected void send(HttpRequest request, AccessToken at, Consumer<HttpResponse> consumer) {
+    protected void send(HttpRequest request, Token at, Consumer<HttpResponse> consumer) {
         if (at != null) {
-            request.setHeader(Headers.AUTHORIZATION, OAuth2Constants.BEARER + " " + at.getToken());
+            request.setHeader(Headers.AUTHORIZATION, OAuth2Constants.BEARER + " " + at.getValue());
         }
-        if(this.preSendHandler!=null){
+        if (this.preSendHandler != null) {
             preSendHandler.accept(request);
         }
 
         HttpResponse response = request.send();
         if (response.getStatus() == HTTP.SC_UNAUTHORIZED && at != null) {
-            at = tokenFetcher.refreshAccessToken(at);
-            if(null == at) {
+            at = at.refresh();
+            if (null == at) {
                 throw new RestResourceInvokeException(response);
             }
-            request.setHeader(Headers.AUTHORIZATION, OAuth2Constants.BEARER + " " + at.getToken());
+            request.setHeader(Headers.AUTHORIZATION, OAuth2Constants.BEARER + " " + at.getValue());
             response = request.send();
         }
         consumer.accept(response);
 
-        if(this.postSendHandler!=null){
+        if (this.postSendHandler != null) {
             postSendHandler.accept(response);
         }
     }
 
-    /**
-     * 发送请求
-     *
-     * @param targetType 返回值类型，
-     *                   如果是List<T>类型，需要构造对应的{@link TypeReference}，如：new TypeReference<List<GatewayRuntime>>(){}.getType()
-     */
     @SuppressWarnings("unchecked")
-    protected <T> T send(Type targetType, HttpRequest request, AccessToken at) {
+    protected <T> T send(Type targetType, HttpRequest request, Token at) {
         final Out<T> out = new Out<>();
 
         send(request, at, (response) -> {

@@ -43,7 +43,7 @@ public class DefaultRestResourceFactory implements RestResourceFactory {
 
     protected @Inject OrmContext            ormContext;
     protected @Inject HttpClient            httpClient;
-    protected @Inject TokenFetcher          tokenFetcher;
+    protected @Inject TokenStrategyProvider tokenStrategyProvider;
     protected @Inject RestDatasourceManager dsm;
 
     @Override
@@ -92,11 +92,8 @@ public class DefaultRestResourceFactory implements RestResourceFactory {
     }
 
     protected RestResource doCreateResource(OrmContext context, EntityMapping em, RestResourceInfo info) {
-        DefaultRestResource restResource = new DefaultRestResource(em);
-        restResource.setHttpClient(httpClient);
-        restResource.setTokenFetcher(tokenFetcher);
-        restResource.setEndpoint(info.getEndpoint());
-        return restResource;
+        final TokenStrategy tokenStrategy = tokenStrategyProvider.getDefaultStrategy();
+        return new DefaultRestResource(httpClient, tokenStrategy, em, info.getEndpoint());
     }
 
     private static String formatApiEndPoint(String apiEndPoint) {

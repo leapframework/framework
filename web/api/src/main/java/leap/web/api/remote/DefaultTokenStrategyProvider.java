@@ -56,7 +56,9 @@ public class DefaultTokenStrategyProvider extends DefaultCodeVerifier implements
     }
 
     protected AccessToken fetchAccessTokenWithApp(String at) {
-        checkTokenUrl();
+        if(null == config.getTokenUrl()) {
+            return null;
+        }
 
         HttpRequest request = httpClient.request(config.getTokenUrl())
                 .addQueryParam("grant_type", "token_client_credentials")
@@ -67,7 +69,9 @@ public class DefaultTokenStrategyProvider extends DefaultCodeVerifier implements
     }
 
     protected AccessToken fetchAppOnlyAccessToken() {
-        checkTokenUrl();
+        if(null == config.getTokenUrl()) {
+            return null;
+        }
 
         HttpRequest request = httpClient.request(config.getTokenUrl())
                 .addQueryParam("grant_type", "client_credentials")
@@ -82,12 +86,6 @@ public class DefaultTokenStrategyProvider extends DefaultCodeVerifier implements
                 .addQueryParam("refresh_token", old.getRefreshToken())
                 .setMethod(HTTP.Method.POST);
         return fetchAccessToken(request);
-    }
-
-    protected void checkTokenUrl() {
-        if (null == config.getTokenUrl()) {
-            throw new IllegalStateException("The tokenUrl must be configured");
-        }
     }
 
     protected class WithAppTokenStrategy implements TokenStrategy {
@@ -116,14 +114,17 @@ public class DefaultTokenStrategyProvider extends DefaultCodeVerifier implements
                 TokenImpl token = tokens.get(at);
                 if (null == token || token.isExpired()) {
                     final AccessToken appAccessToken = fetchAccessTokenWithApp(at);
-                    final AccessToken newAccessToken = new WithAppAccessToken(oauthc.getTokenInfo(), appAccessToken);
-                    token = new TokenImpl(newAccessToken);
-                    tokens.put(at, token);
+                    if(null != appAccessToken) {
+                        final AccessToken newAccessToken = new WithAppAccessToken(oauthc.getTokenInfo(), appAccessToken);
+                        token = new TokenImpl(newAccessToken);
+                        tokens.put(at, token);
+                    }
                 }
-                return token;
-            } else {
-                return new TokenImpl(new SimpleAccessToken(at));
+                if(null != token) {
+                    return token;
+                }
             }
+            return new TokenImpl(new SimpleAccessToken(at));
         }
     }
 
@@ -139,7 +140,8 @@ public class DefaultTokenStrategyProvider extends DefaultCodeVerifier implements
         }
 
         protected Token fetch() {
-            return (token = new TokenImpl(fetchAppOnlyAccessToken(), this::refresh));
+            AccessToken at = fetchAppOnlyAccessToken();
+            return null == at ? null : (token = new TokenImpl(at, this::refresh));
         }
 
         protected Token refresh(TokenImpl t) {
