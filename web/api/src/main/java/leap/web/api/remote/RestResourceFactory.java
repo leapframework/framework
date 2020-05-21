@@ -24,6 +24,16 @@ public interface RestResourceFactory {
     /**
      * Returns null if not a remote entity.
      */
+    RestResource createResource(Class<?> entityClass);
+
+    /**
+     * Returns null if not a remote entity.
+     */
+    RestResource createResource(Class<?> entityClass, String endpointUrl);
+
+    /**
+     * Returns null if not a remote entity.
+     */
     RestResource createResource(OrmContext context, EntityMapping em);
 
     /**

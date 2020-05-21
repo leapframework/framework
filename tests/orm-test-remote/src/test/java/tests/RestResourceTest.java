@@ -1,5 +1,7 @@
 package tests;
 
+import leap.core.annotation.Inject;
+import leap.web.api.remote.RestResourceFactory;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -9,7 +11,6 @@ import app.models.Entity4;
 import leap.web.api.mvc.params.QueryOptions;
 import leap.web.api.remote.RestQueryListResult;
 import leap.web.api.remote.RestResource;
-import leap.web.api.remote.RestResourceBuilder;
 import leap.webunit.WebTestBase;
 
 public class RestResourceTest extends WebTestBase {
@@ -18,13 +19,13 @@ public class RestResourceTest extends WebTestBase {
 	private static Entity2 c2 = null;
 	private static Entity4 c4 = null;
 
+	private @Inject RestResourceFactory rsf;
+
 	@Test
 	public void testRemoteExpand() {
 		String baseUrl=client().getBaseUrl()+"/api/entity1";
 
-		RestResource resource=RestResourceBuilder.newBuilder()
-				.setEndpoint(baseUrl)
-				.build();
+		RestResource resource = rsf.createResource(Entity1.class, baseUrl);
 
 		QueryOptions queryOptions=new QueryOptions();
 		queryOptions.setSelect("id,name,title,entity2Id,remoteEntity1");
@@ -40,7 +41,6 @@ public class RestResourceTest extends WebTestBase {
 		assertEquals(c1.getRemoteEntity1(), e1.getRemoteEntity().getId());
 		assertEquals(c1.getEntity2Id(), e1.getEntity2().getId());
 	}
-
 
 	@BeforeClass
 	public static void initData() {

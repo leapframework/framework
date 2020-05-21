@@ -19,17 +19,42 @@ package leap.web.api.remote;
 import leap.core.annotation.Inject;
 import leap.lang.Strings;
 import leap.lang.http.client.HttpClient;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.lang.path.Paths;
 import leap.orm.OrmContext;
 import leap.orm.mapping.EntityMapping;
+import leap.web.Request;
 import leap.web.api.remote.ds.RestDataSource;
 import leap.web.api.remote.ds.RestDatasourceManager;
 
+import javax.servlet.http.HttpServletRequest;
+import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Collections;
+import java.util.Enumeration;
+
 public class DefaultRestResourceFactory implements RestResourceFactory {
 
+    private static Log    logger = LogFactory.get(DefaultRestResourceFactory.class);
+    private static String localIP;
+
+    protected @Inject OrmContext            ormContext;
     protected @Inject HttpClient            httpClient;
     protected @Inject TokenFetcher          tokenFetcher;
     protected @Inject RestDatasourceManager dsm;
+
+    @Override
+    public RestResource createResource(Class<?> entityClass) {
+        return createResource(ormContext, ormContext.getMetadata().getEntityMapping(entityClass));
+    }
+
+    @Override
+    public RestResource createResource(Class<?> entityClass, String endpointUrl) {
+        return createResource(ormContext, ormContext.getMetadata().getEntityMapping(entityClass), endpointUrl);
+    }
 
     @Override
     public RestResource createResource(OrmContext context, EntityMapping em) {
@@ -54,7 +79,7 @@ public class DefaultRestResourceFactory implements RestResourceFactory {
             }
 
             String endpoint = Paths.suffixWithSlash(basePath) + em.getRemoteSettings().getRelativePath();
-            rri = new RestResourceInfo(RestResourceBuilder.formatApiEndPoint(endpoint));
+            rri = new RestResourceInfo(formatApiEndPoint(endpoint));
             em.setExtension(RestResourceInfo.class, rri);
         }
 
@@ -72,6 +97,66 @@ public class DefaultRestResourceFactory implements RestResourceFactory {
         restResource.setTokenFetcher(tokenFetcher);
         restResource.setEndpoint(info.getEndpoint());
         return restResource;
+    }
+
+    private static String formatApiEndPoint(String apiEndPoint) {
+        if (apiEndPoint.contains("{context}")) {
+            String contextPath = Request.tryGetCurrent().getServletRequest().getContextPath();
+            apiEndPoint = apiEndPoint.replace("{context}", Strings.trimStart(contextPath, '/'));
+            //apiEndPoint=apiEndPoint.replace("//", "/");
+        }
+        if (apiEndPoint.contains("~")) {
+            HttpServletRequest request = Request.tryGetCurrent().getServletRequest();
+            apiEndPoint = apiEndPoint.replace("~", Strings.format("{0}://{1}:{2}", request.getScheme(), curServerLocalIp(), request.getLocalPort()));
+        }
+        if (apiEndPoint.startsWith("/")) {
+            HttpServletRequest request = Request.tryGetCurrent().getServletRequest();
+            apiEndPoint = Strings.format("{0}://{1}:{2}", request.getScheme(), "127.0.0.1", request.getLocalPort()) + apiEndPoint;
+        }
+
+        if (Strings.endsWith(apiEndPoint, "/")) {
+            apiEndPoint = Strings.trimEnd(apiEndPoint, '/');
+        }
+        return apiEndPoint;
+    }
+
+    private static String curServerLocalIp() {
+        if (!Strings.isEmpty(localIP)) {
+            return localIP;
+        }
+
+        String serverIP = null;
+        try {
+            Enumeration<NetworkInterface> netInterfaces = NetworkInterface.getNetworkInterfaces();
+            while (netInterfaces.hasMoreElements()) {
+                NetworkInterface ni = (NetworkInterface) netInterfaces.nextElement();
+
+                if (!ni.getInetAddresses().hasMoreElements()) {
+                    continue;
+                }
+                //ip = (InetAddress) ni.getInetAddresses().nextElement();
+                Enumeration<InetAddress> inetAddresses = ni.getInetAddresses();
+                for (InetAddress ip : Collections.list(inetAddresses)) {
+                    logger.info("ip info:{},,isLoop:{},hostAddr:{},isSiteLocal:{}", ip, ip.isLoopbackAddress(), ip.getHostAddress(), ip.isSiteLocalAddress());
+                    if (ip instanceof Inet6Address || ip.isLoopbackAddress()) {
+                        continue;
+                    }
+                    serverIP = ip.getHostAddress();
+                    if (ip.isSiteLocalAddress()) {
+                        break;
+                    }
+                }
+                if (Strings.isNotBlank(serverIP)) {
+                    break;
+                }
+            }
+        } catch (SocketException ex) {
+            logger.error(ex.getMessage(), ex);
+        }
+
+        localIP = serverIP;
+
+        return localIP;
     }
 
     public static final class RestResourceInfo {

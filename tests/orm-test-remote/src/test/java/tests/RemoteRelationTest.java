@@ -1,95 +1,91 @@
 package tests;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import app.models.Entity1;
 import app.models.Entity2;
+import leap.core.annotation.Inject;
 import leap.lang.Assert;
 import leap.web.api.mvc.params.QueryOptions;
 import leap.web.api.remote.RestQueryListResult;
 import leap.web.api.remote.RestResource;
-import leap.web.api.remote.RestResourceBuilder;
+import leap.web.api.remote.RestResourceFactory;
 import leap.webunit.WebTestBase;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class RemoteRelationTest extends WebTestBase {
 
-	private static Entity1 c1 = null;
-	private static Entity1 c2 = null;
-	private static Entity2 api1 = null;
-	private static Entity2 api2 = null;
+    private static Entity1 c1   = null;
+    private static Entity1 c2   = null;
+    private static Entity2 api1 = null;
+    private static Entity2 api2 = null;
 
-	@Test
-	public void testCUD() {
-		Entity1 apiToCreate = new Entity1();
-		apiToCreate.setName("api5");
-		apiToCreate.setTitle("Api1");
+    private @Inject RestResourceFactory rsf;
 
-		String baseUrl=client().getBaseUrl()+"/api/entity1";
+    @Test
+    public void testCUD() {
+        Entity1 apiToCreate = new Entity1();
+        apiToCreate.setName("api5");
+        apiToCreate.setTitle("Api1");
 
-		RestResource resource=RestResourceBuilder.newBuilder()
-				.setEndpoint(baseUrl)
-				.build();
+        String baseUrl = client().getBaseUrl() + "/api/entity1";
 
-		Entity1 created=resource.insert(Entity1.class, apiToCreate);
-		Assert.notNull(created);
+        RestResource resource = rsf.createResource(Entity1.class, baseUrl);
 
-		Map<String,Object> partial=new HashMap<>();
-		partial.put("title", "Api5");
+        Entity1 created = resource.insert(Entity1.class, apiToCreate);
+        Assert.notNull(created);
 
-		resource.update(created.getId(), partial);
-		Entity1 updated=resource.find(Entity1.class, created.getId(), null);
-		Assert.notNull(updated);
-		assertEquals("Api5", updated.getTitle());
+        Map<String, Object> partial = new HashMap<>();
+        partial.put("title", "Api5");
 
-		boolean deleted=resource.delete(created.getId(), null);
-		Assert.isTrue(deleted);
-	}
+        resource.update(created.getId(), partial);
+        Entity1 updated = resource.find(Entity1.class, created.getId(), null);
+        Assert.notNull(updated);
+        assertEquals("Api5", updated.getTitle());
 
-	@Test
-	public void testQuery() {
-		String baseUrl=client().getBaseUrl()+"/api/entity1";
+        boolean deleted = resource.delete(created.getId(), null);
+        Assert.isTrue(deleted);
+    }
 
-		RestResource resource=RestResourceBuilder.newBuilder()
-				.setEndpoint(baseUrl)
-				.build();
+    @Test
+    public void testQuery() {
+        String baseUrl = client().getBaseUrl() + "/api/entity1";
 
-		QueryOptions queryOptions=new QueryOptions();
-		queryOptions.setSelect("id,name,title");
-		queryOptions.setPageSize(2);
-		queryOptions.setPageIndex(1);
-		queryOptions.setTotal(true);
+        RestResource resource = rsf.createResource(Entity1.class, baseUrl);
 
-		RestQueryListResult<Entity1> list=resource.queryList(Entity1.class, queryOptions);
-		assertNotEmpty(list.getList());
-	}
+        QueryOptions queryOptions = new QueryOptions();
+        queryOptions.setSelect("id,name,title");
+        queryOptions.setPageSize(2);
+        queryOptions.setPageIndex(1);
+        queryOptions.setTotal(true);
 
+        RestQueryListResult<Entity1> list = resource.queryList(Entity1.class, queryOptions);
+        assertNotEmpty(list.getList());
+    }
 
-	@BeforeClass
-	public static void initData() {
-		Entity1.deleteAll();
-		Entity2.deleteAll();
+    @BeforeClass
+    public static void initData() {
+        Entity1.deleteAll();
+        Entity2.deleteAll();
 
-		c1 = new Entity1();
-		c1.setTitle("Cate1");
-		c1.create();
+        c1 = new Entity1();
+        c1.setTitle("Cate1");
+        c1.create();
 
-		c2 = new Entity1();
-		c2.setTitle("Cate2");
-		c2.create();
+        c2 = new Entity1();
+        c2.setTitle("Cate2");
+        c2.create();
 
-		api1 = new Entity2();
-		api1.setName("api1");
-		api1.setTitle("Api1");
-		api1.create();
+        api1 = new Entity2();
+        api1.setName("api1");
+        api1.setTitle("Api1");
+        api1.create();
 
-		api2 = new Entity2();
-		api2.setName("api2");
-		api2.setTitle("Api2");
-		api2.create();
-
-	}
+        api2 = new Entity2();
+        api2.setName("api2");
+        api2.setTitle("Api2");
+        api2.create();
+    }
 }
