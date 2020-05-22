@@ -21,7 +21,6 @@ import leap.lang.http.HTTP;
 import leap.lang.http.client.HttpRequest;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
-import leap.oauth2.webapp.authc.OAuth2Authentication;
 import leap.oauth2.webapp.code.DefaultCodeVerifier;
 import leap.oauth2.webapp.token.TokenInfo;
 import leap.oauth2.webapp.token.at.AccessToken;
@@ -104,15 +103,18 @@ public class DefaultTokenStrategyProvider extends DefaultCodeVerifier implements
             }
 
             final Authentication authc = request.getAuthentication();
-            if (null == authc || !(authc instanceof OAuth2Authentication)) {
+            if (null == authc || !(authc.getCredentials() instanceof leap.oauth2.webapp.token.Token)) {
                 return appOnlyTokenStrategy.getToken();
             }
 
-            return doGetToken((OAuth2Authentication) authc);
+            final leap.oauth2.webapp.token.Token token     = (leap.oauth2.webapp.token.Token) authc.getCredentials();
+            final TokenInfo                      tokenInfo = (TokenInfo) authc.getCredentialsInfo();
+
+            return doGetToken(authc, token, tokenInfo);
         }
 
-        protected Token doGetToken(OAuth2Authentication oauthc) {
-            return new TokenImpl(new SimpleAccessToken(oauthc.getToken()));
+        protected Token doGetToken(Authentication authc, leap.oauth2.webapp.token.Token token, TokenInfo info) {
+            return new TokenImpl(new SimpleAccessToken(token.getToken()));
         }
     }
 
@@ -126,14 +128,14 @@ public class DefaultTokenStrategyProvider extends DefaultCodeVerifier implements
         }
 
         @Override
-        protected Token doGetToken(OAuth2Authentication oauthc) {
-            final String at = oauthc.getCredentials().getToken();
-            if (force || !oauthc.hasClient()) {
+        protected Token doGetToken(Authentication authc, leap.oauth2.webapp.token.Token oauth2Token, TokenInfo info) {
+            final String at = oauth2Token.getToken();
+            if (force || !authc.hasClient()) {
                 TokenImpl token = tokens.get(at);
                 if (null == token || token.isExpired()) {
                     final AccessToken appAccessToken = fetchAccessTokenWithApp(at);
                     if (null != appAccessToken) {
-                        final AccessToken newAccessToken = new WithAppAccessToken(oauthc.getTokenInfo(), appAccessToken);
+                        final AccessToken newAccessToken = new WithAppAccessToken(info, appAccessToken);
                         token = new TokenImpl(newAccessToken);
                         tokens.put(at, token);
                     }

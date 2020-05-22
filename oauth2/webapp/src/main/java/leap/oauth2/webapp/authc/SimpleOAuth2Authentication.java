@@ -42,6 +42,11 @@ public class SimpleOAuth2Authentication extends AbstractAuthentication implement
     }
 
     @Override
+    public Object getCredentialsInfo() {
+        return tokenInfo;
+    }
+
+    @Override
     public TokenInfo getTokenInfo() {
         return tokenInfo;
     }

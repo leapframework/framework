@@ -50,6 +50,11 @@ public class AuthenticationWrapper implements Authentication {
     }
 
     @Override
+    public Object getCredentialsInfo() {
+        return wrapped.getCredentialsInfo();
+    }
+
+    @Override
     public UserPrincipal getUser() {
         return wrapped.getUser();
     }

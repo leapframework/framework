@@ -51,6 +51,13 @@ public interface Authentication extends AttributeAccessor {
     Object getCredentials();
 
     /**
+     * todo: doc
+     */
+    default Object getCredentialsInfo() {
+        return null;
+    }
+
+    /**
      * Optional. Returns the user principal.
      */
     UserPrincipal getUser();
