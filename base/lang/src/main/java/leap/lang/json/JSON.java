@@ -294,9 +294,26 @@ public class JSON {
     }
 
     /**
+     * Checks the missing properties exists in map but not exists in the given type and throws exception.
+     */
+    public static void checkMissingProperties(Class<?> type, Map map) {
+        Set<String> names = resolveMissingProperties(type, map);
+        if(!names.isEmpty()) {
+            if (!names.isEmpty()) {
+                for (String p : names) {
+                    if (p.equals("$") || p.endsWith(".$")) {
+                        continue;
+                    }
+                    throw new IllegalStateException("Property '" + p + "' not exists at '" + type.getName() + "'");
+                }
+            }
+        }
+    }
+
+    /**
      * Returns the missing properties exists in map but not exists in the given type.
      */
-    public static Set<String> checkMissingProperties(Class<?> type, Map map) {
-        return JsonDecoder.checkMissingProperties(type, map);
+    public static Set<String> resolveMissingProperties(Class<?> type, Map map) {
+        return JsonDecoder.resolveMissingProperties(type, map);
     }
 }

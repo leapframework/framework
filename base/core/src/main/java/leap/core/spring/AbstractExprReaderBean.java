@@ -97,7 +97,7 @@ public abstract class AbstractExprReaderBean {
     }
 
     protected void checkMissingProperties(Class<?> type, Object source, Map<String, Object> map) {
-        Set<String> missingProperties = JSON.checkMissingProperties(type, map);
+        Set<String> missingProperties = JSON.resolveMissingProperties(type, map);
 
         if (!missingProperties.isEmpty()) {
             for (String p : missingProperties) {

@@ -133,13 +133,13 @@ public class DefaultBeanCreator implements BeanCreator {
                     map.putAll(configMap);
                     cb.initConfiguration(map);
                 } else {
-                    Set<String> missingProperties = JSON.checkMissingProperties(cc, def.getConfig());
+                    Set<String> missingProperties = JSON.resolveMissingProperties(cc, def.getConfig());
                     if (!missingProperties.isEmpty()) {
                         for (String p : missingProperties) {
                             if (p.equals("$") || p.endsWith(".$")) {
                                 continue;
                             }
-                            throw new IllegalStateException("Invalid property '" + missingProperties.iterator().next() +
+                            throw new IllegalStateException("Invalid property '" + p +
                                     "' at the config of '" + type.getSimpleName() + " : " + def.getType() + "'");
                         }
                     }

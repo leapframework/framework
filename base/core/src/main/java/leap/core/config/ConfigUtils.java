@@ -125,20 +125,7 @@ public class ConfigUtils {
         if (null == map || map.isEmpty()) {
             return null;
         }
-
-        Set<String> missingProperties = JSON.checkMissingProperties(type, map);
-
-        if (!missingProperties.isEmpty()) {
-
-            for (String p : missingProperties) {
-                if (p.equals("$") || p.endsWith(".$")) {
-                    continue;
-                }
-
-                throw new IllegalStateException("Invalid property '" + missingProperties.iterator().next() + "'");
-            }
-        }
-
+        JSON.checkMissingProperties(type, map);
         return (T) Converts.toBean(map, type);
     }
 

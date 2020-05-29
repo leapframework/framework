@@ -39,15 +39,15 @@ class JsonDecoder {
         return new JsonParser(JsonParser.MODE_PERMISSIVE).parse(reader);
     }
 
-    static Set<String> checkMissingProperties(Class<?> type, Map map) {
+    static Set<String> resolveMissingProperties(Class<?> type, Map map) {
         Set<String> set = new LinkedHashSet<>();
 
-        doCheckMissingProperties(set, "", type, null, map);
+        doResolveMissingProperties(set, "", type, null, map);
 
         return set;
     }
 
-    static void doCheckMissingProperties(Set<String> set, String prefix, Class<?> type, Type genericType, Map map) {
+    static void doResolveMissingProperties(Set<String> set, String prefix, Class<?> type, Type genericType, Map map) {
         if(null == map || map.isEmpty()) {
             return;
         }
@@ -74,7 +74,7 @@ class JsonDecoder {
                 if(v instanceof Map) {
                     String name = k.toString();
 
-                    doCheckMissingProperties(set, prefix + name + ".", valueType, null, (Map)v);
+                    doResolveMissingProperties(set, prefix + name + ".", valueType, null, (Map)v);
                 }
             });
         }else {
@@ -91,7 +91,7 @@ class JsonDecoder {
                 if(bp == null) {
                     set.add(prefix + name);
                 }else if(v instanceof Map) {
-                    doCheckMissingProperties(set, prefix + name + ".", bp.getType(), bp.getGenericType(), (Map)v);
+                    doResolveMissingProperties(set, prefix + name + ".", bp.getType(), bp.getGenericType(), (Map)v);
                 }else if(v instanceof List) {
                     List list = (List)v;
                     if(list.isEmpty()) {
@@ -103,7 +103,7 @@ class JsonDecoder {
                         Object item = list.get(i);
                         if(item instanceof Map) {
                             String itemName = name + "[" + i + "]";
-                            doCheckMissingProperties(set, prefix + itemName + ".", elementType, null, (Map)item);
+                            doResolveMissingProperties(set, prefix + itemName + ".", elementType, null, (Map)item);
                         }
                     }
                 }
