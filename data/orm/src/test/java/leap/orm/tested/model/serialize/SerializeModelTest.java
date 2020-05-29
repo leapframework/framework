@@ -37,6 +37,10 @@ public class SerializeModelTest extends OrmTestCase {
         m.update();
         assertFind(m);
         assertRecord(m);
+
+        dao.update(SerializeModel.class, m.getId(), New.hashMap("name", "Hello"));
+        assertFind(m);
+        assertRecord(m);
     }
 
     @Test

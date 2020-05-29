@@ -53,9 +53,11 @@ public abstract class AbstractEntityDaoCommand extends AbstractDaoCommand {
         for(FieldMapping fm : em.getFieldMappings()){
             if(null != fm.getSerializer()) {
                 Object value = fields.get(fm.getFieldName());
-                Object encoded = fm.getSerializer().trySerialize(fm, value);
-                if(encoded != value) {
-                    fields.put(fm.getFieldName(), encoded);
+                if (null != value) {
+                    Object encoded = fm.getSerializer().trySerialize(fm, value);
+                    if(encoded != value) {
+                        fields.put(fm.getFieldName(), encoded);
+                    }
                 }
             }
         }
