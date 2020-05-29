@@ -64,6 +64,10 @@ public class Enums {
 	}
 
     public static <E extends Enum<?>> E valueOrNameOf(Class<E> enumType,Object valueOrName) throws IllegalStateException{
+	    return valueOrNameOf(enumType, valueOrName, false);
+    }
+
+    public static <E extends Enum<?>> E valueOrNameOf(Class<E> enumType,Object valueOrName, boolean ignoreCase) throws IllegalStateException{
         if(Objects2.isEmpty(valueOrName)){
             return null;
         }
@@ -74,14 +78,14 @@ public class Enums {
 
         if(reflectEnum.isValued()){
             for(E e : enumType.getEnumConstants()){
-                if(reflectEnum.getValue(e).toString().equals(stringValue)){
+                if(Strings.equals(reflectEnum.getValue(e).toString(), stringValue, ignoreCase)){
                     return e;
                 }
             }
         }
 
         for(E e : enumType.getEnumConstants()){
-            if(e.toString().equals(stringValue)){
+            if(Strings.equals(e.toString(), stringValue, ignoreCase)){
                 return e;
             }
         }
