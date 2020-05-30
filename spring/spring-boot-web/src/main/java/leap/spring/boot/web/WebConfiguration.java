@@ -30,7 +30,9 @@ import leap.spring.boot.SpringEnvPostProcessor;
 import leap.web.AppBootstrap;
 import leap.web.AppFilter;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
@@ -142,6 +144,20 @@ public class WebConfiguration {
     private static boolean booted;
 
     @Bean
+    public BeanFactoryPostProcessor leapBootingBeanFactoryPostProcessor() {
+        return new BeanFactoryPostProcessor() {
+            @Override
+            public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+                if (null != startedServletContext && !booted) {
+                    boot(startedServletContext);
+                    booted = true;
+                }
+            }
+        };
+    }
+
+    /* Cause cyclic reference exception use BeanFactoryPostProcessor instead.
+    @Bean
     public BeanPostProcessor leapBootingBeanPostProcessor() {
         return new BeanPostProcessor() {
             @Override
@@ -159,6 +175,7 @@ public class WebConfiguration {
             }
         };
     }
+    */
 
     protected static void boot(ServletContext sc) {
         if (AppBootstrap.isInitialized(sc)) {
