@@ -26,25 +26,26 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.reflect.ReflectClass;
 import leap.spring.boot.Global;
-import leap.spring.boot.SpringEnvPostProcessor;
 import leap.web.AppBootstrap;
 import leap.web.AppFilter;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.context.weaving.LoadTimeWeaverAware;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.Environment;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.instrument.classloading.LoadTimeWeaver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.*;
 import java.util.List;
 import java.util.Map;
@@ -100,7 +101,7 @@ public class WebConfiguration {
         r.setOrder(Ordered.LOWEST_PRECEDENCE);
 
         Map<String, String> initProps = Global.extraInitPropertiesFromEnv();
-        if(!initProps.isEmpty()) {
+        if (!initProps.isEmpty()) {
             initProps.forEach((n, v) -> r.addInitParameter(n, v));
         }
 
@@ -144,38 +145,28 @@ public class WebConfiguration {
     private static boolean booted;
 
     @Bean
-    public BeanFactoryPostProcessor leapBootingBeanFactoryPostProcessor() {
-        return new BeanFactoryPostProcessor() {
-            @Override
-            public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-                if (null != startedServletContext && !booted) {
-                    boot(startedServletContext);
-                    booted = true;
-                }
-            }
-        };
-    }
-
-    /* Cause cyclic reference exception use BeanFactoryPostProcessor instead.
-    @Bean
     public BeanPostProcessor leapBootingBeanPostProcessor() {
         return new BeanPostProcessor() {
             @Override
             public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-                if (null != startedServletContext && !booted) {
-                    boot(startedServletContext);
-                    booted = true;
-                }
                 return bean;
             }
 
             @Override
             public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+                /*
+                    Earlier bean will cause cyclic reference exception, Booting only the ApplicationListener has been created.
+                */
+                if(bean instanceof ApplicationListener) {
+                    if (null != startedServletContext && !booted) {
+                        booted = true;
+                        boot(startedServletContext);
+                    }
+                }
                 return bean;
             }
         };
     }
-    */
 
     protected static void boot(ServletContext sc) {
         if (AppBootstrap.isInitialized(sc)) {
