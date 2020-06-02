@@ -52,10 +52,6 @@ public class DefaultCascadeDeleteCommand extends AbstractEntityDaoCommand implem
 
     @Override
     public boolean execute() {
-        if (em.isSelfReferencing()) {
-            throw new UnsupportedOperationException("Cannot cascade delete self referencing entity '" + em.getEntityName() + "'");
-        }
-
         Set<CascadeRelation> cascadeRelations = new TreeSet<>(CascadeRelation.COMPARATOR);
         for (RelationMapping rm : em.getRelationMappings()) {
             if (rm.isOneToMany()) {
@@ -63,6 +59,10 @@ public class DefaultCascadeDeleteCommand extends AbstractEntityDaoCommand implem
                     boolean found = false;
                     for (String n : relationNames) {
                         if (n.equalsIgnoreCase(rm.getName())) {
+                            if (rm.getTargetEntityName().equals(em.getEntityName())) {
+                                throw new UnsupportedOperationException("Cannot cascade delete self referencing entity '" + em.getEntityName() + "'");
+                            }
+
                             found = true;
                             break;
                         }
