@@ -1435,6 +1435,11 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                                 QueryOptions options, JoinModels jms, Map<String, Object> fields, boolean filterByParams) {
         if (null == fields) {
             fields = new HashMap<>();
+            if(null != options.getExtraFilters()) {
+                fields.putAll(options.getExtraFilters());
+            }
+        }else {
+            fields = mergeFilters(fields, options.getExtraFilters());
         }
 
         final SimpleWhereBuilder where = new SimpleWhereBuilder();
@@ -1835,6 +1840,18 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
 
         return resolvedExpands;
+    }
+
+    protected Map<String, Object> mergeFilters(Map<String, Object> filters1, Map<String, Object> filters2) {
+        if(null == filters1) {
+            return filters2;
+        }
+        if(null == filters2) {
+            return filters1;
+        }
+        final Map<String, Object> filters = new LinkedHashMap<>(filters1);
+        filters.putAll(filters2);
+        return filters;
     }
 
     protected static class JoinModels {

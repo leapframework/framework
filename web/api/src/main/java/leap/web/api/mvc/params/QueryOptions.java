@@ -100,6 +100,10 @@ public class QueryOptions extends QueryOptionsBase {
 
     @NonParam
     @JsonIgnore
+    protected Map<String, Object> extraFilters;
+
+    @NonParam
+    @JsonIgnore
     protected Boolean allowSingleExpr;
 
     public boolean getAllowSingleExpr() {
@@ -227,6 +231,14 @@ public class QueryOptions extends QueryOptionsBase {
             queryParams = new HashMap<>();
         }
         queryParams.put(name, value);
+    }
+
+    public Map<String, Object> getExtraFilters() {
+        return extraFilters;
+    }
+
+    public void setExtraFilters(Map<String, Object> extraFilters) {
+        this.extraFilters = extraFilters;
     }
 
     public Page getPage(int defaultPageSize) {
