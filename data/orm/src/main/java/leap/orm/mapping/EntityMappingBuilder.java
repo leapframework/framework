@@ -27,9 +27,9 @@ import leap.orm.command.InsertHandler;
 import leap.orm.command.UpdateHandler;
 import leap.orm.event.EntityListenersBuilder;
 import leap.orm.interceptor.EntityExecutionInterceptor;
+import leap.orm.mapping.config.QueryConfig;
 import leap.orm.model.Model;
 import leap.orm.validation.EntityValidator;
-
 import java.util.*;
 import java.util.function.Predicate;
 
@@ -51,6 +51,7 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
     protected boolean             idDeclared;
     protected boolean             autoCreateTable;
     protected boolean             autoGenerateColumns;
+    protected QueryConfig queryConfig;
     protected Boolean             queryFilterEnabled;
     protected boolean             autoValidate;
     protected String              queryView;
@@ -246,6 +247,14 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
 
     public void setEmbeddingColumn(DbColumnBuilder embeddingColumn) {
         this.embeddingColumn = embeddingColumn;
+    }
+
+    public QueryConfig getQueryConfig() {
+        return queryConfig;
+    }
+
+    public void setQueryConfig(QueryConfig queryConfig) {
+        this.queryConfig = queryConfig;
     }
 
     public Boolean getQueryFilterEnabled() {
@@ -733,7 +742,7 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
                             insertInterceptor, updateInterceptor, deleteInterceptor, findInterceptor,
                             modelClass, validators, relations,
                             Builders.buildArray(relationProperties, new RelationProperty[0]),
-                            autoCreateTable, queryFilterEnabled == null ? false : queryFilterEnabled, autoValidate,
+                            autoCreateTable, queryConfig, queryFilterEnabled == null ? false : queryFilterEnabled, autoValidate,
                             dynamicEnabled, dynamic, logical, remote, remoteSettings, unionSettings,
                             groupByExprs, selectExprs, orderByExprs, filtersExprs, aggregatesExprs,
                             listeners.build());

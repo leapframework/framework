@@ -28,9 +28,9 @@ import leap.orm.command.InsertHandler;
 import leap.orm.command.UpdateHandler;
 import leap.orm.event.EntityListeners;
 import leap.orm.interceptor.EntityExecutionInterceptor;
+import leap.orm.mapping.config.QueryConfig;
 import leap.orm.model.Model;
 import leap.orm.validation.EntityValidator;
-
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -157,6 +157,7 @@ public class EntityMapping extends ExtensibleBase {
     protected final boolean             selfReferencing;
     protected final RelationMapping[]   selfReferencingRelations;
     protected final EntityListeners     listeners;
+    protected final QueryConfig         queryConfig;
     protected final boolean             queryFilterEnabled;
     protected final boolean             autoValidate;
     protected final boolean             dynamicEnabled;
@@ -191,7 +192,7 @@ public class EntityMapping extends ExtensibleBase {
                          List<EntityValidator> validators,
                          List<RelationMapping> relationMappings,
                          RelationProperty[] relationProperties,
-                         boolean autoCreateTable, boolean queryFilterEnabled, boolean autoValidate,
+                         boolean autoCreateTable, QueryConfig queryConfig, boolean queryFilterEnabled, boolean autoValidate,
                          boolean dynamicEnabled, Dynamic dynamic,
                          boolean logical, boolean remote, RemoteSettings remoteSettings, UnionSettings unionSettings,
                          Map<String, String> groupByExprs, Map<String, String> selectExprs, Map<String, String> orderByExprs,
@@ -251,6 +252,7 @@ public class EntityMapping extends ExtensibleBase {
         this.autoIncrementKeyField = autoIncrementKey ? keyFieldMappings[0] : null;
         this.optimisticLockField = findOptimisticLockField();
         this.autoCreateTable = autoCreateTable;
+        this.queryConfig = queryConfig;
         this.queryFilterEnabled = queryFilterEnabled;
         this.autoValidate = autoValidate;
         this.dynamicEnabled = dynamicEnabled;
@@ -593,6 +595,13 @@ public class EntityMapping extends ExtensibleBase {
      */
     public boolean isAutoCreateTable() {
         return autoCreateTable;
+    }
+
+    /**
+     * Returns the query config.
+     */
+    public QueryConfig getQueryConfig() {
+        return queryConfig;
     }
 
     public boolean isQueryFilterEnabled() {

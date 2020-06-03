@@ -33,6 +33,7 @@ import leap.lang.text.scel.ScelNode;
 import leap.lang.text.scel.ScelToken;
 import leap.orm.event.EntityListeners;
 import leap.orm.mapping.*;
+import leap.orm.mapping.config.QueryConfig;
 import leap.orm.query.CriteriaQuery;
 import leap.orm.query.PageResult;
 import leap.web.Params;
@@ -380,7 +381,21 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                         ex.handler.preQueryList(context, query);
                     }
 
-                    PageResult page = query.pageResult(finalOptions.getPage(ac.getDefaultPageSize()));
+                    QueryConfig qc = em.getQueryConfig();
+                    int defaultPageSize;
+                    if (null != qc) {
+                        if (null != qc.getDefaultPageSize()) {
+                            defaultPageSize = qc.getDefaultPageSize();
+                        } else if (null != qc.getMaxPageSize() && qc.getMaxPageSize() < ac.getDefaultPageSize()) {
+                            defaultPageSize = qc.getMaxPageSize();
+                        } else {
+                            defaultPageSize = ac.getDefaultPageSize();
+                        }
+                    } else {
+                        defaultPageSize = ac.getDefaultPageSize();
+                    }
+
+                    PageResult page = query.pageResult(finalOptions.getPage(defaultPageSize));
                     list = ex.executeQueryList(context, finalOptions, query);
                     if (null == list) {
                         list = dao.withEvents(() -> page.list());
