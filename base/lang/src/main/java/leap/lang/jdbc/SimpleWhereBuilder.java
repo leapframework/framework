@@ -103,7 +103,7 @@ public class SimpleWhereBuilder implements WhereBuilder {
             this.where.append(expr);
         } else {
             this.where.insert(0, '(')
-                    .append(" or (")
+                    .append(") or (")
                     .append(expr)
                     .append(')');
         }
@@ -113,6 +113,11 @@ public class SimpleWhereBuilder implements WhereBuilder {
 
     private void addArgs(Object... args) {
         Collections2.addAll(this.args, args);
+    }
+
+    @Override
+    public String toString() {
+        return where.toString();
     }
 
     protected class ExprImpl implements Expr {
