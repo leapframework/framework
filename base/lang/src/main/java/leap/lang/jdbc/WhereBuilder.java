@@ -32,6 +32,8 @@ public interface WhereBuilder {
 
     boolean isEmpty();
 
+    WhereBuilder append(String expr);
+
     WhereBuilder and(String expr);
 
     WhereBuilder and(Consumer<Expr> func);

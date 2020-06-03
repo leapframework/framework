@@ -54,6 +54,14 @@ public class SimpleWhereBuilder implements WhereBuilder {
     }
 
     @Override
+    public WhereBuilder append(String expr) {
+        if(null != expr) {
+            where.append(' ').append(expr);
+        }
+        return this;
+    }
+
+    @Override
     public WhereBuilder and(String expr) {
         return and(expr, Arrays2.EMPTY_OBJECT_ARRAY);
     }
