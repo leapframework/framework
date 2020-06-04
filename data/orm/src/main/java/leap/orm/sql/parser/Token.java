@@ -97,7 +97,9 @@ public enum Token {
     //operators
     QUES("?",true),
     EQ("=",true), 
-    GT(">",true), 
+    GT(">",true),
+    SUBGT("->", true),
+    SUBGTGT("->>", true),
     LT("<",true), 
     BANG("!",true),
     TILDE("~",true), 

@@ -1005,7 +1005,17 @@ public class Lexer {
                 break;
             case '-':
                 nextChar();
-                _token = Token.SUB;
+                if (ch == '>') {
+                	nextChar();
+                	if (ch == '>') {
+                		nextChar();
+                		_token = Token.SUBGTGT;
+					} else {
+						_token = Token.SUBGT;
+					}
+				} else {
+					_token = Token.SUB;
+				}
                 break;
             case '*':
                 nextChar();
