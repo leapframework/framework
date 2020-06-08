@@ -171,6 +171,7 @@ public class ApacheHttpClient extends AbstractHttpClient implements Initializabl
         }
 
         cb.setRetryHandler(new DefaultHttpRequestRetryHandler());
+        cb.disableRedirectHandling();
 
         if(evictExpiredConnections) {
             cb.evictExpiredConnections();
