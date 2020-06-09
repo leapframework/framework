@@ -68,16 +68,13 @@ public class SimpleWhereBuilder implements WhereBuilder {
 
     @Override
     public WhereBuilder and(String expr, Object... args) {
-        if (this.where.length() == 0) {
-            this.where.append(expr);
-        } else {
-            this.where.insert(0, '(')
-                    .append(") and (")
-                    .append(expr)
-                    .append(')');
+        if(isDynamicWithOp(expr, "and")) {
+            append(expr);
+            addArgs(args);
+            return this;
+        }else {
+            return doAnd(expr, args);
         }
-        addArgs(args);
-        return this;
     }
 
     @Override
@@ -107,6 +104,29 @@ public class SimpleWhereBuilder implements WhereBuilder {
 
     @Override
     public WhereBuilder or(String expr, Object... args) {
+        if(isDynamicWithOp(expr, "or")) {
+            append(expr);
+            addArgs(args);
+            return this;
+        }else {
+            return doOr(expr, args);
+        }
+    }
+
+    protected WhereBuilder doAnd(String expr, Object... args) {
+        if (this.where.length() == 0) {
+            this.where.append(expr);
+        } else {
+            this.where.insert(0, '(')
+                    .append(") and (")
+                    .append(expr)
+                    .append(')');
+        }
+        addArgs(args);
+        return this;
+    }
+
+    protected WhereBuilder doOr(String expr, Object... args) {
         if (this.where.length() == 0) {
             this.where.append(expr);
         } else {
@@ -121,6 +141,22 @@ public class SimpleWhereBuilder implements WhereBuilder {
 
     private void addArgs(Object... args) {
         Collections2.addAll(this.args, args);
+    }
+
+    private boolean isDynamicWithOp(String expr, String op) {
+        if(null != expr && expr.startsWith("{?")) {
+            int i=2;
+            for(;i<expr.length();i++) {
+                if(Character.isWhitespace(expr.charAt(i))) {
+                    continue;
+                }
+                break;
+            }
+            if(expr.substring(i, i + op.length()).equalsIgnoreCase(op)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

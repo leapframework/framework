@@ -269,7 +269,8 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
         TokenInfoResponse info = obtainAccessTokenInfo(token.accessToken);
         
         assertNotEmpty(info.userId);
-        assertEquals(token.expiresIn, info.expiresIn);
+        assertTrue("Expected " + token.expiresIn + ", but " + info.expiresIn,
+                token.expiresIn.equals(info.expiresIn) || token.expiresIn.equals(info.expiresIn + 1));
         
         return info;
     }
