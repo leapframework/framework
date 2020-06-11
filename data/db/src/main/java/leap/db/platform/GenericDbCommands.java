@@ -235,17 +235,17 @@ public class GenericDbCommands extends ListEnumerable<DbCommand> implements DbCo
                 sqls.addAll(dialect.getCreateTableSqls(table));
             }
 
-            //create foreign keys.
+			//create indexes before foreign keys.
+			for(DbTable table : schema.getTables()) {
+				for(DbIndex ix : table.getIndexes()) {
+					sqls.addAll(dialect.getCreateIndexSqls(table, ix));
+				}
+			}
+
+			//create foreign keys.
             for(DbTable table : schema.getTables()) {
                 for(DbForeignKey fk : table.getForeignKeys()) {
                     sqls.addAll(dialect.getCreateForeignKeySqls(table, fk));
-                }
-            }
-
-            //create indexes.
-            for(DbTable table : schema.getTables()) {
-                for(DbIndex ix : table.getIndexes()) {
-                    sqls.addAll(dialect.getCreateIndexSqls(table, ix));
                 }
             }
 
@@ -297,19 +297,20 @@ public class GenericDbCommands extends ListEnumerable<DbCommand> implements DbCo
 		@Override
         public List<String> sqls() {
 	        List<String> sqls = New.arrayList(dialect.getCreateTableSqls(table));
-	        
-			if(createForeignKey && table.hasForeignKeys()){
-				for(DbForeignKey fk : table.getForeignKeys()){
-					sqls.addAll(dialect.getCreateForeignKeySqls(table, fk));
-				}
-			}
-			
+
+	        //Create index before foreign key
 			if(createIndex && table.hasIndexes()){
 				for(DbIndex ix : table.getIndexes()){
 					sqls.addAll(dialect.getCreateIndexSqls(table, ix));
 				}
 			}
-			
+
+			if(createForeignKey && table.hasForeignKeys()){
+				for(DbForeignKey fk : table.getForeignKeys()){
+					sqls.addAll(dialect.getCreateForeignKeySqls(table, fk));
+				}
+			}
+
 			return sqls;
         }
 	}
