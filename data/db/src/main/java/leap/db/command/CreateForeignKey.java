@@ -20,7 +20,7 @@ import leap.db.DbCommand;
 public interface CreateForeignKey extends DbCommand {
 
 	default float getSortOrder() {
-		return 3;
+		return 4;
 	}
 	
 }

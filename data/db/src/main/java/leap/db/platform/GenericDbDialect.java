@@ -602,12 +602,12 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
     protected void createSchemaChangeCommands(SchemaChangeContext context, AddTableChange change, List<DbCommand> commands) {
         commands.add(db.cmdCreateTable(change.getNewTable()).setCreateForeignKey(false).setCreateIndex(false));
 
-        for (DbForeignKey fk : change.getNewTable().getForeignKeys()) {
-            commands.add(db.cmdCreateForeignKey(change.getNewTable(), fk));
-        }
-
         for (DbIndex ix : change.getNewTable().getIndexes()) {
             commands.add(db.cmdCreateIndex(change.getNewTable(), ix));
+        }
+
+        for (DbForeignKey fk : change.getNewTable().getForeignKeys()) {
+            commands.add(db.cmdCreateForeignKey(change.getNewTable(), fk));
         }
     }
 
