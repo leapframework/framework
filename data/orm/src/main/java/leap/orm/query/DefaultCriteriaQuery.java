@@ -152,6 +152,20 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     }
 
     @Override
+    public RelationJoin getJoin(String targetEntity, String relation) {
+        for (JoinBuilder join : joins) {
+            if (join instanceof leap.orm.query.RelationJoin) {
+                RelationJoin rj = (RelationJoin) join;
+                if (rj.getTargetEntity().getEntityName().equalsIgnoreCase(targetEntity) &&
+                        rj.getRelation().getName().equalsIgnoreCase(relation)) {
+                    return rj;
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
     public CriteriaQuery<T> join(JoinBuilder builder) {
         joins.add(builder);
         return this;
@@ -377,7 +391,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
             }
         }
 
-        joins.add(new RelationJoin(target, alias, type, rm));
+        joins.add(new RelationJoinImpl(target, alias, type, rm));
 
         if (null != where) {
 
@@ -911,18 +925,32 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         LEFT
     }
 
-    protected static class RelationJoin implements JoinBuilder {
-
+    protected static class RelationJoinImpl implements RelationJoin, JoinBuilder {
         final RelationMapping relation;
         final EntityMapping   target;
         final String          alias;
         final JoinType        type;
 
-        protected RelationJoin(EntityMapping target, String alias, JoinType type, RelationMapping relation) {
+        protected RelationJoinImpl(EntityMapping target, String alias, JoinType type, RelationMapping relation) {
             this.target = target;
             this.alias = alias;
             this.type = type;
             this.relation = relation;
+        }
+
+        @Override
+        public EntityMapping getTargetEntity() {
+            return target;
+        }
+
+        @Override
+        public RelationMapping getRelation() {
+            return relation;
+        }
+
+        @Override
+        public String getAlias() {
+            return alias;
         }
 
         @Override

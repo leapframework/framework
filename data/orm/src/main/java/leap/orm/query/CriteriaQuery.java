@@ -225,6 +225,11 @@ public interface CriteriaQuery<T> extends Query<T> {
     CriteriaQuery<T> alias(String alias);
 
     /**
+     * Returns the relation join or null if not exists.
+     */
+    RelationJoin getJoin(String targetEntity, String relation);
+
+    /**
      * Add a customer join builder
      */
     CriteriaQuery<T> join(JoinBuilder builder);
