@@ -40,8 +40,16 @@ public class SimpleWhereBuilder implements WhereBuilder {
         this.args = args;
     }
 
+    /**
+     * Use {@link #getExpr()}.
+     */
+    @Deprecated
     public StringBuilder getWhere() {
         return where;
+    }
+
+    public String getExpr() {
+        return where.toString();
     }
 
     public List<Object> getArgs() {
