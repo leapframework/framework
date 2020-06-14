@@ -231,9 +231,9 @@ public interface CriteriaQuery<T> extends Query<T> {
     String getNextJoinAlias();
 
     /**
-     * Returns the relation join or null if not exists.
+     * Returns the joined alias of creates a new join with {@link #getNextJoinAlias()}.
      */
-    RelationJoin getJoin(String targetEntity, String relation);
+    String getOrJoin(String targetEntity, String relation);
 
     /**
      * Add a customer join builder

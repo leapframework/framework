@@ -161,6 +161,17 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     }
 
     @Override
+    public String getOrJoin(String targetEntity, String relation) {
+        RelationJoin join = getJoin(targetEntity, relation);
+        if(null != join) {
+            return join.getAlias();
+        }else {
+            final String alias = getNextJoinAlias();
+            join(targetEntity, relation, alias);
+            return alias;
+        }
+    }
+
     public RelationJoin getJoin(String targetEntity, String relation) {
         for (JoinBuilder join : joins) {
             if (join instanceof leap.orm.query.RelationJoin) {
