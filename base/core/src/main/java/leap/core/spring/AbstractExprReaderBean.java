@@ -70,10 +70,22 @@ public abstract class AbstractExprReaderBean {
     }
 
     protected void readInclude(Resource resource, Map<String, Object> map) {
-        String inc = (String) map.remove("@include");
+        String inc = extractIncludeValue(map);
         if (!Strings.isEmpty(inc)) {
             readInclude(resource, map, inc);
         }
+    }
+
+    protected String extractIncludeValue(Map<String, Object> map) {
+        Object v = map.get("@include");
+        if(v instanceof String) {
+            return (String)v;
+        }
+        v = map.get("$$include");
+        if(v instanceof String) {
+            return (String)v;
+        }
+        return null;
     }
 
     protected void readInclude(Resource resource, Map<String, Object> root, String incPath) {
