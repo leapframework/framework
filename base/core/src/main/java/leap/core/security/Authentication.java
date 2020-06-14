@@ -119,15 +119,36 @@ public interface Authentication extends AttributeAccessor {
 
     /**
      * Returns current access mode.
+     *
+     * @deprecated  use {@link #getAccessModes()}.
      */
+    @Deprecated
     default String getAccessMode() {
-        return null;
+        String[] modes = getAccessModes();
+        return null == modes || modes.length == 0 ? null : modes[0];
     }
 
     /**
      * Sets current access mode.
+     *
+     * @deprecated  use {@link #setAccessModes(String...)}.
      */
+    @Deprecated
     default void setAccessMode(String accessMode) {
+        setAccessModes(accessMode);
+    }
+
+    /**
+     * Returns current access modes.
+     */
+    default String[] getAccessModes() {
+        return null;
+    }
+
+    /**
+     * Sets current access modes.
+     */
+    default void setAccessModes(String... accessModes) {
 
     }
 

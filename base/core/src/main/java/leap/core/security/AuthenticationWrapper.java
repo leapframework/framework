@@ -105,6 +105,16 @@ public class AuthenticationWrapper implements Authentication {
     }
 
     @Override
+    public String[] getAccessModes() {
+        return wrapped.getAccessModes();
+    }
+
+    @Override
+    public void setAccessModes(String... accessModes) {
+        wrapped.setAccessModes(accessModes);
+    }
+
+    @Override
     public boolean hasClient() {
         return wrapped.hasClient();
     }

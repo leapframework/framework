@@ -278,6 +278,16 @@ public class DefaultAuthenticationManager implements AuthenticationManager {
         }
 
         @Override
+        public String[] getAccessModes() {
+            return wrapped.getAccessModes();
+        }
+
+        @Override
+        public void setAccessModes(String... accessModes) {
+            wrapped.setAccessModes(accessModes);
+        }
+
+        @Override
         public String toString() {
             return wrapped.toString();
         }

@@ -18,17 +18,18 @@ package leap.web.security.authc;
 import leap.core.security.Authentication;
 import leap.core.security.ClientPrincipal;
 import leap.core.security.UserPrincipal;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public abstract class AbstractAuthentication implements Authentication {
 
-    protected String   token;
-    protected boolean  rememberMe;
-    protected String[] permissions;
-    protected String[] roles;
-    protected String[] rules;
-    protected String   accessMode;
+    protected String              token;
+    protected boolean             rememberMe;
+    protected String[]            permissions;
+    protected String[]            roles;
+    protected String[]            rules;
+    protected String[]            accessModes;
     protected Map<String, Object> attributes = new HashMap<String, Object>();
 
     @Override
@@ -38,7 +39,7 @@ public abstract class AbstractAuthentication implements Authentication {
 
     @Override
     public void setToken(String token) throws IllegalStateException {
-        if(null != this.token) {
+        if (null != this.token) {
             throw new IllegalStateException("Token already exists");
         }
         this.token = token;
@@ -84,13 +85,13 @@ public abstract class AbstractAuthentication implements Authentication {
     }
 
     @Override
-    public String getAccessMode() {
-        return accessMode;
+    public String[] getAccessModes() {
+        return accessModes;
     }
 
     @Override
-    public void setAccessMode(String accessMode) {
-        this.accessMode = accessMode;
+    public void setAccessModes(String... accessModes) {
+        this.accessModes = accessModes;
     }
 
     @Override
@@ -100,10 +101,10 @@ public abstract class AbstractAuthentication implements Authentication {
 
         StringBuilder s = new StringBuilder();
         s.append("Authc[user=")
-         .append(null == user ? "n/a" : user.getLoginName())
-         .append(",client=")
-         .append(null == client ? "n/a" : client.getIdAsString())
-         .append("]") ;
+                .append(null == user ? "n/a" : user.getLoginName())
+                .append(",client=")
+                .append(null == client ? "n/a" : client.getIdAsString())
+                .append("]");
 
         return s.toString();
     }

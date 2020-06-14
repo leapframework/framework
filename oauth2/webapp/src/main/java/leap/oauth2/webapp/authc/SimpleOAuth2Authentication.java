@@ -66,7 +66,7 @@ public class SimpleOAuth2Authentication extends AbstractAuthentication implement
         SimpleOAuth2Authentication authc = new SimpleOAuth2Authentication(credentials, tokenInfo, user, client);
         authc.setPermissions(permissions);
         authc.setRoles(roles);
-        authc.setAccessMode(accessMode);
+        authc.setAccessModes(accessModes);
         authc.setToken(token);
         authc.setRememberMe(rememberMe);
         authc.setRules(rules);
