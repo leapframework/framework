@@ -28,6 +28,7 @@ import leap.orm.mapping.FieldMapping;
 import leap.orm.mapping.RelationMapping;
 import leap.orm.reader.RecordSetReader;
 
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -223,6 +224,11 @@ public interface CriteriaQuery<T> extends Query<T> {
      * Default alias name is 't'.
      */
     CriteriaQuery<T> alias(String alias);
+
+    /**
+     * Returns the next join alias, Default is 'j0', 'j1', 'j2'...
+     */
+    String getNextJoinAlias();
 
     /**
      * Returns the relation join or null if not exists.

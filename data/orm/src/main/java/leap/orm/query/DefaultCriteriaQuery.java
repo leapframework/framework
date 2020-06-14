@@ -151,6 +151,15 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         return this;
     }
 
+    public List<JoinBuilder> getJoins() {
+        return joins;
+    }
+
+    @Override
+    public String getNextJoinAlias() {
+        return "j" + joins.size();
+    }
+
     @Override
     public RelationJoin getJoin(String targetEntity, String relation) {
         for (JoinBuilder join : joins) {
