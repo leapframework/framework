@@ -27,8 +27,12 @@ import java.util.List;
  * Created by kael on 2016/11/18.
  */
 public interface JoinContext {
-    EntityMapping     getSource();
-    OrmContext        getOrm();
-    String            getSourceAlias();
+
+    OrmContext getOrm();
+
+    EntityMapping getSource();
+
+    String getSourceAlias();
+
     List<JoinBuilder> getAllJoins();
 }

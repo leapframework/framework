@@ -17,6 +17,9 @@ package leap.orm.query;
 
 public interface JoinBuilder {
 
-    void build(StringBuilder sqlBuilder,JoinContext context);
+    /**
+     * Build the join sql expression.
+     */
+    void build(StringBuilder sql, JoinContext context);
 
 }

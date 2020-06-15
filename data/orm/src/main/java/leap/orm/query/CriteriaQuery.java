@@ -236,6 +236,16 @@ public interface CriteriaQuery<T> extends Query<T> {
     String getOrJoin(String targetEntity, String relation);
 
     /**
+     * Returns the joined alias of creates a new join with {@link #getNextJoinAlias()}.
+     */
+    String getOrJoinJoined(String joined, String relation);
+
+    /**
+     * Inner join the joined entity with the relation of the joined entity.
+     */
+    CriteriaQuery<T> joinJoined(String joined, String relation, String alias);
+
+    /**
      * Add a customer join builder
      */
     CriteriaQuery<T> join(JoinBuilder builder);

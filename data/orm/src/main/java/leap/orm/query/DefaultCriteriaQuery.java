@@ -163,12 +163,36 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     @Override
     public String getOrJoin(String targetEntity, String relation) {
         RelationJoin join = getJoin(targetEntity, relation);
-        if(null != join) {
+        if (null != join) {
             return join.getAlias();
-        }else {
+        } else {
             final String alias = getNextJoinAlias();
             join(targetEntity, relation, alias);
             return alias;
+        }
+    }
+
+    @Override
+    public String getOrJoinJoined(String joined, String relation) {
+        RelationJoin found = null;
+        for (JoinBuilder join : joins) {
+            if (join instanceof RelationJoinImpl) {
+                final RelationJoinImpl rj = (RelationJoinImpl)join;
+                if(null != rj.joined && rj.joined.getAlias().equalsIgnoreCase(joined)) {
+                    if(rj.getRelation().getName().equalsIgnoreCase(relation)) {
+                        found = rj;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if(null == found) {
+            final String alias = getNextJoinAlias();
+            joinJoined(joined, relation, alias);
+            return alias;
+        }else {
+            return found.getAlias();
         }
     }
 
@@ -183,6 +207,32 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
             }
         }
         return null;
+    }
+
+    public RelationJoin getRelationJoin(String alias) {
+        for (JoinBuilder join : joins) {
+            if (join instanceof RelationJoin && ((RelationJoin) join).getAlias().equalsIgnoreCase(alias)) {
+                return (RelationJoin) join;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public CriteriaQuery<T> joinJoined(String joined, String relation, String alias) {
+        RelationJoin join = getRelationJoin(joined);
+        if (null == join) {
+            throw new IllegalStateException("No relation joined with alias '" + joined + "'");
+        }
+
+        final RelationMapping rm = join.getTargetEntity().tryGetRelationMapping(relation);
+        if (null == rm) {
+            throw new IllegalStateException("Relation '" + relation + "' not exists at joined entity '" +
+                    join.getTargetEntity().getEntityName() + "'");
+        }
+
+        joins.add(new RelationJoinImpl(join, alias, JoinType.INNER, rm));
+        return this;
     }
 
     @Override
@@ -946,13 +996,23 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     }
 
     protected static class RelationJoinImpl implements RelationJoin, JoinBuilder {
+        final RelationJoin    joined;
         final RelationMapping relation;
         final EntityMapping   target;
         final String          alias;
         final JoinType        type;
 
         protected RelationJoinImpl(EntityMapping target, String alias, JoinType type, RelationMapping relation) {
+            this.joined = null;
             this.target = target;
+            this.alias = alias;
+            this.type = type;
+            this.relation = relation;
+        }
+
+        protected RelationJoinImpl(RelationJoin joined, String alias, JoinType type, RelationMapping relation) {
+            this.joined = joined;
+            this.target = joined.getTargetEntity();
             this.alias = alias;
             this.type = type;
             this.relation = relation;
@@ -974,19 +1034,19 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         }
 
         @Override
-        public void build(StringBuilder sqlBuilder, JoinContext context) {
-            RelationMapping relation = this.relation;
+        public void build(StringBuilder sql, JoinContext context) {
+            final String fromEntity = null == joined ? context.getSource().getEntityName() : joined.getTargetEntity().getEntityName();
+            final String fromAlias  = null == joined ? context.getSourceAlias() : joined.getAlias();
 
             if (relation.isManyToOne() || relation.isOneToMany()) {
-
-                if (this.type == JoinType.LEFT) {
-                    sqlBuilder.append(" left");
+                if (type == JoinType.LEFT) {
+                    sql.append(" left");
                 }
 
-                sqlBuilder.append(" join ")
-                        .append(this.target.getTableName())
+                sql.append(" join ")
+                        .append(target.getTableName())
                         .append(" ")
-                        .append(this.alias)
+                        .append(alias)
                         .append(" on ");
 
                 //many-to-one
@@ -994,11 +1054,11 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                     int i = 0;
                     for (JoinFieldMapping jf : relation.getJoinFields()) {
                         if (i > 0) {
-                            sqlBuilder.append(" and ");
+                            sql.append(" and ");
                         }
-                        sqlBuilder.append(context.getSourceAlias()).append('.').append(jf.getLocalFieldName())
+                        sql.append(fromAlias).append('.').append(jf.getLocalFieldName())
                                 .append("=")
-                                .append(this.alias).append('.').append(jf.getReferencedFieldName());
+                                .append(alias).append('.').append(jf.getReferencedFieldName());
                         i++;
                     }
                     return;
@@ -1007,21 +1067,21 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                 //one-to-many, find the inverse many-to-one relation.
                 if (relation.isOneToMany()) {
                     RelationMapping inverse =
-                            this.target.getRelationMapping(relation.getInverseRelationName());
+                            target.getRelationMapping(relation.getInverseRelationName());
 
                     if (null == inverse || !inverse.isManyToOne()) {
                         throw new IllegalStateException("A inverse many-to-one relation must be exists in entity '" +
-                                this.target.getEntityName() + "'");
+                                target.getEntityName() + "'");
                     }
 
                     int i = 0;
                     for (JoinFieldMapping jf : inverse.getJoinFields()) {
                         if (i > 0) {
-                            sqlBuilder.append(" and ");
+                            sql.append(" and ");
                         }
-                        sqlBuilder.append(context.getSourceAlias()).append('.').append(jf.getReferencedFieldName())
+                        sql.append(fromAlias).append('.').append(jf.getReferencedFieldName())
                                 .append("=")
-                                .append(this.alias).append('.').append(jf.getLocalFieldName());
+                                .append(alias).append('.').append(jf.getLocalFieldName());
                         i++;
                     }
 
@@ -1034,15 +1094,15 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
             if (relation.isManyToMany()) {
                 EntityMapping joinEntity = context.getOrm().getMetadata().getEntityMapping(relation.getJoinEntityName());
 
-                final String sourceEntityName = context.getSource().getEntityName();
+                final String sourceEntityName = fromEntity;
                 final String targetEntityName = relation.getTargetEntityName();
-                final String joinAlias        = context.getSourceAlias() + "_" + this.alias;
+                final String joinAlias        = fromAlias + "_" + alias;
 
                 if (this.type == JoinType.LEFT) {
-                    sqlBuilder.append(" left");
+                    sql.append(" left");
                 }
 
-                sqlBuilder.append(" join ")
+                sql.append(" join ")
                         .append(joinEntity.getEntityName())
                         .append(" ")
                         .append(joinAlias)
@@ -1052,36 +1112,36 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                 for (JoinFieldMapping jf : relation.getJoinFields()) {
                     if (Strings.equalsIgnoreCase(sourceEntityName, jf.getReferencedEntityName())) {
                         if (i > 0) {
-                            sqlBuilder.append(" and ");
+                            sql.append(" and ");
                         }
 
-                        sqlBuilder.append(context.getSourceAlias()).append('.').append(jf.getReferencedFieldName())
+                        sql.append(fromAlias).append('.').append(jf.getReferencedFieldName())
                                 .append('=')
                                 .append(joinAlias).append('.').append(jf.getLocalFieldName());
                         i++;
                     }
                 }
 
-                if (this.type == JoinType.LEFT) {
-                    sqlBuilder.append(" left");
+                if (type == JoinType.LEFT) {
+                    sql.append(" left");
                 }
 
-                sqlBuilder.append(" join ")
-                        .append(this.target.getEntityName())
+                sql.append(" join ")
+                        .append(target.getEntityName())
                         .append(" ")
-                        .append(this.alias)
+                        .append(alias)
                         .append(" on ");
 
                 i = 0;
                 for (JoinFieldMapping jf : relation.getJoinFields()) {
                     if (Strings.equalsIgnoreCase(targetEntityName, jf.getReferencedEntityName())) {
                         if (i > 0) {
-                            sqlBuilder.append(" and ");
+                            sql.append(" and ");
                         }
 
-                        sqlBuilder.append(joinAlias).append('.').append(jf.getLocalFieldName())
+                        sql.append(joinAlias).append('.').append(jf.getLocalFieldName())
                                 .append('=')
-                                .append(this.alias).append('.').append(jf.getReferencedFieldName());
+                                .append(alias).append('.').append(jf.getReferencedFieldName());
                         i++;
                     }
                 }
@@ -1089,7 +1149,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                 return;
             }
 
-            throw new IllegalStateException("Cannot join entity '" + this.target.getEntityName() + "' by relation type '" +
+            throw new IllegalStateException("Cannot join entity '" + target.getEntityName() + "' by relation type '" +
                     relation.getType());
 
         }
