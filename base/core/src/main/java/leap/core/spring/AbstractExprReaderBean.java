@@ -17,6 +17,7 @@
 package leap.core.spring;
 
 import leap.core.annotation.Inject;
+import leap.core.config.ConfigUtils;
 import leap.lang.Strings;
 import leap.lang.convert.Converts;
 import leap.lang.json.JSON;
@@ -71,14 +72,14 @@ public abstract class AbstractExprReaderBean {
 
     protected String extractIncludeValue(Map<String, Object> map) {
         Object v = map.get("@include");
-        if(v instanceof String) {
+        if (v instanceof String) {
             map.remove("@include");
-            return (String)v;
+            return (String) v;
         }
         v = map.get("$$include");
-        if(v instanceof String) {
+        if (v instanceof String) {
             map.remove("$$include");
-            return (String)v;
+            return (String) v;
         }
         return null;
     }
@@ -93,7 +94,11 @@ public abstract class AbstractExprReaderBean {
             if (null == incRes || !incRes.exists()) {
                 throw new IllegalStateException("The included file '" + inc + "' not found");
             }
-            return YAML.decodeYamlOrJson(incRes);
+            if (ConfigUtils.isJsonOrYaml(incRes)) {
+                return YAML.decodeYamlOrJson(incRes);
+            } else {
+                return incRes.getContent();
+            }
         } catch (IOException e) {
             throw new UncheckedIOException("Err read include '" + inc + "', " + e.getMessage(), e);
         }
@@ -102,23 +107,23 @@ public abstract class AbstractExprReaderBean {
     protected Resource resolveIncludeResource(Resource resource, String inc) throws IOException {
         final List<String> paths = new ArrayList<>();
         paths.add(inc);
-        if(Strings.isEmpty(Paths.getFileExtension(inc))) {
+        if (Strings.isEmpty(Paths.getFileExtension(inc))) {
             paths.add(inc + ".yaml");
             paths.add(inc + ".yml");
             paths.add(inc + ".json");
         }
 
-        if(inc.indexOf(":") > 0) {
-            for(String path : paths) {
+        if (inc.indexOf(":") > 0) {
+            for (String path : paths) {
                 Resource r = Resources.getResource(path);
-                if(null != r && r.exists()) {
+                if (null != r && r.exists()) {
                     return r;
                 }
             }
         }
-        for(String path : paths) {
+        for (String path : paths) {
             Resource r = resource.createRelative(path);
-            if(null != r && r.exists()) {
+            if (null != r && r.exists()) {
                 return r;
             }
         }
@@ -169,7 +174,7 @@ public abstract class AbstractExprReaderBean {
             return null;
         }
 
-        if (null != resource && v instanceof String && ( ((String) v).startsWith("@include") || ((String)v).startsWith("$$include"))) {
+        if (null != resource && v instanceof String && (((String) v).startsWith("@include") || ((String) v).startsWith("$$include"))) {
             String[] parts = Strings.splitWhitespaces((String) v);
             if ((parts[0].equals("@include") || parts[0].equals("$$include")) && parts.length == 2) {
                 v = readIncludeValue(resource, parts[1]);
