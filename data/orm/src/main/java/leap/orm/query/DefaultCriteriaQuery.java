@@ -231,7 +231,9 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                     join.getTargetEntity().getEntityName() + "'");
         }
 
-        joins.add(new RelationJoinImpl(join, alias, JoinType.INNER, rm));
+        final EntityMapping em = dao.getEntityMapping(rm.getTargetEntityName());
+
+        joins.add(new RelationJoinImpl(join, em, alias, JoinType.INNER, rm));
         return this;
     }
 
@@ -1010,9 +1012,9 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
             this.relation = relation;
         }
 
-        protected RelationJoinImpl(RelationJoin joined, String alias, JoinType type, RelationMapping relation) {
+        protected RelationJoinImpl(RelationJoin joined, EntityMapping target, String alias, JoinType type, RelationMapping relation) {
             this.joined = joined;
-            this.target = joined.getTargetEntity();
+            this.target = target;
             this.alias = alias;
             this.type = type;
             this.relation = relation;
