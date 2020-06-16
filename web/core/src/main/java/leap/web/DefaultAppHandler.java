@@ -18,6 +18,7 @@ package leap.web;
 import leap.core.AppException;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
+import leap.core.security.SecurityContext;
 import leap.core.validation.SimpleErrors;
 import leap.core.validation.Validation;
 import leap.core.validation.ValidationException;
@@ -159,6 +160,16 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
         interceptors.onPrepareRequest(request, response);
     }
 
+    protected void processRequestBeforeHandling(Request request, Response response)  {
+        //Process authentication
+        if(null == request.getAuthentication()) {
+            SecurityContext securityContext = SecurityContext.tryGetCurrent();
+            if(null != securityContext) {
+                request.setAuthentication(securityContext.getAuthentication());
+            }
+        }
+    }
+
     protected synchronized void initServerInfoAndNotifyListener(Request request, Response response) {
         if(null != serverInfo){
             return;
@@ -213,6 +224,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 
                 //handle by handlers
                 if (!handled) {
+                    processRequestBeforeHandling(request, response);
                     handled = handleByHandlers(request, response);
                 }
 
