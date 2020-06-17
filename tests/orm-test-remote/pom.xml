@@ -6,7 +6,7 @@
 	<parent>
 		<artifactId>tests</artifactId>
 		<groupId>org.leapframework</groupId>
-		<version>0.7.14b-SNAPSHOT</version>
+		<version>0.7.14b-a2</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>orm-test-remote</artifactId>
