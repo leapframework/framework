@@ -161,19 +161,19 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     }
 
     @Override
-    public String getOrJoin(String targetEntity, String relation) {
+    public String getOrJoin(JoinType type, String targetEntity, String relation) {
         RelationJoin join = getJoin(targetEntity, relation);
         if (null != join) {
             return join.getAlias();
         } else {
             final String alias = getNextJoinAlias();
-            join(targetEntity, relation, alias);
+            join(type, targetEntity, relation, alias);
             return alias;
         }
     }
 
     @Override
-    public String getOrJoinJoined(String joined, String relation) {
+    public String getOrJoinJoined(JoinType type, String joined, String relation) {
         RelationJoin found = null;
         for (JoinBuilder join : joins) {
             if (join instanceof RelationJoinImpl) {
@@ -189,7 +189,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
         if(null == found) {
             final String alias = getNextJoinAlias();
-            joinJoined(joined, relation, alias);
+            joinJoined(type, joined, relation, alias);
             return alias;
         }else {
             return found.getAlias();
@@ -219,7 +219,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     }
 
     @Override
-    public CriteriaQuery<T> joinJoined(String joined, String relation, String alias) {
+    public CriteriaQuery<T> joinJoined(JoinType type, String joined, String relation, String alias) {
         RelationJoin join = getRelationJoin(joined);
         if (null == join) {
             throw new IllegalStateException("No relation joined with alias '" + joined + "'");
@@ -232,8 +232,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         }
 
         final EntityMapping em = dao.getEntityMapping(rm.getTargetEntityName());
-
-        joins.add(new RelationJoinImpl(join, em, alias, JoinType.INNER, rm));
+        joins.add(new RelationJoinImpl(join, em, alias, type, rm));
         return this;
     }
 
@@ -262,11 +261,11 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     }
 
     @Override
-    public CriteriaQuery<T> join(String targetEntityName, String localRelation, String alias) {
+    public CriteriaQuery<T> join(JoinType type, String targetEntityName, String localRelation, String alias) {
         EntityMapping em =
                 context.getMetadata().getEntityMapping(targetEntityName);
 
-        return join(em, localRelation, alias, JoinType.INNER);
+        return join(em, localRelation, alias, type);
     }
 
     @Override
@@ -992,11 +991,6 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         return null == fm ? field : fm.getColumnName();
     }
 
-    protected enum JoinType {
-        INNER,
-        LEFT
-    }
-
     protected static class RelationJoinImpl implements RelationJoin, JoinBuilder {
         final RelationJoin    joined;
         final RelationMapping relation;
@@ -1008,16 +1002,23 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
             this.joined = null;
             this.target = target;
             this.alias = alias;
-            this.type = type;
             this.relation = relation;
+            this.type = resolveType(type);
         }
 
         protected RelationJoinImpl(RelationJoin joined, EntityMapping target, String alias, JoinType type, RelationMapping relation) {
             this.joined = joined;
             this.target = target;
             this.alias = alias;
-            this.type = type;
             this.relation = relation;
+            this.type = resolveType(type);
+        }
+
+        private JoinType resolveType(JoinType type) {
+            if(null == type || JoinType.AUTO == type) {
+                type = relation.isOptional() ? JoinType.LEFT : JoinType.INNER;
+            }
+            return type;
         }
 
         @Override

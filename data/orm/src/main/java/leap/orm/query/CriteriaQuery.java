@@ -233,17 +233,38 @@ public interface CriteriaQuery<T> extends Query<T> {
     /**
      * Returns the joined alias of creates a new join with {@link #getNextJoinAlias()}.
      */
-    String getOrJoin(String targetEntity, String relation);
+    default String getOrJoin(String targetEntity, String relation) {
+        return getOrJoin(JoinType.INNER, targetEntity, relation);
+    }
 
     /**
      * Returns the joined alias of creates a new join with {@link #getNextJoinAlias()}.
      */
-    String getOrJoinJoined(String joined, String relation);
+    String getOrJoin(JoinType type, String targetEntity, String relation);
+
+    /**
+     * Returns the joined alias of creates a new join with {@link #getNextJoinAlias()}.
+     */
+    default String getOrJoinJoined(String joined, String relation) {
+        return getOrJoinJoined(JoinType.INNER, joined, relation);
+    }
+
+    /**
+     * Returns the joined alias of creates a new join with {@link #getNextJoinAlias()}.
+     */
+    String getOrJoinJoined(JoinType type, String joined, String relation);
 
     /**
      * Inner join the joined entity with the relation of the joined entity.
      */
-    CriteriaQuery<T> joinJoined(String joined, String relation, String alias);
+    default CriteriaQuery<T> joinJoined(String joined, String relation, String alias) {
+        return joinJoined(joined, relation, alias);
+    }
+
+    /**
+     * Inner join the joined entity with the relation of the joined entity.
+     */
+    CriteriaQuery<T> joinJoined(JoinType type, String joined, String relation, String alias);
 
     /**
      * Add a customer join builder
@@ -268,7 +289,14 @@ public interface CriteriaQuery<T> extends Query<T> {
     /**
      * Inner join the target entity by id columns.
      */
-    CriteriaQuery<T> join(String targetEntityName, String localRelation, String alias);
+    default CriteriaQuery<T> join(String targetEntityName, String localRelation, String alias) {
+        return join(JoinType.INNER, targetEntityName, localRelation, alias);
+    }
+
+    /**
+     * Join with the given alias.
+     */
+    CriteriaQuery<T> join(JoinType type, String targetEntity, String relation, String alias);
 
     /**
      * Inner join the target entity by id columns and with the id of the target entity.
