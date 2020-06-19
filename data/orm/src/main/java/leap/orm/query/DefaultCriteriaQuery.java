@@ -177,9 +177,9 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         RelationJoin found = null;
         for (JoinBuilder join : joins) {
             if (join instanceof RelationJoinImpl) {
-                final RelationJoinImpl rj = (RelationJoinImpl)join;
-                if(null != rj.joined && rj.joined.getAlias().equalsIgnoreCase(joined)) {
-                    if(rj.getRelation().getName().equalsIgnoreCase(relation)) {
+                final RelationJoinImpl rj = (RelationJoinImpl) join;
+                if (null != rj.joined && rj.joined.getAlias().equalsIgnoreCase(joined)) {
+                    if (rj.getRelation().getName().equalsIgnoreCase(relation)) {
                         found = rj;
                         break;
                     }
@@ -187,11 +187,11 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
             }
         }
 
-        if(null == found) {
+        if (null == found) {
             final String alias = getNextJoinAlias();
             joinJoined(type, joined, relation, alias);
             return alias;
-        }else {
+        } else {
             return found.getAlias();
         }
     }
@@ -462,10 +462,26 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
             }
         }
 
-        joins.add(new RelationJoinImpl(target, alias, type, rm));
+        if (!rm.getTargetEntityName().equals(target.getEntityName())) {
+            EntityMapping uTarget = dao.getEntityMapping(rm.getTargetEntityName());
+            if (!uTarget.isUnionEntity()) {
+                throw new IllegalStateException("The joined entity '" + target.getEntityName() +
+                        "' must be the target entity '" + rm.getTargetEntityName() + "' of relation '" +
+                        rm.getName() + "'");
+            }
+
+            final UnionSettings.UnionEntityMapping uem =
+                    uTarget.getUnionSettings().getEntities().get(target.getEntityName());
+            if (null == uem) {
+                throw new IllegalStateException("Entity '" + target.getEntityName() + "' must be union of '" +
+                        uTarget.getEntityName() + "'");
+            }
+            joins.add(new RelationJoinImpl(target, uTarget.getUnionSettings(), uem, alias, type, rm));
+        } else {
+            joins.add(new RelationJoinImpl(target, alias, type, rm));
+        }
 
         if (null != where) {
-
             try {
                 //many-to-one
                 if (rm.isManyToOne() || rm.isOneToMany()) {
@@ -992,15 +1008,30 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     }
 
     protected static class RelationJoinImpl implements RelationJoin, JoinBuilder {
-        final RelationJoin    joined;
-        final RelationMapping relation;
-        final EntityMapping   target;
-        final String          alias;
-        final JoinType        type;
+        final RelationJoin                     joined;
+        final RelationMapping                  relation;
+        final EntityMapping                    target;
+        final UnionSettings                    union;
+        final UnionSettings.UnionEntityMapping uem;
+        final String                           alias;
+        final JoinType                         type;
 
         protected RelationJoinImpl(EntityMapping target, String alias, JoinType type, RelationMapping relation) {
             this.joined = null;
             this.target = target;
+            this.alias = alias;
+            this.relation = relation;
+            this.type = resolveType(type);
+            this.union = null;
+            this.uem = null;
+        }
+
+        protected RelationJoinImpl(EntityMapping target, UnionSettings union, UnionSettings.UnionEntityMapping uem,
+                                   String alias, JoinType type, RelationMapping relation) {
+            this.joined = null;
+            this.target = target;
+            this.union = union;
+            this.uem = uem;
             this.alias = alias;
             this.relation = relation;
             this.type = resolveType(type);
@@ -1012,10 +1043,12 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
             this.alias = alias;
             this.relation = relation;
             this.type = resolveType(type);
+            this.union = null;
+            this.uem = null;
         }
 
         private JoinType resolveType(JoinType type) {
-            if(null == type || JoinType.AUTO == type) {
+            if (null == type || JoinType.AUTO == type) {
                 type = relation.isOptional() ? JoinType.LEFT : JoinType.INNER;
             }
             return type;
@@ -1060,8 +1093,18 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                             sql.append(" and ");
                         }
                         sql.append(fromAlias).append('.').append(jf.getLocalFieldName())
-                                .append("=")
-                                .append(alias).append('.').append(jf.getReferencedFieldName());
+                                .append("=");
+
+                        final String foreignFieldName = jf.getReferencedFieldName();
+                        if(null != uem) {
+                            if(foreignFieldName.equalsIgnoreCase(union.getTypeField())) {
+                                sql.append("'").append(uem.getType()).append("'");
+                            }else if(foreignFieldName.equalsIgnoreCase(union.getIdField())) {
+                                sql.append(alias).append('.').append(uem.getIdField());
+                            }
+                        }else {
+                            sql.append(alias).append('.').append(foreignFieldName);
+                        }
                         i++;
                     }
                     return;
