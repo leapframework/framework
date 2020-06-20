@@ -52,8 +52,21 @@ public class SimpleWhereBuilder implements WhereBuilder {
         return where.toString();
     }
 
+    /**
+     * Use {@link #getArgsList()} or {@link #getArgsArray()}.
+     * @return
+     */
+    @Deprecated
     public List<Object> getArgs() {
         return args;
+    }
+
+    public List<Object> getArgsList() {
+        return args;
+    }
+
+    public Object[] getArgsArray() {
+        return args.toArray();
     }
 
     @Override
