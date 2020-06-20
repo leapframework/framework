@@ -15,11 +15,45 @@
  */
 package leap.lang.accessor;
 
+import java.util.function.Supplier;
+
 /**
  * Interface defining a generic contract for attaching and accessing metadata to/from arbitrary objects.
  */
 public interface AttributeAccessor extends AttributeGetter,AttributeSetter {
+	Object NULL = new Object();
 
+	/**
+	 * Removes the attribute.
+	 */
 	void removeAttribute(String name);
-	
+
+	/**
+	 * Returns the exists attribute value or set the value if not exists.
+	 */
+	default <T> T getSetAttribute(String name, Supplier<T> supplier) {
+		T value = (T)getAttribute(name);
+		if(null == value) {
+			value = supplier.get();
+			if(null != value) {
+				setAttribute(name, value);
+			}
+		}
+		return value;
+	}
+
+	/**
+	 * Returns the exists attribute value or set the value if not exists.
+	 */
+	default <T> T getSetNullAttribute(String name, Supplier<T> supplier) {
+		Object value = (T)getAttribute(name);
+		if(null == value) {
+			value = supplier.get();
+			if(null != value) {
+				value = NULL;
+				setAttribute(name, value);
+			}
+		}
+		return value == NULL ? null : (T)value;
+	}
 }
