@@ -297,14 +297,24 @@ public class JSON {
      * Checks the missing properties exists in map but not exists in the given type and throws exception.
      */
     public static void checkMissingProperties(Class<?> type, Map map) {
-        Set<String> names = resolveMissingProperties(type, map);
+        checkMissingProperties(type, map, null);
+    }
+
+    /**
+     * Checks the missing properties exists in map but not exists in the given type and throws exception.
+     */
+    public static void checkMissingProperties(Class<?> type, Map map, Object source) {
+        if(null == source) {
+            source = type.getName();
+        }
+        final Set<String> names = resolveMissingProperties(type, map);
         if(!names.isEmpty()) {
             if (!names.isEmpty()) {
                 for (String p : names) {
                     if (p.equals("$") || p.endsWith(".$")) {
                         continue;
                     }
-                    throw new IllegalStateException("Property '" + p + "' not exists at '" + type.getName() + "'");
+                    throw new IllegalStateException("Property '" + p + "' not exists at '" + source + "'");
                 }
             }
         }
