@@ -17,14 +17,16 @@ package leap.core.variable;
 
 public interface Variable {
 	
-	public enum Scope {
-		SESSION,
+	enum Scope {
+		SESSION("session"),
 		
-		REQUEST,
+		REQUEST("request"),
+
+		AUTHENTICATION("authentication"),
 		
-		SINGLETON,
+		SINGLETON("singleton"),
 		
-		PROTOTYPE;
+		PROTOTYPE("prototype");
 		
 		public boolean isPrototype(){
 			return this == PROTOTYPE;
@@ -37,9 +39,23 @@ public interface Variable {
 		public boolean isRequest(){
 			return this == REQUEST;
 		}
+
+		public boolean isAuthentication() {
+			return this == AUTHENTICATION;
+		}
 		
 		public boolean isSession(){
 			return this == SESSION;
+		}
+
+		private final String value;
+
+		Scope(String value) {
+			this.value = value;
+		}
+
+		public String getValue() {
+			return value;
 		}
 	}
 	

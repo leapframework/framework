@@ -20,6 +20,7 @@ import leap.core.RequestContext;
 import leap.core.annotation.Inject;
 import leap.core.ioc.BeanDefinition;
 import leap.core.ioc.PostCreateBean;
+import leap.core.security.SecurityContext;
 import leap.core.variable.Variable.Scope;
 import leap.lang.Args;
 import leap.lang.Arrays2;
@@ -31,11 +32,13 @@ import leap.lang.convert.Converts;
 import leap.lang.el.ElEvalContext;
 import leap.lang.value.Null;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 public class DefaultVariableEnvironment implements VariableEnvironment, PostCreateBean {
 
@@ -44,8 +47,9 @@ public class DefaultVariableEnvironment implements VariableEnvironment, PostCrea
     @Inject
     protected VariableLookup[] lookups;
 
-    protected Map<String, VariableDefinition> variables    = new HashMap<String, VariableDefinition>();
-    protected Scope                           defaultScope = Scope.PROTOTYPE;
+    protected Map<String, VariableDefinition> variables     = new HashMap<>();
+    protected Map<String, ScopeSupport>       scopeSupports = Collections.emptyMap();
+    protected Scope                           defaultScope  = Scope.PROTOTYPE;
 
     public void setDefaultScope(Scope defaultScope) {
         Args.notNull(defaultScope, "default scope");
@@ -115,88 +119,90 @@ public class DefaultVariableEnvironment implements VariableEnvironment, PostCrea
     }
 
     protected Object resolveVariable(VariableDefinition vd, ElEvalContext context) {
-        Scope scope = vd.getScope();
-
-        //prototype
-        if (scope.isPrototype()) {
-            return getValue(vd.getVariable(), context);
-        }
-
-        //singleton
-        if (scope.isSingleton()) {
-            return resolveSingletonVariable(vd, context);
-        }
-
-        //request
-        if (scope.isRequest()) {
-            return null;
-        }
-
-        //session
-        if (scope.isSession()) {
-            return null;
-        }
-
-        throw new IllegalStateException("Illegal variable scope '" + scope + "'");
+        return getScopeSupport(vd).getValue(vd.getName(), () -> getValue(vd.getVariable(), context));
     }
 
-    protected Object resolveSingletonVariable(VariableDefinition vd, ElEvalContext context) {
-        Object singletonValue = vd.getSingletonValue();
-
-        if (null != singletonValue) {
-            return Null.is(singletonValue) ? null : singletonValue;
+    protected ScopeSupport getScopeSupport(VariableDefinition vd) {
+        ScopeSupport ss = vd.getScopeSupport();
+        if (null != ss) {
+            return ss;
         }
 
-        singletonValue = getValue(vd.getVariable(), context);
+        final Scope scope = vd.getScope();
+        if (null == scope || scope.isPrototype()) {
+            ss = (name, var) -> var.get();
+        } else if (scope.isSingleton()) {
+            ss = (name, var) -> {
+                Object singletonValue = vd.getSingletonValue();
 
-        if (null == singletonValue) {
-            vd.setSingletonValue(Null.VALUE);
+                if (null != singletonValue) {
+                    return Null.is(singletonValue) ? null : singletonValue;
+                }
+
+                singletonValue = var.get();
+
+                if (null == singletonValue) {
+                    vd.setSingletonValue(Null.VALUE);
+                } else {
+                    vd.setSingletonValue(singletonValue);
+                }
+
+                return singletonValue;
+            };
         } else {
-            vd.setSingletonValue(singletonValue);
+            ss = scopeSupports.get(scope.getValue());
+            if (null == ss) {
+                if (scope.isRequest()) {
+                    ss = (name, var) -> {
+                        return resolveScopedVariable(name, var, getVariablesScope(RequestContext.current()));
+                    };
+                } else if (scope.isSession()) {
+                    ss = (name, var) -> {
+                        return resolveScopedVariable(name, var, getVariablesScope(RequestContext.current().getSession()));
+                    };
+                } else if (scope.isAuthentication()) {
+                    ss = (name, var) -> {
+                        return resolveScopedVariable(name, var, getVariablesScope(SecurityContext.authentication()));
+                    };
+                } else {
+                    throw new IllegalStateException("Variable scope '" + scope + "' not supported");
+                }
+            }
         }
-
-        return singletonValue;
-    }
-
-    protected Object resolveRequestVariable(VariableDefinition vd) {
-        return resolveScopedVariable(vd, getVariablesScope(RequestContext.current()));
-    }
-
-    protected Object resolveSessionVariable(VariableDefinition vd) {
-        return resolveScopedVariable(vd, getVariablesScope(RequestContext.current().getSession()));
+        return ss;
     }
 
     @SuppressWarnings("unchecked")
     protected Map<String, Object> getVariablesScope(AttributeAccessor accessor) {
         Map<String, Object> scope = (Map<String, Object>) accessor.getAttribute(VARIABLE_SCOPE_ATTRIBUTE);
         if (null == scope) {
-            scope = new ConcurrentHashMap<String, Object>();
+            scope = new ConcurrentHashMap<>();
             accessor.setAttribute(VARIABLE_SCOPE_ATTRIBUTE, scope);
         }
         return scope;
     }
 
-    protected Object resolveScopedVariable(VariableDefinition vd, Map<String, Object> scope) {
-        Object value = scope.get(vd.getName());
+    protected Object resolveScopedVariable(String name, Supplier<Object> var, Map<String, Object> scope) {
+        Object value = scope.get(name);
 
         if (null != value) {
             return Null.is(value) ? null : value;
         }
 
-        value = getValue(vd.getVariable(), null);
+        value = var;
 
         if (null == value) {
-            scope.put(vd.getName(), Null.VALUE);
+            scope.put(name, Null.VALUE);
         } else {
-            scope.put(vd.getName(), value);
+            scope.put(name, value);
         }
 
         return value;
-
     }
 
     @Override
     public void postCreate(BeanFactory beanFactory) throws Exception {
+        scopeSupports = beanFactory.getNamedBeans(ScopeSupport.class);
         loadVariableFromBeans(beanFactory);
         loadVariableFromProviders(beanFactory);
     }
