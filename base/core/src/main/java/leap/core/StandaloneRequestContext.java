@@ -15,132 +15,143 @@
  */
 package leap.core;
 
+import leap.core.i18n.MessageSource;
+import leap.core.security.Authentication;
+
+import javax.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.servlet.http.HttpSession;
+public class StandaloneRequestContext extends RequestContext {
+    private final Map<String, Object> attributes = new HashMap<String, Object>();
 
-import leap.core.i18n.MessageSource;
+    private Session        session;
+    private Authentication authentication;
+    private MessageSource  messageSource;
+    private Locale         locale;
+    private Boolean        debug;
 
-class StandaloneRequestContext extends RequestContext {
-	private final Map<String, Object> attributes = new HashMap<String, Object>();
-	
-	private Session 	  session;
-	private MessageSource messageSource;
-	private Locale  	  locale;
-	private Boolean 	  debug;
-	
-	@Override
+    @Override
     public AppContext getAppContext() {
-	    return AppContext.current();
+        return AppContext.current();
     }
 
-	@Override
+    @Override
     public void setAttribute(String name, Object value) {
         attributes.put(name, value);
     }
 
-	@Override
+    @Override
     public void removeAttribute(String name) {
         attributes.remove(name);
     }
 
-	@Override
+    @Override
     public Object getAttribute(String name) {
         return attributes.get(name);
     }
 
-	@Override
+    @Override
     public Session getSession() {
-		return getSession(true);
+        return getSession(true);
     }
-	
-	@Override
+
+    @Override
     public Session getSession(boolean create) {
-		if(null == session){
-			if(create){
-				session = new StandaloneSession();
-			}
-		}
-	    return session;
+        if (null == session) {
+            if (create) {
+                session = new StandaloneSession();
+            }
+        }
+        return session;
     }
-	
+
+	@Override
+	public Authentication getAuthentication() {
+		return authentication;
+	}
+
+	@Override
+	public void setAuthentication(Authentication authentication) {
+		this.authentication = authentication;
+	}
+
 	public MessageSource getMessageSource() {
-		if(null == messageSource){
-			messageSource = getAppContext().getMessageSource();
-		}
-		return messageSource;
-	}
+        if (null == messageSource) {
+            messageSource = getAppContext().getMessageSource();
+        }
+        return messageSource;
+    }
 
-	public void setMessageSource(MessageSource messageSource) {
-		this.messageSource = messageSource;
-	}
+    public void setMessageSource(MessageSource messageSource) {
+        this.messageSource = messageSource;
+    }
 
-	@Override
+    @Override
     public Locale getLocale() {
-		if(null == locale){
-			locale = getAppContext().getConfig().getDefaultLocale();
-		}
-	    return locale;
+        if (null == locale) {
+            locale = getAppContext().getConfig().getDefaultLocale();
+        }
+        return locale;
     }
 
-	@Override
+    @Override
     public void setLocale(Locale locale) {
-		this.locale = locale;
+        this.locale = locale;
     }
-	
-	@Override
+
+    @Override
     public boolean isDebug() {
-		if(null == debug){
-			debug = getAppContext().getConfig().isDebug();
-		}
-	    return debug;
+        if (null == debug) {
+            debug = getAppContext().getConfig().isDebug();
+        }
+        return debug;
     }
 
-	@Override
+    @Override
     public void setDebug(boolean debug) {
-		this.debug = debug;
+        this.debug = debug;
     }
 
-	protected void invalidateSessionContext(){
-		this.session = null;
-	}
-	
-	class StandaloneSession implements Session {
-		private final Map<String, Object> attributes = new HashMap<String, Object>();
-		
-		private boolean valid = true;
-		
-		@Override
-	    public void setAttribute(String name, Object value) {
-	        attributes.put(name, value);
-	    }
+    protected void invalidateSessionContext() {
+        this.session = null;
+    }
 
-		@Override
-	    public void removeAttribute(String name) {
-	        attributes.remove(name);
-	    }
+    public class StandaloneSession implements Session {
+        private final Map<String, Object> attributes = new HashMap<String, Object>();
 
-		@Override
-	    public Object getAttribute(String name) {
-	        return attributes.get(name);
-	    }
+        private boolean valid = true;
 
-		@Override
-	    public void invalidate() {
-			valid = false;
-			invalidateSessionContext();
-		}
-		
-		@Override
-        public boolean valid() {
-	        return valid;
+        @Override
+        public void setAttribute(String name, Object value) {
+            attributes.put(name, value);
         }
 
-		@Override
+        @Override
+        public void removeAttribute(String name) {
+            attributes.remove(name);
+        }
+
+        @Override
+        public Object getAttribute(String name) {
+            return attributes.get(name);
+        }
+
+        @Override
+        public void invalidate() {
+            valid = false;
+            invalidateSessionContext();
+        }
+
+        @Override
+        public boolean valid() {
+            return valid;
+        }
+
+        @Override
         public HttpSession getServletSession() throws IllegalStateException {
-			throw new IllegalStateException("Not servlet environment");
-		}
-	}
+            throw new IllegalStateException("Not servlet environment");
+        }
+    }
 }

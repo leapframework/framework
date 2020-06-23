@@ -18,6 +18,7 @@ package leap.core;
 import java.util.Locale;
 
 import leap.core.i18n.MessageSource;
+import leap.core.security.Authentication;
 import leap.lang.Locales;
 import leap.lang.accessor.AttributeAccessor;
 import leap.lang.exception.ObjectNotFoundException;
@@ -122,7 +123,17 @@ public abstract class RequestContext implements AttributeAccessor {
      * valid {@link Session}, this method returns <code>null</code>.
 	 */
 	public abstract Session getSession(boolean create);
-	
+
+	/**
+	 * Returns current authentication or null.
+	 */
+	public abstract Authentication getAuthentication();
+
+	/**
+	 * Set current authentication.
+	 */
+	public abstract void setAuthentication(Authentication authentication);
+
 	/**
 	 * Returns current {@link Locale} in this request context.
 	 */

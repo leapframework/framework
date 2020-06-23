@@ -32,6 +32,7 @@ import leap.lang.convert.Converts;
 import leap.lang.el.ElEvalContext;
 import leap.lang.value.Null;
 
+import javax.print.attribute.standard.OrientationRequested;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -154,15 +155,15 @@ public class DefaultVariableEnvironment implements VariableEnvironment, PostCrea
             if (null == ss) {
                 if (scope.isRequest()) {
                     ss = (name, var) -> {
-                        return resolveScopedVariable(name, var, getVariablesScope(RequestContext.current()));
+                        return resolveScopedVariable(name, var, getVariablesScope(RequestContext.tryGetCurrent()));
                     };
                 } else if (scope.isSession()) {
                     ss = (name, var) -> {
-                        return resolveScopedVariable(name, var, getVariablesScope(RequestContext.current().getSession()));
+                        return resolveScopedVariable(name, var, getVariablesScope(getSessionScopeAccessor()));
                     };
                 } else if (scope.isAuthentication()) {
                     ss = (name, var) -> {
-                        return resolveScopedVariable(name, var, getVariablesScope(SecurityContext.authentication()));
+                        return resolveScopedVariable(name, var, getVariablesScope(getAuthenticationScopeAccessor()));
                     };
                 } else {
                     throw new IllegalStateException("Variable scope '" + scope + "' not supported");
@@ -172,24 +173,18 @@ public class DefaultVariableEnvironment implements VariableEnvironment, PostCrea
         return ss;
     }
 
-    @SuppressWarnings("unchecked")
-    protected Map<String, Object> getVariablesScope(AttributeAccessor accessor) {
-        Map<String, Object> scope = (Map<String, Object>) accessor.getAttribute(VARIABLE_SCOPE_ATTRIBUTE);
-        if (null == scope) {
-            scope = new ConcurrentHashMap<>();
-            accessor.setAttribute(VARIABLE_SCOPE_ATTRIBUTE, scope);
-        }
-        return scope;
-    }
-
     protected Object resolveScopedVariable(String name, Supplier<Object> var, Map<String, Object> scope) {
+        if(null == scope){
+            return var.get();
+        }
+
         Object value = scope.get(name);
 
         if (null != value) {
             return Null.is(value) ? null : value;
         }
 
-        value = var;
+        value = var.get();
 
         if (null == value) {
             scope.put(name, Null.VALUE);
@@ -198,6 +193,28 @@ public class DefaultVariableEnvironment implements VariableEnvironment, PostCrea
         }
 
         return value;
+    }
+
+    protected Map<String, Object> getVariablesScope(AttributeAccessor accessor) {
+        if(null == accessor) {
+            return null;
+        }
+        Map<String, Object> scope = (Map<String, Object>) accessor.getAttribute(VARIABLE_SCOPE_ATTRIBUTE);
+        if (null == scope) {
+            scope = new ConcurrentHashMap<>();
+            accessor.setAttribute(VARIABLE_SCOPE_ATTRIBUTE, scope);
+        }
+        return scope;
+    }
+
+    protected AttributeAccessor getAuthenticationScopeAccessor() {
+        RequestContext requestContext = RequestContext.tryGetCurrent();
+        return null == requestContext ? null : requestContext.getAuthentication();
+    }
+
+    protected AttributeAccessor getSessionScopeAccessor() {
+        RequestContext requestContext = RequestContext.tryGetCurrent();
+        return null == requestContext ? null : requestContext.getSession();
     }
 
     @Override
