@@ -20,7 +20,6 @@ import leap.core.RequestContext;
 import leap.core.annotation.Inject;
 import leap.core.ioc.BeanDefinition;
 import leap.core.ioc.PostCreateBean;
-import leap.core.security.SecurityContext;
 import leap.core.variable.Variable.Scope;
 import leap.lang.Args;
 import leap.lang.Arrays2;
@@ -32,7 +31,6 @@ import leap.lang.convert.Converts;
 import leap.lang.el.ElEvalContext;
 import leap.lang.value.Null;
 
-import javax.print.attribute.standard.OrientationRequested;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -78,11 +76,17 @@ public class DefaultVariableEnvironment implements VariableEnvironment, PostCrea
         if (null == vd) {
             vd = variables.get(key);
         }
+
+        Object value;
         if (null == vd) {
-            return resolveVariableProperty(key, variable);
+            value = resolveVariableProperty(key, variable);
         } else {
-            return resolveVariable(vd, context);
+            value = resolveVariable(vd, context);
         }
+        if (value instanceof Variable) {
+            value = ((Variable) value).getValue();
+        }
+        return value;
     }
 
     @Override
@@ -174,7 +178,7 @@ public class DefaultVariableEnvironment implements VariableEnvironment, PostCrea
     }
 
     protected Object resolveScopedVariable(String name, Supplier<Object> var, Map<String, Object> scope) {
-        if(null == scope){
+        if (null == scope) {
             return var.get();
         }
 
@@ -196,7 +200,7 @@ public class DefaultVariableEnvironment implements VariableEnvironment, PostCrea
     }
 
     protected Map<String, Object> getVariablesScope(AttributeAccessor accessor) {
-        if(null == accessor) {
+        if (null == accessor) {
             return null;
         }
         Map<String, Object> scope = (Map<String, Object>) accessor.getAttribute(VARIABLE_SCOPE_ATTRIBUTE);
