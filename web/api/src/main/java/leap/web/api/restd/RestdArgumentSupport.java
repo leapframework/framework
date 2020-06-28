@@ -24,6 +24,8 @@ public interface RestdArgumentSupport {
 
     default void processModelArgumentForCreate(RestdContext context, RestdModel model, ArgumentBuilder a){}
 
+    default void processModelArgumentForBatchCreate(RestdContext context, RestdModel model, ArgumentBuilder a){};
+
     default void processModelArgumentForUpdate(RestdContext context, RestdModel model, ArgumentBuilder a){}
 
     default void processModelArgumentForReplace(RestdContext context, RestdModel model, ArgumentBuilder a){}
