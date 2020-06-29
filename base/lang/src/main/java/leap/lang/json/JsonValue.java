@@ -15,6 +15,7 @@
  */
 package leap.lang.json;
 
+import com.sun.corba.se.impl.presentation.rmi.ExceptionHandlerImpl;
 import leap.lang.convert.Converts;
 
 import java.util.List;
@@ -119,6 +120,19 @@ public interface JsonValue {
      */
 	default Map<String, Object> asMap() {
 		throw new IllegalStateException("Not a map");
+	}
+
+	/**
+	 * Returns the raw value as a map or <code>null</code> if the raw value is null.
+	 *
+	 * @throws IllegalStateException if the raw value is not a json object and not nul.
+	 */
+	default Map<String, Object> asMapOrNull() {
+		if(null == raw()) {
+			return null;
+		}else {
+			return asMap();
+		}
 	}
 
     /**
