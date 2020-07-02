@@ -38,9 +38,11 @@ import leap.lang.http.Headers;
 import leap.lang.io.IO;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.lang.path.Paths;
 import leap.web.AppHandler;
 import leap.web.Request;
 import leap.web.Response;
+import leap.web.exception.BadRequestException;
 
 public class DefaultAssetHandler implements AssetHandler,LoadableBean {
 	
@@ -67,7 +69,10 @@ public class DefaultAssetHandler implements AssetHandler,LoadableBean {
 	        }
 	        
 	        //Extract resource path from request
-	        String path = request.getPath().substring(config.getPathPrefix().length());
+	        String path = Paths.normalize(request.getPath().substring(config.getPathPrefix().length()));
+	        if (path.contains("../")) {
+	        	throw new BadRequestException("Invalid '../' path in: " + path);
+			}
 	        
 	        String[] pathAndFingerprint = strategy.splitPathAndFingerprint(path);
 	        if(null == pathAndFingerprint){
