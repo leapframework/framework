@@ -17,12 +17,12 @@
  */
 package leap.orm.command;
 
+import leap.lang.Strings;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.JoinFieldMapping;
 import leap.orm.mapping.RelationMapping;
 import leap.orm.query.CriteriaQuery;
-
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -93,6 +93,10 @@ public class DefaultCascadeDeleteCommand extends AbstractEntityDaoCommand implem
 
                     CriteriaQuery query =
                             dao.createCriteriaQuery(target).whereByReference(inverse, id);
+
+                    if (!Strings.isEmpty(inverse.getOnCascadeDeleteFilter())) {
+                        query.whereAnd(inverse.getOnCascadeDeleteFilter());
+                    }
 
                     if (inverse.isOptional() && inverse.isSetNullOnCascadeDelete()) {
                         //update null

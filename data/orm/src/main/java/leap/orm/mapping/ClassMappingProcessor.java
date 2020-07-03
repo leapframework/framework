@@ -608,6 +608,7 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 			rmb.setName(a.name());
 			rmb.setOptional(a.optional().getValue());
             rmb.setOnCascadeDelete(a.onCascadeDelete());
+            rmb.setOnCascadeDeleteFilter(a.onCascadeDeleteFilter());
 			rmb.setTargetEntityType(targetEntityType);
 
 			//join fields
@@ -654,6 +655,7 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 		rmb.setType(RelationType.MANY_TO_ONE);
 		rmb.setOptional(a.optional().getValue());
         rmb.setOnCascadeDelete(a.onCascadeDelete());
+        rmb.setOnCascadeDeleteFilter(a.onCascadeDeleteFilter());
 
         Class<?> targetEntityType = Classes.firstNonVoid(a.target(),a.value());
 

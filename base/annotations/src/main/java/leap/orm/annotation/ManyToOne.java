@@ -16,12 +16,10 @@
 package leap.orm.annotation;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
-
 import leap.lang.enums.Bool;
 import leap.orm.enums.CascadeDeleteAction;
 
@@ -65,5 +63,11 @@ public @interface ManyToOne {
      * Non optional relation's on delete action must be {@link CascadeDeleteAction#DELETE}.
      */
     CascadeDeleteAction onCascadeDelete() default CascadeDeleteAction.SET_NULL;
+
+    /**
+     * The filter sql on cascade delete.
+     * @return
+     */
+    String onCascadeDeleteFilter() default "";
 
 }
