@@ -87,4 +87,9 @@ public class SimpleTest {
         assertNotNull(testCommand1);
         assertNotNull(testCommand2);
     }
+
+    @Test
+    public void testModelEntity() {
+        assertNotNull(Entity0.dao());
+    }
 }

@@ -19,9 +19,10 @@ package pkg0;
 import leap.orm.annotation.Column;
 import leap.orm.annotation.Id;
 import leap.orm.annotation.Table;
+import leap.orm.model.Model;
 
 @Table(autoCreate = true)
-public class Entity0 {
+public class Entity0 extends Model {
 
     @Id
     private String id;
