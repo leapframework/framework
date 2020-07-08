@@ -17,12 +17,16 @@
  */
 package leap.orm.command;
 
+import leap.core.value.Record;
 import leap.lang.Strings;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.JoinFieldMapping;
 import leap.orm.mapping.RelationMapping;
 import leap.orm.query.CriteriaQuery;
+import leap.orm.sql.ast.AstNode;
+import leap.orm.sql.ast.ExprParamBase;
+import leap.orm.sql.parser.SqlParser;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -86,6 +90,8 @@ public class DefaultCascadeDeleteCommand extends AbstractEntityDaoCommand implem
             AtomicBoolean result = new AtomicBoolean(false);
 
             dao.doTransaction((conn) -> {
+                boolean foundRecord = false;
+                Record record = null;
 
                 for (CascadeRelation cr : cascadeRelations) {
                     EntityMapping   target  = cr.entity;
@@ -94,8 +100,22 @@ public class DefaultCascadeDeleteCommand extends AbstractEntityDaoCommand implem
                     CriteriaQuery query =
                             dao.createCriteriaQuery(target).whereByReference(inverse, id);
 
-                    if (!Strings.isEmpty(inverse.getOnCascadeDeleteFilter())) {
-                        query.whereAnd(inverse.getOnCascadeDeleteFilter());
+                    String filter = inverse.getOnCascadeDeleteFilter();
+                    if (!Strings.isEmpty(filter)) {
+                        List<String> exprFields = getExprFields(filter);
+                        if (!exprFields.isEmpty()) {
+                            if (null == record && !foundRecord) {
+                                record = dao.findOrNull(em, id);
+                                foundRecord = true;
+                            }
+
+                            if (null != record) {
+                                for (String exprField : exprFields) {
+                                    query.param(exprField, record.get(exprField));
+                                }
+                            }
+                        }
+                        query.whereAnd(filter);
                     }
 
                     if (inverse.isOptional() && inverse.isSetNullOnCascadeDelete()) {
@@ -136,6 +156,20 @@ public class DefaultCascadeDeleteCommand extends AbstractEntityDaoCommand implem
 
             return result.get();
         }
+    }
+
+    protected List<String> getExprFields(String filter) {
+        List<String> fields = new ArrayList<>();
+        AstNode[] nodes = SqlParser.parseWhereExpr(filter).getNodes();
+        for (AstNode node : nodes){
+            if(node instanceof ExprParamBase){
+                String text = ((ExprParamBase) node).getText();
+                if (null != em.getFieldMapping(text)) {
+                    fields.add(text);
+                }
+            }
+        }
+        return fields;
     }
 
     protected static final class CascadeRelation {
