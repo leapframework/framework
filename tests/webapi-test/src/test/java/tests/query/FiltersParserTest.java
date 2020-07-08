@@ -34,6 +34,9 @@ public class FiltersParserTest extends TestBase {
 
     @Test
     public void testSimpleParseExprs() {
+        assertParse(3, "a like '()'");
+        assertParse(3, "a like '%()%'");
+
         assertParse(3, "a eq 10");
         assertParse(5, "( a eq 10 )");
         assertParse(3, "a eq 's s'");

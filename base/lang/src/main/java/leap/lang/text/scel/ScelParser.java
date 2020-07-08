@@ -403,7 +403,7 @@ public class ScelParser extends AbstractStringParser {
                 error("Invalid character [" + quoted + "], should use [" + quotedChar + quotedChar + "] instead");
             }
 
-            if (ch == '(' && charAt(pos + 1) == ')') {
+            if (ch == '(' && charAt(pos + 1) == ')' && !quoted) {
                 nextChar();
                 nextChar();
                 end = pos;
