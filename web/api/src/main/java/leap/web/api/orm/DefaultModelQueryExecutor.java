@@ -963,8 +963,10 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         for(Record expandedRecord : expandedRecords) {
             Object id = expandedRecord.get(idField);
             List<Record> records = union.idRecordMap.get(id);
-            for(Record record : records) {
-                record.put(expand.rp.getName(), expandedRecord);
+            if (null != records) {
+                for(Record record : records) {
+                    record.put(expand.rp.getName(), expandedRecord);
+                }
             }
         }
     }
