@@ -46,7 +46,22 @@ public class Collections2 {
 			return false;
 		}
 	}
-	
+
+	public static boolean containsIgnoreCase(Iterable<String> c, String toFind) {
+		if(null == c) {
+			return false;
+		}
+		if(null == toFind || toFind.length() == 0) {
+			return  false;
+		}
+		for(String item : c) {
+			if(toFind.equalsIgnoreCase(item)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public static <E> void addAll(Collection<? super E> collection,E[] elements){
 		if(null == collection || null == elements){
 			return;
