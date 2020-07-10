@@ -20,6 +20,8 @@ import leap.db.DbDialect;
 import leap.db.model.DbColumn;
 import leap.db.support.JsonColumnSupport;
 import leap.lang.Args;
+import leap.lang.Arrays2;
+import leap.lang.Collections2;
 import leap.lang.Strings;
 import leap.lang.annotation.Nullable;
 import leap.lang.logging.Log;
@@ -30,6 +32,7 @@ import leap.orm.metadata.MetadataContext;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class DefaultSqlFactory implements SqlFactory {
 
@@ -527,7 +530,7 @@ public class DefaultSqlFactory implements SqlFactory {
     }
 
     @Override
-    public String createSelectColumns(MetadataContext context, EntityMapping em, String alias) {
+    public String createSelectColumns(MetadataContext context, EntityMapping em, String alias, Set<String> excludes) {
         StringBuilder s = new StringBuilder();
 
         DbDialect dialect = context.getDb().getDialect();
@@ -537,6 +540,10 @@ public class DefaultSqlFactory implements SqlFactory {
         for (FieldMapping fm : em.getFieldMappings()) {
             if (fm.isEmbedded()) {
                 continue;
+            }
+
+            if(Collections2.containsIgnoreCase(excludes, fm.getFieldName())) {
+               continue;
             }
 
             if (index > 0) {

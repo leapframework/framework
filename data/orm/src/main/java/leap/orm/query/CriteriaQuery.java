@@ -177,9 +177,9 @@ public interface CriteriaQuery<T> extends Query<T> {
     CriteriaQuery<T> select(String... fields);
 
     /**
-     * Removes the fields(columns) in the CriteriaQuery result.
+     * Sets the the selected fields(columns) in the CriteriaQuery result but the excludes.
      */
-    CriteriaQuery<T> selectExclude(String... fields);
+    CriteriaQuery<T> selectExclude(String... excludes);
 
     /**
      * Sets the filter of selected fields.
@@ -211,6 +211,11 @@ public interface CriteriaQuery<T> extends Query<T> {
         }
         return this;
     }
+
+    /**
+     * Adds excluded fields.
+     */
+    CriteriaQuery<T> addSelectExcludes(String... fields);
 
     /**
      * Returns the table alias of primary entity.

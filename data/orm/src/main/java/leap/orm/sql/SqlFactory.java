@@ -18,6 +18,8 @@ package leap.orm.sql;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.metadata.MetadataContext;
 
+import java.util.Set;
+
 public interface SqlFactory {
 
     /**
@@ -123,13 +125,25 @@ public interface SqlFactory {
      */
     SqlCommand createFindCommand(MetadataContext context,EntityMapping em);
 
+    /**
+     * todo: doc
+     */
 	SqlCommand createFindListCommand(MetadataContext context,EntityMapping em);
 
-
-	SqlCommand createFindAllCommand(MetadataContext context,EntityMapping em);
+    /**
+     * todo: doc
+     */
+	SqlCommand createFindAllCommand(MetadataContext context, EntityMapping em);
 
     /**
      * returns [alias.]col1,[alias].col2,...
      */
-    String createSelectColumns(MetadataContext context, EntityMapping em, String tableAlias);
+    default String createSelectColumns(MetadataContext context, EntityMapping em, String alias) {
+        return createSelectColumns(context, em, alias, null);
+    }
+
+    /**
+     * returns [alias.]col1,[alias].col2,...
+     */
+    String createSelectColumns(MetadataContext context, EntityMapping em, String alias, Set<String> excludes);
 }

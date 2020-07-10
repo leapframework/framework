@@ -41,9 +41,7 @@ import leap.orm.sql.ast.SqlWhereExpr;
 import leap.orm.sql.parser.SqlParser;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -710,12 +708,12 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     }
 
     @Override
-    public CriteriaQuery<T> selectExclude(String... fields) {
-        if (null != fields && fields.length > 0) {
+    public CriteriaQuery<T> selectExclude(String... excludes) {
+        if (null != excludes && excludes.length > 0) {
             List<String> select = new ArrayList<>();
             for (FieldMapping fm : em.getFieldMappings()) {
                 boolean exclude = false;
-                for (String excludeField : fields) {
+                for (String excludeField : excludes) {
                     if (fm.getFieldName().equalsIgnoreCase(excludeField)) {
                         exclude = true;
                         break;
@@ -754,6 +752,12 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     @Override
     public CriteriaQuery<T> addSelectField(String field) {
         builder.addExtraSelectItem(field);
+        return this;
+    }
+
+    @Override
+    public CriteriaQuery<T> addSelectExcludes(String... fields) {
+        builder.addSelectExcludes(fields);
         return this;
     }
 
@@ -1096,13 +1100,13 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                                 .append("=");
 
                         final String foreignFieldName = jf.getReferencedFieldName();
-                        if(null != uem) {
-                            if(foreignFieldName.equalsIgnoreCase(union.getTypeField())) {
+                        if (null != uem) {
+                            if (foreignFieldName.equalsIgnoreCase(union.getTypeField())) {
                                 sql.append("'").append(uem.getType()).append("'");
-                            }else if(foreignFieldName.equalsIgnoreCase(union.getIdField())) {
+                            } else if (foreignFieldName.equalsIgnoreCase(union.getIdField())) {
                                 sql.append(alias).append('.').append(uem.getIdField());
                             }
-                        }else {
+                        } else {
                             sql.append(alias).append('.').append(foreignFieldName);
                         }
                         i++;
@@ -1209,6 +1213,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         protected String[]     columns;
         protected List<String> extraSelectItems;
         protected List<String> extraSelectColumns;
+        protected Set<String>  selectExcludes;
 
         private StringBuilder sql;
 
@@ -1228,6 +1233,13 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                 extraSelectColumns = new ArrayList<>();
             }
             extraSelectColumns.add(column(field));
+        }
+
+        public void addSelectExcludes(String... fields) {
+            if (null == selectExcludes) {
+                selectExcludes = new HashSet<>();
+            }
+            Collections2.addAll(selectExcludes, fields);
         }
 
         public String buildDeleteSql() {
@@ -1539,14 +1551,28 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
             boolean                  embeddingColumnExists = false;
             final List<FieldMapping> embedded              = new ArrayList<>();
 
+            final Set<String> excludedColumns;
+            if(null == selectExcludes) {
+                excludedColumns = null;
+            }else {
+                excludedColumns = new HashSet<>();
+                for(String field : selectExcludes) {
+                    excludedColumns.add(column(field));
+                }
+            }
+
             int index = 0;
             if (!selectNone) {
                 if (null == columns || columns.length == 0) {
                     SqlFactory sf = dao.getOrmContext().getSqlFactory();
-                    sql.append(sf.createSelectColumns(dao.getOrmContext(), em, alias));
+                    sql.append(sf.createSelectColumns(dao.getOrmContext(), em, alias, excludedColumns));
                     index++;
                 } else {
                     for (String column : columns) {
+                        if(Collections2.containsIgnoreCase(excludedColumns, column)) {
+                            continue;
+                        }
+
                         if (mayEmbedded) {
                             if (column.equalsIgnoreCase(em.getEmbeddingColumnName())) {
                                 embeddingColumnExists = true;
@@ -1576,6 +1602,9 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
             if (null != extraSelectColumns) {
                 for (String column : extraSelectColumns) {
                     if (Arrays2.containsIgnoreCase(columns, column)) {
+                        continue;
+                    }
+                    if(Collections2.containsIgnoreCase(excludedColumns, column)) {
                         continue;
                     }
 
