@@ -593,9 +593,17 @@ class DefaultResourceScanner implements ResourceScanner {
 					doRetrieveMatchingFiles(fullPattern, content, result);
 				}
 			}
-			if (getPathMatcher().match(fullPattern, currPath)) {
+			if (match(content, fullPattern, currPath)) {
 				result.add(content);
 			}
+		}
+	}
+
+	private boolean match(File content, String fullPattern, String currPath) {
+		if(content.isDirectory()) {
+			return getPathMatcher().match(fullPattern, currPath + "/");
+		}else {
+			return getPathMatcher().match(fullPattern, currPath);
 		}
 	}
 
