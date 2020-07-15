@@ -110,6 +110,12 @@ public class DefaultModelQueryExecutorTest extends ModelExecutorTestBase {
         List<Record> authors = executor.queryList(options).getList();
         assertEquals(1, authors.size());
         assertEquals("none", authors.get(0).get("info", AuthorInfo.class).getAddress());
+
+        options.clearResolved();
+        options.setFilters("not (name eq Author1)");
+        authors = executor.queryList(options).getList();
+        assertEquals(1, authors.size());
+        assertEquals("Author2", authors.get(0).getString("name"));
     }
 
     @Test

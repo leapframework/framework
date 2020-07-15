@@ -1565,8 +1565,12 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                             continue;
                         }
 
-                        ScelName nameNode = (ScelName) nodes[i];
+                        if (node.isNot()) {
+                            expr.append(" not ");
+                            continue;
+                        }
 
+                        ScelName nameNode = (ScelName) nodes[i];
 
                         String name        = nameNode.literal();
                         String filtersExpr = em.getFiltersExprs().get(name);

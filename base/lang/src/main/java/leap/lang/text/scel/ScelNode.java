@@ -74,4 +74,8 @@ public class ScelNode {
     public boolean isNull() {
         return token == ScelToken.NULL;
     }
+
+    public boolean isNot() {
+        return token == ScelToken.NOT;
+    }
 }
