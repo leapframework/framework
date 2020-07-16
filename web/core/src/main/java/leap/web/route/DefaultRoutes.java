@@ -16,7 +16,6 @@
 package leap.web.route;
 
 import leap.core.annotation.Inject;
-import leap.core.web.path.JerseyUriTemplate;
 import leap.core.web.path.PathTemplate;
 import leap.core.web.path.PathTemplateFactory;
 import leap.lang.Args;
@@ -29,10 +28,12 @@ import leap.lang.path.Paths;
 import leap.web.Handler;
 import leap.web.action.*;
 
+import javax.swing.plaf.PanelUI;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class DefaultRoutes implements Routes {
 
@@ -77,8 +78,8 @@ public class DefaultRoutes implements Routes {
 
     @Override
     public Routes addNested(Object source, String pathPrefix) {
-        final String basePath = getPathPrefix() + Paths.prefixWithAndSuffixWithoutSlash(pathPrefix);
-        final Routes routes   = routeManager.createRoutes(basePath);
+        final String       basePath     = getPathPrefix() + Paths.prefixWithAndSuffixWithoutSlash(pathPrefix);
+        final Routes       routes       = routeManager.createRoutes(basePath);
         final PathTemplate pathTemplate = pathTemplateFactory.createPathTemplate(basePath + "/{path:.*}");
 
         SimpleNestedRoute route = new SimpleNestedRoute(source, "*", basePath, pathTemplate, routes);
@@ -165,11 +166,11 @@ public class DefaultRoutes implements Routes {
 
     @Override
     public Route match(String method, String path, Map<String, Object> in, Map<String, String> out) {
-        if(!Strings.isEmpty(pathPrefix) && !path.startsWith(pathPrefix)) {
+        if (!Strings.isEmpty(pathPrefix) && !path.startsWith(pathPrefix)) {
             path = pathPrefix + Paths.prefixWithSlash(path);
         }
 
-        List<Route> matchedRoutes = new ArrayList<>();
+        List<RouteAndOut> matchedRoutes = new ArrayList<>();
         for (Route route : list) {
             if (!route.isEnabled()) {
                 continue;
@@ -187,28 +188,28 @@ public class DefaultRoutes implements Routes {
                         NestedRoute nestedRoute = (NestedRoute) route;
                         route = nestedRoute.matchNested(method, path, in, out);
                         if (null != route) {
-                            if(!matchedRoutes.isEmpty()) {
+                            if (!matchedRoutes.isEmpty()) {
                                 boolean ignore = false;
-                                for(Route matchedRoute : matchedRoutes) {
+                                for (RouteAndOut matchedRoute : matchedRoutes) {
                                     int re = matchedRoute.getPathTemplate().compareTo(route.getPathTemplate());
-                                    if(re < 0) {
+                                    if (re < 0) {
                                         ignore = true;
                                         break;
                                     }
                                 }
-                                if(ignore) {
+                                if (ignore) {
                                     continue;
                                 }
                             }
 
-                            if(!nestedRoute.isCheckAmbiguity()) {
+                            if (!nestedRoute.isCheckAmbiguity()) {
                                 return route;
                             }
                         }
                     }
 
                     if (null != route) {
-                        matchedRoutes.add(route);
+                        matchedRoutes.add(new RouteAndOut(route, new LinkedHashMap<>(out)));
                     }
                 }
             }
@@ -220,23 +221,23 @@ public class DefaultRoutes implements Routes {
 
         Route route;
         if (matchedRoutes.size() == 1) {
-            route = matchedRoutes.get(0);
+            return matchedRoutes.get(0).accept(out);
         } else {
-            route = rematch(matchedRoutes);
-            // get the right path template variables.
-            out.clear();
-            route.getPathTemplate().match(path, out);
+            route = rematch(matchedRoutes).accept(out);
         }
-
         return route;
     }
 
-    private Route rematch(List<Route> matchedRoutes) {
+    private RouteAndOut rematch(List<RouteAndOut> matchedRoutes) {
         // find the route of the highest priority
-        return matchedRoutes.stream().min((r1, r2) -> {
+        return matchedRoutes.stream().min((ro1, ro2) -> {
+            final Route r1 = ro1.route;
+            final Route r2 = ro2.route;
+
             int re = r1.getPathTemplate().compareTo(r2.getPathTemplate());
             if (0 == re && r1.isExecutable() && r2.isExecutable()) {
-                log.error("Found multi matched routes -> \n{}", routesPrinter.print(matchedRoutes));
+                final List<Route> routes = matchedRoutes.stream().map(ro -> ro.route).collect(Collectors.toList());
+                log.error("Found multi matched routes -> \n{}", routesPrinter.print(routes));
                 throw new IllegalStateException("Ambiguous handler methods mapped for path " + "'"
                         + r1.getPathTemplate()
                         + "' and '"
@@ -265,5 +266,25 @@ public class DefaultRoutes implements Routes {
         }
 
         return true;
+    }
+
+    protected static class RouteAndOut {
+        private final Route               route;
+        private final Map<String, String> out;
+
+        public RouteAndOut(Route route, Map<String, String> out) {
+            this.route = route;
+            this.out = out;
+        }
+
+        public PathTemplate getPathTemplate() {
+            return route.getPathTemplate();
+        }
+
+        public Route accept(Map<String, String> out) {
+            out.clear();
+            out.putAll(this.out);
+            return route;
+        }
     }
 }
