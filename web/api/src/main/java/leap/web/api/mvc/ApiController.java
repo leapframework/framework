@@ -16,23 +16,10 @@
 
 package leap.web.api.mvc;
 
-import leap.web.annotation.Consumes;
-import leap.web.annotation.Failure;
-import leap.web.annotation.Produces;
-import leap.web.annotation.Restful;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.ApiMetadata;
-import leap.web.api.spec.swagger.SwaggerConstants;
-import leap.web.json.JsonSerialize;
-import leap.core.security.annotation.AllowClientOnly;
 
-@Consumes("json")
-@Produces("json")
-@AllowClientOnly
-@Restful
-@Failure(handler = ApiFailureHandler.class)
-@JsonSerialize(settings = "api", dateFormat = SwaggerConstants.DATE_TIME_FORMAT, gmt = true)
-public abstract class ApiController {
+public abstract class ApiController extends ApiControllerBase {
 
     protected ApiConfig   apiConfig;
     protected ApiMetadata apiMetadata;
