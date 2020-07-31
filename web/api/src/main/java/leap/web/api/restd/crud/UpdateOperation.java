@@ -70,9 +70,9 @@ public class UpdateOperation extends CrudOperationBase implements CrudOperation 
             callback.preAddArguments(action);
         }
 
-        if(null != crud.getFunction()) {
+        if (null != crud.getFunction()) {
             action.setFunction(crud.getFunction());
-        }else {
+        } else {
             action.setFunction(createFunction(crud));
         }
 
@@ -109,24 +109,34 @@ public class UpdateOperation extends CrudOperationBase implements CrudOperation 
 
         @Override
         public Object apply(ActionParams params) {
+            final Object              id     = doGetId(params);
+            final Map<String, Object> record = doGetRecord(params);
+            return updateWithResponse(params, id, record);
+        }
+
+        public ApiResponse updateWithResponse(ActionParams params, Object id, Map<String, Object> record) {
+            final UpdateOneResult result = updateWithResult(params, id, record);
+            return responseUpdateResult(result);
+        }
+
+        public UpdateOneResult updateWithResult(ActionParams params, Object id, Map<String, Object> record) {
             MApiModel am = am();
 
             ModelExecutorContext context  = new SimpleModelExecutorContext(api, dao, am, em, params);
             ModelUpdateExecutor  executor = newUpdateExecutor(context);
 
-            final Object              id     = doGetId(params);
-            final Map<String, Object> record = doGetRecord(params);
+            return doUpdateRecord(params, executor, id, record);
+        }
 
-            final UpdateOneResult result = doUpdateRecord(params, executor, id, record);
+        public ApiResponse responseUpdateResult(UpdateOneResult result) {
             if (null != result.entity) {
                 return ApiResponse.of(result.entity);
             }
 
-            if (result.affectedRows > 0) {
-                return ApiResponse.NO_CONTENT;
-            } else {
-                throw new NotFoundException(am.getName() + "' " + id.toString() + "' not found");
+            if (result.affectedRows <= 0) {
+                throw new NotFoundException(em.getEntityName() + "' " + id.toString() + "' not found");
             }
+            return ApiResponse.NO_CONTENT;
         }
 
         protected Object doGetId(ActionParams params) {
