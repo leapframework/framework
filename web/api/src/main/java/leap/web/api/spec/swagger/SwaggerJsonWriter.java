@@ -615,6 +615,9 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
             w.startObject();
 
             for(MApiProperty p : model.getProperties()) {
+                if (p.isHidden()) {
+                    continue;
+                }
                 writeModelProperty(context, m, w, p);
             }
 

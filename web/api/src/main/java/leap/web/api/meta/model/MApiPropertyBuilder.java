@@ -30,6 +30,7 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
     protected boolean      unique;
     protected boolean      discriminator;
     protected boolean      reference;
+    protected boolean      hidden;
     protected Boolean      readOnly;
     protected Boolean      selectable;
     protected Boolean      aggregatable;
@@ -170,6 +171,14 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
         this.discriminator = discriminator;
     }
 
+    public boolean isHidden() {
+        return hidden;
+    }
+
+    public void setHidden(boolean hidden) {
+        this.hidden = hidden;
+    }
+
     public boolean isReadOnly() {
         return (null != readOnly && readOnly) || ((null != creatable && !creatable) && (null != updatable && !updatable));
     }
@@ -252,7 +261,7 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
     @Override
     public MApiProperty build() {
 	    return new MApiProperty(name, title, summary, description, metaProperty, beanProperty,
-                                type, format, identity, unique, reference, discriminator, password, required,
+                                type, format, identity, unique, reference, discriminator, hidden, password, required,
                                 defaultValue, enumValues,
 	    					    null == validation ? null : validation.build(), attrs,
                                 readOnly, selectable, aggregatable, groupable,

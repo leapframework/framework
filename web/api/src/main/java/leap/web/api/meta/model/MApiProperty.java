@@ -29,6 +29,7 @@ public class MApiProperty extends MApiParameterBase {
     protected final boolean      unique;
     protected final boolean      reference;
     protected final boolean      discriminator;
+    protected final boolean      hidden;
     protected final Boolean      readOnly;
     protected final Boolean      selectable;
     protected final Boolean      aggregatable;
@@ -42,7 +43,7 @@ public class MApiProperty extends MApiParameterBase {
 	public MApiProperty(String name, String title, String summary, String description,
                         MProperty metaProperty,BeanProperty beanProperty,
                         MType type, String format, boolean identity, boolean unique, boolean reference,
-                        boolean discriminator, boolean password, Boolean required,
+                        boolean discriminator, boolean hidden, boolean password, Boolean required,
                         Object defaultValue, String[] enumValues,
                         MApiValidation validation, Map<String, Object> attrs, Boolean readOnly,
                         Boolean selectable, Boolean aggregatable, Boolean groupable,
@@ -54,6 +55,7 @@ public class MApiProperty extends MApiParameterBase {
         this.unique = unique;
         this.reference = reference;
         this.discriminator = discriminator;
+        this.hidden = hidden;
         this.metaProperty = metaProperty;
         this.beanProperty = beanProperty;
         this.selectable = selectable;
@@ -101,6 +103,10 @@ public class MApiProperty extends MApiParameterBase {
 
     public boolean isReadonly() {
         return readOnly;
+    }
+
+    public boolean isHidden() {
+        return hidden;
     }
 
     public Boolean getSelectable() {
