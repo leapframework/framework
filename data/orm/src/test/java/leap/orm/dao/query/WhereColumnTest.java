@@ -104,20 +104,19 @@ public class WhereColumnTest extends OrmTestCase {
         assertEquals("1",ECodeModel.<ECodeModel>where("name = ?", "1").first().getName());
         assertNull(ECodeModel.<ECodeModel>where("name = :name", New.hashMap("ecode",null)).orderBy("name asc").firstOrNull());
 
-        assertEquals(1,ECodeModel.where("ecode = ?", "t1").count());
-        assertEquals("2",ECodeModel.<ECodeModel>where("ecode = ?", "t1").first().getName());
+        assertEquals(0,ECodeModel.where("ecode = ?", "t1").count());
+        assertNull(ECodeModel.<ECodeModel>where("ecode = ?", "t1").firstOrNull());
 
         assertEquals(1, ECodeModel.where("1=1").update(New.hashMap("name", "11")));
         assertEquals("11",ECodeModel.<ECodeModel>where("1=1").first().getName());
 
-        assertEquals(1, ECodeModel.where("ecode = ?", "t1").update(New.hashMap("name", "22")));
-        assertEquals("22",ECodeModel.<ECodeModel>where("ecode = ?", "t1").first().getName());
+        assertEquals(0, ECodeModel.where("ecode = ?", "t1").update(New.hashMap("name", "22")));
+        assertNull(ECodeModel.<ECodeModel>where("ecode = ?", "t1").firstOrNull());
 
         assertEquals(1, ECodeModel.where("1=1").delete());
         assertNull(ECodeModel.<ECodeModel>where("1=1").firstOrNull());
 
-        assertEquals(1, ECodeModel.where("ecode = ?", "t1").delete());
-        assertNull(ECodeModel.<ECodeModel>where("ecode = ?", "t1").firstOrNull());
+        assertEquals(0, ECodeModel.where("ecode = ?", "t1").delete());
     }
 
     @Test
