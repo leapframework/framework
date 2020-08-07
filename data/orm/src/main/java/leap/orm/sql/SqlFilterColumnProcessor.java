@@ -147,10 +147,6 @@ class SqlFilterColumnProcessor {
 
                 EntityMapping  em = ((SqlTableName)ts).getEntityMapping();
 
-                if(isWhereFieldExists(node, em)) {
-                    return true;
-                }
-
                 String alias = Strings.isEmpty(ts.getAlias()) ? em.getTableName() : ts.getAlias();
                 FieldMapping fm = em.getFilterFieldMappings()[0];
 
