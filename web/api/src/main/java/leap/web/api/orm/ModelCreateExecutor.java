@@ -54,13 +54,17 @@ public interface ModelCreateExecutor {
     ModelCreateExecutor withListeners(EntityListeners listeners);
 
     default CreateOneResult createOne(Object request) {
-        return createOne(request, null, null);
+        return createOne(request, null, null, true);
+    }
+
+    default CreateOneResult createOne(Object request, boolean findRecord) {
+        return createOne(request, null, null, findRecord);
     }
 
     default CreateOneResult createOne(Object request, Object id) {
-        return createOne(request, id, null);
+        return createOne(request, id, null, true);
     }
 
-    CreateOneResult createOne(Object request, Object id, Map<String, Object> extraProperties);
+    CreateOneResult createOne(Object request, Object id, Map<String, Object> extraProperties, boolean findRecord);
 
 }

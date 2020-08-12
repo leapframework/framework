@@ -63,7 +63,7 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
     }
 
     @Override
-    public CreateOneResult createOne(Object request, Object id, Map<String, Object> extraProperties) {
+    public CreateOneResult createOne(Object request, Object id, Map<String, Object> extraProperties, boolean findRecord) {
         ModelExecutionContext context = new DefaultModelExecutionContext(this.context);
 
         Object v = ex.processCreationParams(context, request);
@@ -185,7 +185,7 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
                     }
                 });
 
-                if (null != createdId) {
+                if (null != createdId && findRecord) {
                     record = dao.find(em, createdId);
                 }
             } else {
