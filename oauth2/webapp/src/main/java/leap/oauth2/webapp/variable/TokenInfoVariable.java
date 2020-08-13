@@ -19,6 +19,7 @@
 package leap.oauth2.webapp.variable;
 
 import leap.core.security.Authentication;
+import leap.core.security.AuthenticationWrapper;
 import leap.core.variable.Variable;
 import leap.oauth2.webapp.authc.OAuth2Authentication;
 import leap.web.Request;
@@ -36,7 +37,19 @@ public class TokenInfoVariable implements Variable {
         }
 
         Authentication authc = request.getAuthentication();
-        if (null == authc || !(authc instanceof OAuth2Authentication)) {
+        if (null == authc) {
+            return null;
+        }
+
+        if (authc instanceof AuthenticationWrapper) {
+            AuthenticationWrapper wrapper = (AuthenticationWrapper) authc;
+            Authentication ac = wrapper.getWrapped();
+            if (ac instanceof OAuth2Authentication) {
+                return ((OAuth2Authentication) ac).getTokenInfo();
+            }
+        }
+
+        if (!(authc instanceof OAuth2Authentication)) {
             return null;
         }
 

@@ -153,4 +153,8 @@ public class AuthenticationWrapper implements Authentication {
     public void setAttribute(String name, Object value) {
         wrapped.setAttribute(name, value);
     }
+
+    public Authentication getWrapped() {
+        return wrapped;
+    }
 }
