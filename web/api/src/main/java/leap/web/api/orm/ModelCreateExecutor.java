@@ -65,6 +65,10 @@ public interface ModelCreateExecutor {
         return createOne(request, id, null, true);
     }
 
+    default CreateOneResult createOne(Object request, Object id, Map<String, Object> extraProperties) {
+        return createOne(request, id, extraProperties, true);
+    }
+
     CreateOneResult createOne(Object request, Object id, Map<String, Object> extraProperties, boolean findRecord);
 
 }
