@@ -50,6 +50,14 @@ public class DateConverterTest extends TestCase{
         assertEquals("2014-11-01", Converts.toString(d));
 	}
 
+	@Test
+    public void testTimestampToLocalDateTime() {
+        LocalDateTime d = Converts.convert(Timestamp.valueOf("2020-08-21 17:51:30"), LocalDateTime.class);
+        assertEquals(LocalDateTime.of(2020, 8, 21, 17, 51, 30),d);
+
+        assertEquals("2020-08-21T17:51:30", d.toString());
+    }
+
     @Test
     public void testIntegerToTimestamp() {
         Timestamp timestamp = Converts.convert(-28800000, Timestamp.class);
