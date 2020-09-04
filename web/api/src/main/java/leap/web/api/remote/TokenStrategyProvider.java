@@ -40,6 +40,10 @@ public interface TokenStrategyProvider {
         throw new IllegalStateException("No supported type '" + type + "'");
     }
 
+    default TokenStrategy.Type getDefaultStrategyType() {
+        return TokenStrategy.Type.TRY_WITH_APP;
+    }
+
     /**
      * Returns the default strategy.
      */
