@@ -193,10 +193,13 @@ public abstract class RestdOperationBase {
         route.addFailureHandler(context.getApiConfig().getFailureHandler());
 
         JsonSettings settings = apiJsonSettings;
-        if (null == settings) {
-            settings = new JsonSettings.Builder().setDateTimeFormatter(SwaggerConstants.DATE_TIME_FORMAT, "GMT").build();
+        if (null == settings && c.isDateFormatEnabled()) {
+            String pattern = Strings.isEmpty(c.getDateFormatPattern()) ? SwaggerConstants.DATE_TIME_FORMAT : c.getDateFormatPattern();
+            settings = new JsonSettings.Builder().setDateTimeFormatter(pattern, "GMT").build();
         }
-        route.setExtension(settings);
+        if (null != settings) {
+            route.setExtension(settings);
+        }
 
         if (null != mo) {
             if (mo.isAllowAnonymous()) {
