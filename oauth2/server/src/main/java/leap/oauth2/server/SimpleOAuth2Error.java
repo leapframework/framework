@@ -19,6 +19,8 @@ import leap.core.i18n.MessageKey;
 import leap.core.i18n.MessageSource;
 import leap.lang.Strings;
 
+import java.util.Map;
+
 public class SimpleOAuth2Error implements OAuth2Error {
 
     protected int status;
@@ -28,6 +30,7 @@ public class SimpleOAuth2Error implements OAuth2Error {
     protected String errorDescription;
     protected MessageKey key;
     protected MessageSource messageSource;
+    protected Map<String, Object> properties;
 
     public SimpleOAuth2Error(int status, String error, String errorDescription) {
         this(status,error,errorDescription,null);
@@ -85,6 +88,10 @@ public class SimpleOAuth2Error implements OAuth2Error {
         return status;
     }
 
+    @Override
+    public Map<String, Object> getProperties() {
+        return properties;
+    }
     public void setStatus(int status) {
         this.status = status;
     }
@@ -111,5 +118,9 @@ public class SimpleOAuth2Error implements OAuth2Error {
 
     public void setMessageSource(MessageSource messageSource) {
         this.messageSource = messageSource;
+    }
+
+    public void setProperties(Map<String, Object> properties) {
+        this.properties = properties;
     }
 }

@@ -15,6 +15,8 @@
  */
 package leap.oauth2.server;
 
+import java.util.Map;
+
 public interface OAuth2Error {
     
     /**
@@ -41,4 +43,11 @@ public interface OAuth2Error {
      * Required. Returns the http status.
      */
     int getStatus();
+
+    /**
+     * Optional. Return the extend properties of this error.
+     */
+    default Map<String, Object> getProperties(){
+        return null;
+    }
 }

@@ -76,8 +76,12 @@ public class OAuth2Errors {
                 .property("error", error.getError())
                 .property("error_code", error.getErrorCode())
                 .propertyOptional("referral", error.getReferral())
-                .propertyOptional("error_description", error.getErrorDescription())
-                .endObject();
+                .propertyOptional("error_description", error.getErrorDescription());
+
+        if (null != error.getProperties() && !error.getProperties().isEmpty()){
+            error.getProperties().forEach(w::propertyOptional);
+        }
+        w.endObject();
     }
 
     public static MessageKey messageKey(Locale locale, String key, Object... args) {
