@@ -370,6 +370,10 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                 callback.accept(query);
             }
 
+            if (options.isDistinct()) {
+                query.distinct();
+            }
+
             final QueryOptions finalOptions = options;
             return em.withContextListeners(listeners, () -> {
                 long         count = -1;
