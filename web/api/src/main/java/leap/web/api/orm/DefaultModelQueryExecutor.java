@@ -370,6 +370,10 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                 callback.accept(query);
             }
 
+            if (options.isDistinct()) {
+                query.distinct();
+            }
+
             final QueryOptions finalOptions = options;
             return em.withContextListeners(listeners, () -> {
                 long         count = -1;
@@ -1496,8 +1500,8 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
         if (null != params && filterByParams) {
             where.and((expr) -> {
+                int i = 0;
                 for (String name : params.names()) {
-
                     String alias;
                     int    dotIndex = name.indexOf('.');
                     if (dotIndex > 0) {
@@ -1523,10 +1527,11 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                         continue;
                     }
 
-                    //                    if (!whereArgs.isEmpty()) {
-                    //                        whereExpr.append(" and ");
-                    //                    }
-                    //
+                    if (i > 0) {
+                        expr.append(" and ");
+                    }
+                    i++;
+
                     String[] a = params.getArray(name);
                     if (a.length == 1) {
                         a = Strings.split(a[0], ',');

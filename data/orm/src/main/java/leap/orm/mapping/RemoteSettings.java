@@ -1,6 +1,8 @@
 package leap.orm.mapping;
 
+import leap.lang.http.HTTP;
 import leap.orm.enums.RemoteType;
+import java.util.Map;
 
 public class RemoteSettings {
 
@@ -9,6 +11,7 @@ public class RemoteSettings {
     private String     relativePath;
     private String     endpoint;
     private Boolean    expandCanNewAccessToken;
+    private Map<HTTP.Method, HTTP.Method> httpMethodOverrides;
 
     public RemoteType getRemoteType() {
         return remoteType;
@@ -52,6 +55,21 @@ public class RemoteSettings {
 
     public void setExpandCanNewAccessToken(Boolean expandCanNewAccessToken) {
         this.expandCanNewAccessToken = expandCanNewAccessToken;
+    }
+
+    public HTTP.Method getHttpMethodOverride(HTTP.Method method) {
+        if (null == httpMethodOverrides) {
+            return null;
+        }
+        return httpMethodOverrides.get(method);
+    }
+
+    public Map<HTTP.Method, HTTP.Method> getHttpMethodOverrides() {
+        return httpMethodOverrides;
+    }
+
+    public void setHttpMethodOverrides(Map<HTTP.Method, HTTP.Method> httpMethodOverrides) {
+        this.httpMethodOverrides = httpMethodOverrides;
     }
 
     public boolean isRest() {

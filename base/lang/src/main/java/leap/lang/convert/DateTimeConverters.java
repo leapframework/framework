@@ -230,8 +230,17 @@ public class DateTimeConverters {
 	    protected Timestamp convertFrom(Class<?> targetType, Long time) {
 		    return new Timestamp(time);
 	    }
+
+		@Override
+		public boolean convertTo(Timestamp value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable {
+			if (Instant.class.isAssignableFrom(targetType)) {
+				out.set(value.toInstant());
+				return true;
+			}
+			return false;
+		}
 	}
-	
+
 	protected DateTimeConverters(){
 		
 	}

@@ -28,7 +28,7 @@ public class JsonSettings {
 
     public static JsonSettings MAX = new Builder().build();
 
-    public static JsonSettings MIN = new Builder().setKeyQuoted(false)
+    public static JsonSettings MIN = new Builder()
             .setIgnoreEmpty(true)
             .setIgnoreNull(true).build();
 

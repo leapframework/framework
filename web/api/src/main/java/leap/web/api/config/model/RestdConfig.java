@@ -35,6 +35,8 @@ public class RestdConfig {
     protected boolean    readonly;
     protected boolean    noDataSource;
     protected boolean    allowRemoteEntity;
+    protected boolean    dateFormatEnabled = true;
+    protected String     dateFormatPattern;
 
     protected Set<String>        includedModels = new LinkedHashSet<>();
     protected Set<String>        excludedModels = new LinkedHashSet<>();
@@ -88,6 +90,22 @@ public class RestdConfig {
 
     public void setAllowRemoteEntity(boolean allowRemoteEntity) {
         this.allowRemoteEntity = allowRemoteEntity;
+    }
+
+    public boolean isDateFormatEnabled() {
+        return dateFormatEnabled;
+    }
+
+    public void setDateFormatEnabled(boolean dateFormatEnabled) {
+        this.dateFormatEnabled = dateFormatEnabled;
+    }
+
+    public String getDateFormatPattern() {
+        return dateFormatPattern;
+    }
+
+    public void setDateFormatPattern(String dateFormatPattern) {
+        this.dateFormatPattern = dateFormatPattern;
     }
 
     public Set<String> getIncludedModels() {
