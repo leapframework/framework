@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.leapframework</groupId>
 		<artifactId>leap-parent</artifactId>
-		<version>0.7.14b-a3</version>
+		<version>0.7.14b-a4</version>
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
 	<artifactId>leap-junit</artifactId>
