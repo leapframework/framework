@@ -21,7 +21,6 @@ import leap.lang.Args;
 import leap.lang.New;
 import leap.lang.naming.NamingStyle;
 import leap.lang.naming.NamingStyles;
-
 import java.util.Collection;
 
 @Configurable(prefix = "webmvc.json")
@@ -34,6 +33,7 @@ public class DefaultJsonConfig implements JsonConfig, JsonConfigurator {
     protected String             defaultDateFormat               = null;
     protected boolean            jsonpEnabled                    = true;
     protected boolean            jsonpResponseHeaders            = true;
+    protected boolean            htmlEscape                      = false;
     protected String             jsonpParameter                  = DEFAULT_JSONP_PARAMETER;
     protected Collection<String> jsonpAllowResponseHeaders       = New.arrayList("X-Total-Count");
 
@@ -125,6 +125,17 @@ public class DefaultJsonConfig implements JsonConfig, JsonConfigurator {
     @Override
     public boolean isJsonpResponseHeaders() {
         return jsonpResponseHeaders;
+    }
+
+    @Override
+    public boolean isHtmlEscape() {
+        return htmlEscape;
+    }
+
+    @ConfigProperty
+    public JsonConfigurator setHtmlEscape(boolean htmlEscape) {
+        this.htmlEscape = htmlEscape;
+        return this;
     }
 
     @ConfigProperty

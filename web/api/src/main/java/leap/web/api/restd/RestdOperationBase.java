@@ -42,10 +42,10 @@ import leap.web.api.route.ApiRoute;
 import leap.web.api.spec.swagger.SwaggerConstants;
 import leap.web.format.RequestFormat;
 import leap.web.format.ResponseFormat;
+import leap.web.json.JsonConfig;
 import leap.web.route.Route;
 import leap.web.route.RouteBuilder;
 import leap.web.route.RouteManager;
-
 import java.lang.reflect.Array;
 import java.util.Map;
 
@@ -58,6 +58,7 @@ public abstract class RestdOperationBase {
     protected @Inject               RestdArgumentSupport[]  argumentSupports;
     protected @Inject               RequestFormat[]         supportedConsumes;
     protected @Inject               ResponseFormat[]        supportedProduces;
+    protected @Inject               JsonConfig              jsonConfig;
     protected @Inject(name = "api") JsonSettings            apiJsonSettings;
 
     protected boolean isOperationExists(RestdContext context, RouteBuilder route) {
@@ -182,7 +183,10 @@ public abstract class RestdOperationBase {
 
         JsonSettings settings = apiJsonSettings;
         if (null == settings) {
-            settings = new JsonSettings.Builder().setDateTimeFormatter(SwaggerConstants.DATE_TIME_FORMAT, "GMT").build();
+            settings = new JsonSettings.Builder()
+                    .setDateTimeFormatter(SwaggerConstants.DATE_TIME_FORMAT, "GMT")
+                    .setHtmlEscape(jsonConfig.isHtmlEscape())
+                    .build();
         }
         route.setExtension(settings);
 

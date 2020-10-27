@@ -16,13 +16,22 @@
 
 package leap.web.api.mvc;
 
+import leap.core.annotation.Inject;
+import leap.lang.html.HTML;
 import leap.web.Response;
+import leap.web.json.JsonConfig;
 
 public class DefaultApiErrorHandler implements ApiErrorHandler {
+
+    @Inject
+    protected JsonConfig jc;
 
     @Override
     public void responseError(Response response, int status, ApiError error) {
         response.setStatus(status);
+        if (jc.isHtmlEscape()) {
+            error.setMessage(HTML.escape(error.getMessage()));
+        }
         error.response(response);
     }
 

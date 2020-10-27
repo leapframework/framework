@@ -19,7 +19,6 @@ import leap.lang.beans.BeanProperty;
 import leap.lang.naming.NamingStyle;
 import leap.lang.naming.NamingStyles;
 import leap.lang.time.DateFormats;
-
 import java.text.DateFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.function.Predicate;
@@ -38,6 +37,7 @@ public class JsonSettings {
     private final boolean                 ignoreEmptyString;
     private final boolean                 ignoreEmptyArray;
     private final boolean                 nullToEmptyString;
+    private final boolean                 htmlEscape;
     private final NamingStyle             namingStyle;
     private final DateFormat              dateFormat;
     private final DateTimeFormatter       dateTimeFormatter;
@@ -47,11 +47,11 @@ public class JsonSettings {
     public JsonSettings(boolean keyQuoted, boolean ignoreNull, boolean ignoreFalse,
                         boolean ignoreEmptyString, boolean ignoreEmptyArray,
                         NamingStyle namingStyle, DateFormat dateFormat) {
-        this(keyQuoted, ignoreNull, ignoreFalse, ignoreEmptyString, ignoreEmptyArray, false, namingStyle, dateFormat);
+        this(keyQuoted, ignoreNull, ignoreFalse, ignoreEmptyString, ignoreEmptyArray, false, false, namingStyle, dateFormat);
     }
 
     public JsonSettings(boolean keyQuoted, boolean ignoreNull, boolean ignoreFalse,
-                        boolean ignoreEmptyString, boolean ignoreEmptyArray, boolean nullToEmptyString,
+                        boolean ignoreEmptyString, boolean ignoreEmptyArray, boolean nullToEmptyString, boolean htmlEscape,
                         NamingStyle namingStyle, DateFormat dateFormat) {
         this.keyQuoted = keyQuoted;
         this.ignoreNull = ignoreNull;
@@ -62,12 +62,13 @@ public class JsonSettings {
         this.dateFormat = dateFormat;
         this.dateTimeFormatter = null;
         this.nullToEmptyString = nullToEmptyString;
+        this.htmlEscape = htmlEscape;
         this.propertyFilter = null;
         this.beanFilter = null;
     }
 
     public JsonSettings(boolean keyQuoted, boolean ignoreNull, boolean ignoreFalse,
-                        boolean ignoreEmptyString, boolean ignoreEmptyArray, boolean nullToEmptyString,
+                        boolean ignoreEmptyString, boolean ignoreEmptyArray, boolean nullToEmptyString, boolean htmlEscape,
                         NamingStyle namingStyle, DateFormat dateFormat, DateTimeFormatter dateTimeFormatter,
                         Predicate<BeanProperty> propertyFilter, Predicate<Object> beanFilter) {
         this.keyQuoted = keyQuoted;
@@ -79,6 +80,7 @@ public class JsonSettings {
         this.dateFormat = dateFormat;
         this.dateTimeFormatter = dateTimeFormatter;
         this.nullToEmptyString = nullToEmptyString;
+        this.htmlEscape = htmlEscape;
         this.propertyFilter = propertyFilter;
         this.beanFilter = beanFilter;
     }
@@ -120,6 +122,10 @@ public class JsonSettings {
         return nullToEmptyString;
     }
 
+    public boolean isHtmlEscape() {
+        return htmlEscape;
+    }
+
     public Predicate<Object> getBeanFilter() {
         return beanFilter;
     }
@@ -136,6 +142,7 @@ public class JsonSettings {
         private boolean                 ignoreEmptyString = false;
         private boolean                 ignoreEmptyArray  = false;
         private boolean                 nullToEmptyString = false;
+        private boolean                 htmlEscape        = false;
         private NamingStyle             namingStyle       = NamingStyles.RAW;
         private DateFormat              dateFormat        = null;
         private DateTimeFormatter       dateTimeFormatter;
@@ -249,6 +256,15 @@ public class JsonSettings {
             return this;
         }
 
+        public boolean isHtmlEscape() {
+            return htmlEscape;
+        }
+
+        public Builder setHtmlEscape(boolean htmlEscape) {
+            this.htmlEscape = htmlEscape;
+            return this;
+        }
+
         public Predicate<BeanProperty> getPropertyFilter() {
             return propertyFilter;
         }
@@ -274,6 +290,7 @@ public class JsonSettings {
             this.ignoreEmptyString = settings.ignoreEmptyString;
             this.ignoreEmptyArray = settings.ignoreEmptyArray;
             this.nullToEmptyString = settings.nullToEmptyString;
+            this.htmlEscape = settings.htmlEscape;
             this.namingStyle = settings.namingStyle;
             this.dateFormat = settings.dateFormat;
             this.dateTimeFormatter = settings.dateTimeFormatter;
@@ -284,7 +301,7 @@ public class JsonSettings {
 
         public JsonSettings build() {
             return new JsonSettings(keyQuoted, ignoreNull, ignoreFalse,
-                    ignoreEmptyString, ignoreEmptyArray, nullToEmptyString,
+                    ignoreEmptyString, ignoreEmptyArray, nullToEmptyString, htmlEscape,
                     namingStyle, dateFormat, dateTimeFormatter, propertyFilter, beanFilter);
         }
 

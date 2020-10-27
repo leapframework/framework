@@ -120,6 +120,11 @@ public class JwkWriter {
         }
 
         @Override
+        public boolean isHtmlEscape() {
+            return jc.isHtmlEscape();
+        }
+
+        @Override
         public Collection<String> getJsonpAllowResponseHeaders() {
             return jc.getJsonpAllowResponseHeaders();
         }

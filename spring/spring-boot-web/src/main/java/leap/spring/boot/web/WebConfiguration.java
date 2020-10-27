@@ -26,7 +26,6 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.reflect.ReflectClass;
 import leap.spring.boot.Global;
-import leap.spring.boot.SpringEnvPostProcessor;
 import leap.web.AppBootstrap;
 import leap.web.AppFilter;
 import org.springframework.beans.BeansException;
@@ -42,7 +41,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
-
 import javax.servlet.*;
 import java.util.List;
 import java.util.Map;
@@ -123,11 +121,12 @@ public class WebConfiguration {
     }
 
     @Bean
-    public WebMvcConfigurerAdapter webMvcConfigurer() {
+    public WebMvcConfigurerAdapter webMvcConfigurer(Environment env) {
+        Boolean htmlEscape = env.getProperty("webmvc.json.htmlEscape", Boolean.class);
         return new WebMvcConfigurerAdapter() {
             @Override
             public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
-                converters.add(0, new JsonMessageConverter());
+                converters.add(0, new JsonMessageConverter(htmlEscape));
                 super.extendMessageConverters(converters);
             }
 
