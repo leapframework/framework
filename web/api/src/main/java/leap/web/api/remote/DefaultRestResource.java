@@ -13,13 +13,13 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.oauth2.webapp.token.at.AccessToken;
 import leap.orm.mapping.EntityMapping;
+import leap.web.api.mvc.ApiErrorHandler;
 import leap.web.api.mvc.params.CountOptions;
 import leap.web.api.mvc.params.DeleteOptions;
 import leap.web.api.mvc.params.QueryOptions;
 import leap.web.api.mvc.params.QueryOptionsBase;
 import leap.web.api.remote.json.TypeReference;
 import leap.web.api.restd.CrudUtils;
-
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,8 +30,9 @@ public class DefaultRestResource extends AbstractRestResource {
 
     protected final EntityMapping em;
 
-    protected String      endpoint;
-    protected AccessToken at;
+    protected String          endpoint;
+    protected AccessToken     at;
+    protected ApiErrorHandler apiErrorHandler;
 
     public DefaultRestResource(EntityMapping em) {
         this.em = em;
@@ -55,6 +56,14 @@ public class DefaultRestResource extends AbstractRestResource {
 
     public void setAccessToken(AccessToken token){
         this.at=token;
+    }
+
+    public ApiErrorHandler getApiErrorHandler() {
+        return apiErrorHandler;
+    }
+
+    public void setApiErrorHandler(ApiErrorHandler apiErrorHandler) {
+        this.apiErrorHandler = apiErrorHandler;
     }
 
     @Override
@@ -167,7 +176,7 @@ public class DefaultRestResource extends AbstractRestResource {
                 out.accept(new RestQueryListResult<T>(list, count));
                 return;
             }
-            throw new RestResourceInvokeException(response);
+            throw new RestResourceInvokeException(response, apiErrorHandler);
         });
         if (out.isEmpty()) {
             return null;

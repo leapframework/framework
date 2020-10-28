@@ -12,9 +12,9 @@ import leap.oauth2.webapp.token.at.AccessToken;
 import leap.orm.enums.RemoteType;
 import leap.orm.mapping.EntityMapping;
 import leap.web.Request;
+import leap.web.api.mvc.ApiErrorHandler;
 import leap.web.api.remote.ds.RestDataSource;
 import leap.web.api.remote.ds.RestDatasourceManager;
-
 import javax.servlet.http.HttpServletRequest;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -32,6 +32,7 @@ public class RestResourceBuilder {
     private String                 endpoint;
     private EntityMapping          entityMapping;
     private AccessToken            accessToken;
+    private ApiErrorHandler        apiErrorHandler;
     private Consumer<HttpRequest>  preSendHandler;
     private Consumer<HttpResponse> postSendHandler;
 
@@ -67,6 +68,10 @@ public class RestResourceBuilder {
             throw new RuntimeException("can't build rest resource,when endpoint or entityMapping is empty!");
         }
         res.setEndpoint(formatApiEndPoint(res.getEndpoint()));
+
+        if (null != apiErrorHandler) {
+            res.setApiErrorHandler(apiErrorHandler);
+        }
         return res;
     }
 
@@ -145,6 +150,15 @@ public class RestResourceBuilder {
 
     public RestResourceBuilder setAccessToken(AccessToken accessToken) {
         this.accessToken = accessToken;
+        return this;
+    }
+
+    public ApiErrorHandler getApiErrorHandler() {
+        return apiErrorHandler;
+    }
+
+    public RestResourceBuilder setApiErrorHandler(ApiErrorHandler apiErrorHandler) {
+        this.apiErrorHandler = apiErrorHandler;
         return this;
     }
 

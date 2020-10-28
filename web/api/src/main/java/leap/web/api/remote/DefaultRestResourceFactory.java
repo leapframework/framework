@@ -22,6 +22,7 @@ import leap.lang.http.client.HttpClient;
 import leap.lang.path.Paths;
 import leap.orm.OrmContext;
 import leap.orm.mapping.EntityMapping;
+import leap.web.api.mvc.ApiErrorHandler;
 import leap.web.api.remote.ds.RestDataSource;
 import leap.web.api.remote.ds.RestDatasourceManager;
 
@@ -30,6 +31,7 @@ public class DefaultRestResourceFactory implements RestResourceFactory {
     protected @Inject HttpClient            httpClient;
     protected @Inject TokenFetcher          tokenFetcher;
     protected @Inject RestDatasourceManager dsm;
+    protected @Inject ApiErrorHandler       apiErrorHandler;
 
     @Override
     public RestResource createResource(OrmContext context, EntityMapping em) {
@@ -66,6 +68,7 @@ public class DefaultRestResourceFactory implements RestResourceFactory {
         restResource.setHttpClient(httpClient);
         restResource.setTokenFetcher(tokenFetcher);
         restResource.setEndpoint(info.getEndpoint());
+        restResource.setApiErrorHandler(apiErrorHandler);
         return restResource;
     }
 
