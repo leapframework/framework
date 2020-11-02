@@ -3,3 +3,5 @@ tif:
   p2: true
 
 prop: b
+
+t_prop: a

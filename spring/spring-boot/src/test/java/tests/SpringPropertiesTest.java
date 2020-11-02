@@ -21,11 +21,15 @@ import app.beans.TestAppConfigProcessor;
 import leap.core.BeanFactory;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.ConfigurableEnvironment;
 
 public class SpringPropertiesTest extends AbstractTest {
 
     @Autowired
     protected BeanFactory factory;
+
+    @Autowired
+    protected ConfigurableEnvironment env;
 
     @Test
     public void testBeanIf() {
@@ -37,5 +41,10 @@ public class SpringPropertiesTest extends AbstractTest {
     @Test
     public void testSpringPropertyAtConfigProcessor() {
         assertEquals("b", TestAppConfigProcessor.getProperties().get("name"));
+    }
+
+    @Test
+    public void testApplicationTestSource() {
+        assertEquals("b", env.getProperty("t_prop"));
     }
 }
