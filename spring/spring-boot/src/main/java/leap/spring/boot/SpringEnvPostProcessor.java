@@ -98,12 +98,8 @@ public class SpringEnvPostProcessor implements EnvironmentPostProcessor {
         }
 
         if (null != file && file.exists()) {
-            try {
-                PropertySource ps = new YamlPropertySourceLoader().load(EXTERNAL_SOURCE, new SpringResource(file), null);
-                env.getPropertySources().addAfter(SYSTEM_SOURCE, ps);
-            } catch (IOException e) {
-                throw new IllegalStateException("Error read config file, " + e.getMessage(), e);
-            }
+            PropertySource ps = loadPropertySource(new YamlPropertySourceLoader(), file);
+            env.getPropertySources().addAfter(SYSTEM_SOURCE, ps);
         }
     }
 
@@ -111,27 +107,21 @@ public class SpringEnvPostProcessor implements EnvironmentPostProcessor {
         Resource resource = Resources.getResource("classpath:application-test.yml");
         if (null != resource && resource.exists()) {
             log.info("Found test config '{}'", resource);
-            try {
-                final SpringResource    sr = new SpringResource(resource);
-                final PropertySource<?> ps = new YamlPropertySourceLoader().load(APPLICATION_TEST_SOURCE, sr, null);
-
-                final MutablePropertySources sources = env.getPropertySources();
-                if (sources.contains(EXTERNAL_SOURCE)) {
-                    sources.addAfter(EXTERNAL_SOURCE, ps);
+            final PropertySource<?>      ps      = loadPropertySource(new YamlPropertySourceLoader(), resource);
+            final MutablePropertySources sources = env.getPropertySources();
+            if (sources.contains(EXTERNAL_SOURCE)) {
+                sources.addAfter(EXTERNAL_SOURCE, ps);
+            } else {
+                String applicationSource = findApplicationConfig(sources);
+                if (null != applicationSource) {
+                    sources.addBefore(applicationSource, ps);
                 } else {
-                    String applicationSource = findApplicationConfig(sources);
-                    if (null != applicationSource) {
-                        sources.addBefore(applicationSource, ps);
+                    if (sources.contains(ENVIRONMENT_SOURCE)) {
+                        sources.addAfter(ENVIRONMENT_SOURCE, ps);
                     } else {
-                        if(sources.contains(ENVIRONMENT_SOURCE)) {
-                            sources.addAfter(ENVIRONMENT_SOURCE, ps);
-                        }else {
-                            sources.addLast(ps);
-                        }
+                        sources.addLast(ps);
                     }
                 }
-            } catch (IOException e) {
-                throw new IllegalStateException(e.getMessage(), e);
             }
         }
     }
@@ -186,22 +176,7 @@ public class SpringEnvPostProcessor implements EnvironmentPostProcessor {
             }
         }
 
-        PropertySource propertySource;
-        Method         load = Reflection.getMethod(loader.getClass(), "load");
-        try {
-            if (SpringBootUtils.is1x()) {
-                propertySource = (PropertySource) load.invoke(loader, resource.getDescription(), new SpringResource(resource), null);
-            } else {
-                List<PropertySource> list = (List<PropertySource>) load.invoke(loader, resource.getDescription(), new SpringResource(resource));
-                if (null != list && list.size() > 1) {
-                    log.error("Load multi {} property sources, must be zero or one", list.size());
-                }
-                propertySource = null == list || list.isEmpty() ? null : list.get(0);
-            }
-        } catch (Exception e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
-
+        PropertySource propertySource = loadPropertySource(loader, resource);
         if (null == propertySource) {
             return;
         }
@@ -216,6 +191,23 @@ public class SpringEnvPostProcessor implements EnvironmentPostProcessor {
             env.getPropertySources().addFirst(propertySource);
         } else {
             env.getPropertySources().addLast(propertySource);
+        }
+    }
+
+    protected PropertySource loadPropertySource(PropertySourceLoader loader, Resource resource) {
+        final Method load = Reflection.getMethod(loader.getClass(), "load");
+        try {
+            if (SpringBootUtils.is1x()) {
+                return (PropertySource) load.invoke(loader, resource.getDescription(), new SpringResource(resource), null);
+            } else {
+                List<PropertySource> list = (List<PropertySource>) load.invoke(loader, resource.getDescription(), new SpringResource(resource));
+                if (null != list && list.size() > 1) {
+                    log.error("Load multi {} property sources, must be zero or one", list.size());
+                }
+                return null == list || list.isEmpty() ? null : list.get(0);
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
         }
     }
 
