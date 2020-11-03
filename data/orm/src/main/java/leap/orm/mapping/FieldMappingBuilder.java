@@ -58,6 +58,7 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
     protected Boolean               insert;
     protected Expression            insertValue;
     protected Boolean               update;
+	protected Expression            updateIf;
     protected Expression            updateValue;
     protected Boolean				embedded;
     protected Boolean               filtered;
@@ -106,6 +107,7 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
         this.insert = template.insert;
         this.update = template.update;
         this.insertValue = template.insertValue;
+        this.updateIf = template.updateIf;
         this.updateValue = template.updateValue;
         this.filterable = template.filterable;
         this.sortable = template.sortable;
@@ -181,6 +183,10 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
         if(null != fm.insertValue) {
             this.insertValue = fm.insertValue;
         }
+
+        if (null != fm.updateIf) {
+        	this.updateIf = fm.updateIf;
+		}
 
         if(null != fm.updateValue) {
             this.updateValue = fm.updateValue;
@@ -397,6 +403,22 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 	public FieldMappingBuilder trySetInsertValue(Expression insertValue){
 		if(null == this.insertValue){
 			this.insertValue = insertValue;
+		}
+		return this;
+	}
+
+	public Expression getUpdateIf() {
+		return updateIf;
+	}
+
+	public FieldMappingBuilder setUpdateIf(Expression updateIf) {
+		this.updateIf = updateIf;
+		return this;
+	}
+
+	public FieldMappingBuilder trySetUpdateIf(Expression updateIf) {
+    	if (null == this.updateIf) {
+			this.updateIf = updateIf;
 		}
 		return this;
 	}
@@ -783,7 +805,7 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 	    						nullable,maxLength,precision,scale,
                                 insert, update, embedded, filtered, filteredIf,
                                 defaultValueExpression,
-                                insertValue, updateValue, filteredValue,
+                                insertValue, updateIf, updateValue, filteredValue,
 	    						optimisticLock,newOptimisticLockFieldName,
 	    						domain,validators,
 	    						reservedMetaFieldName,
