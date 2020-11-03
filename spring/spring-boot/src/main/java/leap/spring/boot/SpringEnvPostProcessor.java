@@ -36,6 +36,7 @@ import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySource;
 import org.springframework.util.StringUtils;
 
+import javax.print.DocFlavor;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
@@ -98,7 +99,7 @@ public class SpringEnvPostProcessor implements EnvironmentPostProcessor {
         }
 
         if (null != file && file.exists()) {
-            PropertySource ps = loadPropertySource(new YamlPropertySourceLoader(), file);
+            PropertySource ps = loadPropertySource(new YamlPropertySourceLoader(), file, EXTERNAL_SOURCE);
             env.getPropertySources().addAfter(SYSTEM_SOURCE, ps);
         }
     }
@@ -107,7 +108,7 @@ public class SpringEnvPostProcessor implements EnvironmentPostProcessor {
         Resource resource = Resources.getResource("classpath:application-test.yml");
         if (null != resource && resource.exists()) {
             log.info("Found test config '{}'", resource);
-            final PropertySource<?>      ps      = loadPropertySource(new YamlPropertySourceLoader(), resource);
+            final PropertySource<?>      ps      = loadPropertySource(new YamlPropertySourceLoader(), resource, APPLICATION_TEST_SOURCE);
             final MutablePropertySources sources = env.getPropertySources();
             if (sources.contains(EXTERNAL_SOURCE)) {
                 sources.addAfter(EXTERNAL_SOURCE, ps);
@@ -176,7 +177,7 @@ public class SpringEnvPostProcessor implements EnvironmentPostProcessor {
             }
         }
 
-        PropertySource propertySource = loadPropertySource(loader, resource);
+        PropertySource propertySource = loadPropertySource(loader, resource, resource.getDescription());
         if (null == propertySource) {
             return;
         }
@@ -194,13 +195,13 @@ public class SpringEnvPostProcessor implements EnvironmentPostProcessor {
         }
     }
 
-    protected PropertySource loadPropertySource(PropertySourceLoader loader, Resource resource) {
+    protected PropertySource loadPropertySource(PropertySourceLoader loader, Resource resource, String name) {
         final Method load = Reflection.getMethod(loader.getClass(), "load");
         try {
             if (SpringBootUtils.is1x()) {
                 return (PropertySource) load.invoke(loader, resource.getDescription(), new SpringResource(resource), null);
             } else {
-                List<PropertySource> list = (List<PropertySource>) load.invoke(loader, resource.getDescription(), new SpringResource(resource));
+                List<PropertySource> list = (List<PropertySource>) load.invoke(loader, name, new SpringResource(resource));
                 if (null != list && list.size() > 1) {
                     log.error("Load multi {} property sources, must be zero or one", list.size());
                 }
