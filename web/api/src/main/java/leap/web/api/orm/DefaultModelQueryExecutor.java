@@ -1608,15 +1608,19 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                                 continue;
                             }
 
+                            String envExpr = resolveEnvExpr(value);
+                            boolean isEnv = null != envExpr;
+                            if (isEnv) {
+                                value = envExpr;
+                            }
                             if (op == ScelToken.IN || op == ScelToken.NOT_IN) {
-                                applyFieldFilterIn(expr, alias, modelAndProp.field, nodes[i].values(), sqlOperator);
-                            } else {
-                                String envExpr = resolveEnvExpr(value);
-                                boolean isEnv = null != envExpr;
-                                if (isEnv) {
-                                    value = envExpr;
+                                if (!isEnv) {
+                                    applyFieldFilterIn(expr, alias, modelAndProp.field, nodes[i].values(), sqlOperator);
+                                    continue;
                                 }
-
+                                value = "#{" + value + "}";
+                                applyFieldFilterOrArg(expr, alias, modelAndProp.field, sqlOperator, value, null);
+                            } else {
                                 if (Strings.equalsIgnoreCase(sqlOperator, ScelToken.LIKE.name())) {
                                     if (op == ScelToken.SW) {
                                         value = splicingValueOrExpr(isEnv, "%", value);
@@ -1761,7 +1765,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
     }
 
     protected void applyFieldFilterIn(WhereBuilder.Expr expr, String alias, FieldMapping fm, List<ScelNode> values, String sqlOperator) {
-        final Class<?> type = ((FieldMapping) fm).getJavaType();
+        final Class<?> type = fm.getJavaType();
 
         Object[] args = new Object[values.size()];
         for (int i = 0; i < args.length; i++) {
