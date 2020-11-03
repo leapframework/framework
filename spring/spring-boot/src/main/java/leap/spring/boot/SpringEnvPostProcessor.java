@@ -36,7 +36,6 @@ import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySource;
 import org.springframework.util.StringUtils;
 
-import javax.print.DocFlavor;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
