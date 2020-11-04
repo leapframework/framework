@@ -252,21 +252,21 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
     }
 
     @Override
-    public QueryListResult queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback) {
-        return queryList(options, filters, callback, filterByParams);
+    public QueryListResult queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback, Map<String, String> headers) {
+        return queryList(options, filters, callback, filterByParams, headers);
     }
 
     @Override
-    public QueryListResult queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback, boolean filterByParams) {
+    public QueryListResult queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback, boolean filterByParams, Map<String, String> headers) {
         //todo: review query remote entity.
         if (remoteRest) {
             RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), em);
 
             RestQueryListResult result;
             if (filterByParams) {
-                result = restResource.queryList(SimpleRecord.class, options, filters);
+                result = restResource.queryList(SimpleRecord.class, options, filters, headers);
             } else {
-                result = restResource.queryList(options);
+                result = restResource.queryList(options, headers);
             }
 
             return new QueryListResult(result.getList(), result.getCount());

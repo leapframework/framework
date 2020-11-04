@@ -111,24 +111,27 @@ public class DefaultRestResource extends AbstractRestResource {
         return send(resultClass, request, getAccessToken());
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public <T> RestQueryListResult<T> queryList(Class<T> resultElementClass, final QueryOptions options, Map<String, Object> filters) {
+    public <T> RestQueryListResult<T> queryList(Class<T> resultElementClass, final QueryOptions options, Map<String, Object> filters, Map<String, String> headers) {
         String op = "";
 
         applyFilters(options, filters);
 
-        return doQueryList(resultElementClass, buildOperationPath(op), options);
+        return doQueryList(resultElementClass, buildOperationPath(op), options, headers);
     }
 
     @Override
     public <T> RestQueryListResult<T> queryRelationList(Class<T> resultElementClass, String relationPath, Object id, QueryOptions options) {
         String op = idPath(id) + "/" + relationPath;
-        return doQueryList(resultElementClass, buildOperationPath(op), options);
+        return doQueryList(resultElementClass, buildOperationPath(op), options, null);
     }
 
-    protected <T> RestQueryListResult<T> doQueryList(Class<T> resultElementClass, String url, QueryOptions options) {
+    protected <T> RestQueryListResult<T> doQueryList(Class<T> resultElementClass, String url, QueryOptions options, Map<String, String> headers) {
         HttpRequest request = httpClient.request(url).ajax();
+
+        if (null != headers && !headers.isEmpty()) {
+            headers.forEach(request::addHeader);
+        }
 
         applyRequestHttpMethodOverride(request, Method.GET);
         buildQueryOption(request, options);

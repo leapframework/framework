@@ -87,7 +87,7 @@ public interface ModelQueryExecutor {
      * Query the records of model with the given filter fields.
      */
     default QueryListResult queryList(QueryOptions options, Map<String, Object> filters) {
-        return queryList(options, filters, null);
+        return queryList(options, filters, null, null);
     }
 
     /**
@@ -96,7 +96,9 @@ public interface ModelQueryExecutor {
      * <p/>
      * The callback will be invoked before executing the query.
      */
-    QueryListResult queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback);
+    default QueryListResult queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback) {
+        return queryList(options, filters, callback, null);
+    }
 
     /**
      * Query the records of model with the given filter fields.
@@ -104,7 +106,25 @@ public interface ModelQueryExecutor {
      * <p/>
      * The callback will be invoked before executing the query.
      */
-    QueryListResult queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback, boolean filterByParams);
+    QueryListResult queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback, Map<String, String> headers);
+
+    /**
+     * Query the records of model with the given filter fields.
+     * <p>
+     * <p/>
+     * The callback will be invoked before executing the query.
+     */
+    default QueryListResult queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback, boolean filterByParams) {
+        return queryList(options, filters, callback, filterByParams, null);
+    }
+
+    /**
+     * Query the records of model with the given filter fields.
+     * <p>
+     * <p/>
+     * The callback will be invoked before executing the query.
+     */
+    QueryListResult queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback, boolean filterByParams, Map<String, String> headers);
 
     /**
      * Query the total count of records.

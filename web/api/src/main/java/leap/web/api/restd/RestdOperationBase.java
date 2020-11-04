@@ -113,15 +113,24 @@ public abstract class RestdOperationBase {
     }
 
     protected ArgumentBuilder addArgument(RestdContext context, FuncActionBuilder action, Class<?> type, String name) {
-        return addArgument(context, action, type, name, null);
+        return addArgument(context, action, type, name, null, null);
     }
 
     protected ArgumentBuilder addArgument(RestdContext context, FuncActionBuilder action, Class<?> type, String name, Boolean required) {
+        return addArgument(context, action, type, name, required, null);
+    }
+
+    protected ArgumentBuilder addArgument(RestdContext context, FuncActionBuilder action, Class<?> type, String name,
+                                          Boolean required, Argument.Location location) {
         ArgumentBuilder a = new ArgumentBuilder();
 
         a.setName(name);
         a.setType(type);
         a.setRequired(required);
+
+        if (null != location) {
+            a.setLocation(location);
+        }
 
         if (Classes.isAnnotationPresent(type, ParamsWrapper.class)) {
             BeanType bt = BeanType.of(type);
