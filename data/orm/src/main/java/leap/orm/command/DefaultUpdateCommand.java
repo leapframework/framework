@@ -236,7 +236,10 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
     }
 
     protected void prepare() {
-        for (FieldMapping fm : em.getFieldMappings()) {
+        FieldMapping[] fms = em.getFieldMappings();
+
+        Map<String, Object> exprVars = null;
+        for (FieldMapping fm : fms) {
             if (fm.isOptimisticLock()) {
                 prepareOptimisticLock(fm);
             } else {
@@ -245,8 +248,10 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
                     Expression ifExpr = fm.getUpdateIf();
 
                     if (null != ifExpr) {
-                        Map<String, Object> vars = new HashMap<>(entity.toMap());
-                        if (!EL.test(ifExpr, null, vars)) {
+                        if (null == exprVars) {
+                            exprVars = prepareExprVars(fms);
+                        }
+                        if (!EL.test(ifExpr, null, exprVars)) {
                             continue;
                         }
                     }
@@ -269,6 +274,21 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
                 throw new ValidationException(errors);
             }
         }
+    }
+
+    private Map<String, Object> prepareExprVars(FieldMapping[] fms) {
+        Map<String, Object> vars = new HashMap<>(entity.toMap());
+        vars.put("$record", getOriginalRecord());
+        vars.put("$fms", fms);
+        return vars;
+    }
+
+    protected Object getOriginalRecord() {
+        Object record = attributes.get(ORIGINAL_RECORD);
+        if (null == record) {
+            return dao.findOrNull(em, id);
+        }
+        return record;
     }
 
     protected void prepareOptimisticLock(FieldMapping fm) {

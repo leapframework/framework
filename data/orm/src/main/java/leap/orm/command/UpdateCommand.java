@@ -15,9 +15,12 @@
  */
 package leap.orm.command;
 
+import leap.lang.accessor.AttributeAccessor;
 import java.util.Map;
 
-public interface UpdateCommand extends Executable {
+public interface UpdateCommand extends Executable, AttributeAccessor {
+
+    String ORIGINAL_RECORD = "original_update_record";
 
     /**
      * Sets the id of record.

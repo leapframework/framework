@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.leapframework.org/schema/config" xmlns:el="http://www.leapframework.org/schema/el/config"
+        xsi:schemaLocation="http://www.leapframework.org/schema/config http://www.leapframework.org/schema/config
+	http://www.leapframework.org/schema/el/config http://www.leapframework.org/schema/el-config">
+
+    <el:functions prefix="fields" class="leap.orm.el.FieldELFunction">
+        <el:function method="isChanged(leap.lang.el.ElEvalContext,java.lang.String)"/>
+    </el:functions>
+
+</config>
