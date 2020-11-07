@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
  * Specify the name of field in json.
  */
 @Retention(RetentionPolicy.RUNTIME)  
-@Target(ElementType.FIELD)
+@Target({ElementType.FIELD, ElementType.METHOD})
 @Name("value")
 public @interface JsonName {
 
