@@ -1311,6 +1311,9 @@ public class BeanContainer implements BeanFactory {
         if (ProxyBean.class.isAssignableFrom(pd.getBeanClass())) {
             proxy = doCreateBeanOnly(pd);
             ((ProxyBean) proxy).setTargetBean(bean);
+        }else if(ProxyFactory.class.isAssignableFrom(pd.getBeanClass())) {
+            ProxyFactory factory = (ProxyFactory)doCreateBeanOnly(pd);
+            proxy = factory.createProxy(bean);
         } else {
             ReflectConstructor c = ReflectClass.of(pd.getBeanClass()).getConstructor(type);
             if (null == c) {

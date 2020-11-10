@@ -511,7 +511,7 @@ class XmlBeanDefinitionLoader {
             if (null == targetType) {
                 throw new BeanDefinitionException("bean's target-type class '" + targetTypeName + "' not found, source : " + reader.getSource());
             }
-            if (!ProxyBean.class.isAssignableFrom(bean.getBeanClass())) {
+            if (!ProxyBean.class.isAssignableFrom(bean.getBeanClass()) && !ProxyFactory.class.isAssignableFrom(bean.getBeanClass())) {
                 if (null == ReflectClass.of(bean.getBeanClass()).getConstructor(targetType)) {
                     throw new BeanDefinitionException("Bean proxy class'" + bean.getBeanClass() +
                             "' must be sub-class of '" + ProxyBean.class +
