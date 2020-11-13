@@ -1432,7 +1432,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                     select.add(item.function() + "(" + query.alias() + "." + item.name() + ") as " + item.alias());
                 }
             } else {
-                select.add(expr + " as " + item.name());
+                select.add(expr + " as " + (Strings.isEmpty(item.alias()) ? item.name() : item.alias()));
             }
         }
 
