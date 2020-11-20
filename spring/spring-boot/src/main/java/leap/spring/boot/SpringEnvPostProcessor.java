@@ -104,7 +104,7 @@ public class SpringEnvPostProcessor implements EnvironmentPostProcessor {
     }
 
     protected void addApplicationTestSource(ConfigurableEnvironment env) {
-        Resource resource = Resources.getResource("classpath:application-test.yml");
+        Resource resource = Resources.getResource("classpath:unit-test.yml");
         if (null != resource && resource.exists()) {
             log.info("Found test config '{}'", resource);
             final PropertySource<?>      ps      = loadPropertySource(new YamlPropertySourceLoader(), resource, APPLICATION_TEST_SOURCE);
