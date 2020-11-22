@@ -53,13 +53,11 @@ public class SpringEnvPostProcessor implements EnvironmentPostProcessor {
     private static final String   ENVIRONMENT_SOURCE        = "systemEnvironment";
     private static final String   APPLICATION_SOURCE_PREFIX = "applicationConfig:";
     private static final String   APPLICATION_CONFIG_SOURCE = "applicationConfigurationProperties";
-    private static final String   APPLICATION_TEST_SOURCE   = "applicationTestConfig";
     private static final String   EXTERNAL_SOURCE           = "external-config";
 
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment env, SpringApplication app) {
         addExternalConfigSource(env);
-        addApplicationTestSource(env);
         addMetaPropertySources(env);
 
         log.debug("Add leap property source");
@@ -100,29 +98,6 @@ public class SpringEnvPostProcessor implements EnvironmentPostProcessor {
         if (null != file && file.exists()) {
             PropertySource ps = loadPropertySource(new YamlPropertySourceLoader(), file, EXTERNAL_SOURCE);
             env.getPropertySources().addAfter(SYSTEM_SOURCE, ps);
-        }
-    }
-
-    protected void addApplicationTestSource(ConfigurableEnvironment env) {
-        Resource resource = Resources.getResource("classpath:unit-test.yml");
-        if (null != resource && resource.exists()) {
-            log.info("Found test config '{}'", resource);
-            final PropertySource<?>      ps      = loadPropertySource(new YamlPropertySourceLoader(), resource, APPLICATION_TEST_SOURCE);
-            final MutablePropertySources sources = env.getPropertySources();
-            if (sources.contains(EXTERNAL_SOURCE)) {
-                sources.addAfter(EXTERNAL_SOURCE, ps);
-            } else {
-                String applicationSource = findApplicationConfig(sources);
-                if (null != applicationSource) {
-                    sources.addBefore(applicationSource, ps);
-                } else {
-                    if (sources.contains(ENVIRONMENT_SOURCE)) {
-                        sources.addAfter(ENVIRONMENT_SOURCE, ps);
-                    } else {
-                        sources.addLast(ps);
-                    }
-                }
-            }
         }
     }
 
