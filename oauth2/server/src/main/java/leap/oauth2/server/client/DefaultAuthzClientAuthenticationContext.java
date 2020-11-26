@@ -28,9 +28,7 @@ import leap.web.Response;
  * Created by kael on 2017/1/3.
  */
 public class DefaultAuthzClientAuthenticationContext implements AuthzClientAuthenticationContext {
-    
-    private Errors errors = new SimpleErrors();
-    
+
     private Request request;
     private Response response;
 
@@ -41,13 +39,13 @@ public class DefaultAuthzClientAuthenticationContext implements AuthzClientAuthe
 
     @Override
     public Errors errors() {
-        return errors;
+        return request.getValidation().errors();
     }
 
     @Override
     public void addError(String name, String code, String message) {
-        NamedError error = new NamedError(name,code,message); 
-        errors.add(error);
+        NamedError error = new NamedError(name,code,message);
+        request.getValidation().errors().add(error);
     }
 
     @Override
