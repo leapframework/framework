@@ -84,8 +84,7 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
 
         action.setFunction(createFunction(crud));
 
-        addPathArguments(crud, action);
-        addArgument(context, action, QueryOptions.class, "options");
+        addOperationArguments(crud, context, action);
 
         if (null != callback) {
             callback.postAddArguments(action);
@@ -103,6 +102,11 @@ public class QueryOperation extends CrudOperationBase implements CrudOperation {
         }
 
         context.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
+    }
+
+    protected void addOperationArguments(Crud crud, RestdContext context, FuncActionBuilder action) {
+        addPathArguments(crud, action);
+        addArgument(context, action, QueryOptions.class, "options");
     }
 
     protected Function<ActionParams, Object> createFunction(Crud crud) {

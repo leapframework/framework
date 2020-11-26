@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,26 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.lang.json;
 
-import leap.lang.annotation.Name;
+package app.beans;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 
-/**
- * Specify the name of field in json.
- */
-@Retention(RetentionPolicy.RUNTIME)  
-@Target({ElementType.FIELD, ElementType.METHOD})
-@Name("value")
-public @interface JsonName {
+import leap.core.BeanFactory;
+import leap.core.annotation.Inject;
+import leap.core.ioc.ProxyFactory;
 
-    /**
-     * The name in json.
-     */
-	String value();
-	
+public class ProxyBeanFactory implements ProxyFactory<ProxyInterface> {
+
+    @Inject
+    protected BeanFactory factory;
+
+    @Override
+    public Object createProxy(ProxyInterface target) {
+        return factory.inject(new ProxyBean(target));
+    }
+
 }

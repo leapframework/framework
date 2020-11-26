@@ -15,6 +15,7 @@
  */
 package leap.orm.command;
 
+import leap.core.el.EL;
 import leap.core.exception.InvalidOptimisticLockException;
 import leap.core.exception.OptimisticLockException;
 import leap.core.validation.Errors;
@@ -37,7 +38,6 @@ import leap.orm.sql.SqlCommand;
 import leap.orm.sql.SqlFactory;
 import leap.orm.validation.EntityValidator;
 import leap.orm.value.EntityWrapper;
-
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -236,15 +236,28 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
     }
 
     protected void prepare() {
-        for (FieldMapping fm : em.getFieldMappings()) {
+        FieldMapping[] fms = em.getFieldMappings();
+
+        Map<String, Object> exprVars = null;
+        for (FieldMapping fm : fms) {
             if (fm.isOptimisticLock()) {
                 prepareOptimisticLock(fm);
             } else {
                 Object value = entity.get(fm.getFieldName());
                 if (null == value && fm.isUpdate()) {
-                    Expression expression = fm.getUpdateValue();
-                    if (null != expression) {
-                        value = expression.getValue(entity);
+                    Expression ifExpr = fm.getUpdateIf();
+
+                    if (null != ifExpr) {
+                        if (null == exprVars) {
+                            exprVars = prepareExprVars(fms);
+                        }
+                        if (!EL.test(ifExpr, null, exprVars)) {
+                            continue;
+                        }
+                    }
+                    Expression valueExpr = fm.getUpdateValue();
+                    if (null != valueExpr) {
+                        value = valueExpr.getValue(entity);
                         setGeneratedValue(fm, value);
                     }
                 } else if (value instanceof Expression) {
@@ -261,6 +274,21 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
                 throw new ValidationException(errors);
             }
         }
+    }
+
+    private Map<String, Object> prepareExprVars(FieldMapping[] fms) {
+        Map<String, Object> vars = new HashMap<>(entity.toMap());
+        vars.put("$record", getOriginalRecord());
+        vars.put("$fms", fms);
+        return vars;
+    }
+
+    protected Object getOriginalRecord() {
+        Object record = attributes.get(ORIGINAL_RECORD);
+        if (null == record) {
+            return dao.findOrNull(em, id);
+        }
+        return record;
     }
 
     protected void prepareOptimisticLock(FieldMapping fm) {

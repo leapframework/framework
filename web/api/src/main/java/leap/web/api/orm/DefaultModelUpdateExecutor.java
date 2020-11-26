@@ -293,13 +293,13 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
         AtomicInteger result = new AtomicInteger();
 
         if (relationProperties.isEmpty()) {
-            result.set(executeUpdate(idOrFilters, properties));
+            result.set(executeUpdate(context, idOrFilters, properties));
         } else {
             if(idOrFilters.isKey()) {
                 throw new IllegalStateException("Relation properties not supported for filtering update");
             }
             dao.doTransaction((conn) -> {
-                result.set(executeUpdate(idOrFilters, properties));
+                result.set(executeUpdate(context, idOrFilters, properties));
 
                 if (result.get() > 0) {
                     for (Map.Entry<RelationProperty, Object[]> entry : relationProperties.entrySet()) {
@@ -359,12 +359,13 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
 //        return r;
 //    }
 
-    protected int executeUpdate(IdOrKey idOrFilters, Map<String, Object> properties) {
+    protected int executeUpdate(ModelExecutionContext context, IdOrKey idOrFilters, Map<String, Object> properties) {
         int r;
         if(idOrFilters.isId()) {
             final Object id = idOrFilters.id;
             UpdateCommand update =
                     dao.cmdUpdate(em.getEntityName()).withId(idOrFilters.id).from(properties);
+            update.setAttribute(UpdateCommand.ORIGINAL_RECORD, context.getAttribute(UpdateCommand.ORIGINAL_RECORD));
             r = dao.withEvents(() -> update.execute());
             if (null != ex.handler) {
                 ex.handler.postUpdateProperties(context, id, r);

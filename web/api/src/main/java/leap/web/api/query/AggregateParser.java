@@ -55,7 +55,15 @@ public class AggregateParser {
                 if (!allowSingleExpr && index0 <= 0) {
                     invalidExpr(expr);
                 } else if (allowSingleExpr && index0 <= 0) {
-                    item = new Aggregate.Item(part, null, null);
+                    if (part.indexOf(" as ") > 0) {
+                        String[] partItems = Strings.split(part.trim(), " as ");
+                        item = new Aggregate.Item(partItems[0], null, partItems[1]);
+                    } else if (part.indexOf(' ') > 0) {
+                        String[] partItems = Strings.split(part.trim(), ' ');
+                        item = new Aggregate.Item(partItems[0], null, partItems[1]);
+                    } else {
+                        item = new Aggregate.Item(part, null, null);
+                    }
                     items.add(item);
                     continue;
                 }

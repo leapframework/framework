@@ -51,6 +51,7 @@ public class FieldMapping extends ExtensibleBase {
     protected final Expression       filteredIf;
 	protected final Expression       defaultValue;
 	protected final Expression       insertValue;
+	protected final Expression       updateIf;
 	protected final Expression       updateValue;
     protected final Expression       filteredValue;
 	protected final Domain           domain;
@@ -78,6 +79,7 @@ public class FieldMapping extends ExtensibleBase {
 						boolean filtered, Expression filteredIf,
 						Expression defaultValue,
 						Expression insertValue,
+						Expression updateIf,
 						Expression updateValue,
 						Expression filteredValue,
 						boolean optimisticLock,
@@ -112,6 +114,7 @@ public class FieldMapping extends ExtensibleBase {
         this.filteredIf = filteredIf;
 	    this.defaultValue   = defaultValue;
 	    this.insertValue    = insertValue;
+	    this.updateIf       = updateIf;
 	    this.updateValue    = updateValue;
         this.filteredValue  = filteredValue;
 	    this.optimisticLock = optimisticLock;
@@ -186,6 +189,10 @@ public class FieldMapping extends ExtensibleBase {
 
 	public Expression getInsertValue() {
 		return insertValue;
+	}
+
+	public Expression getUpdateIf() {
+		return updateIf;
 	}
 
 	public Expression getUpdateValue() {

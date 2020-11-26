@@ -70,6 +70,9 @@ public class QueryOptions extends QueryOptionsBase {
     @QueryParam("joins")
     protected String joins;
 
+    @QueryParam("distinct")
+    protected Boolean distinct;
+
     @NonParam
     @JsonIgnore
     protected ScelExpr resolvedFilters;
@@ -216,6 +219,18 @@ public class QueryOptions extends QueryOptionsBase {
 
     public void setJoins(String joins) {
         this.joins = joins;
+    }
+
+    public boolean isDistinct() {
+        return null != distinct && distinct;
+    }
+
+    public Boolean getDistinct() {
+        return distinct;
+    }
+
+    public void setDistinct(Boolean distinct) {
+        this.distinct = distinct;
     }
 
     public Map<String, Object> getQueryParams() {

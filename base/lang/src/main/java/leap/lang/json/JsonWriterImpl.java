@@ -435,7 +435,7 @@ public class JsonWriterImpl implements JsonWriter {
             int i = 0;
             while (array.hasNext()) {
                 Object item = array.next();
-                if(null != item && null != beanFilter && beanFilter.test(item)) {
+                if (null != item && null != beanFilter && beanFilter.test(item)) {
                     continue;
                 }
                 if (i > 0) {
@@ -453,10 +453,10 @@ public class JsonWriterImpl implements JsonWriter {
         startArray();
         if (null != array) {
             int len = array.length;
-            int j=0;
+            int j   = 0;
             for (int i = 0; i < len; i++) {
                 Object item = array[i];
-                if(null != item && null != beanFilter && beanFilter.test(item)) {
+                if (null != item && null != beanFilter && beanFilter.test(item)) {
                     continue;
                 }
                 if (j > 0) {
@@ -478,10 +478,10 @@ public class JsonWriterImpl implements JsonWriter {
                 throw new IllegalStateException("The given object is not an array");
             }
             int len = Array.getLength(array);
-            int j=0;
+            int j   = 0;
             for (int i = 0; i < len; i++) {
                 Object item = Array.get(array, i);
-                if(null != item && null != beanFilter && beanFilter.test(item)) {
+                if (null != item && null != beanFilter && beanFilter.test(item)) {
                     continue;
                 }
                 if (j > 0) {
@@ -887,7 +887,7 @@ public class JsonWriterImpl implements JsonWriter {
                     continue;
                 }
                 if (val != null) {
-                    if(null != beanFilter && beanFilter.test(val)) {
+                    if (null != beanFilter && beanFilter.test(val)) {
                         continue;
                     }
 
@@ -965,7 +965,7 @@ public class JsonWriterImpl implements JsonWriter {
             JsonSetting jb         = bean.getClass().getAnnotation(JsonSetting.class);
             boolean     ignoreNull = (null != jb && jb.ignoreNull().isPresent()) ? jb.ignoreNull().getValue() : this.isIgnoreNull();
 
-            if(bean instanceof PreSerializable) {
+            if (bean instanceof PreSerializable) {
                 ((PreSerializable) bean).preSerialize();
             }
 
@@ -974,15 +974,23 @@ public class JsonWriterImpl implements JsonWriter {
                     continue;
                 }
 
-                if (!prop.isReadable() || !prop.isField()) {
+                if (!prop.isReadable()) {
                     continue;
+                }
+
+                JsonName named = null;
+                if (!prop.isField()) {
+                    named = prop.getAnnotation(JsonName.class);
+                    if (null == named) {
+                        continue;
+                    }
                 }
 
                 if (declaredOnly && !prop.getField().getDeclaringClass().equals(bean.getClass())) {
                     continue;
                 }
 
-                if(null != propertyFilter && propertyFilter.test(prop)) {
+                if (null != propertyFilter && propertyFilter.test(prop)) {
                     continue;
                 }
 
@@ -991,7 +999,9 @@ public class JsonWriterImpl implements JsonWriter {
                 if (null != jsonField || !prop.isAnnotationPresent(JsonIgnore.class)) {
                     String propName = prop.getName();
 
-                    JsonName named = prop.getAnnotation(JsonName.class);
+                    if (null == named) {
+                        named = prop.getAnnotation(JsonName.class);
+                    }
 
                     if (null != named) {
                         propName = named.value();
@@ -1013,11 +1023,11 @@ public class JsonWriterImpl implements JsonWriter {
                         continue;
                     }
 
-                    if(isIgnoreEmptyArray() && isEmptyArray(propValue)) {
+                    if (isIgnoreEmptyArray() && isEmptyArray(propValue)) {
                         continue;
                     }
 
-                    if(null != propValue && null != beanFilter && beanFilter.test(propValue)) {
+                    if (null != propValue && null != beanFilter && beanFilter.test(propValue)) {
                         continue;
                     }
 
@@ -1123,7 +1133,7 @@ public class JsonWriterImpl implements JsonWriter {
             return ((Object[]) v).length == 0;
         }
 
-        if(v instanceof Collection) {
+        if (v instanceof Collection) {
             return ((Collection) v).size() == 0;
         }
 

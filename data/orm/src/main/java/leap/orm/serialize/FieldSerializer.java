@@ -17,8 +17,8 @@ package leap.orm.serialize;
 
 import leap.lang.convert.Converts;
 import leap.orm.mapping.FieldMapping;
-
 import java.lang.reflect.Type;
+import java.util.Objects;
 
 public interface FieldSerializer {
 
@@ -40,5 +40,10 @@ public interface FieldSerializer {
      */
     default Object deserialize(FieldMapping fm, Object encoded, Class<?> type, Type genericType) {
         return Converts.convert(deserialize(fm, encoded), type, genericType);
+    }
+
+    default boolean matches(FieldMapping fm, Object value, Object encoded) {
+        Object encodedValue = trySerialize(fm, value);
+        return Objects.equals(encoded, encodedValue);
     }
 }

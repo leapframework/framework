@@ -17,8 +17,9 @@ package leap.lang.el;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-
+import leap.lang.Arrays2;
 import leap.lang.reflect.ReflectMethod;
+import leap.lang.reflect.ReflectParameter;
 
 public class ElStaticMethod extends ElInstanceMethod implements ElFunction,ElMethod {
 
@@ -35,11 +36,20 @@ public class ElStaticMethod extends ElInstanceMethod implements ElFunction,ElMet
 
 	@Override
     public Object invoke(ElEvalContext context, Object instance, Object[] args) throws Throwable {
-	    return m.invokeStatic(args);
+	    return invokeStatic(context, args);
     }
 
 	@Override
     public Object invoke(ElEvalContext context, Object[] args) throws Throwable {
+		return invokeStatic(context, args);
+	}
+
+	protected Object invokeStatic(ElEvalContext context, Object[] args) {
+		ReflectParameter[] parameters = m.getParameters();
+
+		if (parameters.length > 0 && parameters[0].getType().equals(ElEvalContext.class)) {
+			return m.invokeStatic(Arrays2.concat(new Object[]{context}, args));
+		}
 		return m.invokeStatic(args);
 	}
 }

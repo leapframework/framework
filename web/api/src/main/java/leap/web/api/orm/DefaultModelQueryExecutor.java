@@ -252,21 +252,21 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
     }
 
     @Override
-    public QueryListResult queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback) {
-        return queryList(options, filters, callback, filterByParams);
+    public QueryListResult queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback, Map<String, String> headers) {
+        return queryList(options, filters, callback, filterByParams, headers);
     }
 
     @Override
-    public QueryListResult queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback, boolean filterByParams) {
+    public QueryListResult queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback, boolean filterByParams, Map<String, String> headers) {
         //todo: review query remote entity.
         if (remoteRest) {
             RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), em);
 
             RestQueryListResult result;
             if (filterByParams) {
-                result = restResource.queryList(SimpleRecord.class, options, filters);
+                result = restResource.queryList(SimpleRecord.class, options, filters, headers);
             } else {
-                result = restResource.queryList(options);
+                result = restResource.queryList(options, headers);
             }
 
             return new QueryListResult(result.getList(), result.getCount());
@@ -368,6 +368,10 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
             if (callback != null) {
                 callback.accept(query);
+            }
+
+            if (options.isDistinct()) {
+                query.distinct();
             }
 
             final QueryOptions finalOptions = options;
@@ -1428,7 +1432,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                     select.add(item.function() + "(" + query.alias() + "." + item.name() + ") as " + item.alias());
                 }
             } else {
-                select.add(expr + " as " + item.name());
+                select.add(expr + " as " + (Strings.isEmpty(item.alias()) ? item.name() : item.alias()));
             }
         }
 
@@ -1604,15 +1608,19 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                                 continue;
                             }
 
+                            String envExpr = resolveEnvExpr(value);
+                            boolean isEnv = null != envExpr;
+                            if (isEnv) {
+                                value = envExpr;
+                            }
                             if (op == ScelToken.IN || op == ScelToken.NOT_IN) {
-                                applyFieldFilterIn(expr, alias, modelAndProp.field, nodes[i].values(), sqlOperator);
-                            } else {
-                                String envExpr = resolveEnvExpr(value);
-                                boolean isEnv = null != envExpr;
-                                if (isEnv) {
-                                    value = envExpr;
+                                if (!isEnv) {
+                                    applyFieldFilterIn(expr, alias, modelAndProp.field, nodes[i].values(), sqlOperator);
+                                    continue;
                                 }
-
+                                value = "#{" + value + "}";
+                                applyFieldFilterOrArg(expr, alias, modelAndProp.field, sqlOperator, value, null);
+                            } else {
                                 if (Strings.equalsIgnoreCase(sqlOperator, ScelToken.LIKE.name())) {
                                     if (op == ScelToken.SW) {
                                         value = splicingValueOrExpr(isEnv, "%", value);
@@ -1757,7 +1765,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
     }
 
     protected void applyFieldFilterIn(WhereBuilder.Expr expr, String alias, FieldMapping fm, List<ScelNode> values, String sqlOperator) {
-        final Class<?> type = ((FieldMapping) fm).getJavaType();
+        final Class<?> type = fm.getJavaType();
 
         Object[] args = new Object[values.size()];
         for (int i = 0; i < args.length; i++) {

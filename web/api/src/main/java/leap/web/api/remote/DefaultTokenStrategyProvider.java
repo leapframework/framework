@@ -16,6 +16,7 @@
 
 package leap.web.api.remote;
 
+import leap.core.RequestContext;
 import leap.core.security.Authentication;
 import leap.lang.http.HTTP;
 import leap.lang.http.client.HttpRequest;
@@ -25,9 +26,7 @@ import leap.oauth2.webapp.code.DefaultCodeVerifier;
 import leap.oauth2.webapp.token.TokenInfo;
 import leap.oauth2.webapp.token.at.AccessToken;
 import leap.oauth2.webapp.token.at.SimpleAccessToken;
-import leap.web.Request;
 import net.jodah.expiringmap.ExpiringMap;
-
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
@@ -97,12 +96,12 @@ public class DefaultTokenStrategyProvider extends DefaultCodeVerifier implements
 
         @Override
         public Token getToken() {
-            final Request request = Request.tryGetCurrent();
-            if (null == request) {
+            final RequestContext rc = RequestContext.tryGetCurrent();
+            if (null == rc) {
                 return appOnlyTokenStrategy.getToken();
             }
 
-            final Authentication authc = request.getAuthentication();
+            final Authentication authc = rc.getAuthentication();
             if (null == authc || !(authc.getCredentials() instanceof leap.oauth2.webapp.token.Token)) {
                 return appOnlyTokenStrategy.getToken();
             }

@@ -32,7 +32,9 @@ import org.springframework.boot.env.YamlPropertySourceLoader;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.EnumerablePropertySource;
+import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySource;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -45,20 +47,58 @@ public class SpringEnvPostProcessor implements EnvironmentPostProcessor {
 
     private static final Log log = LogFactory.get(SpringEnvPostProcessor.class);
 
+    private static final String   CON_FILE_PROP             = "conf-file";
+    private static final String[] CONFIG_PATHS              = new String[]{"config.yml", "application.yml"};
+    private static final String   SYSTEM_SOURCE             = "systemProperties";
+    private static final String   ENVIRONMENT_SOURCE        = "systemEnvironment";
+    private static final String   APPLICATION_SOURCE_PREFIX = "applicationConfig:";
+    private static final String   APPLICATION_CONFIG_SOURCE = "applicationConfigurationProperties";
+    private static final String   EXTERNAL_SOURCE           = "external-config";
+
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment env, SpringApplication app) {
+        addExternalConfigSource(env);
         addMetaPropertySources(env);
 
         log.debug("Add leap property source");
         env.getPropertySources().addLast(new SpringPropertySource("leap"));
     }
 
-    private void addMetaPropertySources(ConfigurableEnvironment env) {
+    protected void addMetaPropertySources(ConfigurableEnvironment env) {
         List<Resource> resources = scanConfigurations(null, "classpath*:META-INF/");
         if (resources.isEmpty()) {
             return;
         }
         addPropertySources(env, resources);
+    }
+
+    protected void addExternalConfigSource(ConfigurableEnvironment env) {
+        final Resource file;
+
+        final String path = System.getProperty(CON_FILE_PROP);
+        if (!StringUtils.isEmpty(path)) {
+            try {
+                file = Resources.getResource(path);
+            } catch (Exception e) {
+                throw new IllegalStateException("Can't get config file '" + path + "', " + e.getMessage(), e);
+            }
+
+            if (null == file || !file.exists()) {
+                throw new IllegalStateException("The config file '" + path + "' must be exists");
+            }
+
+            log.info("Use specified config file '{}'", file);
+        } else {
+            file = detectConfigFile();
+            if (null != file) {
+                log.info("Use detected config file '{}'", file);
+            }
+        }
+
+        if (null != file && file.exists()) {
+            PropertySource ps = loadPropertySource(new YamlPropertySourceLoader(), file, EXTERNAL_SOURCE);
+            env.getPropertySources().addAfter(SYSTEM_SOURCE, ps);
+        }
     }
 
     private List<Resource> scanConfigurations(Resource root, String prefix) {
@@ -111,22 +151,7 @@ public class SpringEnvPostProcessor implements EnvironmentPostProcessor {
             }
         }
 
-        PropertySource propertySource;
-        Method         load = Reflection.getMethod(loader.getClass(), "load");
-        try {
-            if (SpringBootUtils.is1x()) {
-                propertySource = (PropertySource) load.invoke(loader, resource.getDescription(), new SpringResource(resource), null);
-            } else {
-                List<PropertySource> list = (List<PropertySource>) load.invoke(loader, resource.getDescription(), new SpringResource(resource));
-                if(null != list && list.size() > 1) {
-                    log.error("Load multi {} property sources, must be zero or one", list.size());
-                }
-                propertySource = null == list || list.isEmpty() ? null : list.get(0);
-            }
-        } catch (Exception e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
-
+        PropertySource propertySource = loadPropertySource(loader, resource, resource.getDescription());
         if (null == propertySource) {
             return;
         }
@@ -142,5 +167,45 @@ public class SpringEnvPostProcessor implements EnvironmentPostProcessor {
         } else {
             env.getPropertySources().addLast(propertySource);
         }
+    }
+
+    protected PropertySource loadPropertySource(PropertySourceLoader loader, Resource resource, String name) {
+        final Method load = Reflection.getMethod(loader.getClass(), "load");
+        try {
+            if (SpringBootUtils.is1x()) {
+                return (PropertySource) load.invoke(loader, resource.getDescription(), new SpringResource(resource), null);
+            } else {
+                List<PropertySource> list = (List<PropertySource>) load.invoke(loader, name, new SpringResource(resource));
+                if (null != list && list.size() > 1) {
+                    log.error("Load multi {} property sources, must be zero or one", list.size());
+                }
+                return null == list || list.isEmpty() ? null : list.get(0);
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    protected Resource detectConfigFile() {
+        for (String path : CONFIG_PATHS) {
+            try {
+                final Resource file = Resources.getResource("file:" + path);
+                if (null != file && file.exists()) {
+                    return file;
+                }
+            } catch (Exception e) {
+                log.error("Error detect config file '" + path + "'", e);
+            }
+        }
+        return null;
+    }
+
+    protected String findApplicationConfig(MutablePropertySources sources) {
+        for (PropertySource source : sources) {
+            if (source.getName().startsWith(APPLICATION_SOURCE_PREFIX) || source.getName().equals(APPLICATION_CONFIG_SOURCE)) {
+                return source.getName();
+            }
+        }
+        return null;
     }
 }

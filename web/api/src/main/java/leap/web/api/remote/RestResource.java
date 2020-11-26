@@ -84,7 +84,14 @@ public interface RestResource {
      * Query the records of model.
      */
     default RestQueryListResult<Record> queryList(QueryOptions options) {
-        RestQueryListResult<Map> result = queryList(Map.class, options, null);
+        return queryList(options, null);
+    }
+
+    /**
+     * Query the records of model.
+     */
+    default RestQueryListResult<Record> queryList(QueryOptions options, Map<String, String> headers) {
+        RestQueryListResult<Map> result = queryList(Map.class, options, null, headers);
 
         Object records =
                 result.getList().stream().map(m -> new SimpleRecord(m)).collect(Collectors.toList());
@@ -96,13 +103,17 @@ public interface RestResource {
      * Query the records of model.
      */
     default <T> RestQueryListResult<T> queryList(Class<T> resultElementClass, QueryOptions options) {
-        return queryList(resultElementClass, options, null);
+        return queryList(resultElementClass, options, null, null);
+    }
+
+    default <T> RestQueryListResult<T> queryList(Class<T> resultElementClass, QueryOptions options, Map<String, Object> filters) {
+        return queryList(resultElementClass, options, filters, null);
     }
 
     /**
      * Query list of resources.
      */
-    <T> RestQueryListResult<T> queryList(Class<T> resultElementClass, QueryOptions options, Map<String, Object> filters);
+    <T> RestQueryListResult<T> queryList(Class<T> resultElementClass, QueryOptions options, Map<String, Object> filters, Map<String, String> headers);
 
     /**
      * Query the records of relation.

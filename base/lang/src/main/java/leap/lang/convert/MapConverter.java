@@ -15,16 +15,16 @@
  */
 package leap.lang.convert;
 
-import java.lang.reflect.Type;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import leap.lang.NamedWithSetter;
 import leap.lang.Out;
 import leap.lang.Strings;
 import leap.lang.Types;
 import leap.lang.reflect.Reflection;
+
+import java.lang.reflect.Type;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 @SuppressWarnings("rawtypes")
 public class MapConverter extends AbstractConverter<Map> {
@@ -32,49 +32,52 @@ public class MapConverter extends AbstractConverter<Map> {
     @Override
     @SuppressWarnings("unchecked")
     public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable {
-		if(value instanceof Map){
-			Map map = (Map)value;
-			
-			if(null == genericType){
-				out.set(value);
-				return true;
-			}
+        if (value instanceof Map) {
+            Map map = (Map) value;
 
-			out.set(doConvert(context, map, targetType, genericType));
-			return true;
-		}
-		return false;
+            if (null == genericType) {
+                out.set(value);
+                return true;
+            }
+
+            out.set(doConvert(context, map, targetType, genericType));
+            return true;
+        }
+        return false;
     }
-    
-    protected static Map createMap(Class<?> mapType){
-    	if(mapType.equals(Map.class)){
-    		return new LinkedHashMap();
-    	}
-    	return (Map)Reflection.newInstance(mapType);
+
+    protected static Map createMap(Class<?> mapType) {
+        if (mapType.equals(Map.class)) {
+            return new LinkedHashMap();
+        }
+        return (Map) Reflection.newInstance(mapType);
     }
 
     protected static Map doConvert(ConvertContext context, Map from, Class<?> targetType, Type genericType) {
         Type[] typeArguments = Types.getTypeArguments(genericType);
+        if (typeArguments.length == 0) {
+            typeArguments = Types.getTypeArguments(targetType.getGenericSuperclass());
+        }
 
         Class<?> keyType = Types.getActualType(typeArguments[0]);
         Class<?> valType = Types.getActualType(typeArguments[1]);
 
         Map to = createMap(targetType);
 
-        for(Object o : from.entrySet()){
-            Entry entry = (Entry)o;
+        for (Object o : from.entrySet()) {
+            Entry entry = (Entry) o;
 
-            Object key = Converts.convert(entry.getKey(),   keyType, typeArguments[0], context);
+            Object key = Converts.convert(entry.getKey(), keyType, typeArguments[0], context);
             Object val = Converts.convert(entry.getValue(), valType, typeArguments[1], context);
 
-            if(val instanceof NamedWithSetter && key instanceof String) {
+            if (val instanceof NamedWithSetter && key instanceof String) {
                 String name = ((NamedWithSetter) val).getName();
-                if(Strings.isEmpty(name)) {
-                    ((NamedWithSetter) val).setName((String)key);
+                if (Strings.isEmpty(name)) {
+                    ((NamedWithSetter) val).setName((String) key);
                 }
             }
 
-            to.put(key,val);
+            to.put(key, val);
         }
 
         return to;
@@ -83,14 +86,14 @@ public class MapConverter extends AbstractConverter<Map> {
     public static final class ConcreteMapConverter extends AbstractConverter<Map> {
         @Override
         public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable {
-            if(value instanceof Map) {
-                Map from = (Map)value;
+            if (value instanceof Map) {
+                Map from = (Map) value;
                 Map to;
 
-                if(null == genericType) {
-                    to = (Map)Reflection.newInstance(targetType);
+                if (null == genericType) {
+                    to = (Map) Reflection.newInstance(targetType);
                     to.putAll(from);
-                }else {
+                } else {
                     to = doConvert(context, from, targetType, genericType);
                 }
                 out.set(to);
