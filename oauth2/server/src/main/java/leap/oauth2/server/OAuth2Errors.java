@@ -67,6 +67,11 @@ public class OAuth2Errors {
     public static final String ERROR_INVALID_SCOPE_KEY             = "oauth2.as.invalid_scope";
 
     public static void response(Response response, OAuth2Error error) {
+        if (response.isHandled() || response.isCommitted()){
+            log.error("response has handled, ignore response error: {error: \"{}\", error_code: \"{}\", referral: \"{}\", error_description:\"{}\"}",
+                    error.getStatus(), error.getError(), error.getErrorCode(), error.getReferral(), error.getErrorDescription());
+            return;
+        }
         response.setStatus(error.getStatus());
         response.setContentType(ContentTypes.APPLICATION_JSON_UTF8);
         log.error("oauth2 error response {}: {error: \"{}\", error_code: \"{}\", referral: \"{}\", error_description:\"{}\"}",
@@ -82,6 +87,7 @@ public class OAuth2Errors {
             error.getProperties().forEach(w::propertyOptional);
         }
         w.endObject();
+        response.markHandled();
     }
 
     public static MessageKey messageKey(Locale locale, String key, Object... args) {
