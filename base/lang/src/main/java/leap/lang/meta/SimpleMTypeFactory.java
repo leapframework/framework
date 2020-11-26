@@ -135,8 +135,8 @@ public class SimpleMTypeFactory extends AbstractMTypeFactory implements MTypeFac
         Type keyType = types[0];
         Type valType = types[1];
 
-        MType keyMType = getMType(context, declaringType, Types.getActualType(keyType), keyType, root);
-        MType valMType = getMType(context, declaringType, Types.getActualType(valType), valType, root);
+        MType keyMType = root.getMType(declaringType, Types.getActualType(keyType), keyType, context);
+        MType valMType = root.getMType(declaringType, Types.getActualType(valType), valType, context);
 
         return new MDictionaryType(keyMType, valMType);
     }
