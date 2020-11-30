@@ -17,8 +17,8 @@ package app;
 
 import app.beans.*;
 import leap.core.variable.Variable;
-import leap.spring.boot.condition.ConditionalOnMaxBootVersion;
-import leap.spring.boot.condition.ConditionalOnMinBootVersion;
+import leap.spring.boot.condition.ConditionalOnBootVersionLt;
+import leap.spring.boot.condition.ConditionalOnBootVersionGe;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -48,20 +48,20 @@ public class AutoConfiguration {
 
     @Bean
     @Primary
-    @ConditionalOnMaxBootVersion("1.6")
+    @ConditionalOnBootVersionLt("1.6")
     public TBean bean1() {
         return new TBeanImpl1();
     }
 
     @Bean
     @Primary
-    @ConditionalOnMinBootVersion("1.6")
+    @ConditionalOnBootVersionGe("1.6")
     public TBean bean2() {
         return new TBeanImpl1();
     }
 
     @Bean
-    @ConditionalOnMinBootVersion("1.5")
+    @ConditionalOnBootVersionGe("1.5")
     public TBeanImpl2 beanImpl2() {
         return new TBeanImpl2();
     }

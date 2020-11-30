@@ -22,11 +22,11 @@ import org.springframework.boot.autoconfigure.condition.SpringBootCondition;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 
-public class OnMaxBootVersionCondition extends SpringBootCondition {
+public class OnBootVersionLtCondition extends SpringBootCondition {
 
     @Override
     public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
-        final String max     = (String) metadata.getAllAnnotationAttributes(ConditionalOnMaxBootVersion.class.getName()).getFirst("value");
+        final String max     = (String) metadata.getAllAnnotationAttributes(ConditionalOnBootVersionLt.class.getName()).getFirst("value");
         final String ver = SpringBootVersion.getVersion();
 
         if (ver.compareTo(max) < 0) {

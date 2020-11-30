@@ -22,11 +22,11 @@ import org.springframework.boot.autoconfigure.condition.SpringBootCondition;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 
-public class OnMinBootVersionCondition extends SpringBootCondition {
+public class OnBootVersionGeCondition extends SpringBootCondition {
 
     @Override
     public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
-        final String min = (String) metadata.getAllAnnotationAttributes(ConditionalOnMinBootVersion.class.getName()).getFirst("value");
+        final String min = (String) metadata.getAllAnnotationAttributes(ConditionalOnBootVersionGe.class.getName()).getFirst("value");
         final String ver = SpringBootVersion.getVersion();
 
         if (min.compareTo(ver) <= 0) {

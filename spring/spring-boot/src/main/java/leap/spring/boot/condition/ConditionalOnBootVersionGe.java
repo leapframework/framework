@@ -23,8 +23,8 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE, ElementType.METHOD })
 @Documented
-@Conditional(OnMinBootVersionCondition.class)
-public @interface ConditionalOnMinBootVersion {
+@Conditional(OnBootVersionGeCondition.class)
+public @interface ConditionalOnBootVersionGe {
 
     String value();
 
