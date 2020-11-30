@@ -15,12 +15,13 @@
  */
 package app;
 
-import app.beans.HelloBean;
-import app.beans.HelloVariable;
-import app.beans.SpringBean;
+import app.beans.*;
 import leap.core.variable.Variable;
+import leap.spring.boot.condition.ConditionalOnBootVersionLt;
+import leap.spring.boot.condition.ConditionalOnBootVersionGe;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 @Configuration
 public class AutoConfiguration {
@@ -43,5 +44,25 @@ public class AutoConfiguration {
     @Bean
     public SpringBean springBean() {
         return new SpringBean();
+    }
+
+    @Bean
+    @Primary
+    @ConditionalOnBootVersionLt("1.6")
+    public TBean bean1() {
+        return new TBeanImpl1();
+    }
+
+    @Bean
+    @Primary
+    @ConditionalOnBootVersionGe("1.6")
+    public TBean bean2() {
+        return new TBeanImpl1();
+    }
+
+    @Bean
+    @ConditionalOnBootVersionGe("1.5")
+    public TBeanImpl2 beanImpl2() {
+        return new TBeanImpl2();
     }
 }
