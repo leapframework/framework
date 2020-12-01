@@ -138,6 +138,14 @@ public abstract class Dao implements JdbcExecutor {
     public abstract Errors validate(EntityMapping em, Object entity, Iterable<String> fields);
 
     /**
+     * Validates the given update id, entity object and returns the {@link Errors} contains empty or validation errors.
+     *
+     * <p>
+     * The given entity object can be a pojo, a {@link Entity} object or a {@link Map} contains entity's attributes.
+     */
+    public abstract Errors validate(EntityMapping em, Object id, Object entity, Iterable<String> fields);
+
+    /**
      * Validates the given entity object and returns the {@link Errors} contains empty or validation errors.
      *
      * <p>
@@ -160,6 +168,19 @@ public abstract class Dao implements JdbcExecutor {
      * @param maxErrors 0 means validates all errors, large than 0 means it will stop validating when the error's size reach the given maxErrors.
      */
     public abstract Errors validate(EntityMapping em, Object entity, int maxErrors, Iterable<String> fields);
+
+    /**
+     * Validates the given entity object and returns the {@link Errors} contains empty or validation errors.
+     *
+     * <p>
+     * The given entity object can be a pojo, a {@link Entity} object or a {@link Map} contains entity's attributes.
+     *
+     * @param em        {@link EntityMapping} mapping to the given entity object.
+     * @param id        the update id
+     * @param entity    the entity object to be validated.
+     * @param maxErrors 0 means validates all errors, large than 0 means it will stop validating when the error's size reach the given maxErrors.
+     */
+    public abstract Errors validate(EntityMapping em, Object id, Object entity, int maxErrors, Iterable<String> fields);
 
     //----------------------------commands------------------------------
 

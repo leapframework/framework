@@ -43,7 +43,7 @@ public abstract class EntityWrapper implements EntityBase, Params {
      */
     @SuppressWarnings("rawtypes")
     public static EntityWrapper wrap(EntityMapping em, Object entity) {
-        return wrap(null, em, entity);
+        return wrap(null, em, null, entity);
     }
 
     /**
@@ -54,36 +54,49 @@ public abstract class EntityWrapper implements EntityBase, Params {
      */
     @SuppressWarnings("rawtypes")
     public static EntityWrapper wrap(OrmContext context, EntityMapping em, Object entity) {
+        return wrap(context, em, null, entity);
+    }
+
+    /**
+     * Wraps the given entity object to a {@link EntityWrapper} object.
+     *
+     * <p>
+     * The supported type must be a {@link Map}, a {@link DynaBean} , a {@link leap.lang.params.Params} or a pojo bean.
+     */
+    @SuppressWarnings("rawtypes")
+    public static EntityWrapper wrap(OrmContext context, EntityMapping em, Object id, Object entity) {
         Args.notNull(em, "entity mapping");
         Args.notNull(entity, "entity");
 
         if (entity instanceof Map) {
-            return new MapWrapper(em, (Map) entity);
+            return new MapWrapper(em, id, (Map) entity);
         }
 
         if (entity instanceof Model) {
             if (null == context) {
                 throw new IllegalStateException("Orm context must be specified for Model class");
             }
-            return new ModelWrapper(context, em, ((Model) entity));
+            return new ModelWrapper(context, em, id, ((Model) entity));
         }
 
         if (entity instanceof DynaBean) {
-            return new DynaWrapper(em, ((DynaBean) entity));
+            return new DynaWrapper(em, id, ((DynaBean) entity));
         }
 
         if (entity instanceof Params) {
-            return new ParamsWrapper(em, (Params) entity);
+            return new ParamsWrapper(em, id, (Params) entity);
         }
 
-        return new BeanWrapper(em, entity);
+        return new BeanWrapper(em, id, entity);
     }
 
     protected final EntityMapping em;
+    protected final Object        id;
     protected final Object        raw;
 
-    protected EntityWrapper(EntityMapping em, Object raw) {
+    protected EntityWrapper(EntityMapping em, Object id, Object raw) {
         this.em = em;
+        this.id = id;
         this.raw = raw;
     }
 
@@ -98,6 +111,17 @@ public abstract class EntityWrapper implements EntityBase, Params {
             m.forEach(this::set);
         }
         return this;
+    }
+
+    public final Object id() {
+        return id;
+    }
+
+    public final Object tryGetIdByName(String name) {
+        if (id instanceof Map) {
+            return ((Map) id).get(name);
+        }
+        return id;
     }
 
     /**
@@ -162,8 +186,8 @@ public abstract class EntityWrapper implements EntityBase, Params {
 
         private final Map map;
 
-        public MapWrapper(EntityMapping mapping, Map map) {
-            super(mapping, map);
+        public MapWrapper(EntityMapping mapping, Object id, Map map) {
+            super(mapping, id, map);
             Args.notNull(map, "fields");
             this.map = map;
         }
@@ -205,8 +229,8 @@ public abstract class EntityWrapper implements EntityBase, Params {
 
         private final Params params;
 
-        public ParamsWrapper(EntityMapping em, Params params) {
-            super(em, params);
+        public ParamsWrapper(EntityMapping em, Object id, Params params) {
+            super(em, id, params);
             this.params = params;
         }
 
@@ -251,8 +275,8 @@ public abstract class EntityWrapper implements EntityBase, Params {
 
         private final DynaBean bean;
 
-        public DynaWrapper(EntityMapping em, DynaBean bean) {
-            super(em, bean);
+        public DynaWrapper(EntityMapping em, Object id, DynaBean bean) {
+            super(em, id, bean);
             this.bean = bean;
         }
 
@@ -292,8 +316,8 @@ public abstract class EntityWrapper implements EntityBase, Params {
 
         private final Model model;
 
-        public ModelWrapper(OrmContext context, EntityMapping em, Model model) {
-            super(em, model);
+        public ModelWrapper(OrmContext context, EntityMapping em, Object id, Model model) {
+            super(em, id, model);
             this.model = model;
             this.model.init(context, em);
         }
@@ -337,8 +361,8 @@ public abstract class EntityWrapper implements EntityBase, Params {
         private Set<String> fieldNames;
         private Map         map;
 
-        protected BeanWrapper(EntityMapping mapping, Object bean) {
-            super(mapping, bean);
+        protected BeanWrapper(EntityMapping mapping, Object id, Object bean) {
+            super(mapping, id, bean);
             this.beanType = BeanType.of(bean.getClass());
         }
 

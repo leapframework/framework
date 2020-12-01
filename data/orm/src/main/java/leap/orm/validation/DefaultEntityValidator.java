@@ -19,11 +19,17 @@ import leap.core.AppConfig;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.core.validation.*;
+import leap.lang.Arrays2;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
+import leap.orm.mapping.JoinFieldMapping;
+import leap.orm.mapping.RelationMapping;
 import leap.orm.value.EntityWrapper;
+import java.util.Objects;
 
 public class DefaultEntityValidator implements EntityValidator {
+
+    public static final String ERROR_RELATION = "error_relation";
 
     protected @Inject @M AppConfig         appConfig;
     protected @Inject @M ValidationManager validationManager;
@@ -72,6 +78,15 @@ public class DefaultEntityValidator implements EntityValidator {
             return false;
         }
 
+        RelationMapping[] relations = em.getRelationMappings();
+        if (!Arrays2.isEmpty(relations)) {
+            for (RelationMapping relation : relations) {
+                if (!validateRelation(entity, validation, em, relation)) {
+                    return false;
+                }
+            }
+        }
+
         //validates entity
         EntityValidator[] validators = em.getValidators();
         if(validators.length > 0){
@@ -86,6 +101,35 @@ public class DefaultEntityValidator implements EntityValidator {
 
         if(entity instanceof Validatable){
             return ((Validatable) entity).validate(validation,maxErrors);
+        }
+
+        return true;
+    }
+
+    protected boolean validateRelation(EntityWrapper entity, Validation validation, EntityMapping em, RelationMapping relation) {
+        if (relation.isManyToOne() && em.getEntityName().equalsIgnoreCase(relation.getTargetEntityName())) {
+            JoinFieldMapping[] joinFields =  relation.getJoinFields();
+            boolean validate = true;
+            for (JoinFieldMapping joinField : joinFields) {
+                Object localValue     = entity.get(joinField.getLocalFieldName());
+                Object referenceValue = entity.get(joinField.getReferencedFieldName());
+                if (null == referenceValue && Arrays2.contains(em.getKeyFieldNames(), joinField.getReferencedFieldName())) {
+                   referenceValue = entity.tryGetIdByName(joinField.getReferencedFieldName());
+                }
+
+                if (null == localValue && null == referenceValue) {
+                    continue;
+                } else validate = !Objects.equals(localValue, referenceValue);
+
+                if (validate) {
+                    break;
+                }
+            }
+
+            if (!validate) {
+                validation.addError(ERROR_RELATION, "many-to-one relation '" + relation.getName() + "' cannot point to itself!");
+                return false;
+            }
         }
 
         return true;

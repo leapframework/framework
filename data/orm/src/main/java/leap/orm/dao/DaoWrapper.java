@@ -82,6 +82,11 @@ public abstract class DaoWrapper extends Dao {
     }
 
     @Override
+    public Errors validate(EntityMapping em, Object id, Object entity, Iterable<String> fields) {
+        return dao().validate(em, id, entity, fields);
+    }
+
+    @Override
     public Errors validate(EntityMapping em, Object entity, int maxErrors) {
         return dao().validate(em, entity, maxErrors);
     }
@@ -89,6 +94,11 @@ public abstract class DaoWrapper extends Dao {
     @Override
     public Errors validate(EntityMapping em, Object entity, int maxErrors, Iterable<String> fields) {
         return dao().validate(em, entity, maxErrors, fields);
+    }
+
+    @Override
+    public Errors validate(EntityMapping em, Object id, Object entity, int maxErrors, Iterable<String> fields) {
+        return dao().validate(em, id, entity, maxErrors, fields);
     }
 
     @Override

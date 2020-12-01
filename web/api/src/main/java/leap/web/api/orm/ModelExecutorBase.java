@@ -138,5 +138,9 @@ public abstract class ModelExecutorBase<C extends ModelExecutorContext> {
         public boolean isKey() {
             return null != key;
         }
+
+        public Object getIdOrKey() {
+            return isId() ? id : key;
+        }
     }
 }
