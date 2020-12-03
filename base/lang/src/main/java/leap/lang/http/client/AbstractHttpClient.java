@@ -45,6 +45,7 @@ public abstract class AbstractHttpClient implements HttpClient {
     }
 
     protected int     defaultConnectTimeout = 30 * 1000;
+    protected int     defaultReadTimeout    = 30 * 1000;
     protected Charset defaultCharset        = Charsets.UTF_8;
 
     /**
@@ -56,6 +57,14 @@ public abstract class AbstractHttpClient implements HttpClient {
 
     public void setDefaultConnectTimeout(int defaultConnectTimeout) {
         this.defaultConnectTimeout = defaultConnectTimeout;
+    }
+
+    public int getDefaultReadTimeout() {
+        return defaultReadTimeout;
+    }
+
+    public void setDefaultReadTimeout(int defaultReadTimeout) {
+        this.defaultReadTimeout = defaultReadTimeout;
     }
 
     public Charset getDefaultCharset() {
