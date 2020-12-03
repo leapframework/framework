@@ -273,7 +273,7 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
             tryHandleSpecialValue(entry, p);
         }
 
-        Errors errors = dao.validate(em, properties, properties.keySet());
+        Errors errors = dao.validate(em, idOrFilters.getIdOrKey(), properties, properties.keySet());
         if (!errors.isEmpty()) {
             throw new ValidationException(errors);
         }
