@@ -88,6 +88,7 @@ public class ApacheHttpRequest implements HttpRequest {
 
     @Override
     public HttpRequest setCookie(String name, String value) {
+        addHeader("Cookie", name+"="+value);
         return this;
     }
 
