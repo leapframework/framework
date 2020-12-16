@@ -299,9 +299,6 @@ public class EntityMapping extends ExtensibleBase {
             if (null != dynamicAndMapping) {
                 EntityMapping mapping = dynamicAndMapping.mapping;
                 if (null == mapping) {
-                    DbTableBuilder ot = builder.getTable();
-                    DbTableBuilder nt = new DbTableBuilder(ot.getCatalog(), ot.getSchema(), ot.getName());
-                    builder.setTable(nt);
                     mapping = builder.build(dynamicAndMapping.dynamic);
                     dynamicAndMapping.mapping = mapping;
                 }

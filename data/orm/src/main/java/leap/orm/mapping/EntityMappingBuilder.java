@@ -82,6 +82,8 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
     protected List<UniqueKeyBuilder>        keys               = new ArrayList<>();
     protected EntityListenersBuilder        listeners          = new EntityListenersBuilder();
 
+    protected BuiltData builtData;
+
     public Class<?> getSourceClass() {
         return null != entityClass ? entityClass : modelClass;
     }
@@ -727,20 +729,20 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
 
     protected EntityMapping build(EntityMapping.Dynamic dynamic) {
         try {
-            final DbColumn embeddingColumn = null != this.embeddingColumn ? this.embeddingColumn.build() : null;
-
-            List<FieldMapping>    fields         = Builders.buildList(fieldMappings);
-            List<RelationMapping> relations      = Builders.buildList(relationMappings);
-            DbTable               table          = buildTable(fields, relations, embeddingColumn);
-            DbTable               secondaryTable = buildSecondaryTable(fields, relations);
-
+            BuiltData builtData = null;
+            if (null != dynamic) {
+                builtData = this.builtData;
+            }
+            if (null == builtData) {
+                builtData = buildData();
+            }
             EntityMapping em =
                     new EntityMapping(this,
                             entityName, wideEntityName, dynamicTableName, entityClass, extendedEntityClass,
-                            table, secondaryTable, embeddingColumn, queryView, fields,
+                            builtData.getTable(), builtData.getSecondaryTable(), builtData.getEmbeddingColumn(), queryView, builtData.getFields(),
                             insertHandler, updateHandler, deleteHandler,
                             insertInterceptor, updateInterceptor, deleteInterceptor, findInterceptor,
-                            modelClass, validators, relations,
+                            modelClass, validators, builtData.getRelations(),
                             Builders.buildArray(relationProperties, new RelationProperty[0]),
                             autoCreateTable, queryConfig, queryFilterEnabled == null ? false : queryFilterEnabled, autoValidate,
                             dynamicEnabled, dynamic, logical, remote, remoteSettings, unionSettings,
@@ -754,6 +756,17 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
             log.error("Error create entity mapping '" + entityName, e);
             throw e;
         }
+    }
+
+    protected BuiltData buildData() {
+        final DbColumn        embeddingColumn = null != this.embeddingColumn ? this.embeddingColumn.build() : null;
+        List<FieldMapping>    fields          = Builders.buildList(fieldMappings);
+        List<RelationMapping> relations       = Builders.buildList(relationMappings);
+        DbTable               table           = buildTable(fields, relations, embeddingColumn);
+        DbTable               secondaryTable  = buildSecondaryTable(fields, relations);
+
+        this.builtData = new BuiltData(embeddingColumn, fields, relations, table, secondaryTable);
+        return this.builtData;
     }
 
     public DbSchemaObjectName getTableSchemaObjectName() {
@@ -828,5 +841,42 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
         secondaryTable.addForeignKey(fk);
 
         return secondaryTable.build();
+    }
+
+    protected static class BuiltData {
+
+        protected final DbColumn              embeddingColumn;
+        protected final List<FieldMapping>    fields;
+        protected final List<RelationMapping> relations;
+        protected final DbTable               table;
+        protected final DbTable               secondaryTable;
+
+        public BuiltData(DbColumn embeddingColumn, List<FieldMapping> fields, List<RelationMapping> relations, DbTable table, DbTable secondaryTable) {
+            this.embeddingColumn = embeddingColumn;
+            this.fields = fields;
+            this.relations = relations;
+            this.table = table;
+            this.secondaryTable = secondaryTable;
+        }
+
+        public DbColumn getEmbeddingColumn() {
+            return embeddingColumn;
+        }
+
+        public List<FieldMapping> getFields() {
+            return fields;
+        }
+
+        public List<RelationMapping> getRelations() {
+            return relations;
+        }
+
+        public DbTable getTable() {
+            return table;
+        }
+
+        public DbTable getSecondaryTable() {
+            return secondaryTable;
+        }
     }
 }
