@@ -7,6 +7,9 @@ import java.util.Map;
 public class FieldELFunction {
 
     public static boolean isChanged(ElEvalContext context, String field) {
+        if (!context.isVariableResolved(field)) {
+            return false;
+        }
         Object value  = context.resolveVariable(field);
         Object record = context.resolveVariable("$record");
         Object origin = null;
