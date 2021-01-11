@@ -23,13 +23,9 @@ import leap.lang.Args;
 import leap.lang.Arrays2;
 import leap.lang.Strings;
 import leap.lang.exception.NestedSQLException;
-import leap.lang.jdbc.ConnectionCallback;
-import leap.lang.jdbc.ConnectionCallbackWithResult;
-import leap.lang.jdbc.JDBC;
-import leap.lang.jdbc.JdbcTypes;
+import leap.lang.jdbc.*;
 import leap.lang.logging.Log;
 import leap.lang.time.StopWatch;
-
 import javax.sql.DataSource;
 import java.sql.*;
 
@@ -470,6 +466,7 @@ public class GenericDb extends DbBase {
                 ps = dialect.createPreparedStatement(connection, sql);
             }
 
+            boolean iTypes = false;
             for (int j = 0; j < batchArgs.length; j++) {
                 Object[] args = batchArgs[j];
 
@@ -478,6 +475,10 @@ public class GenericDb extends DbBase {
                         for (int i = 0; i < args.length; i++) {
                             Object arg  = args[i];
                             int    type = types[i];
+                            if (iTypes && null != arg) {
+                                dialect.setParameter(ps, i + 1, arg);
+                                continue;
+                            }
                             if(type == Types.NULL && null != arg) {
                                 types[i] = dialect.setParameter(ps, i + 1, arg);
                             }else {
@@ -485,6 +486,7 @@ public class GenericDb extends DbBase {
                             }
                         }
                     } else {
+                        iTypes = true;
                         types = new int[args.length];
                         for (int i = 0; i < args.length; i++) {
                             types[i] = dialect.setParameter(ps, i + 1, args[i]);
