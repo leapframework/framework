@@ -71,7 +71,7 @@ public interface OAuth2Params {
 	}
 	
 	default String getPassword() {
-		return getParameter(PASSWORD);
+		return getParameter(PASSWORD,false);
 	}
 	
 	default String getState() {
