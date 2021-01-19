@@ -188,7 +188,14 @@ public abstract class RequestBase extends RequestContext implements InputStreamS
 	 * @see HttpServletRequest#getParameter(String)
 	 * @param autoTrim Is parameter will be auto trim
 	 */
-	public abstract String getParameter(String name, boolean autoTrim);
+	public String getParameter(String name, boolean autoTrim){
+		String param = getServletRequest().getParameter(name);
+		if (autoTrim){
+			return param == null?null:param.trim();
+		}else {
+			return getParameter(name);
+		}
+	}
 	
 	/**
 	 * @see HttpServletRequest#getParameterValues(String)
@@ -273,7 +280,7 @@ public abstract class RequestBase extends RequestContext implements InputStreamS
 	/**
 	 * Returns <code>true</code> if current request is a pjax request.
 	 * 
-	 * @see https://github.com/defunkt/jquery-pjax
+	 * @see <a href="https://github.com/defunkt/jquery-pjax">https://github.com/defunkt/jquery-pjax</a>
 	 */
 	public abstract boolean isPjax();
 	
