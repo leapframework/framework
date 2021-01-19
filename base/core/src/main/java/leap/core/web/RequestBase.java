@@ -35,6 +35,7 @@ import leap.lang.http.HTTP;
 import leap.lang.http.HTTP.Method;
 import leap.lang.http.MimeType;
 import leap.lang.io.InputStreamSource;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * An {@link HttpServletRequest} wrapper class.
@@ -189,12 +190,7 @@ public abstract class RequestBase extends RequestContext implements InputStreamS
 	 * @param autoTrim Is parameter will be auto trim
 	 */
 	public String getParameter(String name, boolean autoTrim){
-		String param = getServletRequest().getParameter(name);
-		if (autoTrim){
-			return param == null?null:param.trim();
-		}else {
-			return getParameter(name);
-		}
+		throw new NotImplementedException();
 	}
 	
 	/**

@@ -15,7 +15,9 @@
  */
 package leap.oauth2.server;
 
+import jdk.nashorn.internal.ir.SplitReturn;
 import leap.lang.Strings;
+import leap.web.exception.NotImplementedException;
 
 /**
  * OAuth2.0 parameters.
@@ -132,5 +134,7 @@ public interface OAuth2Params {
 	
 	String getParameter(String name);
 
-	String getParameter(String name, boolean autoTrim);
+	default String getParameter(String name, boolean autoTrim){
+		throw new NotImplementedException();
+	};
 }
