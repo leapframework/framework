@@ -131,5 +131,6 @@ public interface OAuth2Params {
 	}
 	
 	String getParameter(String name);
-	
+
+	String getParameter(String name, boolean autoTrim);
 }

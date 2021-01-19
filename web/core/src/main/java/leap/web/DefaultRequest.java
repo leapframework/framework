@@ -462,11 +462,15 @@ public class DefaultRequest extends Request {
 
     @Override
     public String getParameter(String name) {
-        if (config.isAutoTrimParameters()) {
-            //Auto trim request parameters
+        return getParameter(name, config.isAutoTrimParameters());
+    }
+
+    @Override
+    public String getParameter(String name, boolean autoTrim) {
+        if (autoTrim){
             String s = req.getParameter(name);
             return null == s ? null : s.trim();
-        } else {
+        }else{
             return req.getParameter(name);
         }
     }

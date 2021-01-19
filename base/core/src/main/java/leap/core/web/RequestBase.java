@@ -183,6 +183,12 @@ public abstract class RequestBase extends RequestContext implements InputStreamS
 	 * @see HttpServletRequest#getParameter(String)
 	 */
 	public abstract String getParameter(String name);
+
+	/**
+	 * @see HttpServletRequest#getParameter(String)
+	 * @param autoTrim Is parameter will be auto trim
+	 */
+	public abstract String getParameter(String name, boolean autoTrim);
 	
 	/**
 	 * @see HttpServletRequest#getParameterValues(String)

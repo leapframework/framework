@@ -41,5 +41,9 @@ public class RequestOAuth2Params implements OAuth2Params {
     public String getParameter(String name) {
 	    return request.getParameter(name);
     }
-	
+
+	@Override
+	public String getParameter(String name, boolean autoTrim) {
+		return request.getParameter(name, autoTrim);
+	}
 }

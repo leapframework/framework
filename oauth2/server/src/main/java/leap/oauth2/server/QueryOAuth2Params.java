@@ -29,5 +29,14 @@ public class QueryOAuth2Params implements OAuth2Params {
     public String getParameter(String name) {
 	    return query.getParameter(name);
     }
-	
+
+	@Override
+	public String getParameter(String name, boolean autoTrim) {
+		if (autoTrim){
+			String p = getParameter(name);
+			return p == null?p:p.trim();
+		}else {
+			return getParameter(name);
+		}
+	}
 }
