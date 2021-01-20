@@ -28,6 +28,9 @@ public interface TokenStrategyProvider {
         if (type == TokenStrategy.Type.DEFAULT) {
             return getDefaultStrategy();
         }
+        if (type == TokenStrategy.Type.ORIGINAL) {
+            return getOriginalStrategy();
+        }
         if (type == TokenStrategy.Type.FORCE_WITH_APP) {
             return getForceWithAppStrategy();
         }
