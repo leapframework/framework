@@ -45,7 +45,6 @@ import leap.web.api.route.ApiRoute;
 import leap.web.api.spec.swagger.SwaggerConstants;
 import leap.web.multipart.MultipartFile;
 import leap.web.route.Route;
-
 import javax.servlet.http.Part;
 import java.io.File;
 import java.lang.reflect.Type;
@@ -260,15 +259,29 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
     }
 
     protected void preProcessPath(ApiMetadataContext context, ApiMetadataBuilder m, MApiPathBuilder p) {
+        ApiConfig c = context.getConfig();
 
         p.getOperations().forEach(op -> {
-
             //operation tag
             createOperationTags(context, m, op.getRoute(), p, op);
 
             //operation id
-            if(Strings.isEmpty(op.getId())) {
-                strategy.tryCreateOperationId(context.getConfig(), m, p, op);
+            String opId = op.getId();
+            if (c.isUniqueOperationId()) {
+                boolean isCreated = true;
+                if (Strings.isEmpty(opId)) {
+                    isCreated = strategy.tryCreateOperationId(c, m, p, op);
+                } else if (m.getOperationIds().contains(opId.toLowerCase())) {
+                    op.setId(null);
+                    isCreated = strategy.tryCreateOperationId(c, m, p, op);
+                } else {
+                    m.getOperationIds().add(opId.toLowerCase());
+                }
+                if (!isCreated) {
+                    log.warn("Invalid operation id in path: " + p.getPathTemplate() + ", please specify or check case");
+                }
+            } else if (Strings.isEmpty(opId)) {
+                strategy.tryCreateOperationId(c, m, p, op);
             }
         });
 

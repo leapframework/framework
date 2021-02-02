@@ -25,6 +25,8 @@ import leap.web.api.meta.model.MApiPathBuilder;
 
 public class DefaultApiMetadataStrategy implements ApiMetadataStrategy {
 
+    private static final String SIMPLE_NAME_PATTERN = "[^0-9a-zA-Z_]+";
+
     @Override
     public boolean tryCreateOperationId(ApiConfig c, ApiMetadataBuilder m, MApiPathBuilder p, MApiOperationBuilder op) {
         if(!c.isUniqueOperationId()) {
@@ -47,25 +49,29 @@ public class DefaultApiMetadataStrategy implements ApiMetadataStrategy {
             }
 
             //id = name + "with" + method
-            String id = name + "With" + Strings.upperFirst(method);
-            if (trySetUniqueOperationId(m, op, id)) {
-                return true;
+            if (!Strings.startsWithIgnoreCase(name, method)) {
+                String id = name + "With" + Strings.upperFirst(method);
+                if (trySetUniqueOperationId(m, op, id)) {
+                    return true;
+                }
             }
         }
 
         for(String tag : op.getTags()) {
-            if(!name.toLowerCase().contains(tag.toLowerCase())) {
-                //id = name + tag
-                String id = name + Strings.upperFirst(tag);
-
+            String tn = Strings.upperCamel(tag.replaceAll(SIMPLE_NAME_PATTERN, ""), '_');
+            if(!Strings.isEmpty(tn) && !name.toLowerCase().contains(tn.toLowerCase())) {
+                //id = name + "In" + tag
+                String id = name + "In" + Strings.upperFirst(tn);
                 if(trySetUniqueOperationId(m, op, id)) {
                     return true;
                 }
 
                 //id = id + "With" + method
-                id = id + "With" + Strings.upperFirst(method);
-                if(trySetUniqueOperationId(m, op, id)) {
-                    return true;
+                if (!Strings.startsWithIgnoreCase(id, method)) {
+                    id = id + "With" + Strings.upperFirst(method);
+                    if(trySetUniqueOperationId(m, op, id)) {
+                        return true;
+                    }
                 }
             }
         }
@@ -74,12 +80,12 @@ public class DefaultApiMetadataStrategy implements ApiMetadataStrategy {
     }
 
     protected boolean trySetUniqueOperationId(ApiMetadataBuilder m, MApiOperationBuilder op, String id) {
-        if(m.getOperationIds().contains(id)) {
+        String lowerId = Strings.lowerCase(id);
+        if(m.getOperationIds().contains(lowerId)) {
             return false;
         }
-
         op.setId(id);
-        m.getOperationIds().add(id);
+        m.getOperationIds().add(lowerId);
         return true;
     }
 
