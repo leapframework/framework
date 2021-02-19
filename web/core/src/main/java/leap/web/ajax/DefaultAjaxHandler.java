@@ -17,6 +17,7 @@ package leap.web.ajax;
 
 import leap.core.annotation.Inject;
 import leap.lang.Strings;
+import leap.lang.html.HTML;
 import leap.lang.http.MimeTypes;
 import leap.lang.json.JSON;
 import leap.lang.json.JsonWriter;
@@ -44,17 +45,18 @@ public class DefaultAjaxHandler implements AjaxHandler {
 		}
 		
 		response.setStatus(status);
-		
+		String errMsg = jsonConfig.isHtmlEscape() ? HTML.escape(message) : message;
+
 		final String errorCode = null != exception ? errorCodes.getErrorCode(exception.getClass()) : null;
 		if(null == errorCode) {
 			response.setContentType("text/plain;charset=utf-8");
-			if(!Strings.isEmpty(message)) {
-				response.getWriter().write(message);
+			if(!Strings.isEmpty(errMsg)) {
+				response.getWriter().write(errMsg);
 			}
 		}else{
 			String m = errorCodes.getErrorMessage(errorCode, exception, request.getMessageSource(), request.getLocale());
 			if(null == m){
-				m = message;
+				m = errMsg;
 			}
 			
 			try {
@@ -66,7 +68,7 @@ public class DefaultAjaxHandler implements AjaxHandler {
 	            	json.startObject()
 	            	    .property("code", errorCode)
 	            	    .separator()
-	            	    .property("msg", message)
+	            	    .property("msg", errMsg)
 	            	    .endObject();
 	            	
 	            });

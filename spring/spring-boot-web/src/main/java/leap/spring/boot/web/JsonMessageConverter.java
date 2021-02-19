@@ -29,7 +29,6 @@ import org.springframework.http.converter.AbstractHttpMessageConverter;
 import org.springframework.http.converter.GenericHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
-
 import java.io.*;
 import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
@@ -39,8 +38,15 @@ import java.util.*;
 
 public class JsonMessageConverter extends AbstractHttpMessageConverter implements GenericHttpMessageConverter {
 
+    protected Boolean htmlEscape;
+
     public JsonMessageConverter() {
         super(MediaType.APPLICATION_JSON);
+    }
+
+    public JsonMessageConverter(Boolean htmlEscape) {
+        super(MediaType.APPLICATION_JSON);
+        this.htmlEscape = htmlEscape;
     }
 
     @Override
@@ -215,7 +221,11 @@ public class JsonMessageConverter extends AbstractHttpMessageConverter implement
     protected void writeInternal(Object o, HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
         try (OutputStream os = outputMessage.getBody()) {
             try (OutputStreamWriter writer = new OutputStreamWriter(os, getCharset(outputMessage))) {
-                JsonWriter jsonWriter = JSON.writer(writer).create();
+                JsonWriterCreator creator = JSON.writer(writer);
+                if (null != htmlEscape) {
+                    creator.setHtmlEscape(htmlEscape);
+                }
+                JsonWriter jsonWriter = creator.create();
                 jsonWriter.value(o);
             }
         }

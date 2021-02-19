@@ -15,6 +15,7 @@ import leap.lang.json.JsonSettings;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.orm.mapping.EntityMapping;
+import leap.web.api.mvc.ApiErrorHandler;
 import leap.web.api.mvc.params.CountOptions;
 import leap.web.api.mvc.params.DeleteOptions;
 import leap.web.api.mvc.params.QueryOptions;
@@ -29,13 +30,15 @@ import java.util.Map;
 public class DefaultRestResource extends AbstractRestResource {
     private final Log log = LogFactory.get(DefaultRestResource.class);
 
-    protected final EntityMapping em;
-    protected final String        endpoint;
+    protected final EntityMapping   em;
+    protected final String          endpoint;
+    protected final ApiErrorHandler apiErrorHandler;
 
-    public DefaultRestResource(HttpClient httpClient, TokenStrategy tokenStrategy, EntityMapping em, String endpoint) {
+    public DefaultRestResource(HttpClient httpClient, TokenStrategy tokenStrategy, EntityMapping em, String endpoint, ApiErrorHandler apiErrorHandler) {
         super(httpClient, tokenStrategy);
         this.em = em;
         this.endpoint = endpoint;
+        this.apiErrorHandler = apiErrorHandler;
     }
 
     public String getEndpoint() {
@@ -156,7 +159,7 @@ public class DefaultRestResource extends AbstractRestResource {
                 out.accept(new RestQueryListResult<T>(list, count));
                 return;
             }
-            throw new RestResourceInvokeException(response);
+            throw new RestResourceInvokeException(response, apiErrorHandler);
         });
         if (out.isEmpty()) {
             return null;

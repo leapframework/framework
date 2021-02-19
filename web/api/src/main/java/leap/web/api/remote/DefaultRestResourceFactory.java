@@ -27,7 +27,7 @@ import leap.orm.mapping.EntityMapping;
 import leap.web.Request;
 import leap.web.api.remote.ds.RestDataSource;
 import leap.web.api.remote.ds.RestDatasourceManager;
-
+import leap.web.api.mvc.ApiErrorHandler;
 import javax.servlet.http.HttpServletRequest;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -45,6 +45,7 @@ public class DefaultRestResourceFactory implements RestResourceFactory {
     protected @Inject HttpClient            httpClient;
     protected @Inject TokenStrategyProvider tokenStrategyProvider;
     protected @Inject RestDatasourceManager dsm;
+    protected @Inject ApiErrorHandler       apiErrorHandler;
 
     @Override
     public RestResource createResource(Class<?> entityClass) {
@@ -93,7 +94,7 @@ public class DefaultRestResourceFactory implements RestResourceFactory {
 
     protected RestResource doCreateResource(OrmContext context, EntityMapping em, RestResourceInfo info) {
         final TokenStrategy tokenStrategy = tokenStrategyProvider.getDefaultStrategy();
-        return new DefaultRestResource(httpClient, tokenStrategy, em, info.getEndpoint());
+        return new DefaultRestResource(httpClient, tokenStrategy, em, info.getEndpoint(), apiErrorHandler);
     }
 
     private static String formatApiEndPoint(String apiEndPoint) {

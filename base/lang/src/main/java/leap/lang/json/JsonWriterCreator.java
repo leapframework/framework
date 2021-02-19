@@ -41,6 +41,8 @@ public interface JsonWriterCreator extends Creatable<JsonWriter>{
 	JsonWriterCreator setIgnoreFalse(boolean ignoreFalse);
 	
 	JsonWriterCreator setIgnoreEmptyString(boolean ignoreEmptyString);
+
+	JsonWriterCreator setHtmlEscape(boolean htmlEscape);
 	
 	JsonWriterCreator setIgnoreEmptyArray(boolean ignoreEmptyArray);
 	

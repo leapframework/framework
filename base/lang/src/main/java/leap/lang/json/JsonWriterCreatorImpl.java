@@ -71,6 +71,12 @@ class JsonWriterCreatorImpl implements JsonWriterCreator {
     }
 
     @Override
+    public JsonWriterCreator setHtmlEscape(boolean htmlEscape) {
+        settings.setHtmlEscape(htmlEscape);
+        return this;
+    }
+
+    @Override
     public JsonWriterCreator setIgnoreEmptyArray(boolean ignoreEmptyArray) {
         settings.setIgnoreEmptyArray(ignoreEmptyArray);
         return this;

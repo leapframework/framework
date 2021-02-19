@@ -34,6 +34,8 @@ public @interface JsonSerialize {
 
 	Bool nullToEmptyString() default Bool.FALSE;
 
+	Bool htmlEscape() default Bool.FALSE;
+
 	String namingStyle() default "";
 
     String dateFormat() default "";

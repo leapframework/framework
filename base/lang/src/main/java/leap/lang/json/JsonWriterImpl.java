@@ -24,9 +24,9 @@ import leap.lang.beans.BeanType;
 import leap.lang.beans.DynaProps;
 import leap.lang.beans.PreSerializable;
 import leap.lang.codec.Base64;
+import leap.lang.html.HTML;
 import leap.lang.naming.NamingStyle;
 import leap.lang.time.DateFormats;
-
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
@@ -741,12 +741,18 @@ public class JsonWriterImpl implements JsonWriter {
             } else if (string.length() == 0) {
                 out.append(EMPTY_STRING);
             } else {
-                char c   = 0;
-                int  len = string.length();
+                char c = 0;
+                String str;
+                if (settings.isHtmlEscape()) {
+                    str = HTML.escape(string);
+                } else {
+                    str = string;
+                }
+                int  len = str.length();
 
                 out.append(DOUBLE_QUOTE);
                 for (int i = 0; i < len; i++) {
-                    c = string.charAt(i);
+                    c = str.charAt(i);
                     switch (c) {
                         case '\\':
                             out.append("\\\\");
@@ -894,6 +900,9 @@ public class JsonWriterImpl implements JsonWriter {
                     if (val instanceof String) {
                         if (isIgnoreEmptyString() && Strings.isEmpty((String) val)) {
                             continue;
+                        }
+                        if (settings.isHtmlEscape()) {
+                            val = HTML.escape(val.toString());
                         }
                     }
                     if (val.getClass().isArray()) {

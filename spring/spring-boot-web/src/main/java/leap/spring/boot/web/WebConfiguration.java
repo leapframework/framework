@@ -37,15 +37,11 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.context.weaving.LoadTimeWeaverAware;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.Environment;
 import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.instrument.classloading.LoadTimeWeaver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
-
-import javax.annotation.PostConstruct;
 import javax.servlet.*;
 import java.util.List;
 import java.util.Map;
@@ -126,11 +122,12 @@ public class WebConfiguration {
     }
 
     @Bean
-    public WebMvcConfigurerAdapter webMvcConfigurer() {
+    public WebMvcConfigurerAdapter webMvcConfigurer(Environment env) {
+        Boolean htmlEscape = env.getProperty("webmvc.json.htmlEscape", Boolean.class);
         return new WebMvcConfigurerAdapter() {
             @Override
             public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
-                converters.add(0, new JsonMessageConverter());
+                converters.add(0, new JsonMessageConverter(htmlEscape));
                 super.extendMessageConverters(converters);
             }
 

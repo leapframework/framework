@@ -33,6 +33,8 @@ public interface JsonConfig {
 	
 	boolean isJsonpResponseHeaders();
 
+	boolean isHtmlEscape();
+
 	/**
 	 * 
 	 * Returns the headers name that allow response in jsonp callback

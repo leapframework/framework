@@ -25,7 +25,6 @@ import leap.web.Request;
 import leap.web.Response;
 import leap.web.json.JsonConfig;
 import leap.web.json.Jsonp;
-
 import java.io.IOException;
 import java.util.Collection;
 
@@ -117,6 +116,11 @@ public class JwkWriter {
         @Override
         public boolean isJsonpResponseHeaders() {
             return jc.isJsonpResponseHeaders();
+        }
+
+        @Override
+        public boolean isHtmlEscape() {
+            return jc.isHtmlEscape();
         }
 
         @Override

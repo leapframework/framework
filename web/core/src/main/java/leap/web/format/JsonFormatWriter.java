@@ -31,7 +31,6 @@ import leap.web.action.ActionInitializable;
 import leap.web.json.JsonConfig;
 import leap.web.json.JsonSerialize;
 import leap.web.route.RouteBuilder;
-
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Map;
@@ -96,6 +95,7 @@ public class JsonFormatWriter implements FormatWriter, ActionInitializable {
                                 .setIgnoreEmpty(defaultJsonConfig.isDefaultSerializationIgnoreEmpty())
                                 .setNamingStyle(defaultJsonConfig.getDefaultNamingStyle())
                                 .setDateTimeFormatter(defaultJsonConfig.getDefaultDateFormat())
+                                .setHtmlEscape(defaultJsonConfig.isHtmlEscape())
                                 .build();
             }
         }
@@ -106,7 +106,8 @@ public class JsonFormatWriter implements FormatWriter, ActionInitializable {
         boolean keyQuoted         = a.keyQuoted().isNone() ? defaultJsonConfig.isDefaultSerializationKeyQuoted() : a.keyQuoted().getValue();
         boolean ignoreNull        = a.ignoreNull().isNone() ? defaultJsonConfig.isDefaultSerializationIgnoreNull() : a.ignoreNull().getValue();
         boolean ignoreEmpty       = a.ignoreEmpty().isNone() ? defaultJsonConfig.isDefaultSerializationIgnoreEmpty() : a.ignoreEmpty().getValue();
-        boolean nullToEmptyString = a.nullToEmptyString().isNone() ? false : a.nullToEmptyString().getValue();
+        boolean nullToEmptyString = !a.nullToEmptyString().isNone() && a.nullToEmptyString().getValue();
+        boolean htmlEscape        = !a.htmlEscape().isNone() && a.htmlEscape().getValue();
         String  dateFormat        = Strings.isEmpty(a.dateFormat()) ? defaultJsonConfig.getDefaultDateFormat() : a.dateFormat();
 
         NamingStyle ns;
@@ -130,6 +131,7 @@ public class JsonFormatWriter implements FormatWriter, ActionInitializable {
                 .setNamingStyle(ns)
                 .setDateTimeFormatter(dateFormat, a.gmt() ? "GMT" : null)
                 .setNullToEmptyString(nullToEmptyString)
+                .setHtmlEscape(htmlEscape)
                 .build();
     }
 }
