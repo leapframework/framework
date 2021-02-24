@@ -47,18 +47,7 @@ public class DefaultGrantTokenManager implements GrantTokenManager {
     public AuthzAccessToken grantAccessToken(Request request, Response response, OAuth2Params params, GrantTypeHandler handler) throws Throwable {
         Out<AuthzAccessToken> out = new Out<>();
         try {
-            for(GrantTokenInterceptor interceptor:interceptors){
-                if(State.isIntercepted(interceptor.beforeGrantTypeHandle(request,response,params,handler,out))){
-                    return out.get();
-                }
-            }
-            handler.handleRequest(request,response,params,accessToken -> out.set(accessToken));
-            for(GrantTokenInterceptor interceptor:interceptors){
-                if(State.isIntercepted(interceptor.afterGrantTypeHandle(request,response,params,handler,out))){
-                    return out.get();
-                }
-            }
-            return out.get();
+            out.set(grantToken(request, response, params, handler));
         }finally {
             for(GrantTokenInterceptor interceptor : interceptors) {
                 try {
@@ -69,5 +58,23 @@ public class DefaultGrantTokenManager implements GrantTokenManager {
                 }
             }
         }
+        return out.get();
     }
+
+    protected AuthzAccessToken grantToken(Request request, Response response, OAuth2Params params, GrantTypeHandler handler) throws Throwable{
+        Out<AuthzAccessToken> out = new Out<>();
+        for(GrantTokenInterceptor interceptor:interceptors){
+            if(State.isIntercepted(interceptor.beforeGrantTypeHandle(request,response,params,handler,out))){
+                return out.get();
+            }
+        }
+        handler.handleRequest(request,response,params,accessToken -> out.set(accessToken));
+        for(GrantTokenInterceptor interceptor:interceptors){
+            if(State.isIntercepted(interceptor.afterGrantTypeHandle(request,response,params,handler,out))){
+                return out.get();
+            }
+        }
+        return out.get();
+    }
+
 }
