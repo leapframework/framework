@@ -24,6 +24,7 @@ import leap.lang.Out;
 import leap.lang.intercepting.State;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.lang.time.StopWatch;
 import leap.oauth2.server.OAuth2Params;
 import leap.oauth2.server.token.AuthzAccessToken;
 import leap.web.Request;
@@ -49,12 +50,18 @@ public class DefaultGrantTokenManager implements GrantTokenManager {
         try {
             out.set(grantToken(request, response, params, handler));
         }finally {
+            StopWatch sw = StopWatch.startNew();
             for(GrantTokenInterceptor interceptor : interceptors) {
                 try {
+                    sw.reset();
+                    sw.start();
                     interceptor.grantTypeHandleComplete(request,response,params,handler,out);
                 }catch (Exception e){
                     log.warn("complete grant type handle fail for class {}, error message: ",interceptor.getClass().getName(),e);
                     log.warn(e);
+                }finally {
+                    sw.stop();
+                    log.debug("interceptor {} execute grantTypeHandleComplete use {}ms", interceptor.getClass(), sw.getElapsedMilliseconds());
                 }
             }
         }
@@ -63,16 +70,39 @@ public class DefaultGrantTokenManager implements GrantTokenManager {
 
     protected AuthzAccessToken grantToken(Request request, Response response, OAuth2Params params, GrantTypeHandler handler) throws Throwable{
         Out<AuthzAccessToken> out = new Out<>();
+        StopWatch sw = StopWatch.startNew();
         for(GrantTokenInterceptor interceptor:interceptors){
-            if(State.isIntercepted(interceptor.beforeGrantTypeHandle(request,response,params,handler,out))){
-                return out.get();
+            try {
+                sw.reset();
+                sw.start();
+                if(State.isIntercepted(interceptor.beforeGrantTypeHandle(request,response,params,handler,out))){
+                    return out.get();
+                }
+            } finally {
+                sw.stop();
+                log.debug("interceptor {} execute beforeGrantTypeHandle use {}ms", interceptor.getClass(), sw.getElapsedMilliseconds());
             }
         }
-        handler.handleRequest(request,response,params,accessToken -> out.set(accessToken));
+        try {
+            sw.reset();
+            sw.start();
+            handler.handleRequest(request,response,params, out::set);
+        }finally {
+            sw.stop();
+            log.debug("handler {} execute handleRequest use {}ms", handler.getClass(), sw.getElapsedMilliseconds());
+        }
         for(GrantTokenInterceptor interceptor:interceptors){
-            if(State.isIntercepted(interceptor.afterGrantTypeHandle(request,response,params,handler,out))){
-                return out.get();
+            try {
+                sw.reset();
+                sw.start();
+                if(State.isIntercepted(interceptor.afterGrantTypeHandle(request,response,params,handler,out))){
+                    return out.get();
+                }
+            } finally {
+                sw.stop();
+                log.debug("interceptor {} execute afterGrantTypeHandle use {}ms", interceptor.getClass(), sw.getElapsedMilliseconds());
             }
+
         }
         return out.get();
     }
