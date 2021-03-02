@@ -48,5 +48,11 @@ public interface GrantTokenInterceptor {
     /**
      * Complete grant access token
      */
-    default void grantTypeHandleComplete(Request request, Response response, OAuth2Params params, GrantTypeHandler handler,Out<AuthzAccessToken> at){}
+    default void grantTypeHandleComplete(Request request, Response response, OAuth2Params params, GrantTypeHandler handler,Out<AuthzAccessToken> at) throws InterceptedHandleCompleteException{}
+
+    class InterceptedHandleCompleteException extends Exception{
+        public InterceptedHandleCompleteException(String message, Throwable cause) {
+            super(message, cause);
+        }
+    }
 }

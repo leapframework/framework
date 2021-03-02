@@ -56,7 +56,10 @@ public class DefaultGrantTokenManager implements GrantTokenManager {
                     sw.reset();
                     sw.start();
                     interceptor.grantTypeHandleComplete(request,response,params,handler,out);
-                }catch (Exception e){
+                } catch (GrantTokenInterceptor.InterceptedHandleCompleteException e){
+                    log.info("interceptor {} intercepted grant access token handle complete", interceptor.getClass());
+                    break;
+                } catch (Exception e){
                     log.warn("complete grant type handle fail for class {}, error message: ",interceptor.getClass().getName(),e);
                     log.warn(e);
                 }finally {
