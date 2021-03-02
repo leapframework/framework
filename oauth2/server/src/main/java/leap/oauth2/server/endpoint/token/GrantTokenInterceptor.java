@@ -50,7 +50,7 @@ public interface GrantTokenInterceptor {
      */
     default void grantTypeHandleComplete(Request request, Response response, OAuth2Params params, GrantTypeHandler handler,Out<AuthzAccessToken> at) throws InterceptedHandleCompleteException{}
 
-    class InterceptedHandleCompleteException extends Exception{
+    class InterceptedHandleCompleteException extends RuntimeException{
         public InterceptedHandleCompleteException(String message, Throwable cause) {
             super(message, cause);
         }
