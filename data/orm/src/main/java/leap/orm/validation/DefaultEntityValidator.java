@@ -108,6 +108,10 @@ public class DefaultEntityValidator implements EntityValidator {
 
     protected boolean validateRelation(EntityWrapper entity, Validation validation, EntityMapping em, RelationMapping relation) {
         if (relation.isManyToOne() && em.getEntityName().equalsIgnoreCase(relation.getTargetEntityName())) {
+            if (relation.isAllowSelfReference()) {
+                return true;
+            }
+
             JoinFieldMapping[] joinFields =  relation.getJoinFields();
             boolean validate = true;
             for (JoinFieldMapping joinField : joinFields) {
