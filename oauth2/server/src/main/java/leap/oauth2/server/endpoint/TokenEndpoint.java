@@ -76,6 +76,9 @@ public class TokenEndpoint extends AbstractAuthzEndpoint implements Handler {
 			OAuth2Params params = new RequestOAuth2Params(request, grantType);
 
 			AuthzAccessToken token = grantTokenManager.grantAccessToken(request,response,params,handler);
+			if (response.isHandled()){
+				return;
+			}
 			if(token!=null){
 				handleGrantedToken(request, response, params, handler, token);
 			}
