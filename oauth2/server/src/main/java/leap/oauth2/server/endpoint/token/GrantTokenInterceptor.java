@@ -54,5 +54,9 @@ public interface GrantTokenInterceptor {
         public InterceptedHandleCompleteException(String message, Throwable cause) {
             super(message, cause);
         }
+
+        public InterceptedHandleCompleteException(String message) {
+            super(message);
+        }
     }
 }
