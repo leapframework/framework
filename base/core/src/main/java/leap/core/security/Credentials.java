@@ -17,6 +17,6 @@ package leap.core.security;
 
 public interface Credentials {
     default String getType(){
-        return "known";
+        return "unknown";
     }
 }
