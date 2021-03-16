@@ -49,9 +49,10 @@ public class CredentialsAuthenticationHandler implements LoginHandler {
 				try {
 					Authentication authc = 
 					        authenticationManager.authenticate(context, credentials);
-					
+
 		            if(null != authc){
 		            	context.setUser(authc.getUser());
+		            	context.setAuthentication(authc);
 		            }
 		            
 	            } catch (AuthenticationException e) {
