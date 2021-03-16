@@ -27,4 +27,8 @@ public interface UsernamePasswordCredentials extends ParameterizedCredentials {
 	
 	String getPassword();
 
+	@Override
+	default String getType() {
+		return "password";
+	}
 }
