@@ -26,6 +26,13 @@ public class Comparators {
         }
 	};
 
+	public static final Comparator<Ordered> ORDERED_STRICT_COMPARATOR = (o1, o2) -> {
+        if (o1.getSortOrder() == o2.getSortOrder()) {
+            return 0;
+        }
+        return o1.getSortOrder() > o2.getSortOrder() ? 1 : -1;
+    };
+
     public static final Comparator<Named> NAMED_COMPARATOR = new Comparator<Named>() {
         @Override
         public int compare(Named o1, Named o2) {

@@ -712,7 +712,7 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
 
     @Override
     public EntityMapping build() {
-        Collections.sort(fieldMappings, Comparators.ORDERED_COMPARATOR);
+        Collections.sort(fieldMappings, Comparators.ORDERED_STRICT_COMPARATOR);
 
         if (remote) {
             logical = true;
