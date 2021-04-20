@@ -66,4 +66,88 @@ public interface Log {
 	void error(String msg,Throwable throwable);
 	
 	void error(String msg,Object... args);
+
+	default void log(LogLevel level, String msg){
+		switch (level){
+			case DEBUG:
+				debug(msg);
+				break;
+			case INFO:
+				info(msg);
+				break;
+			case WARN:
+				warn(msg);
+				break;
+			case ERROR:
+				error(msg);
+				break;
+			case TRACE:
+			default:
+				trace(msg);
+				break;
+		}
+	}
+
+	default void log(LogLevel level, Throwable throwable){
+		switch (level){
+			case DEBUG:
+				debug(throwable);
+				break;
+			case INFO:
+				info(throwable);
+				break;
+			case WARN:
+				warn(throwable);
+				break;
+			case ERROR:
+				error(throwable);
+				break;
+			case TRACE:
+			default:
+				trace(throwable);
+				break;
+		}
+	};
+
+	default void log(LogLevel level, String msg,Throwable throwable){
+		switch (level){
+			case DEBUG:
+				debug(msg, throwable);
+				break;
+			case INFO:
+				info(msg, throwable);
+				break;
+			case WARN:
+				warn(msg, throwable);
+				break;
+			case ERROR:
+				error(msg, throwable);
+				break;
+			case TRACE:
+			default:
+				trace(msg, throwable);
+				break;
+		}
+	}
+
+	default void log(LogLevel level, String msg,Object... args){
+		switch (level){
+			case DEBUG:
+				debug(msg, args);
+				break;
+			case INFO:
+				info(msg, args);
+				break;
+			case WARN:
+				warn(msg, args);
+				break;
+			case ERROR:
+				error(msg, args);
+				break;
+			case TRACE:
+			default:
+				trace(msg, args);
+				break;
+		}
+	}
 }
