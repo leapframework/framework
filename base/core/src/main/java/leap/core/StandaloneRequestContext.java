@@ -17,7 +17,6 @@ package leap.core;
 
 import leap.core.i18n.MessageSource;
 import leap.core.security.Authentication;
-
 import javax.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.Locale;
@@ -31,6 +30,26 @@ public class StandaloneRequestContext extends RequestContext {
     private MessageSource  messageSource;
     private Locale         locale;
     private Boolean        debug;
+
+    public StandaloneRequestContext() {
+    }
+
+    public StandaloneRequestContext(Session session, Authentication authentication, MessageSource messageSource, Locale locale, Boolean debug, Map<String, Object> attributes) {
+        this.session = session;
+        this.authentication = authentication;
+        this.messageSource = messageSource;
+        this.locale = locale;
+        this.debug = debug;
+
+        if (null != attributes) {
+            this.attributes.putAll(attributes);
+        }
+    }
+
+    @Override
+    public RequestContext newBackgroundContext() {
+        return new StandaloneRequestContext(session, authentication, messageSource, locale, debug, attributes);
+    }
 
     @Override
     public AppContext getAppContext() {

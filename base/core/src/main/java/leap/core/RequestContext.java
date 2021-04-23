@@ -51,7 +51,7 @@ public abstract class RequestContext implements AttributeAccessor {
 		
 		return current;
 	}
-	
+
     /**
      * Returns current request's locale or use {@link Locales#DEFAULT_LOCALE} if no current locale.
      */
@@ -102,6 +102,13 @@ public abstract class RequestContext implements AttributeAccessor {
 	}
 	
 	protected Boolean debug;
+
+	/**
+	 * Returns new back ground context.
+	 */
+	public RequestContext newBackgroundContext() {
+		return null;
+	}
 	
 	/**
 	 * Returns current {@link AppContext}.
