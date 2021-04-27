@@ -18,11 +18,10 @@ package leap.web;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.Map;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-
+import leap.core.RequestContext;
 import leap.core.security.Authentication;
 import leap.core.security.SecurityContext;
 import leap.core.security.UserPrincipal;
@@ -47,7 +46,7 @@ public abstract class Request extends RequestBase {
 	 * @throws IllegalStateException if http request not exists in current execution context.
 	 */
 	public static Request current() throws IllegalStateException{
-		Request request = (Request)threadlocal.get();
+		Request request = tryGetCurrent();
 		if(null == request){
 			throw new IllegalStateException("Current request not exists");
 		}
@@ -55,7 +54,11 @@ public abstract class Request extends RequestBase {
 	}
 	
 	public static Request tryGetCurrent() {
-		return (Request)threadlocal.get();
+		RequestContext context = threadlocal.get();
+		if (context instanceof Request) {
+			return (Request) context;
+		}
+		return null;
 	}
 	
 	/**
