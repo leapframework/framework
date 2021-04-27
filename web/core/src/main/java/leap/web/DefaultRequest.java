@@ -15,9 +15,7 @@
  */
 package leap.web;
 
-import leap.core.AppContext;
-import leap.core.AppException;
-import leap.core.Session;
+import leap.core.*;
 import leap.core.i18n.MessageSource;
 import leap.core.security.Authentication;
 import leap.core.security.SecurityContext;
@@ -41,7 +39,6 @@ import leap.web.config.WebConfig;
 import leap.web.format.FormatManager;
 import leap.web.view.View;
 import leap.web.view.ViewSource;
-
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -49,10 +46,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 import java.io.*;
-import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.UnknownHostException;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -128,6 +123,11 @@ public class DefaultRequest extends Request {
     @Override
     public Object getAttribute(String name) {
         return req.getAttribute(name);
+    }
+
+    @Override
+    public RequestContext newBackgroundContext() {
+        return new StandaloneRequestContext(session, authentication, messageSource, locale, debug, req.getAttributes());
     }
 
     @Override

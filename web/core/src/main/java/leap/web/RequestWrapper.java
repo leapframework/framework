@@ -18,11 +18,14 @@ package leap.web;
 import leap.lang.Strings;
 import leap.lang.http.Headers;
 import leap.lang.io.IO;
-
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import java.io.*;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 public class RequestWrapper extends HttpServletRequestWrapper {
 
@@ -94,4 +97,18 @@ public class RequestWrapper extends HttpServletRequestWrapper {
 
         return super.getMethod();
     }
+
+    public Map<String, Object> getAttributes() {
+        Enumeration<String> names = request.getAttributeNames();
+        if (!names.hasMoreElements()) {
+            return Collections.EMPTY_MAP;
+        }
+        Map<String, Object> attributes = new HashMap<>();
+        while (names.hasMoreElements()) {
+            String name = names.nextElement();
+            attributes.put(name, request.getAttribute(name));
+        }
+        return Collections.unmodifiableMap(attributes);
+    }
+
 }
