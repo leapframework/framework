@@ -21,12 +21,14 @@ import leap.lang.path.Paths;
 import leap.lang.resource.Resource;
 import leap.lang.resource.Resources;
 
+import java.util.List;
 import java.util.Locale;
 
 public abstract class AbstractAssetResolver implements AssetResolver {
 
     protected @Inject AssetManager manager;
     protected @Inject AssetConfig  config;
+    protected @Inject List<AssetDynamicResourceResolver> resolvers;
 
     @Override
     public Asset resolveAsset(String path, Locale locale) throws Throwable {
@@ -51,7 +53,15 @@ public abstract class AbstractAssetResolver implements AssetResolver {
             resource = getLocaleResource(resourcePath,locale);
 
             if(null == resource || !resource.exists()){
-                return null;
+                for (AssetDynamicResourceResolver resolver : resolvers){
+                    resource = resolver.resolve(path, locale, dir);
+                    if (null != resource){
+                        break;
+                    }
+                }
+                if (null == resource){
+                    return null;
+                }
             }
         }
 
