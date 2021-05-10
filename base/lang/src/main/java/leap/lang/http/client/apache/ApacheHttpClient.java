@@ -23,10 +23,12 @@ import leap.lang.http.client.HttpRequest;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.config.ConnectionConfig;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
@@ -155,23 +157,19 @@ public class ApacheHttpClient extends AbstractHttpClient implements Initializabl
     }
 
     protected CloseableHttpClient initHttpClient() {
+        return initHttpClient(getDefaultConnectionManager(), new DefaultHttpRequestRetryHandler());
+    }
+
+    protected CloseableHttpClient initHttpClient(HttpClientConnectionManager cm, HttpRequestRetryHandler retryHandler) {
         HttpClientBuilder cb = HttpClientBuilder.create();
 
-        //TODO : small buffer size will cause socket closed when reading response entity?
-        PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(getDefaultRegistry());
-        //cm.setDefaultConnectionConfig(ConnectionConfig.custom().setBufferSize(1024 * 1024).build());
-
-        cm.setMaxTotal(maxTotal);
-        cm.setDefaultMaxPerRoute(defaultMaxPerRoute);
-
-        if (bufferSize > 0) {
-            ConnectionConfig cc =
-                    ConnectionConfig.copy(ConnectionConfig.DEFAULT).setBufferSize(bufferSize).build();
-
-            cm.setDefaultConnectionConfig(cc);
+        if (null == cm){
+            throw new IllegalArgumentException("connection manager must not null");
         }
-
-        cb.setRetryHandler(new DefaultHttpRequestRetryHandler());
+        if (null == retryHandler){
+            throw new IllegalArgumentException("retry handler must not null");
+        }
+        cb.setRetryHandler(retryHandler);
         cb.disableRedirectHandling();
 
         if(evictExpiredConnections) {
@@ -184,6 +182,33 @@ public class ApacheHttpClient extends AbstractHttpClient implements Initializabl
         cb.setDefaultRequestConfig(requestConfig);
         cb.disableCookieManagement();
         return cb.build();
+    }
+
+    protected HttpClientConnectionManager getDefaultConnectionManager(ConnectionConfig cc){
+        //TODO : small buffer size will cause socket closed when reading response entity?
+        PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(getDefaultRegistry());
+        //cm.setDefaultConnectionConfig(ConnectionConfig.custom().setBufferSize(1024 * 1024).build());
+
+        cm.setMaxTotal(maxTotal);
+        cm.setDefaultMaxPerRoute(defaultMaxPerRoute);
+        if (null != cc){
+            cm.setDefaultConnectionConfig(cc);
+        }
+        return cm;
+    }
+
+    protected HttpClientConnectionManager getDefaultConnectionManager(){
+        return getDefaultConnectionManager(getDefaultConnectionConfig());
+    }
+
+    protected ConnectionConfig getDefaultConnectionConfig(){
+        if (bufferSize > 0) {
+            ConnectionConfig cc =
+                    ConnectionConfig.copy(ConnectionConfig.DEFAULT).setBufferSize(bufferSize).build();
+
+            return cc;
+        }
+        return null;
     }
 
     protected Registry<ConnectionSocketFactory> getDefaultRegistry() {
