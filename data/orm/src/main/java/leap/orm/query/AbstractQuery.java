@@ -247,14 +247,22 @@ public abstract class AbstractQuery<T> implements Query<T>, QueryContext {
     protected QueryResult<T> executeResult(Limit limit) {
         QueryResult result = null == limit ? executeQuery(this) : executeQuery(new LimitQueryContext(limit));
 
-        if (null != em) {
-            if (eventHandler.isHandleLoadEvent(context, em)) {
-                LoadEntityEventImpl event = new LoadEntityEventImpl(this, em, result.list(), null != id);
-                eventHandler.postLoadEntityNoTrans(context, em, event);
-            }
-        }
+        handleLoadEvents(result);
 
         return result;
+    }
+
+    protected void handleLoadEvents(QueryResult result) {
+        if (null == em || !eventHandler.isHandleLoadEvent(context, em)) {
+            return;
+        }
+
+        boolean isFind = null != id;
+        if (isFind && result.isEmpty()) {
+            return;
+        }
+        LoadEntityEventImpl event = new LoadEntityEventImpl(this, em, result.list(), null != id);
+        eventHandler.postLoadEntityNoTrans(context, em, event);
     }
 
     @Override
