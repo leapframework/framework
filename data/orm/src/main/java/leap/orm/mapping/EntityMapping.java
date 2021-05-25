@@ -208,8 +208,12 @@ public class EntityMapping extends ExtensibleBase {
             throw new IllegalStateException("Remote settings must not be null for remote entity '" + entityName + "'");
         }
 
+        List<FieldMapping> fms;
         if (null != dynamic) {
-            dynamic.getFieldMappings().forEach(fieldMappings::add);
+            fms = new ArrayList<>(fieldMappings);
+            fms.addAll(dynamic.getFieldMappings());
+        } else {
+            fms = fieldMappings;
         }
 
         this.builder = builder;
@@ -235,7 +239,7 @@ public class EntityMapping extends ExtensibleBase {
         this.relationMappings = null == relationMappings ? new RelationMapping[]{} : relationMappings.toArray(new RelationMapping[relationMappings.size()]);
         this.relationProperties = relationProperties;
 
-        this.fieldMappings = fieldMappings.toArray(new FieldMapping[fieldMappings.size()]);
+        this.fieldMappings = fms.toArray(new FieldMapping[fms.size()]);
         this.columnNameToFields = createColumnNameToFieldsMap();
         this.fieldNameToFields = createFieldNameToFieldsMap();
         this.metaNameToFields = createMetaNameToFieldsMap();
