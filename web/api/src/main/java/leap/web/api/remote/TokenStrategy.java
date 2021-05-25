@@ -16,6 +16,8 @@
 
 package leap.web.api.remote;
 
+import leap.oauth2.webapp.OAuth2ConfigBase;
+
 public interface TokenStrategy {
 
     /**
@@ -32,6 +34,13 @@ public interface TokenStrategy {
     /**
      * Returns the {@link Token} of <code>null</code>.
      */
-    Token getToken();
+    default Token getToken() {
+        return getToken(null);
+    };
+
+    /**
+     * Returns the {@link Token} of <code>null</code> that uses another oauth2 config.
+     */
+    Token getToken(OAuth2ConfigBase oc);
 
 }

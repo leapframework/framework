@@ -22,6 +22,7 @@ import leap.lang.http.HTTP;
 import leap.lang.http.client.HttpRequest;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.oauth2.webapp.OAuth2ConfigBase;
 import leap.oauth2.webapp.code.DefaultCodeVerifier;
 import leap.oauth2.webapp.token.TokenInfo;
 import leap.oauth2.webapp.token.at.AccessToken;
@@ -59,33 +60,36 @@ public class DefaultTokenStrategyProvider extends DefaultCodeVerifier implements
         return appOnlyTokenStrategy;
     }
 
-    protected AccessToken fetchAccessTokenWithApp(String at) {
-        if (null == config.getTokenUrl()) {
+    protected AccessToken fetchAccessTokenWithApp(String at, OAuth2ConfigBase oc) {
+        String tokenUrl = null == oc ? config.getTokenUrl() : oc.getTokenUrl();
+        if (null == tokenUrl) {
             return null;
         }
 
-        HttpRequest request = httpClient.request(config.getTokenUrl())
+        HttpRequest request = httpClient.request(tokenUrl)
                 .addQueryParam("grant_type", "token_client_credentials")
                 .addQueryParam("access_token", at)
                 .setMethod(HTTP.Method.POST);
 
-        return fetchAccessToken(request);
+        return fetchAccessToken(request, oc);
     }
 
-    protected AccessToken fetchAppOnlyAccessToken() {
-        if (null == config.getTokenUrl()) {
+    protected AccessToken fetchAppOnlyAccessToken(OAuth2ConfigBase oc) {
+        String tokenUrl = null == oc ? config.getTokenUrl() : oc.getTokenUrl();
+        if (null == tokenUrl) {
             return null;
         }
 
-        HttpRequest request = httpClient.request(config.getTokenUrl())
+        HttpRequest request = httpClient.request(tokenUrl)
                 .addQueryParam("grant_type", "client_credentials")
                 .setMethod(HTTP.Method.POST);
 
         return fetchAccessToken(request);
     }
 
-    public AccessToken refreshAppOnlyAccessToken(AccessToken old) {
-        HttpRequest request = httpClient.request(config.getTokenUrl())
+    public AccessToken refreshAppOnlyAccessToken(AccessToken old, OAuth2ConfigBase oc) {
+        String tokenUrl = null == oc ? config.getTokenUrl() : oc.getTokenUrl();
+        HttpRequest request = httpClient.request(tokenUrl)
                 .addQueryParam("grant_type", "refresh_token")
                 .addQueryParam("refresh_token", old.getRefreshToken())
                 .setMethod(HTTP.Method.POST);
@@ -95,24 +99,24 @@ public class DefaultTokenStrategyProvider extends DefaultCodeVerifier implements
     protected class OriginalTokenStrategy implements TokenStrategy {
 
         @Override
-        public Token getToken() {
+        public Token getToken(OAuth2ConfigBase oc) {
             final RequestContext rc = RequestContext.tryGetCurrent();
             if (null == rc) {
-                return appOnlyTokenStrategy.getToken();
+                return appOnlyTokenStrategy.getToken(oc);
             }
 
             final Authentication authc = rc.getAuthentication();
             if (null == authc || !(authc.getCredentials() instanceof leap.oauth2.webapp.token.Token)) {
-                return appOnlyTokenStrategy.getToken();
+                return appOnlyTokenStrategy.getToken(oc);
             }
 
             final leap.oauth2.webapp.token.Token token     = (leap.oauth2.webapp.token.Token) authc.getCredentials();
             final TokenInfo                      tokenInfo = (TokenInfo) authc.getCredentialsInfo();
 
-            return doGetToken(authc, token, tokenInfo);
+            return doGetToken(authc, token, tokenInfo, oc);
         }
 
-        protected Token doGetToken(Authentication authc, leap.oauth2.webapp.token.Token token, TokenInfo info) {
+        protected Token doGetToken(Authentication authc, leap.oauth2.webapp.token.Token token, TokenInfo info, OAuth2ConfigBase oc) {
             return new TokenImpl(new SimpleAccessToken(token.getToken()));
         }
     }
@@ -127,12 +131,12 @@ public class DefaultTokenStrategyProvider extends DefaultCodeVerifier implements
         }
 
         @Override
-        protected Token doGetToken(Authentication authc, leap.oauth2.webapp.token.Token oauth2Token, TokenInfo info) {
+        protected Token doGetToken(Authentication authc, leap.oauth2.webapp.token.Token oauth2Token, TokenInfo info, OAuth2ConfigBase oc) {
             final String at = oauth2Token.getToken();
             if (force || !authc.hasClient()) {
                 TokenImpl token = tokens.get(at);
                 if (null == token || token.isExpired()) {
-                    final AccessToken appAccessToken = fetchAccessTokenWithApp(at);
+                    final AccessToken appAccessToken = fetchAccessTokenWithApp(at, oc);
                     if (null != appAccessToken) {
                         final AccessToken newAccessToken = new WithAppAccessToken(info, appAccessToken);
                         token = new TokenImpl(newAccessToken);
@@ -150,28 +154,29 @@ public class DefaultTokenStrategyProvider extends DefaultCodeVerifier implements
     protected class AppOnlyTokenStrategy implements TokenStrategy {
         private volatile TokenImpl token;
 
-        public Token getToken() {
+        @Override
+        public Token getToken(OAuth2ConfigBase oc) {
             if (null == token || token.isExpired()) {
-                return fetch();
+                return fetch(oc);
             } else {
                 return token;
             }
         }
 
-        protected Token fetch() {
-            AccessToken at = fetchAppOnlyAccessToken();
-            return null == at ? null : (token = new TokenImpl(at, this::refresh));
+        protected Token fetch(OAuth2ConfigBase oc) {
+            AccessToken at = fetchAppOnlyAccessToken(oc);
+            return null == at ? null : (token = new TokenImpl(at, oc, this::refresh));
         }
 
         protected Token refresh(TokenImpl t) {
             AccessToken at;
             try {
-                at = refreshAppOnlyAccessToken(t.at);
+                at = refreshAppOnlyAccessToken(t.at, t.oc);
             } catch (Exception e) {
                 log.error("Error refresh token '{}' by '{}'", t.getValue(), t.at.getRefreshToken(), e);
-                at = fetchAppOnlyAccessToken();
+                at = fetchAppOnlyAccessToken(t.oc);
             }
-            return new TokenImpl(at, this::refresh);
+            return new TokenImpl(at, t.oc, this::refresh);
         }
     }
 
@@ -191,14 +196,20 @@ public class DefaultTokenStrategyProvider extends DefaultCodeVerifier implements
 
     protected static class TokenImpl implements Token {
         private final AccessToken                at;
+        private final OAuth2ConfigBase           oc;
         private final Function<TokenImpl, Token> refresh;
 
         public TokenImpl(AccessToken at) {
-            this(at, null);
+            this(at, null, null);
         }
 
         public TokenImpl(AccessToken at, Function<TokenImpl, Token> refresh) {
+            this(at, null, refresh);
+        }
+
+        public TokenImpl(AccessToken at, OAuth2ConfigBase oc, Function<TokenImpl, Token> refresh) {
             this.at = at;
+            this.oc = oc;
             this.refresh = refresh;
         }
 

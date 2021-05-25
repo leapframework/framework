@@ -29,12 +29,12 @@ import leap.lang.json.JSON;
 import leap.lang.json.JsonValue;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.oauth2.webapp.OAuth2ConfigBase;
 import leap.oauth2.webapp.OAuth2InternalServerException;
 import leap.oauth2.webapp.OAuth2Config;
 import leap.oauth2.webapp.token.at.AccessToken;
 import leap.oauth2.webapp.token.DefaultTokenInfoLookup;
 import leap.oauth2.webapp.token.at.SimpleAccessToken;
-
 import java.util.Map;
 
 public class DefaultCodeVerifier implements CodeVerifier {
@@ -59,9 +59,14 @@ public class DefaultCodeVerifier implements CodeVerifier {
     }
 
     protected AccessToken fetchAccessToken(HttpRequest request) {
-        if(null != config.getClientId()){
+        return fetchAccessToken(request, null);
+    }
+
+    protected AccessToken fetchAccessToken(HttpRequest request, OAuth2ConfigBase oc) {
+        OAuth2ConfigBase c = null == oc ? config : oc;
+        if(null != c.getClientId()){
             request.addHeader(Headers.AUTHORIZATION, "Basic " +
-                    Base64.encode(config.getClientId()+":"+config.getClientSecret()));
+                    Base64.encode(c.getClientId()+":"+c.getClientSecret()));
         }
 
         HttpResponse response = request.send();

@@ -22,12 +22,7 @@ import leap.core.web.RequestIgnore;
  *
  * @see OAuth2Configurator
  */
-public interface OAuth2Config {
-
-	/**
-	 * Returns <code>true</code> if oauth2.0 is enabled in current web app.
-	 */
-	boolean isEnabled();
+public interface OAuth2Config extends OAuth2ConfigBase {
 
     /**
      * Returns true if login from oauth2 server.
@@ -67,11 +62,6 @@ public interface OAuth2Config {
     String getAuthorizeUrl();
 
     /**
-     * todo : doc
-     */
-    String getTokenUrl();
-
-    /**
      * Optional.
      */
     String getIndirectTokenUrl();
@@ -100,16 +90,6 @@ public interface OAuth2Config {
      * Returns the url of oauth2 server' logout endpoint.
      */
     String getLogoutUrl();
-
-	/**
-	 * todo: doc
-     */
-	String getClientId();
-
-	/**
-	 * todo: doc
-     */
-	String getClientSecret();
 
     /**
      * todo: doc
