@@ -538,7 +538,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         Set<Object> fks = new HashSet<>();
         for (Record record : records) {
             Object fk = record.get(localFieldName);
-            if (fk == null || fks.contains(fk)) {
+            if (fk == null || (fk instanceof String && ((String) fk).length() == 0) || fks.contains(fk)) {
                 continue;
             }
             fks.add(fk);
@@ -665,7 +665,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             Set<Object> fks = new HashSet<>();
             for (Record record : records) {
                 Object fk = record.get(localFieldName);
-                if (fk == null || fks.contains(fk)) {
+                if (fk == null || (fk instanceof String && ((String) fk).length() == 0) || fks.contains(fk)) {
                     continue;
                 }
                 fks.add(fk);
