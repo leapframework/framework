@@ -543,6 +543,10 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             }
             fks.add(fk);
         }
+        if (fks.isEmpty()) {
+            fillExpandRecords(records, Collections.emptyMap(), expand.rp, localFieldName);
+            return;
+        }
 
         StringBuilder filters   = new StringBuilder();
         StringBuilder filterIds = new StringBuilder();
@@ -617,20 +621,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
 
         //填充expand指定的属性
-        final RelationProperty rp = expand.rp;
-        for (Record record : records) {
-            Object       fk             = record.get(localFieldName);
-            List<Record> fieldToRecords = referredRecords.get(fk);
-            if (rp.isMany()) {
-                record.put(rp.getName(), null == fieldToRecords ? Collections.emptyList() : fieldToRecords);
-            } else {
-                if (fieldToRecords != null && fieldToRecords.size() > 0) {
-                    record.put(rp.getName(), fieldToRecords.get(0));
-                } else {
-                    record.put(rp.getName(), null);
-                }
-            }
-        }
+        fillExpandRecords(records, referredRecords, expand.rp, localFieldName);
     }
 
     protected void expandByDb(ModelExecutionContext context, ResolvedExpand expand, List<Record> records) {
@@ -741,21 +732,25 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             }
 
             //填充expand指定的属性
-            for (Record record : records) {
-                Object       fk             = record.get(localFieldName);
-                List<Record> fieldToRecords = referredRecords.get(fk);
-                if (rp.isMany()) {
-                    record.put(rp.getName(), null == fieldToRecords ? Collections.emptyList() : fieldToRecords);
-                } else {
-                    if (fieldToRecords != null && fieldToRecords.size() > 0) {
-                        record.put(rp.getName(), fieldToRecords.get(0));
-                    } else {
-                        record.put(rp.getName(), null);
-                    }
-                }
-            }
+            fillExpandRecords(records, referredRecords, rp, localFieldName);
         } finally {
             ex.completeExpand(context);
+        }
+    }
+
+    protected void fillExpandRecords(List<Record> records, Map<Object, List<Record>> referredRecords, RelationProperty rp, String localFieldName) {
+        for (Record record : records) {
+            Object       fk             = record.get(localFieldName);
+            List<Record> fieldToRecords = referredRecords.get(fk);
+            if (rp.isMany()) {
+                record.put(rp.getName(), null == fieldToRecords ? Collections.emptyList() : fieldToRecords);
+            } else {
+                if (fieldToRecords != null && fieldToRecords.size() > 0) {
+                    record.put(rp.getName(), fieldToRecords.get(0));
+                } else {
+                    record.put(rp.getName(), null);
+                }
+            }
         }
     }
 
