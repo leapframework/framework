@@ -223,15 +223,8 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
     protected Map<String, Object> resolveFieldsMap(EntityWrapper entity) {
         Map<String, Object> map = entity.toMap();
         if (null != selective && selective) {
-            Set<String> keys = map.keySet();
-
-            for (String key : keys) {
-                if (null == map.get(key)) {
-                    map.remove(key);
-                }
-            }
+            map.entrySet().removeIf(entry -> null == entry.getValue());
         }
-
         return map;
     }
 
