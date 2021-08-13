@@ -53,7 +53,7 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     protected boolean     uniqueOperationId           = false;
     protected NamingStyle parameterNamingStyle;
     protected NamingStyle propertyNamingStyle;
-    protected int         maxPageSize                 = MAX_PAGE_SIZE;
+    protected Integer     maxPageSize;
     protected int         defaultPageSize             = DEFAULT_PAGE_SIZE;
     protected int         maxPageSizeWithExpandMany   = MAX_PAGE_SIZE_WITH_EXPAND_MANY;
     protected int         maxPageSizeWithExpandOne    = MAX_PAGE_SIZE_WITH_EXPAND_ONE;
@@ -411,7 +411,7 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     }
 
     @Override
-    public int getMaxPageSize() {
+    public Integer getMaxPageSize() {
         return maxPageSize;
     }
 

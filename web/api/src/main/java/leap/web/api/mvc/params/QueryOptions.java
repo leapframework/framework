@@ -257,23 +257,23 @@ public class QueryOptions extends QueryOptionsBase {
     }
 
     public Page getPage(int defaultPageSize) {
+        return getPage(defaultPageSize, null);
+    }
+
+    public Page getPage(int defaultPageSize, Integer maxPageSize) {
         if (null != limit || null != offset) {
-            if (null == limit) {
-                return Page.limit(defaultPageSize, offset);
-            } else {
-                return Page.limit(limit, null == offset ? 0 : offset);
-            }
+            return Page.limit(choicePageSize(limit, defaultPageSize, maxPageSize), null == offset ? 0 : offset);
         }
 
-        if (null != pageIndex || null != pageSize) {
-            if (null == pageIndex) {
-                return Page.indexOf(1, pageSize);
-            } else {
-                return Page.indexOf(pageIndex, null == pageSize ? defaultPageSize : pageSize);
-            }
-        }
+        return Page.indexOf(null == pageIndex ? 1 : pageIndex, choicePageSize(pageSize, defaultPageSize, maxPageSize));
+    }
 
-        return Page.indexOf(1, defaultPageSize);
+    public int choicePageSize(Integer value, int defaultPageSize, Integer maxPageSize) {
+        int size = null == value ? defaultPageSize : value;
+        if (null != maxPageSize && size > maxPageSize) {
+            size = maxPageSize;
+        }
+        return size;
     }
 
     public ScelExpr getResolvedFilters() {

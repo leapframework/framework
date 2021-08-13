@@ -191,7 +191,7 @@ public interface ApiConfig extends Named,Titled,Described,Extensible {
     /**
      * Returns the max page size of pagination.
      */
-    int getMaxPageSize();
+    Integer getMaxPageSize();
 
     /**
      * Returns the default page size of pagination.

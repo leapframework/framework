@@ -37,7 +37,6 @@ public interface ApiConfigurator extends Extensible {
     String[] DEFAULT_CONSUMES = new String[]{MimeTypes.APPLICATION_JSON};
 
     String DEFAULT_VERSION                = "1.0";
-    int    MAX_PAGE_SIZE                  = 1000;
     int    DEFAULT_PAGE_SIZE              = 50;
     int    MAX_PAGE_SIZE_WITH_EXPAND_MANY = 100;
     int    MAX_PAGE_SIZE_WITH_EXPAND_ONE  = 1000;

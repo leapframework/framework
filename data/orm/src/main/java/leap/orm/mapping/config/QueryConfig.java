@@ -30,8 +30,22 @@ public class QueryConfig {
         return maxPageSize;
     }
 
+    public Integer tryGetMaxPageSize(Integer maxPageSize) {
+        if (null == this.maxPageSize) {
+            return maxPageSize;
+        }
+        return this.maxPageSize;
+    }
+
     public Integer getDefaultPageSize() {
         return defaultPageSize;
+    }
+
+    public int mustGetDefaultPageSize(int defaultPageSize) {
+        if (null == this.defaultPageSize) {
+            return defaultPageSize;
+        }
+        return this.defaultPageSize;
     }
 
 }

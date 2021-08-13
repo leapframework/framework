@@ -51,7 +51,7 @@ public class EntityMappingBuilder extends ExtensibleBase implements Buildable<En
     protected boolean             idDeclared;
     protected boolean             autoCreateTable;
     protected boolean             autoGenerateColumns;
-    protected QueryConfig queryConfig;
+    protected QueryConfig         queryConfig;
     protected Boolean             queryFilterEnabled;
     protected boolean             autoValidate;
     protected String              queryView;

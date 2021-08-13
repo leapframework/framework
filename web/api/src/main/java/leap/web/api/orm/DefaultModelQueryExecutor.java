@@ -385,21 +385,19 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                         ex.handler.preQueryList(context, query);
                     }
 
-                    QueryConfig qc = em.getQueryConfig();
                     int defaultPageSize;
+                    Integer maxPageSize;
+                    QueryConfig qc = em.getQueryConfig();
                     if (null != qc) {
-                        if (null != qc.getDefaultPageSize()) {
-                            defaultPageSize = qc.getDefaultPageSize();
-                        } else if (null != qc.getMaxPageSize() && qc.getMaxPageSize() < ac.getDefaultPageSize()) {
-                            defaultPageSize = qc.getMaxPageSize();
-                        } else {
-                            defaultPageSize = ac.getDefaultPageSize();
-                        }
+                        defaultPageSize = qc.mustGetDefaultPageSize(ac.getDefaultPageSize());
+                        maxPageSize = qc.tryGetMaxPageSize(ac.getMaxPageSize());
                     } else {
                         defaultPageSize = ac.getDefaultPageSize();
+                        maxPageSize = ac.getMaxPageSize();
                     }
 
-                    PageResult page = query.pageResult(finalOptions.getPage(defaultPageSize));
+                    PageResult page = query.pageResult(finalOptions.getPage(defaultPageSize, maxPageSize));
+
                     list = ex.executeQueryList(context, finalOptions, query);
                     if (null == list) {
                         list = dao.withEvents(() -> page.list());
@@ -415,19 +413,19 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                         if (expands.length > 0) {
                             ResolvedExpand[] resolvedExpands = resolveExpands(expands);
 
-                            int maxPageSize = ac.getMaxPageSizeWithExpandOne();
+                            int maxExpandPageSize = ac.getMaxPageSizeWithExpandOne();
                             for (ResolvedExpand expand : resolvedExpands) {
                                 if (expand.isEmbedded()) {
                                     continue;
                                 }
                                 if (expand.rm.isOneToMany() || expand.rm.isManyToMany()) {
-                                    maxPageSize = ac.getMaxPageSizeWithExpandMany();
+                                    maxExpandPageSize = ac.getMaxPageSizeWithExpandMany();
                                     break;
                                 }
                             }
 
-                            if (list.size() > maxPageSize) {
-                                throw new BadRequestException("The result size " + list.size() + " exceed max expand " + maxPageSize + ", please decrease your page_size");
+                            if (list.size() > maxExpandPageSize) {
+                                throw new BadRequestException("The result size " + list.size() + " exceed max expand " + maxExpandPageSize + ", please decrease your page_size");
                             }
 
                             for (ResolvedExpand expand : resolvedExpands) {
