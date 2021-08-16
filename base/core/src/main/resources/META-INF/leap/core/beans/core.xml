@@ -70,8 +70,13 @@
     <!-- http client -->
     <beans if-class-present="org.apache.http.impl.conn.PoolingHttpClientConnectionManager">
         <bean type="leap.lang.http.client.HttpClient" class="leap.lang.http.client.apache.ApacheHttpClient" primary="true">
-            <property name="defaultConnectTimeout" value="${httpClient.defaultConnectTimeout}" default-value="30000"/>
-            <property name="defaultReadTimeout"    value="${httpClient.defaultReadTimeout}" default-value="30000"/>
+            <property name="defaultConnectTimeout"   value="${httpClient.defaultConnectTimeout}" default-value="30000"/>
+            <property name="defaultReadTimeout"      value="${httpClient.defaultReadTimeout}" default-value="30000"/>
+            <property name="maxTotal"                value="${httpClient.maxTotal}" default-value="300"/>
+            <property name="defaultMaxPerRoute"      value="${httpClient.defaultMaxPerRoute}" default-value="30"/>
+            <property name="evictExpiredConnections" value="${httpClient.evictExpiredConnections}" default-value="true"/>
+            <property name="evictIdleConnections"    value="${httpClient.evictIdleConnections}" default-value="true"/>
+            <property name="maxIdleTimeInSeconds"    value="${httpClient.maxIdleTimeInSeconds}" default-value="10"/>
         </bean>
     </beans>
 
