@@ -38,6 +38,7 @@ public class DbPlatforms {
     public static final String DERBY	  = "Derby";
     public static final String DB2		  = "DB2";
     public static final String DAMENG     = "DaMeng";
+    public static final String KINDBASE   = "KingBase";
     
     /**
      * Returns all the registered {@link DbPlatform} objects.

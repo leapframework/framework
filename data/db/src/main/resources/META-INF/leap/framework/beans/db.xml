@@ -13,6 +13,7 @@
 	<bean name="SqlServer" type="leap.db.DbPlatform" class="leap.db.platform.sqlserver.SqlServerPlatform"/>
 	<bean name="PostgreSQL" type="leap.db.DbPlatform" class="leap.db.platform.postgresql.PostgreSQLPlatform"/>
 	<bean name="DaMeng" type="leap.db.DbPlatform" class="leap.db.platform.dm.DMPlatform"/>
+	<bean name="KingBase" type="leap.db.DbPlatform" class="leap.db.platform.kingbase.KingBasePlatform"/>
 	
 	<!-- DataSource -->
 	<bean name="leap" type="leap.core.ds.DataSourceFactory" class="leap.db.cp.PooledDataSourceFactory" primary="true"/>

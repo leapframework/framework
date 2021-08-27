@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans">
+
+<!--    <bean type="javax.sql.DataSource" class="leap.db.cp.PooledDataSource" name="h2">-->
+<!--        <property name="driverClassName" value="org.h2.Driver" />-->
+<!--        <property name="jdbcUrl"         value="jdbc:h2:mem:db2;DB_CLOSE_ON_EXIT=FALSE" />-->
+<!--    </bean>-->
+
+    <bean type="javax.sql.DataSource" class="leap.db.cp.PooledDataSource" name="kingbase">
+        <property name="driverClassName" value="com.kingbase8.Driver" />
+        <property name="jdbcUrl"         value="jdbc:kingbase8://10.200.21.37:54321/kingbase" />
+        <property name="username"        value="kingbase" />
+        <property name="password"        value="kingbase@123" />
+    </bean>
+
+</beans>
