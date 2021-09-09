@@ -46,6 +46,7 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Ap
     protected boolean logout;
     protected boolean loginWithAccessToken;
     protected boolean forceLookupUserInfo;
+    protected boolean decryptJwt;
     protected String  authorizeUrl;
     protected String  tokenUrl;
     protected String  indirectTokenUrl;
@@ -120,6 +121,16 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Ap
     @ConfigProperty
     public void setForceLookupUserInfo(boolean forceLookupUserInfo) {
         this.forceLookupUserInfo = forceLookupUserInfo;
+    }
+
+    @Override
+    public boolean isDecryptJwt() {
+        return decryptJwt;
+    }
+
+    @ConfigProperty
+    public void setDecryptJwt(boolean decryptJwt) {
+        this.decryptJwt = decryptJwt;
     }
 
     @Override

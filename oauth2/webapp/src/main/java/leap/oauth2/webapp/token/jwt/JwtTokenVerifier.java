@@ -33,15 +33,11 @@ import leap.lang.logging.LogFactory;
 import leap.lang.security.RSA;
 import leap.oauth2.webapp.OAuth2Config;
 import leap.oauth2.webapp.OAuth2InternalServerException;
-import leap.oauth2.webapp.token.SimpleTokenInfo;
-import leap.oauth2.webapp.token.Token;
-import leap.oauth2.webapp.token.TokenInfo;
-import leap.oauth2.webapp.token.TokenVerifier;
+import leap.oauth2.webapp.token.*;
 import leap.web.security.SecurityConfig;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKeySet;
 import org.jose4j.lang.JoseException;
-
 import java.security.interfaces.RSAPublicKey;
 import java.util.List;
 import java.util.Map;
@@ -53,9 +49,10 @@ public class JwtTokenVerifier implements TokenVerifier {
 
     private static final Log log = LogFactory.get(JwtTokenVerifier.class);
 
-    protected @Inject SecurityConfig sc;
-    protected @Inject OAuth2Config   config;
-    protected @Inject HttpClient     httpClient;
+    protected @Inject SecurityConfig  sc;
+    protected @Inject OAuth2Config    config;
+    protected @Inject HttpClient      httpClient;
+    protected @Inject TokenInfoLookup tokenInfoLookup;
     
     protected @Inject @Nullable JwksSelector selector;
 
@@ -63,10 +60,13 @@ public class JwtTokenVerifier implements TokenVerifier {
 
     @Override
     public TokenInfo verifyToken(Token token) throws TokenVerifyException {
-        if (null == verifier) {
-            refreshJwtVerifier(token.getToken());
+        if (config.isDecryptJwt()) {
+            if (null == verifier) {
+                refreshJwtVerifier(token.getToken());
+            }
+            return verify(verifier, token.getToken());
         }
-        return verify(verifier, token.getToken());
+        return tokenInfoLookup.lookupByAccessToken(token.getToken());
     }
 
     protected void refreshJwtVerifier(String token) {

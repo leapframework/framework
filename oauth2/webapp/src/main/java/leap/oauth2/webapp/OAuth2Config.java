@@ -57,6 +57,14 @@ public interface OAuth2Config extends OAuth2ConfigBase {
     boolean isForceLookupUserInfo();
 
     /**
+     * Returns true will decrypt jwt token.
+     *
+     * <p/>
+     * Default is false.
+     */
+    boolean isDecryptJwt();
+
+    /**
      * todo : doc
      */
     String getAuthorizeUrl();

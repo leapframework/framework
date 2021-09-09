@@ -37,10 +37,7 @@ import leap.oauth2.webapp.token.TokenInfoLookup;
 import leap.oauth2.webapp.token.TokenVerifier;
 import leap.oauth2.webapp.user.UserDetailsLookup;
 import leap.oauth2.webapp.user.UserInfoLookup;
-import leap.web.Request;
-
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Default implementation of {@link OAuth2Authenticator}.
