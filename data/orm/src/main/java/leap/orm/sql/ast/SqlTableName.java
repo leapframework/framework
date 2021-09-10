@@ -24,6 +24,7 @@ import leap.orm.OrmContext;
 import leap.orm.dmo.Dmo;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
+import leap.orm.sql.PreparedBatchSqlStatementBuilder;
 import leap.orm.sql.Sql;
 import leap.orm.sql.SqlContext;
 import leap.orm.sql.SqlStatementBuilder;
@@ -104,6 +105,14 @@ public class SqlTableName extends SqlObjectNameBase implements SqlTableSource {
     }
 
     @Override
+    protected void prepareBatchStatement_(SqlContext context, PreparedBatchSqlStatementBuilder stm, Object[] params) throws IOException {
+	    if (null != em) {
+	        tryAppendSchema(context, stm);
+        }
+        super.prepareBatchStatement_(context, stm, params);
+    }
+
+    @Override
     protected void toSql_(Appendable out) throws IOException {
         toSql_(out, null, null, null);
     }
@@ -143,7 +152,7 @@ public class SqlTableName extends SqlObjectNameBase implements SqlTableSource {
         }
     }
 
-    protected void tryAppendSchema(SqlContext context, SqlStatementBuilder stm) throws IOException {
+    protected void tryAppendSchema(SqlContext context, Appendable appendable) throws IOException {
 	    if (Strings.indexOf(em.getTableName(), ".") >= 0) {
 	        return;
         }
@@ -151,7 +160,7 @@ public class SqlTableName extends SqlObjectNameBase implements SqlTableSource {
 	    if (Strings.isEmpty(schema) || schema.equals(context.db().getMetadata().getSchema().getName())) {
 	        return;
         }
-	    stm.append(schema).append(".");
+        appendable.append(schema).append(".");
     }
 
     protected void buildSecondaryTableStatement(SqlContext context, Sql sql, SqlStatementBuilder stm, Params params) throws IOException {
