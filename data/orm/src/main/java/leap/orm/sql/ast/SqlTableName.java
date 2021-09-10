@@ -18,6 +18,7 @@ package leap.orm.sql.ast;
 import leap.core.el.EL;
 import leap.db.Db;
 import leap.db.DbDialect;
+import leap.lang.Strings;
 import leap.lang.params.Params;
 import leap.orm.OrmContext;
 import leap.orm.dmo.Dmo;
@@ -26,7 +27,6 @@ import leap.orm.mapping.FieldMapping;
 import leap.orm.sql.Sql;
 import leap.orm.sql.SqlContext;
 import leap.orm.sql.SqlStatementBuilder;
-
 import java.io.IOException;
 
 public class SqlTableName extends SqlObjectNameBase implements SqlTableSource {
@@ -96,6 +96,8 @@ public class SqlTableName extends SqlObjectNameBase implements SqlTableSource {
                 toSql_(stm, em.getDynamicTableName(), params, context.getOrmContext());
                 return;
             }
+
+            tryAppendSchema(context, stm);
         }
 
         super.buildStatement_(context, sql, stm, params);
@@ -139,6 +141,17 @@ public class SqlTableName extends SqlObjectNameBase implements SqlTableSource {
         }else{
             buf.append(dialect.quoteIdentifier(lastName, true));    
         }
+    }
+
+    protected void tryAppendSchema(SqlContext context, SqlStatementBuilder stm) throws IOException {
+	    if (Strings.indexOf(em.getTableName(), ".") >= 0) {
+	        return;
+        }
+	    String schema = em.getTable().getSchema();
+	    if (Strings.isEmpty(schema) || schema.equals(context.db().getMetadata().getSchema().getName())) {
+	        return;
+        }
+	    stm.append(schema).append(".");
     }
 
     protected void buildSecondaryTableStatement(SqlContext context, Sql sql, SqlStatementBuilder stm, Params params) throws IOException {
