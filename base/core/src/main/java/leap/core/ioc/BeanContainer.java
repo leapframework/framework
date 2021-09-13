@@ -806,9 +806,10 @@ public class BeanContainer implements BeanFactory {
             }
 
             namedBeansMap.put(type, Collections.unmodifiableMap(beans));
+
         } else {
             //do not use the unmodified map
-            return new LinkedHashMap<>(beans);
+            beans = new LinkedHashMap<>(beans);
         }
 
         return beans;
