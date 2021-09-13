@@ -41,8 +41,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.Supplier;
@@ -716,7 +716,7 @@ public class BeanContainer implements BeanFactory {
                 List<T> list = (List<T>) support.getBeans(type);
                 if (null != list) {
                     for (T t : list) {
-                        if (!contains(beansWithOrder,t)) {
+                        if (!contains(beansWithOrder, t)) {
                             beansWithOrder.add(new OrderedBean<>(t, getSortOrder(t, BeanDefinition.DEFAULT_SORT_ORDER)));
                         }
                     }
@@ -724,7 +724,7 @@ public class BeanContainer implements BeanFactory {
             }
 
             Collections.sort(beansWithOrder, (o1, o2) -> o1.order.doubleValue() >= o2.order.doubleValue() ? 1 : -1);
-            for(OrderedBean<T> ob : beansWithOrder) {
+            for (OrderedBean<T> ob : beansWithOrder) {
                 beans.add(ob.bean);
             }
             if (cache) {
@@ -735,23 +735,23 @@ public class BeanContainer implements BeanFactory {
     }
 
     protected Number getSortOrder(Object bean, Number defaultOrder) {
-        if(bean instanceof Ordered) {
+        if (bean instanceof Ordered) {
             return ((Ordered) bean).getSortOrder();
         }
 
         Annotation order = bean.getClass().getAnnotation(Order.class);
-        if(null != order) {
+        if (null != order) {
             return ((Order) order).value();
         }
 
-        for(Annotation a : bean.getClass().getAnnotations()) {
-            if(a.annotationType().getSimpleName().equals("Order")){
+        for (Annotation a : bean.getClass().getAnnotations()) {
+            if (a.annotationType().getSimpleName().equals("Order")) {
                 try {
                     Method method = a.annotationType().getMethod("value");
-                    if(null != method && (Integer.TYPE == method.getReturnType() || Float.TYPE == method.getReturnType())){
-                        return (Number)method.invoke(a);
+                    if (null != method && (Integer.TYPE == method.getReturnType() || Float.TYPE == method.getReturnType())) {
+                        return (Number) method.invoke(a);
                     }
-                }catch (Exception e) {
+                } catch (Exception e) {
                 }
             }
         }
@@ -760,8 +760,8 @@ public class BeanContainer implements BeanFactory {
     }
 
     protected <T> boolean contains(List<OrderedBean<T>> beans, Object bean) {
-        for(OrderedBean orderedBean : beans) {
-            if(orderedBean.bean == bean) {
+        for (OrderedBean orderedBean : beans) {
+            if (orderedBean.bean == bean) {
                 return true;
             }
         }
@@ -771,6 +771,7 @@ public class BeanContainer implements BeanFactory {
     protected static class OrderedBean<T> {
         protected final T      bean;
         protected final Number order;
+
         public OrderedBean(T bean, Number order) {
             this.bean = bean;
             this.order = order;
@@ -805,6 +806,9 @@ public class BeanContainer implements BeanFactory {
             }
 
             namedBeansMap.put(type, Collections.unmodifiableMap(beans));
+        } else {
+            //do not use the unmodified map
+            return new LinkedHashMap<>(beans);
         }
 
         return beans;
@@ -1206,7 +1210,7 @@ public class BeanContainer implements BeanFactory {
 
         //bean autowirer
         this.autowirer = tryGetBean(BeanAutowirer.class);
-        if(null != autowirer && autowirer.isBeanFactoryWrapper()) {
+        if (null != autowirer && autowirer.isBeanFactoryWrapper()) {
             this.autowirer = null;
         }
 
@@ -1311,8 +1315,8 @@ public class BeanContainer implements BeanFactory {
         if (ProxyBean.class.isAssignableFrom(pd.getBeanClass())) {
             proxy = doCreateBeanOnly(pd);
             ((ProxyBean) proxy).setTargetBean(bean);
-        }else if(ProxyFactory.class.isAssignableFrom(pd.getBeanClass())) {
-            ProxyFactory factory = (ProxyFactory)doCreateBeanOnly(pd);
+        } else if (ProxyFactory.class.isAssignableFrom(pd.getBeanClass())) {
+            ProxyFactory factory = (ProxyFactory) doCreateBeanOnly(pd);
             proxy = factory.createProxy(bean);
         } else {
             ReflectConstructor c = ReflectClass.of(pd.getBeanClass()).getConstructor(type);
@@ -1359,9 +1363,9 @@ public class BeanContainer implements BeanFactory {
 
     protected BeanDefinitionBase findProxy(BeanDefinitionBase bd) {
         BeanDefinitionBase pd = doFindProxy(bd);
-        if(null != pd) {
-            return ((ProxyBeanDefinition.TargetBeanDefinition)pd).getProxy();
-        }else {
+        if (null != pd) {
+            return ((ProxyBeanDefinition.TargetBeanDefinition) pd).getProxy();
+        } else {
             return null;
         }
     }
@@ -1414,9 +1418,9 @@ public class BeanContainer implements BeanFactory {
      */
     protected boolean isTypeProxy(BeanDefinitionBase pd) {
         BeanDefinitionBase target;
-        if(pd instanceof ProxyBeanDefinition) {
+        if (pd instanceof ProxyBeanDefinition) {
             target = ((ProxyBeanDefinition) pd).getTarget();
-        }else {
+        } else {
             target = pd;
         }
 
@@ -1438,9 +1442,9 @@ public class BeanContainer implements BeanFactory {
         FactoryDefinition fd = bd.getFactoryDefinition();
         ValueDefinition   vd = bd.getValueDefinition();
 
-        if(null != factory) {
+        if (null != factory) {
             bean = factory.get();
-        }else if (null != fd) {
+        } else if (null != fd) {
             bean = doResolveValueFromFactory(bd, fd);
         } else if (null != vd) {
             bean = doResolveValue(bd, vd, null);
@@ -1556,7 +1560,7 @@ public class BeanContainer implements BeanFactory {
             ((PreInjectBean) bean).preInject(factory);
         }
 
-        if(null != autowirer) {
+        if (null != autowirer) {
             autowirer.autowire(bean);
         }
 
@@ -2261,8 +2265,8 @@ public class BeanContainer implements BeanFactory {
 
     protected void addBeanDefinition(BeanDefinitionBase bd, boolean proxy) throws BeanDefinitionException {
         bds.add(bd);
-        if(proxy) {
-            ProxyBeanDefinition pdb = (ProxyBeanDefinition)bd;
+        if (proxy) {
+            ProxyBeanDefinition pdb = (ProxyBeanDefinition) bd;
             bpds.add(pdb.getTarget());
         }
     }
