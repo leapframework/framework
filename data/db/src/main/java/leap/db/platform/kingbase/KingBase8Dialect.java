@@ -43,7 +43,7 @@ public class KingBase8Dialect extends GenericDbDialect {
 
     @Override
     public String getDefaultSchemaName(Connection connection, DatabaseMetaData dm) throws SQLException {
-        return connection.getSchema();
+        return connection.getCatalog();
     }
 
     @Override
