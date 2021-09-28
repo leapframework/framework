@@ -22,6 +22,7 @@ import leap.lang.resource.Resources;
 import leap.lang.servlet.Servlets;
 
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 
 public class Utils {
     public static final String RES_CLASSPATH_PREFIX = "classpath:META-INF/resources";
@@ -32,6 +33,29 @@ public class Utils {
             resource = Resources.getResource(RES_CLASSPATH_PREFIX + Paths.prefixWithSlash(path));
         }
         return resource;
+    }
+
+    public static String buildRequestUrl(HttpServletRequest r) {
+        return buildRequestUrl(r.getServletPath(), r.getRequestURI(), r.getContextPath(), r.getPathInfo(),
+                r.getQueryString());
+    }
+
+    private static String buildRequestUrl(String servletPath, String requestURI, String contextPath, String pathInfo,
+                                          String queryString) {
+        StringBuilder url = new StringBuilder();
+        if (servletPath != null) {
+            url.append(servletPath);
+            if (pathInfo != null) {
+                url.append(pathInfo);
+            }
+        }
+        else {
+            url.append(requestURI.substring(contextPath.length()));
+        }
+        if (queryString != null) {
+            url.append("?").append(queryString);
+        }
+        return url.toString();
     }
 
     protected Utils() {

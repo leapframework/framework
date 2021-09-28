@@ -32,6 +32,8 @@ import leap.lang.http.Headers;
 import leap.lang.http.MimeType;
 import leap.lang.http.MimeTypes;
 import leap.lang.http.QueryStringParser;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.lang.tostring.ToStringBuilder;
 import leap.web.action.ActionContext;
 import leap.web.assets.AssetSource;
@@ -39,6 +41,7 @@ import leap.web.config.WebConfig;
 import leap.web.format.FormatManager;
 import leap.web.view.View;
 import leap.web.view.ViewSource;
+
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -52,6 +55,8 @@ import java.util.*;
 import java.util.Map.Entry;
 
 public class DefaultRequest extends Request {
+
+    private final Log log = LogFactory.get(DefaultRequest.class);
 
     protected final App            app;
     protected final WebConfig      config;
@@ -467,10 +472,10 @@ public class DefaultRequest extends Request {
 
     @Override
     public String getParameter(String name, boolean autoTrim) {
-        if (autoTrim){
+        if (autoTrim) {
             String s = req.getParameter(name);
             return null == s ? null : s.trim();
-        }else{
+        } else {
             return req.getParameter(name);
         }
     }
@@ -915,6 +920,10 @@ public class DefaultRequest extends Request {
     protected Map<String, Object> initRequestParameters() {
         Map<String, Object> map = new LinkedHashMap<String, Object>();
 
+        if (log.isTraceEnabled()) {
+            log.trace("Init request params from {} {}", req.getClass().getSimpleName(), req.getParameterMap());
+        }
+
         boolean trim = config.isAutoTrimParameters();
 
         for (Entry<String, String[]> entry : req.getParameterMap().entrySet()) {
@@ -988,7 +997,7 @@ public class DefaultRequest extends Request {
 
         @Override
         public Map<String, Object> asMap() {
-            return (Map)req.getParameterMap();
+            return (Map) req.getParameterMap();
         }
 
         @Override

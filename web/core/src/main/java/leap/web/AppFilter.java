@@ -106,6 +106,11 @@ public class AppFilter implements Filter {
     @Override
     public void doFilter(ServletRequest req, ServletResponse resp, final FilterChain chain) throws IOException, ServletException {
         HttpServletRequest httpReq = (HttpServletRequest) req;
+
+        if (log.isDebugEnabled()) {
+            log.debug("Handling {} {}", httpReq.getClass().getName(), Utils.buildRequestUrl(httpReq));
+        }
+
         for (String ignoredPath : app.ignoredPaths()) {
             if (httpReq.getRequestURI().startsWith(ignoredPath)) {
                 chain.doFilter(req, resp);
