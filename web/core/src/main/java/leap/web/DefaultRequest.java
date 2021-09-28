@@ -32,6 +32,7 @@ import leap.lang.http.Headers;
 import leap.lang.http.MimeType;
 import leap.lang.http.MimeTypes;
 import leap.lang.http.QueryStringParser;
+import leap.lang.json.JSON;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.tostring.ToStringBuilder;
@@ -921,7 +922,7 @@ public class DefaultRequest extends Request {
         Map<String, Object> map = new LinkedHashMap<String, Object>();
 
         if (log.isTraceEnabled()) {
-            log.trace("Init request params from {} {}", req.getClass().getSimpleName(), req.getParameterMap());
+            log.trace("Init request params from {} {}", req.getClass().getSimpleName(), JSON.encode(req.getParameterMap()));
         }
 
         boolean trim = config.isAutoTrimParameters();

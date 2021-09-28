@@ -24,6 +24,7 @@ import leap.lang.convert.ConvertException;
 import leap.lang.http.HTTP;
 import leap.lang.intercepting.Execution;
 import leap.lang.intercepting.State;
+import leap.lang.json.JSON;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.web.Result;
@@ -337,8 +338,8 @@ public class DefaultActionManager implements ActionManager {
 
     protected Object[] resolveArgumentValues(ActionContext context, Validation validation, RequestFormat format, ExecutionAttributes eas) throws Throwable {
         if (log.isTraceEnabled()) {
-            log.trace("Request params {} {}", context.getRequest().getClass().getSimpleName(), context.getRequest().getParameters());
-            log.trace("Path params {}", context.getPathParameters());
+            log.trace("Request params {} {}", context.getRequest().getClass().getSimpleName(), JSON.encode(context.getRequest().getParameters()));
+            log.trace("Path params {}", JSON.encode(context.getPathParameters()));
         }
 
         final Action              action             = context.getAction();
