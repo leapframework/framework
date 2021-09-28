@@ -336,6 +336,11 @@ public class DefaultActionManager implements ActionManager {
     }
 
     protected Object[] resolveArgumentValues(ActionContext context, Validation validation, RequestFormat format, ExecutionAttributes eas) throws Throwable {
+        if (log.isTraceEnabled()) {
+            log.trace("Request params {} {}", context.getRequest().getClass().getSimpleName(), context.getRequest().getParameters());
+            log.trace("Path params {}", context.getPathParameters());
+        }
+
         final Action              action             = context.getAction();
         final Argument[]          arguments          = action.getArguments();
         final ExecutionArgument[] executionArguments = eas.executionArguments;
