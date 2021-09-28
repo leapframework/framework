@@ -180,10 +180,6 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
             request.setAssetSource(assetSource);
         }
 
-        if (_trace) {
-            log.trace("Request params {}", JSON.encode(request.getParameters()));
-        }
-
         interceptors.onPrepareRequest(request, response);
     }
 

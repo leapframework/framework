@@ -109,7 +109,7 @@ public class AppFilter implements Filter {
         HttpServletRequest httpReq = (HttpServletRequest) req;
 
         if (log.isTraceEnabled()) {
-            log.trace("Handling {} {} {}", httpReq.getClass().getName(), Utils.buildRequestUrl(httpReq), JSON.encode(httpReq.getParameterMap()));
+            log.trace("Handling {} {}, params : {}", httpReq.getClass().getName(), Utils.buildRequestUrl(httpReq), JSON.encode(httpReq.getParameterMap()));
         }
 
         for (String ignoredPath : app.ignoredPaths()) {
@@ -125,10 +125,6 @@ public class AppFilter implements Filter {
 
         final DefaultResponse response = createResponse(responseWrapper);
         final DefaultRequest  request  = createRequest(requestWrapper, response);
-
-        if (log.isTraceEnabled()) {
-            log.trace("Request params {}", JSON.encode(request.getParameters()));
-        }
 
         response.setRequest(request);
         AppContext.setCurrent(appContext);
