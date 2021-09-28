@@ -26,6 +26,7 @@ import leap.core.validation.ValidationManager;
 import leap.lang.New;
 import leap.lang.Strings;
 import leap.lang.intercepting.State;
+import leap.lang.json.JSON;
 import leap.lang.net.Urls;
 import leap.lang.time.StopWatch;
 import leap.web.action.ActionContext;
@@ -62,20 +63,42 @@ import static leap.web.cors.CorsHandler.REQUEST_HEADER_ACCESS_CONTROL_REQUEST_ME
 
 public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 
-    protected @Inject @M RequestHandlerMapping[] handlerMappings;
-    protected @Inject @M RequestInterceptors interceptors;
-    protected @Inject @M ActionManager actionManager;
-    protected @Inject @M ValidationManager validationManager;
-    protected @Inject @M DebugDetector debugDetector;
-    protected @Inject @M ThemeManager themeManager;
-    protected @Inject @M FormatManager formatManager;
-    protected @Inject @M ViewSource viewSource;
-    protected @Inject @M AssetSource assetSource;
-    protected @Inject @M WebConfig webConfig;
-    protected @Inject @M AppListener[] listeners;
+    protected @Inject
+    @M
+    RequestHandlerMapping[] handlerMappings;
+    protected @Inject
+    @M
+    RequestInterceptors     interceptors;
+    protected @Inject
+    @M
+    ActionManager           actionManager;
+    protected @Inject
+    @M
+    ValidationManager       validationManager;
+    protected @Inject
+    @M
+    DebugDetector           debugDetector;
+    protected @Inject
+    @M
+    ThemeManager            themeManager;
+    protected @Inject
+    @M
+    FormatManager           formatManager;
+    protected @Inject
+    @M
+    ViewSource              viewSource;
+    protected @Inject
+    @M
+    AssetSource             assetSource;
+    protected @Inject
+    @M
+    WebConfig               webConfig;
+    protected @Inject
+    @M
+    AppListener[]           listeners;
 
     protected LocaleResolver localeResolver;
-    protected int maxExecutionCount = 10;
+    protected int            maxExecutionCount = 10;
 
     protected ServerInfo serverInfo;
 
@@ -92,8 +115,8 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
         //debug
         debugDetector.detectDebugStatus(request);
 
-        if(null == serverInfo){
-            initServerInfoAndNotifyListener(request,response);
+        if (null == serverInfo) {
+            initServerInfoAndNotifyListener(request, response);
         }
 
         //set locale
@@ -125,7 +148,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
             request.setMessageSource(app.getMessageSource());
         }
 
-        if(app.getWebConfig().isViewEnabled()) {
+        if (app.getWebConfig().isViewEnabled()) {
             //theme
             Theme theme = themeManager.resolveTheme(request);
             if (null != theme) {
@@ -148,7 +171,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
             if (null == request.getViewSource()) {
                 request.setViewSource(viewSource);
             }
-        }else {
+        } else {
             request.setViewSource((viewName, locale) -> null);
         }
 
@@ -157,27 +180,31 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
             request.setAssetSource(assetSource);
         }
 
+        if (_trace) {
+            log.trace("Request params {}", JSON.encode(request.getParameters()));
+        }
+
         interceptors.onPrepareRequest(request, response);
     }
 
-    protected void processRequestBeforeHandling(Request request, Response response)  {
+    protected void processRequestBeforeHandling(Request request, Response response) {
         //Process authentication
-        if(null == request.getAuthentication()) {
+        if (null == request.getAuthentication()) {
             SecurityContext securityContext = SecurityContext.tryGetCurrent();
-            if(null != securityContext) {
+            if (null != securityContext) {
                 request.setAuthentication(securityContext.getAuthentication());
             }
         }
     }
 
     protected synchronized void initServerInfoAndNotifyListener(Request request, Response response) {
-        if(null != serverInfo){
+        if (null != serverInfo) {
             return;
         }
 
-        String scheme = request.getServletRequest().getScheme();
-        String host = request.getServletRequest().getLocalAddr();
-        int port = request.getServletRequest().getLocalPort();
+        String scheme      = request.getServletRequest().getScheme();
+        String host        = request.getServletRequest().getLocalAddr();
+        int    port        = request.getServletRequest().getLocalPort();
         String contextPath = request.getServletContext().getContextPath();
 
         serverInfo = new ServerInfo();
@@ -186,18 +213,18 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
         serverInfo.setPort(port);
         serverInfo.setContextPath(contextPath);
 
-        for(AppListener listener : listeners){
-            listener.onServerInfoResolved(app,serverInfo);
+        for (AppListener listener : listeners) {
+            listener.onServerInfoResolved(app, serverInfo);
         }
     }
 
     @Override
     public boolean handleRequest(Request request, Response response) throws ServletException, IOException {
         if (_trace) {
-            log.trace("Received request : {}", request.getPath());
+            log.trace("Received request : {} {}", request.getPath(), JSON.encode(request.getParameters()));
         }
 
-        StopWatch sw = StopWatch.startNew();
+        StopWatch               sw        = StopWatch.startNew();
         DefaultRequestExecution execution = new DefaultRequestExecution();
         try {
             boolean handled;
@@ -213,14 +240,14 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
                 String path = resolveActionPath(request, response, router, ac);
 
                 // resolve route
-                Route route = resolveRoute(request,response,router,ac);
-                if(null != route) {
+                Route route = resolveRoute(request, response, router, ac);
+                if (null != route) {
                     ac.setRoute(route);
                     request.setActionContext(ac);
                 }
 
                 //handle by interceptors
-                handled = State.isIntercepted(interceptors.preHandleRequest(request, response,ac));
+                handled = State.isIntercepted(interceptors.preHandleRequest(request, response, ac));
 
                 //handle by handlers
                 if (!handled) {
@@ -260,7 +287,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
                                 handled = handleNoAction(request, response, router, path);
                             }
 
-                            if(handled) {
+                            if (handled) {
                                 webConfig.getCorsHandler().postHandle(request, response);
                             }
                         } else {
@@ -385,7 +412,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
         return path;
     }
 
-    protected Route resolveRoute(Request request,Response response,Router router,DefaultActionContext ac){
+    protected Route resolveRoute(Request request, Response response, Router router, DefaultActionContext ac) {
         Map<String, String> pathVariables = new LinkedHashMap<>();
 
         Route route = router.match(request.getMethod(),
@@ -403,7 +430,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
                 ac.setPath(request.getServicePathWithoutExtension());
             }
         }
-        if(null != route){
+        if (null != route) {
             // decode path variable value
             pathVariables.forEach((key, value) -> {
                 pathVariables.put(key, Urls.decode(value));
@@ -430,7 +457,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 
         if (!Strings.isEmpty(ac.getPath())) {
             Enumeration<String> methods = request.getServletRequest().getHeaders(REQUEST_HEADER_ACCESS_CONTROL_REQUEST_METHOD);
-            Route route = null;
+            Route               route   = null;
 
             try {
                 while (methods.hasMoreElements()) {
@@ -446,8 +473,8 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
                 if (null == route) {
                     return false;
                 }
-            }catch (RuntimeException e) {
-                if(!e.getMessage().contains("Ambiguous")) {
+            } catch (RuntimeException e) {
+                if (!e.getMessage().contains("Ambiguous")) {
                     throw e;
                 }
             }
@@ -498,7 +525,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
                     return ROUTE_STATE_HANDLED;
                 }
 
-                if(!route.isExecutable()) {
+                if (!route.isExecutable()) {
                     log.debug("Route is not executable, skip execution");
                     return ROUTE_STATE_NOT_HANDLED;
                 }
@@ -532,7 +559,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
         DefaultActionContext ac = newActionContext(request, response);
         ac.setPath(actionPath);
         // resolve route
-        Route route = resolveRoute(request,response,router,ac);
+        Route route = resolveRoute(request, response, router, ac);
         ac.setRoute(route);
         if (ROUTE_STATE_HANDLED == routeAndExecuteAction(request, response, router, ac)) {
             return true;
@@ -554,12 +581,12 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
             return true;
         }
 
-        if(!config.isAllowViewAction()) {
+        if (!config.isAllowViewAction()) {
             return false;
         }
 
         ViewSource viewSource = request.getViewSource();
-        if(null == viewSource) {
+        if (null == viewSource) {
             return false;
         }
 
@@ -618,7 +645,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
         }
 
         //todo: hard code validation exception handling
-        if(exception instanceof ValidationException) {
+        if (exception instanceof ValidationException) {
             response.sendError(status, exception.getMessage());
         }
 
@@ -701,7 +728,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
         } else {
             response.setStatus(e.getStatus());
             String contentType = content.getContentType(request);
-            if(!Strings.isEmpty(contentType)) {
+            if (!Strings.isEmpty(contentType)) {
                 response.setContentType(contentType);
             }
             content.render(request, response);
@@ -726,7 +753,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
                         "Result not found for action '" + actionContext.getAction().toString() + "'");
             }
 
-            if(response.getStatus() == 200) {
+            if (response.getStatus() == 200) {
                 response.setStatus(result.getStatus());
             }
             return;

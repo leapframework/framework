@@ -15,9 +15,6 @@
  */
 package leap.web;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
 import javax.servlet.ServletException;
 
 import leap.core.BeanFactory;

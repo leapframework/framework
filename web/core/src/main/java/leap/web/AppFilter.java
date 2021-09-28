@@ -22,6 +22,7 @@ import leap.core.web.RequestIgnore;
 import leap.core.web.ResponseBase;
 import leap.lang.New;
 import leap.lang.http.HTTP;
+import leap.lang.json.JSON;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.servlet.Servlets;
@@ -107,8 +108,8 @@ public class AppFilter implements Filter {
     public void doFilter(ServletRequest req, ServletResponse resp, final FilterChain chain) throws IOException, ServletException {
         HttpServletRequest httpReq = (HttpServletRequest) req;
 
-        if (log.isDebugEnabled()) {
-            log.debug("Handling {} {}", httpReq.getClass().getName(), Utils.buildRequestUrl(httpReq));
+        if (log.isTraceEnabled()) {
+            log.trace("Handling {} {} {}", httpReq.getClass().getName(), Utils.buildRequestUrl(httpReq), JSON.encode(httpReq.getParameterMap()));
         }
 
         for (String ignoredPath : app.ignoredPaths()) {
@@ -124,6 +125,10 @@ public class AppFilter implements Filter {
 
         final DefaultResponse response = createResponse(responseWrapper);
         final DefaultRequest  request  = createRequest(requestWrapper, response);
+
+        if (log.isTraceEnabled()) {
+            log.trace("Request params {}", JSON.encode(request.getParameters()));
+        }
 
         response.setRequest(request);
         AppContext.setCurrent(appContext);
