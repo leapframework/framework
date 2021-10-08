@@ -26,7 +26,7 @@ import leap.lang.exception.ObjectNotFoundException;
 public abstract class RequestContext implements AttributeAccessor {
 
 	private   static RequestContext              standalone  = null;
-	protected static ThreadLocal<RequestContext> threadlocal = new InheritableThreadLocal<RequestContext>();
+	protected static ThreadLocal<RequestContext> threadlocal = new ThreadLocal<>();
 
 	public static RequestContext current() {
 		RequestContext c = tryGetCurrent();
