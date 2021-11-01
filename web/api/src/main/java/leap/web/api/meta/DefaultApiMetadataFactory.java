@@ -623,10 +623,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
                 }
             }else{
                 op.addTag(resourceType.getSimpleName());
-                MApiTag tag = m.getTags().get(resourceType.getSimpleName());
-                if(null == tag) {
-                    m.addTag(new MApiTag(resourceType.getSimpleName()));
-                }
+                m.tryAddTag(resourceType.getSimpleName());
             }
         }
     }

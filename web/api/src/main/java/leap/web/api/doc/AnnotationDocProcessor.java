@@ -18,6 +18,7 @@ package leap.web.api.doc;
 
 import leap.core.annotation.Inject;
 import leap.core.doc.DocResolver;
+import leap.lang.Arrays2;
 import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
 import leap.lang.meta.MNamedWithDescBuilder;
@@ -32,7 +33,6 @@ import leap.web.api.meta.model.MApiModelBuilder;
 import leap.web.api.meta.model.MApiOperationBuilder;
 import leap.web.api.meta.model.MApiParameterBuilder;
 import leap.web.api.meta.model.MApiPropertyBuilder;
-
 import java.lang.reflect.Method;
 
 /**
@@ -47,7 +47,7 @@ public class AnnotationDocProcessor implements ApiMetadataProcessor {
         //operations
         m.getPaths().forEach((k, p) -> {
             p.getOperations().forEach(o -> {
-                processOperation(context, o);
+                processOperation(context, m, o);
             });
         });
 
@@ -57,7 +57,7 @@ public class AnnotationDocProcessor implements ApiMetadataProcessor {
         });
     }
 
-    protected void processOperation(ApiMetadataContext context, MApiOperationBuilder o) {
+    protected void processOperation(ApiMetadataContext context, ApiMetadataBuilder m, MApiOperationBuilder o) {
         ReflectMethod method = o.getRoute().getAction().getMethod();
 
         //operation
@@ -67,6 +67,12 @@ public class AnnotationDocProcessor implements ApiMetadataProcessor {
                 doc = searchUp(method);
             }
             if(null != doc) {
+                if (!Arrays2.isEmpty(doc.tags())) {
+                    for (String tag : doc.tags()) {
+                        o.addTag(tag);
+                        m.tryAddTag(tag);
+                    }
+                }
                 resolveDoc(context, o, doc);
             }
         }

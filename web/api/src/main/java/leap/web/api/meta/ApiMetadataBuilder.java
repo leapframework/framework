@@ -234,6 +234,13 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
         return tags;
     }
 
+    public void tryAddTag(String name) {
+        if (tags.containsKey(name)) {
+            return;
+        }
+        tags.put(name, new MApiTag(name));
+    }
+
     public void addTag(MApiTag tag) {
         if (tags.containsKey(tag.getName())) {
             throw new IllegalStateException("Tag '" + tag.getName() + "' already exists!");
