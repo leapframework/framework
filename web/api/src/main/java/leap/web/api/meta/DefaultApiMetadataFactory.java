@@ -84,6 +84,8 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		createPaths(context, md);
 
         createModels(context, md);
+
+        createTags(context, md);
 		
 		return processMetadata(context, md);
     }
@@ -431,6 +433,10 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
             }
         }
         return ct.getName();
+    }
+
+    protected void createTags(ApiMetadataContext context, ApiMetadataBuilder md) {
+	    context.getConfig().getTags().forEach(md::addTag);
     }
 
 	protected void createApiPath(ApiMetadataContext context, ApiMetadataBuilder md, Route route) {

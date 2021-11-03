@@ -36,13 +36,13 @@ import leap.web.api.config.model.*;
 import leap.web.api.config.model.RestdConfig.Model;
 import leap.web.api.meta.model.MApiPermission;
 import leap.web.api.meta.model.MApiResponseBuilder;
+import leap.web.api.meta.model.MApiTag;
 import leap.web.api.permission.ResourcePermission;
 import leap.web.api.permission.ResourcePermissions;
 import leap.web.api.restd.sql.SqlOperationProvider;
 import leap.web.api.spec.swagger.SwaggerConstants;
 import leap.web.config.DefaultModuleConfig;
 import leap.web.config.ModuleConfigExtension;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -114,6 +114,8 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
     protected static final String OVERRIDE             = "override";
     protected static final String SQL_OPERATION        = "sql-operation";
     protected static final String SQL_KEY              = "sql-key";
+    protected static final String TAGS                 = "tags";
+    protected static final String TAG                  = "tag";
 
     @Override
     public String getNamespaceURI() {
@@ -518,6 +520,11 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
                     readRestd(context, api, reader);
                     continue;
                 }
+
+                if (reader.isStartElement(TAGS)) {
+                    readTags(context, api, reader);
+                    continue;
+                }
             }
         } finally {
             context.removeAttribute(ApiConfigurator.class.getName());
@@ -826,5 +833,18 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
         }
 
         return op;
+    }
+
+    private void readTags(AppConfigContext context, ApiConfigurator api, XmlReader reader) {
+        reader.loopInsideElement(() -> {
+
+            if (reader.isStartElement(TAG)) {
+                String name = reader.getRequiredAttribute(NAME);
+                String desc = reader.getAttribute(DESC);
+
+                api.addTag(new MApiTag(name, name, null, desc, null));
+            }
+
+        });
     }
 }

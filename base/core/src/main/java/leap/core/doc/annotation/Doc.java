@@ -46,7 +46,7 @@ public @interface Doc {
     String[] profile() default "";
 
     /**
-     * The tags.
+     * The name of tags.
      */
     String[] tags() default {};
 

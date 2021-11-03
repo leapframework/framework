@@ -27,16 +27,12 @@ import leap.web.api.config.model.OAuthConfig;
 import leap.web.api.config.model.ParamConfig;
 import leap.web.api.config.model.RestdConfig;
 import leap.web.api.meta.ApiMetadata;
-import leap.web.api.meta.model.MApiModel;
-import leap.web.api.meta.model.MApiModelBuilder;
-import leap.web.api.meta.model.MApiPermission;
-import leap.web.api.meta.model.MApiResponse;
+import leap.web.api.meta.model.*;
 import leap.web.api.mvc.ApiFailureHandler;
 import leap.web.api.permission.ResourcePermissionsSet;
 import leap.web.api.route.ApiRoute;
 import leap.web.route.Route;
 import leap.web.route.Routes;
-
 import java.util.Map;
 import java.util.Set;
 
@@ -282,4 +278,10 @@ public interface ApiConfig extends Named,Titled,Described,Extensible {
      * Returns the failure handler.
      */
     ApiFailureHandler getFailureHandler();
+
+	/**
+	 * Returns the tags.
+	 */
+	Set<MApiTag> getTags();
+
 }

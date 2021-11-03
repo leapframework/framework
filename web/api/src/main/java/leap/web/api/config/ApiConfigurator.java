@@ -276,4 +276,10 @@ public interface ApiConfigurator extends Extensible {
      * Sets {@link ApiFailureHandler}.
      */
     void setFailureHandler(ApiFailureHandler failureHandler);
+
+    /**
+     * Add a tag.
+     */
+    ApiConfigurator addTag(MApiTag tag);
+
 }

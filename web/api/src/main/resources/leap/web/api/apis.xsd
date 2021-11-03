@@ -91,6 +91,7 @@
                 <xsd:element name="default-page-size" type="xsd:integer" minOccurs="0" maxOccurs="1"/>
                 <xsd:element name="permissions" type="permissions"  minOccurs="0" maxOccurs="unbounded"/>
                 <xsd:element name="resource-permissions" type="resource-permissions" minOccurs="0" maxOccurs="unbounded"/>
+                <xsd:element name="tags" type="tags" minOccurs="0" maxOccurs="1"/>
                 <xsd:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded" />
             </xsd:choice>
             <xsd:attribute name="name"              type="xsd:string" use="required"/>
@@ -361,6 +362,17 @@
                 <xsd:attribute name="desc"         type="xsd:string"  use="optional"/>
             </xsd:extension>
         </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="tags">
+        <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="tag" type="tag"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="tag">
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="desc" type="xsd:string" use="optional"/>
     </xsd:complexType>
 
 </xsd:schema>

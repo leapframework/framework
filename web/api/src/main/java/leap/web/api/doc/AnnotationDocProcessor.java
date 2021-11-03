@@ -67,14 +67,9 @@ public class AnnotationDocProcessor implements ApiMetadataProcessor {
                 doc = searchUp(method);
             }
             if(null != doc) {
-                if (!Arrays2.isEmpty(doc.tags())) {
-                    for (String tag : doc.tags()) {
-                        o.addTag(tag);
-                        m.tryAddTag(tag);
-                    }
-                }
-                resolveDoc(context, o, doc);
+                resolveDesc(context, o, doc);
             }
+            resolveTag(method, m, o, doc);
         }
 
         //parameters
@@ -91,7 +86,7 @@ public class AnnotationDocProcessor implements ApiMetadataProcessor {
                 doc = searchUp(method, a.getParameter());
             }
             if (null != doc) {
-                resolveDoc(context, param, doc);
+                resolveDesc(context, param, doc);
             }
         }
     }
@@ -100,7 +95,7 @@ public class AnnotationDocProcessor implements ApiMetadataProcessor {
         for(Class<?> c : model.getJavaTypes()) {
             Doc doc = c.getAnnotation(Doc.class);
             if (null != doc) {
-                resolveDoc(context, model, doc);
+                resolveDesc(context, model, doc);
             }
         }
 
@@ -114,7 +109,7 @@ public class AnnotationDocProcessor implements ApiMetadataProcessor {
         if(null != bp) {
             Doc doc = bp.getAnnotation(Doc.class);
             if(null != doc) {
-                resolveDoc(context, p, doc);
+                resolveDesc(context, p, doc);
             }
         }
     }
@@ -151,7 +146,18 @@ public class AnnotationDocProcessor implements ApiMetadataProcessor {
         return null;
     }
 
-    protected void resolveDoc(ApiMetadataContext context, MNamedWithDescBuilder o, Doc a) {
+    protected void resolveTag(ReflectMethod method, ApiMetadataBuilder m, MApiOperationBuilder o, Doc doc) {
+        if (null != doc) {
+            if (!Arrays2.isEmpty(doc.tags())) {
+                for (String tag : doc.tags()) {
+                    o.addTag(tag);
+                    m.tryAddTag(tag);
+                }
+            }
+        }
+    }
+
+    protected void resolveDesc(ApiMetadataContext context, MNamedWithDescBuilder o, Doc a) {
         String summary = Strings.firstNotEmpty(a.summary(), a.value());
         if(Strings.isEmpty(o.getSummary()) && !Strings.isEmpty(summary)) {
             o.setSummary(docResolver.resolveDesc(summary));

@@ -56,6 +56,11 @@
             </model>
         </models>
 
+        <tags>
+            <tag name="Tag1" desc="测试标签1"/>
+            <tag name="User" desc="用户"/>
+        </tags>
+
     </api>
 
 </apis>
