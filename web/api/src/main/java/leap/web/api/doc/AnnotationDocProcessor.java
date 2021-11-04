@@ -68,8 +68,12 @@ public class AnnotationDocProcessor implements ApiMetadataProcessor {
             }
             if(null != doc) {
                 resolveDesc(context, o, doc);
+                resolveTag(m, o, doc);
             }
-            resolveTag(method, m, o, doc);
+            Doc classDoc = method.getDeclaringClass().getAnnotation(Doc.class);
+            if (null != classDoc) {
+                resolveTag(m, o, classDoc);
+            }
         }
 
         //parameters
@@ -146,14 +150,13 @@ public class AnnotationDocProcessor implements ApiMetadataProcessor {
         return null;
     }
 
-    protected void resolveTag(ReflectMethod method, ApiMetadataBuilder m, MApiOperationBuilder o, Doc doc) {
-        if (null != doc) {
-            if (!Arrays2.isEmpty(doc.tags())) {
-                for (String tag : doc.tags()) {
-                    o.addTag(tag);
-                    m.tryAddTag(tag);
-                }
-            }
+    protected void resolveTag(ApiMetadataBuilder m, MApiOperationBuilder o, Doc doc) {
+        if (Arrays2.isEmpty(doc.tags())) {
+            return;
+        }
+        for (String tag : doc.tags()) {
+            o.addTag(tag);
+            m.tryAddTag(tag);
         }
     }
 
