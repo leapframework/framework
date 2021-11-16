@@ -3,7 +3,6 @@ package app.models;
 import leap.orm.annotation.*;
 import leap.orm.annotation.domain.CreatedAt;
 import leap.orm.model.Model;
-
 import java.util.Date;
 import java.util.Map;
 
@@ -29,6 +28,9 @@ public class DMColumnTypes extends Model {
 
     @Column
     private DMEntity1 dmEntity1;
+
+    @Column(type = ColumnType.CLOB)
+    private String clob;
 
     public String getId() {
         return id;
@@ -77,4 +79,13 @@ public class DMColumnTypes extends Model {
     public void setDmEntity1(DMEntity1 dmEntity1) {
         this.dmEntity1 = dmEntity1;
     }
+
+    public String getClob() {
+        return clob;
+    }
+
+    public void setClob(String clob) {
+        this.clob = clob;
+    }
+
 }
