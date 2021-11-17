@@ -22,7 +22,6 @@ import leap.orm.mapping.EntityMapping;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.params.QueryOptions;
 import org.junit.Test;
-
 import java.util.List;
 
 public class DefaultModelQueryExecutorTest extends ModelExecutorTestBase {
@@ -159,6 +158,18 @@ public class DefaultModelQueryExecutorTest extends ModelExecutorTestBase {
         List<Record> records2 = executor.queryList(options2).list;
         assertNotNull(records2.get(0).get("tags"));
 
+    }
+
+    @Test
+    public void testGroupBy() {
+        DefaultModelQueryExecutor executor = newExecutor(Book.class);
+
+        QueryOptions options = new QueryOptions();
+        options.setAggregates("count(*) total");
+        options.setGroupBy("id");
+        options.setJoins("author a");
+        List<Record> records = executor.queryList(options).list;
+        assertEquals(2, records.size());
     }
 
 }
