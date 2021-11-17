@@ -1,6 +1,7 @@
 package leap.db.platform.dm;
 
 import leap.db.DbLimitQuery;
+import leap.db.model.DbColumn;
 import leap.db.platform.GenericDbDialect;
 import leap.lang.value.Limit;
 import java.sql.ResultSet;
@@ -101,4 +102,10 @@ public class DM7Dialect extends GenericDbDialect {
 
         return super.getColumnValueTypeKnown(rs, name, type);
     }
+
+    @Override
+    protected String getAutoIncrementColumnDefinitionEnd(DbColumn column) {
+        return "IDENTITY(1,1)";
+    }
+
 }
