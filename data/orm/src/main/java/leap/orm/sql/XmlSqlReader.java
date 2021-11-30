@@ -85,7 +85,7 @@ public class XmlSqlReader implements SqlReader {
                 return;
             }
 
-            SqlCommand exists = md.getSqlCommand(key);
+            SqlCommand exists = md.tryGetSqlCommand(key);
             if (null != exists) {
 				if (null != exists.getDbType() && null == sql.getDbType()) {
 					return;
