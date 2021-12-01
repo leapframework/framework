@@ -1,1 +1,2 @@
 class=leap.core.config.JasyptAppPropertyProcessor
+if-class-present=org.jasypt.encryption.pbe.config.PBEConfig
