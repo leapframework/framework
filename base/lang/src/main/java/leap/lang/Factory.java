@@ -165,10 +165,10 @@ public class Factory {
 	        
 			BeanType beanType = BeanType.of(clazz);
 			
-			for(Object key : properties.keySet()){
+			for (Object key : properties.keySet()) {
 				String name  = (String)key;
 				
-				if(!Strings.equals(CLASS_PROPERTY, name)){
+				if (!Strings.equals(CLASS_PROPERTY, name) && !Strings.equals(IF_CLASS_PRESENT, name)) {
 					BeanProperty bp = beanType.getProperty(name);
 					
 					String value = properties.getProperty(name);
