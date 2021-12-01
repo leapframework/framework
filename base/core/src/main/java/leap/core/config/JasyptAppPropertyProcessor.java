@@ -2,15 +2,10 @@ package leap.core.config;
 
 import leap.lang.Out;
 import leap.lang.Strings;
-import leap.lang.logging.Log;
-import leap.lang.logging.LogFactory;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
-import org.jasypt.encryption.pbe.config.SimplePBEConfig;
 import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
 
 public class JasyptAppPropertyProcessor implements AppPropertyProcessor {
-
-    private static final Log log = LogFactory.get(JasyptAppPropertyProcessor.class);
 
     private static final String ENC_PREFIX = "ENC(";
     private static final String ENC_SUFFIX = ")";
@@ -21,11 +16,8 @@ public class JasyptAppPropertyProcessor implements AppPropertyProcessor {
     public JasyptAppPropertyProcessor() {
         String password = System.getenv(PASSWORD_ENV);
         if (!Strings.isEmpty(password)) {
-            SimplePBEConfig config = new SimplePBEConfig();
-            config.setPassword(password);
-
             encryptor = new StandardPBEStringEncryptor();
-            encryptor.setConfig(config);
+            encryptor.setPassword(password);
         } else {
             encryptor = null;
         }
