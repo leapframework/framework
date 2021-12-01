@@ -76,5 +76,11 @@
 			<version>8.0.8</version>
 			<scope>provided</scope>
 		</dependency>
+        <dependency>
+            <groupId>org.jasypt</groupId>
+            <artifactId>jasypt</artifactId>
+            <version>${jasypt.version}</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>
