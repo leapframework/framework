@@ -19,7 +19,7 @@ package leap.lang.io;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ThreadFactory;
-
+import java.util.function.Predicate;
 import leap.lang.Exceptions;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -123,6 +123,15 @@ public class FileChangeMonitor implements Runnable {
         if (observer != null) {
             while (observers.remove(observer)) {
             }
+        }
+    }
+
+    /**
+     * Remove file system observer from this monitor.
+     */
+    public void removeObserver(final Predicate<FileChangeObserver> func) {
+        if (func != null) {
+            observers.removeIf(func);
         }
     }
 

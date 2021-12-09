@@ -27,15 +27,17 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.resource.Resource;
 import leap.lang.resource.Resources;
-
 import java.io.File;
 import java.io.FileFilter;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Predicate;
 
 public class ClasspathSqlSource implements SqlSource {
 	
 	private static final Log log = LogFactory.get(ClasspathSqlSource.class);
+
+	private static final Predicate<FileChangeObserver> PREDICATE_SQL_CHANGE_OBSERVER = SqlFileChangeObserver.class::isInstance;
 
     protected @Inject @M AppConfig      config;
     protected @Inject @M AppFileMonitor fileMonitor;
@@ -81,10 +83,12 @@ public class ClasspathSqlSource implements SqlSource {
 
 		};
 
+		fileMonitor.removeObserver(PREDICATE_SQL_CHANGE_OBSERVER);
+
 		Resource file = AppResources.getAppClasspathDirectory("sqls.xml");
 		if(file.isFile()) {
 			FileFilter fileFilter = FileFilters.nameEquals("sqls.xml");
-			FileChangeObserver observer = new FileChangeObserver(file.getFile().getParent(), fileFilter);
+			FileChangeObserver observer = new SqlFileChangeObserver(file.getFile().getParent(), fileFilter);
 
 			observer.addListener(listener);
 			fileMonitor.addObserver(observer);
@@ -92,7 +96,7 @@ public class ClasspathSqlSource implements SqlSource {
 
 		Resource dir = AppResources.getAppClasspathDirectory("sqls");
 		if(dir.isDirectory()) {
-			FileChangeObserver observer = new FileChangeObserver(dir.getFile());
+			FileChangeObserver observer = new SqlFileChangeObserver(dir.getFile());
 
 			observer.addListener(listener);
 			fileMonitor.addObserver(observer);
@@ -170,8 +174,21 @@ public class ClasspathSqlSource implements SqlSource {
             this.defaultOverride = originalDefaultOverride;
         }
 
+        @Override
         public boolean acceptDbType(String dbType){
 			return Strings.isEmpty(dbType) || configContext.getDb().getType().equalsIgnoreCase(dbType);
 		}
+	}
+
+	private static final class SqlFileChangeObserver extends FileChangeObserver {
+
+		public SqlFileChangeObserver(File directory) {
+			super(directory);
+		}
+
+		public SqlFileChangeObserver(String directoryName, FileFilter fileFilter) {
+			super(directoryName, fileFilter);
+		}
+
 	}
 }
