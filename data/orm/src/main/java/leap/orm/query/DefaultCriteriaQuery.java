@@ -1084,7 +1084,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                 }
 
                 sql.append(" join ")
-                        .append(target.getTableName())
+                        .append(target.getEntityName())
                         .append(" ")
                         .append(alias)
                         .append(" on ");
