@@ -83,7 +83,7 @@ public class ClasspathSqlSource implements SqlSource {
 
 		};
 
-		fileMonitor.removeObserver(PREDICATE_SQL_CHANGE_OBSERVER);
+		fileMonitor.removeObserverIf(PREDICATE_SQL_CHANGE_OBSERVER);
 
 		Resource file = AppResources.getAppClasspathDirectory("sqls.xml");
 		if(file.isFile()) {

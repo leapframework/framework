@@ -129,7 +129,7 @@ public class FileChangeMonitor implements Runnable {
     /**
      * Remove file system observer from this monitor.
      */
-    public void removeObserver(final Predicate<FileChangeObserver> func) {
+    public void removeObserverIf(final Predicate<FileChangeObserver> func) {
         if (func != null) {
             observers.removeIf(func);
         }
