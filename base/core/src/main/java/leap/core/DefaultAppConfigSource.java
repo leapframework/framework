@@ -38,7 +38,6 @@ import leap.lang.resource.SimpleResourceSet;
 import leap.lang.text.DefaultPlaceholderResolver;
 import leap.lang.text.PlaceholderResolver;
 import leap.lang.xml.XmlReader;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -243,7 +242,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
         Loader(Object externalContext, Map<String,AppProperty> props, String profile) {
             this.externalContext = externalContext;
             this.initProperties  = props;
-            this.config          = new DefaultAppConfig(profile, configSupports.toArray(new AppConfigSupport[0]));
+            this.config          = new DefaultAppConfig(profile, configSupports.toArray(new AppConfigSupport[0]), propertyProcessor);
             this.appResources    = AppResources.create(config, externalContext);
             this.configResources = appResources.search("config");
 
