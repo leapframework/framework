@@ -59,6 +59,14 @@ public class ScelNode {
         return quoted;
     }
 
+    public boolean isLeftParen() {
+        return token == ScelToken.LPAREN;
+    }
+
+    public boolean isRightParen() {
+        return token == ScelToken.RPAREN;
+    }
+
     public boolean isParen() {
         return token == ScelToken.LPAREN || token == ScelToken.RPAREN;
     }

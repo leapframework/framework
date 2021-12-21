@@ -98,6 +98,10 @@ public class ScelParser extends AbstractStringParser {
             switch (ch) {
 
                 case '(':
+                    if (!nodes.isEmpty() && nodes.get(nodes.size() - 1).isRightParen()) {
+                        error("Illegal expr such as ')('");
+                    }
+
                     parens++;
                     nodes.add(LPAREN);
                     nextChar();
@@ -106,6 +110,9 @@ public class ScelParser extends AbstractStringParser {
                 case ')':
                     if (parens == 0) {
                         error("Illegal char ')'");
+                    }
+                    if (!nodes.isEmpty() && nodes.get(nodes.size() - 1).isLeftParen()) {
+                        error("Illegal expr such as '()'");
                     }
 
                     parens--;
