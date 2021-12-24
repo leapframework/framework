@@ -44,4 +44,10 @@ public @interface Doc {
      * request profile example: http://xxxx/swagger.json?profile=profileA
      */
     String[] profile() default "";
+
+    /**
+     * The name of tags.
+     */
+    String[] tags() default {};
+
 }

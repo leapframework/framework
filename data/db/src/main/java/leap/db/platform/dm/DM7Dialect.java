@@ -1,12 +1,17 @@
 package leap.db.platform.dm;
 
 import leap.db.DbLimitQuery;
+import leap.db.model.DbColumn;
 import leap.db.platform.GenericDbDialect;
 import leap.lang.value.Limit;
-
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Types;
+import java.util.Arrays;
 
 public class DM7Dialect extends GenericDbDialect {
+
+    private static final String[] SQL_KEY_WORDS = new String[]{"VERSIONS"};
 
     @Override
     protected String getTestDriverSupportsGetParameterTypeSQL() {
@@ -21,6 +26,12 @@ public class DM7Dialect extends GenericDbDialect {
     @Override
     protected String getCloseQuoteString() {
         return "\"";
+    }
+
+    @Override
+    protected void registerSQLKeyWords() {
+        super.registerSQLKeyWords();
+        sqlKeyWords.addAll(Arrays.asList(SQL_KEY_WORDS));
     }
 
     @Override
@@ -73,4 +84,28 @@ public class DM7Dialect extends GenericDbDialect {
 
         return sql;
     }
+
+    @Override
+    protected Object getColumnValueTypeKnown(ResultSet rs, int index, int type) throws SQLException {
+        if (type == Types.CLOB) {
+            return rs.getString(index);
+        }
+
+        return super.getColumnValueTypeKnown(rs, index, type);
+    }
+
+    @Override
+    protected Object getColumnValueTypeKnown(ResultSet rs, String name, int type) throws SQLException {
+        if (type == Types.CLOB) {
+            return rs.getString(name);
+        }
+
+        return super.getColumnValueTypeKnown(rs, name, type);
+    }
+
+    @Override
+    protected String getAutoIncrementColumnDefinitionEnd(DbColumn column) {
+        return "IDENTITY(1,1)";
+    }
+
 }

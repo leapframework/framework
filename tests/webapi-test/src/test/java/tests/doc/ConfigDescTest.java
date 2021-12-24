@@ -19,6 +19,7 @@ package tests.doc;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.meta.model.MApiOperation;
+import leap.web.api.meta.model.MApiTag;
 import org.junit.Test;
 import tests.ApiTestCase;
 
@@ -42,4 +43,15 @@ public class ConfigDescTest extends ApiTestCase {
         assertEquals("要显示的页数,从1开始", o.tryGetParameter("page").getDescription());
         assertEquals("每页显示的条数",  o.tryGetParameter("page_size").getDescription());
     }
+
+    @Test
+    public void testTags() {
+        MApiTag[] tags = md("testing").getTags();
+
+        assertEquals("Tag1", tags[0].getName());
+        assertEquals("测试标签1", tags[0].getDescription());
+        assertEquals("User", tags[1].getName());
+        assertEquals("用户", tags[1].getDescription());
+    }
+
 }

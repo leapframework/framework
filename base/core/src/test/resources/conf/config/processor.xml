@@ -3,6 +3,7 @@
 
     <properties prefix="testProcessor">
     	<property name="prop1" value="dup:abcd"/>
+        <property name="prop2" value="ENC(+oE67TSfU/j7+Mr4oKPLYg==)"/>
     </properties>
 
 </config>

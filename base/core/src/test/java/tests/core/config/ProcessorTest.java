@@ -23,7 +23,17 @@ public class ProcessorTest extends AppTestBase {
 
     @Test
     public void testDupProcessor() {
-        assertEquals("abcdabcd",config.getProperty("testProcessor.prop1"));
+        assertEquals("abcdabcd", config.getProperty("testProcessor.prop1"));
+    }
+
+    @Test
+    public void testJasyptProcessor() {
+        // jasypt.encryptor.password=FLY
+        if (null != System.getenv("jasypt.encryptor.password")) {
+            assertEquals("123abc", config.getProperty("testProcessor.prop2"));
+        } else {
+            assertEquals("ENC(+oE67TSfU/j7+Mr4oKPLYg==)", config.getProperty("testProcessor.prop2"));
+        }
     }
 
 }

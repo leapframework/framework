@@ -17,15 +17,14 @@ package leap.core;
 
 import leap.core.config.AppProperty;
 import leap.core.config.AppPropertyPrinter;
+import leap.core.config.AppPropertyProcessor;
 import leap.core.config.SimpleAppProperty;
 import leap.core.config.dyna.*;
 import leap.core.config.dyna.exception.UnsupportedBindDynaPropertyException;
 import leap.core.config.dyna.exception.UnsupportedDynaPropertyException;
-import leap.core.monitor.SimpleMonitorProvider;
 import leap.core.sys.SysPermissionDef;
 import leap.lang.*;
 import leap.lang.annotation.Name;
-import leap.lang.asm.tree.analysis.Value;
 import leap.lang.convert.Converts;
 import leap.lang.io.IO;
 import leap.lang.json.JSON;
@@ -38,7 +37,6 @@ import leap.lang.security.RSA;
 import leap.lang.security.RSA.RsaKeyPair;
 import leap.lang.text.DefaultPlaceholderResolver;
 import leap.lang.text.PlaceholderResolver;
-
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -79,11 +77,13 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     protected List<SysPermissionDef>     permissionsReadonly = Collections.unmodifiableList(permissions);
     protected ResourceSet                resources           = null;
     protected DefaultPlaceholderResolver placeholderResolver = new DefaultPlaceholderResolver(this);
+    protected AppPropertyProcessor       propertyProcessor   = null;
 
-    public DefaultAppConfig(String profile, AppConfigSupport[] initialSupports) {
+    public DefaultAppConfig(String profile, AppConfigSupport[] initialSupports, AppPropertyProcessor propertyProcessor) {
         this.profile = profile;
         this.initialSupports = initialSupports;
         this.properties.put(INIT_PROPERTY_PROFILE, profile);
+        this.propertyProcessor = propertyProcessor;
     }
 
     @Override
@@ -96,6 +96,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
         this.postSupports = supports;
     }
 
+    @Override
     public void setPropertyProvider(PropertyProvider p) {
         this.propertyProvider = p;
     }
@@ -277,18 +278,28 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 
     @Override
     public String getProperty(String name) {
-        String v;
+        String v = null;
 
         for (AppConfigSupport support : initialSupports) {
             if ((v = support.getProperty(name)) != null) {
-                return v;
+                break;
             }
         }
 
-        for (AppConfigSupport support : preSupports) {
-            if ((v = support.getProperty(name)) != null) {
-                return v;
+        if (null == v) {
+            for (AppConfigSupport support : preSupports) {
+                if ((v = support.getProperty(name)) != null) {
+                    break;
+                }
             }
+        }
+
+        if (null != v) {
+            Out<String> out = new Out<>();
+            if (propertyProcessor.process(name, v, out)) {
+                return out.getValue();
+            }
+            return v;
         }
 
         Object p = properties.get(name);
@@ -314,17 +325,30 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 
     protected AppProperty getPropertyWithSource(String name) {
         String v;
+        AppProperty property = null;
 
         for (AppConfigSupport support : initialSupports) {
             if ((v = support.getProperty(name)) != null) {
-                return new SimpleAppProperty(getObjectName(support), name, v);
+                property = new SimpleAppProperty(getObjectName(support), name, v);
+                break;
             }
         }
 
-        for (AppConfigSupport support : preSupports) {
-            if ((v = support.getProperty(name)) != null) {
-                return new SimpleAppProperty(getObjectName(support), name, v);
+        if (null == property) {
+            for (AppConfigSupport support : preSupports) {
+                if ((v = support.getProperty(name)) != null) {
+                    property = new SimpleAppProperty(getObjectName(support), name, v);
+                    break;
+                }
             }
+        }
+
+        if (null != property) {
+            Out<String> out = new Out<>();
+            if (propertyProcessor.process(name, property.getValue(), out)) {
+                property.updateResolvedValue(out.getValue());
+            }
+            return property;
         }
 
         Object p = properties.get(name);

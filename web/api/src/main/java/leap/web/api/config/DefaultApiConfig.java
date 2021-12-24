@@ -22,17 +22,13 @@ import leap.lang.naming.NamingStyle;
 import leap.lang.path.Paths;
 import leap.web.api.config.model.*;
 import leap.web.api.meta.ApiMetadataBuilder;
-import leap.web.api.meta.model.MApiModelBuilder;
-import leap.web.api.meta.model.MApiPermission;
-import leap.web.api.meta.model.MApiResponse;
-import leap.web.api.meta.model.MApiResponseBuilder;
+import leap.web.api.meta.model.*;
 import leap.web.api.mvc.ApiFailureHandler;
 import leap.web.api.permission.ResourcePermissionsSet;
 import leap.web.api.route.ApiRoute;
 import leap.web.api.route.SimpleApiRoute;
 import leap.web.route.Route;
 import leap.web.route.Routes;
-
 import java.util.*;
 
 public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiConfigurator {
@@ -86,6 +82,8 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     protected Map<Route, Class<?>> resourceTypesImv = Collections.unmodifiableMap(resourceTypes);
 
     protected ResourcePermissionsSet resourcePermissionsSet = new ResourcePermissionsSet();
+
+    protected Set<MApiTag> tags = new LinkedHashSet<>();
 
     protected OAuthConfigImpl    oauthConfig = new OAuthConfigImpl();
     protected RestdConfig        restdConfig;
@@ -563,6 +561,17 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
 
     public void setFailureHandler(ApiFailureHandler failureHandler) {
         this.failureHandler = failureHandler;
+    }
+
+    @Override
+    public ApiConfigurator addTag(MApiTag tag) {
+        tags.add(tag);
+        return this;
+    }
+
+    @Override
+    public Set<MApiTag> getTags() {
+        return tags;
     }
 
     @Override

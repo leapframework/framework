@@ -25,7 +25,6 @@ import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
 import leap.lang.resource.Resources;
 import leap.lang.resource.SimpleResourceSet;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -33,9 +32,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Factory {
 	
-	private static final String META_PREFIX    = "META-INF/services/";
-    private static final String APP_PREIFIX    = "/services/";
-	private static final String CLASS_PROPERTY = "class";
+	private static final String META_PREFIX      = "META-INF/services/";
+    private static final String APP_PREFIX       = "/services/";
+	private static final String CLASS_PROPERTY   = "class";
+	private static final String IF_CLASS_PRESENT = "if-class-present";
 
     private static Map<Class<?>, Object> singleInstances = new ConcurrentHashMap<>(10);
 
@@ -94,7 +94,10 @@ public class Factory {
 		List<T> instances = new ArrayList<T>();
 		
 		for(Resource resource : resources){
-			instances.add(newInstance(type, resource));
+			T instance = newInstance(type, resource);
+			if (null != instance) {
+				instances.add(newInstance(type, resource));
+			}
 		}
 		
 		return instances;
@@ -115,7 +118,7 @@ public class Factory {
 	}
 	
 	private static Resource getSingleClassNameResource(Class<?> type){
-		Resource r = Resources.getResource(Urls.CLASSPATH_ONE_URL_PREFIX + APP_PREIFIX + type.getName());
+		Resource r = Resources.getResource(Urls.CLASSPATH_ONE_URL_PREFIX + APP_PREFIX + type.getName());
 		if(r.exists()) {
 			return r;
 		}
@@ -137,13 +140,17 @@ public class Factory {
 	}
 	
 	@SuppressWarnings("unchecked")
-    private static <T> T newInstance(Class<T> type,Resource resource){
+    private static <T> T newInstance(Class<T> type, Resource resource) {
 		Properties properties = readProperties(resource);
 		
 		String className = properties.getProperty(CLASS_PROPERTY);
-		
 		if(Strings.isEmpty(className)){
 			throw new FactoryException("the 'class' property must not be empty in classpath resource : " + resource.getClasspath());
+		}
+
+		String ifPresent = properties.getProperty(IF_CLASS_PRESENT);
+		if (!Strings.isEmpty(ifPresent) && null == Classes.tryForName(ifPresent)) {
+			return null;
 		}
 		
 		Class<T> clazz = (Class<T>)Classes.tryForName(className);
@@ -158,10 +165,10 @@ public class Factory {
 	        
 			BeanType beanType = BeanType.of(clazz);
 			
-			for(Object key : properties.keySet()){
+			for (Object key : properties.keySet()) {
 				String name  = (String)key;
 				
-				if(!Strings.equals(CLASS_PROPERTY, name)){
+				if (!Strings.equals(CLASS_PROPERTY, name) && !Strings.equals(IF_CLASS_PRESENT, name)) {
 					BeanProperty bp = beanType.getProperty(name);
 					
 					String value = properties.getProperty(name);

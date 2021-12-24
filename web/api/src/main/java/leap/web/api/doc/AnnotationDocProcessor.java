@@ -18,6 +18,7 @@ package leap.web.api.doc;
 
 import leap.core.annotation.Inject;
 import leap.core.doc.DocResolver;
+import leap.lang.Arrays2;
 import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
 import leap.lang.meta.MNamedWithDescBuilder;
@@ -32,7 +33,6 @@ import leap.web.api.meta.model.MApiModelBuilder;
 import leap.web.api.meta.model.MApiOperationBuilder;
 import leap.web.api.meta.model.MApiParameterBuilder;
 import leap.web.api.meta.model.MApiPropertyBuilder;
-
 import java.lang.reflect.Method;
 
 /**
@@ -47,7 +47,7 @@ public class AnnotationDocProcessor implements ApiMetadataProcessor {
         //operations
         m.getPaths().forEach((k, p) -> {
             p.getOperations().forEach(o -> {
-                processOperation(context, o);
+                processOperation(context, m, o);
             });
         });
 
@@ -57,7 +57,7 @@ public class AnnotationDocProcessor implements ApiMetadataProcessor {
         });
     }
 
-    protected void processOperation(ApiMetadataContext context, MApiOperationBuilder o) {
+    protected void processOperation(ApiMetadataContext context, ApiMetadataBuilder m, MApiOperationBuilder o) {
         ReflectMethod method = o.getRoute().getAction().getMethod();
 
         //operation
@@ -67,7 +67,12 @@ public class AnnotationDocProcessor implements ApiMetadataProcessor {
                 doc = searchUp(method);
             }
             if(null != doc) {
-                resolveDoc(context, o, doc);
+                resolveDesc(context, o, doc);
+                resolveTag(m, o, doc);
+            }
+            Doc classDoc = method.getDeclaringClass().getAnnotation(Doc.class);
+            if (null != classDoc) {
+                resolveTag(m, o, classDoc);
             }
         }
 
@@ -85,7 +90,7 @@ public class AnnotationDocProcessor implements ApiMetadataProcessor {
                 doc = searchUp(method, a.getParameter());
             }
             if (null != doc) {
-                resolveDoc(context, param, doc);
+                resolveDesc(context, param, doc);
             }
         }
     }
@@ -94,7 +99,7 @@ public class AnnotationDocProcessor implements ApiMetadataProcessor {
         for(Class<?> c : model.getJavaTypes()) {
             Doc doc = c.getAnnotation(Doc.class);
             if (null != doc) {
-                resolveDoc(context, model, doc);
+                resolveDesc(context, model, doc);
             }
         }
 
@@ -108,7 +113,7 @@ public class AnnotationDocProcessor implements ApiMetadataProcessor {
         if(null != bp) {
             Doc doc = bp.getAnnotation(Doc.class);
             if(null != doc) {
-                resolveDoc(context, p, doc);
+                resolveDesc(context, p, doc);
             }
         }
     }
@@ -145,7 +150,17 @@ public class AnnotationDocProcessor implements ApiMetadataProcessor {
         return null;
     }
 
-    protected void resolveDoc(ApiMetadataContext context, MNamedWithDescBuilder o, Doc a) {
+    protected void resolveTag(ApiMetadataBuilder m, MApiOperationBuilder o, Doc doc) {
+        if (Arrays2.isEmpty(doc.tags())) {
+            return;
+        }
+        for (String tag : doc.tags()) {
+            o.addTag(tag);
+            m.tryAddTag(tag);
+        }
+    }
+
+    protected void resolveDesc(ApiMetadataContext context, MNamedWithDescBuilder o, Doc a) {
         String summary = Strings.firstNotEmpty(a.summary(), a.value());
         if(Strings.isEmpty(o.getSummary()) && !Strings.isEmpty(summary)) {
             o.setSummary(docResolver.resolveDesc(summary));

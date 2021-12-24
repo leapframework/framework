@@ -85,8 +85,13 @@ public class XmlSqlReader implements SqlReader {
                 return;
             }
 
-            //Removes if exists.
-            md.removeSqlCommand(key);
+            SqlCommand exists = md.tryGetSqlCommand(key);
+            if (null != exists) {
+				if (null != exists.getDbType() && null == sql.getDbType()) {
+					return;
+				}
+				md.removeSqlCommand(key);
+			}
 
             //Clones a new one for current orm context.
             md.addSqlCommand(key, sql.clone());

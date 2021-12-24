@@ -28,6 +28,9 @@ public class FiltersParserTest extends TestBase {
 
     @Test
     public void testInvalidExpr() {
+        assertInvalidExpr("(a eq 10)()");
+        assertInvalidExpr("(a eq 10) and ()");
+
         assertInvalidExpr("default0");
         assertEquals("default0", FiltersParser.parse("default0", true).nodes()[0].literal());
     }
@@ -89,10 +92,10 @@ public class FiltersParserTest extends TestBase {
     }
 
     private static void assertInvalidExpr(String expr) {
-        try{
+        try {
             FiltersParser.parse(expr);
             fail("Should throw IllegalStateException");
-        }catch (IllegalStateException e) {
+        } catch (IllegalStateException ignored) {
 
         }
     }

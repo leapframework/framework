@@ -46,7 +46,6 @@ import leap.web.api.query.*;
 import leap.web.api.remote.RestQueryListResult;
 import leap.web.api.remote.RestResource;
 import leap.web.exception.BadRequestException;
-
 import java.lang.reflect.Array;
 import java.util.*;
 import java.util.function.Consumer;
@@ -1368,7 +1367,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                     } else {
                         select.add("(" + expr + ") as " + item.alias());
                     }
-                    groupBy.append("(" + expr + ")");
+                    groupBy.append("(").append(expr).append(")");
                 } else {
                     MApiModel m;
 
@@ -1390,15 +1389,16 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                         throw new BadRequestException("Property '" + m.getName() + "." + item.name() + "' is not groupable");
                     }
 
-                    StringBuffer sql = new StringBuffer();
+                    StringBuilder sql = new StringBuilder();
                     if (null != item.joinAlias()) {
-                        sql.append(item.joinAlias() + "." + p.getName());
+                        sql.append(item.joinAlias());
                     } else {
-                        sql.append(p.getName());
+                        sql.append("t");
                     }
+                    sql.append(".").append(p.getName());
                     groupBy.append(sql);
                     if (null != item.alias()) {
-                        sql.append(" as " + item.alias());
+                        sql.append(" as ").append(item.alias());
                     }
                     select.add(sql.toString());
                 }
