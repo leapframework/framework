@@ -15,6 +15,9 @@ public class JasyptAppPropertyProcessor implements AppPropertyProcessor {
 
     public JasyptAppPropertyProcessor() {
         String password = System.getenv(PASSWORD_ENV);
+        if (Strings.isEmpty(password)) {
+            password = System.getenv(PASSWORD_ENV.replace('.', '_'));
+        }
         if (!Strings.isEmpty(password)) {
             encryptor = new StandardPBEStringEncryptor();
             encryptor.setPassword(password);
