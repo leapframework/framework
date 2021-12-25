@@ -28,8 +28,16 @@ import leap.lang.reflect.ReflectClass;
 import leap.spring.boot.Global;
 import leap.web.AppBootstrap;
 import leap.web.AppFilter;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.webapp.WebAppContext;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletContainer;
+import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
+import org.springframework.boot.context.embedded.jetty.JettyEmbeddedServletContainerFactory;
+import org.springframework.boot.context.embedded.jetty.JettyServerCustomizer;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
@@ -42,6 +50,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+
 import javax.servlet.*;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +60,7 @@ public class WebConfiguration {
 
     private static final Log log = LogFactory.get(WebConfiguration.class);
 
-    static AppFilter      filter;
+    static AppFilter filter;
     static ServletContext startedServletContext;
 
     static {
@@ -78,8 +87,8 @@ public class WebConfiguration {
     @Bean
     @Lazy(false)
     public AppFilter filterBean(Environment env) {
-        String   clsName = env.getProperty("leap.filter.className", AppFilter.class.getName());
-        Class<?> cls     = Classes.forName(clsName);
+        String clsName = env.getProperty("leap.filter.className", AppFilter.class.getName());
+        Class<?> cls = Classes.forName(clsName);
         if (!AppFilter.class.isAssignableFrom(cls)) {
             throw new AppConfigException(clsName + " is not sub class of " + AppFilter.class.getName());
         }
@@ -154,7 +163,7 @@ public class WebConfiguration {
                 /*
                     Earlier bean will cause cyclic reference exception, Booting only the ApplicationListener has been created.
                 */
-                if(bean instanceof ApplicationListener) {
+                if (bean instanceof ApplicationListener) {
                     if (null != startedServletContext && !booted) {
                         booted = true;
                         boot(startedServletContext);
@@ -170,6 +179,7 @@ public class WebConfiguration {
             return;
         }
 
+        booted = true;
         final AppBootstrap bootstrap = new AppBootstrap();
         Global.leap = new Global.LeapContext() {
             @Override
@@ -206,6 +216,31 @@ public class WebConfiguration {
         @Override
         public void service(ServletRequest req, ServletResponse res) {
             throw new UnsupportedOperationException();
+        }
+    }
+
+    @Configuration
+    @ConditionalOnClass(JettyEmbeddedServletContainerFactory.class)
+    @ConditionalOnProperty(value = "jetty-booting", matchIfMissing = true)
+    static class JettyConfiguration {
+        @Bean
+        EmbeddedServletContainerCustomizer embeddedServletContainerCustomizer() {
+            return new EmbeddedServletContainerCustomizer() {
+                @Override
+                public void customize(ConfigurableEmbeddedServletContainer container) {
+                    if (container instanceof JettyEmbeddedServletContainerFactory) {
+                        JettyEmbeddedServletContainerFactory jettyContainer = (JettyEmbeddedServletContainerFactory) container;
+                        jettyContainer.addServerCustomizers(new JettyServerCustomizer() {
+                            @Override
+                            public void customize(Server server) {
+                                WebAppContext context = (WebAppContext) server.getHandler();
+                                ServletContext servletContext = context.getServletContext();
+                                boot(servletContext);
+                            }
+                        });
+                    }
+                }
+            };
         }
     }
 }
