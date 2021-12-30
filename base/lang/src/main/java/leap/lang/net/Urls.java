@@ -25,7 +25,6 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Map;
 import java.util.Map.Entry;
-
 import leap.lang.Charsets;
 import leap.lang.Exceptions;
 import leap.lang.New;
@@ -41,6 +40,8 @@ public class Urls {
 	public static final String FILE_URL_PREFIX    = "file:";
 	public static final String JAR_URL_SEPARATOR  = "!/";
 	public static final String PROTOCOL_SEPARATOR = "://";
+	public static final String HTTP_PREFIX        = "http" + PROTOCOL_SEPARATOR;
+	public static final String HTTPS_PREFIX       = "https" + PROTOCOL_SEPARATOR;
 	
 	public static final String PROTOCOL_FILE        = "file";
 	public static final String PROTOCOL_JAR         = "jar";
@@ -276,8 +277,14 @@ public class Urls {
 	
 	public static Map<String, String> queryStringToMap(String queryString){
 		Map<String, String> map = New.hashMap();
-		if(Strings.isNotEmpty(queryString)){
-			String[] kvs = Strings.split(queryString,'&');
+		if (Strings.isNotEmpty(queryString)) {
+			String expr;
+			if (queryString.startsWith(HTTP_PREFIX) || queryString.startsWith(HTTPS_PREFIX)) {
+				expr = getQueryParameters(queryString);
+			} else {
+				expr = queryString;
+			}
+			String[] kvs = Strings.split(expr,'&');
 			for(String kvStr : kvs){
 				int idx = kvStr.indexOf('=');
 				if(idx < 0){
@@ -338,6 +345,14 @@ public class Urls {
 			}
 		}
 		return builder.toString();
+	}
+
+	protected static String getQueryParameters(String expression) {
+		int index = expression.indexOf('?');
+		if (index >= 0) {
+			return expression.substring(index + 1);
+		}
+		return expression;
 	}
 
 	protected static String getExpressionValue(String expression, URI uri){
