@@ -19,14 +19,12 @@ package leap.spring.boot.web;
 import leap.core.AppConfig;
 import leap.core.AppConfigException;
 import leap.core.AppContext;
-import leap.core.BeanFactory;
 import leap.lang.Classes;
 import leap.lang.Strings;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.reflect.ReflectClass;
 import leap.spring.boot.Global;
-import leap.web.AppBootstrap;
 import leap.web.AppFilter;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -56,33 +54,9 @@ import java.util.List;
 import java.util.Map;
 
 @Configuration
-public class WebConfiguration {
+public class WebConfiguration extends AbstractWebConfiguration {
 
     private static final Log log = LogFactory.get(WebConfiguration.class);
-
-    static AppFilter filter;
-    static ServletContext startedServletContext;
-
-    static {
-        if (null == Global.leap) {
-            Global.leap = new Global.LeapContext() {
-                @Override
-                public AppConfig config() {
-                    return null == filter ? null : filter.config();
-                }
-
-                @Override
-                public BeanFactory factory() {
-                    return null == filter ? null : filter.factory();
-                }
-
-                @Override
-                public AppContext context() {
-                    return null == filter ? null : filter.context();
-                }
-            };
-        }
-    }
 
     @Bean
     @Lazy(false)
@@ -148,8 +122,6 @@ public class WebConfiguration {
         };
     }
 
-    private static boolean booted;
-
     @Bean
     public BeanPostProcessor leapBootingBeanPostProcessor() {
         return new BeanPostProcessor() {
@@ -172,33 +144,6 @@ public class WebConfiguration {
                 return bean;
             }
         };
-    }
-
-    protected static void boot(ServletContext sc) {
-        if (AppBootstrap.isInitialized(sc)) {
-            return;
-        }
-
-        booted = true;
-        final AppBootstrap bootstrap = new AppBootstrap();
-        Global.leap = new Global.LeapContext() {
-            @Override
-            public AppConfig config() {
-                return bootstrap.getAppConfig();
-            }
-
-            @Override
-            public BeanFactory factory() {
-                return bootstrap.getBeanFactory();
-            }
-
-            @Override
-            public AppContext context() {
-                return bootstrap.getAppContext();
-            }
-        };
-        bootstrap.initialize(sc, Global.extraInitPropertiesFromEnv());
-        AppContext.setStandalone(bootstrap.getAppContext());
     }
 
     public static class BootServlet extends GenericServlet {

@@ -444,6 +444,7 @@
         <module>spring/spring-boot</module>
         <module>spring/spring-boot-orm</module>
         <module>spring/spring-boot-web</module>
+		<module>spring/spring-boot2-web</module>
 		<module>spring/test-spring-boot2</module>
         <module>spring/test-spring-boot-orm</module>
 		<module>spring/test-spring-boot-war</module>
@@ -456,5 +457,5 @@
         <!--assembly-->
         <module>assembly/leap</module>
         <module>tests/db-test-kingbase</module>
-    </modules>
+	</modules>
 </project>
