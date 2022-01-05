@@ -34,15 +34,22 @@ public class Web2Configuration extends AbstractWebConfiguration {
                     factory.addServerCustomizers(new JettyServerCustomizer() {
                         @Override
                         public void customize(Server server) {
-                            Handler handler;
-                            if (server.getHandler() instanceof HandlerWrapper) {
-                                handler = ((HandlerWrapper) server.getHandler()).getHandler();
-                            } else {
-                                handler = server.getHandler();
+                            WebAppContext context = resolveWebAppContext(server.getHandler());
+                            if (null == context) {
+                                throw new IllegalStateException("Unable to resolve jetty's web application context");
                             }
-                            WebAppContext context = (WebAppContext) handler;
                             ServletContext servletContext = context.getServletContext();
                             boot(servletContext);
+                        }
+
+                        private WebAppContext resolveWebAppContext(Handler handler) {
+                            if (handler instanceof WebAppContext) {
+                                return (WebAppContext) handler;
+                            }
+                            if (handler instanceof HandlerWrapper) {
+                                return resolveWebAppContext(((HandlerWrapper) handler).getHandler());
+                            }
+                            return null;
                         }
                     });
                 }
