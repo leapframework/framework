@@ -1,6 +1,8 @@
 package leap.spring.boot.web;
 
+import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.HandlerWrapper;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -32,7 +34,13 @@ public class Web2Configuration extends AbstractWebConfiguration {
                     factory.addServerCustomizers(new JettyServerCustomizer() {
                         @Override
                         public void customize(Server server) {
-                            WebAppContext context = (WebAppContext) server.getHandler();
+                            Handler handler;
+                            if (server.getHandler() instanceof HandlerWrapper) {
+                                handler = ((HandlerWrapper) server.getHandler()).getHandler();
+                            } else {
+                                handler = server.getHandler();
+                            }
+                            WebAppContext context = (WebAppContext) handler;
                             ServletContext servletContext = context.getServletContext();
                             boot(servletContext);
                         }
