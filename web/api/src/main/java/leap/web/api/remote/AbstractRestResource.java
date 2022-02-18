@@ -239,13 +239,19 @@ public abstract class AbstractRestResource implements RestResource {
                 request.addQueryParam("total", "true");
             }
             if (Strings.isNotEmpty(qo.getOrderBy())) {
-                request.addQueryParam("orderBy", qo.getOrderBy());
+                request.addQueryParam("orderby", qo.getOrderBy());
             }
             if (Strings.isNotEmpty(qo.getFilters())) {
                 request.addQueryParam("filters", qo.getFilters());
             }
             if (Strings.isNotEmpty(qo.getJoins())) {
                 request.addQueryParam("joins", qo.getJoins());
+            }
+            if (Strings.isNotEmpty(qo.getGroupBy())) {
+                request.addQueryParam("groupby", qo.getGroupBy());
+            }
+            if (Strings.isNotEmpty(qo.getAggregates())) {
+                request.addQueryParam("aggregates", qo.getAggregates());
             }
         }
         return request;
