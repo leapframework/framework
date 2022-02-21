@@ -35,7 +35,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.util.ClassUtils;
-
 import java.util.*;
 
 public class SpringRunListener implements SpringApplicationRunListener, Ordered {
@@ -93,31 +92,7 @@ public class SpringRunListener implements SpringApplicationRunListener, Ordered 
     @Override
     public void environmentPrepared(ConfigurableEnvironment env) {
         log.debug("Env prepared");
-
-        Global.env = env;
-
-        String[] profiles = env.getActiveProfiles();
-        if(null != profiles && profiles.length > 0) {
-            Global.profile = profiles[0];
-        }
-
-        Context.get().setInitialProfileResolver(new Context.InitialProfileResolver() {
-            @Override
-            public String[] getProfiles() {
-                return env.getActiveProfiles();
-            }
-
-            @Override
-            public void setProfiles(String... profiles) {
-                env.setActiveProfiles(profiles);
-                if(null != profiles && profiles.length > 0) {
-                    Global.profile = profiles[0];
-                }
-            }
-        });
-        Context.get().setInitialPropertySource((name) -> {
-            return env.getProperty(name);
-        });
+        prepareGlobalEnvironment(env);
     }
 
     @Override
@@ -201,5 +176,33 @@ public class SpringRunListener implements SpringApplicationRunListener, Ordered 
                 }
             }
         }
+    }
+
+    protected void prepareGlobalEnvironment(ConfigurableEnvironment env) {
+        if (null != Global.env) {
+            return;
+        }
+        Global.env = env;
+
+        String[] profiles = env.getActiveProfiles();
+        if(null != profiles && profiles.length > 0) {
+            Global.profile = profiles[0];
+        }
+
+        Context.get().setInitialProfileResolver(new Context.InitialProfileResolver() {
+            @Override
+            public String[] getProfiles() {
+                return env.getActiveProfiles();
+            }
+
+            @Override
+            public void setProfiles(String... profiles) {
+                env.setActiveProfiles(profiles);
+                if(null != profiles && profiles.length > 0) {
+                    Global.profile = profiles[0];
+                }
+            }
+        });
+        Context.get().setInitialPropertySource(env::getProperty);
     }
 }
