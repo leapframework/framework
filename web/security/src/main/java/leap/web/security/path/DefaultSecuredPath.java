@@ -125,6 +125,9 @@ public class DefaultSecuredPath extends SecuredObjectBase implements SecuredPath
 		}
 
         Authentication authc = context.getAuthentication();
+		if (Boolean.FALSE.equals(getAllowAnonymous()) && !isAuthenticated(authc)) {
+		    return false;
+        }
 
         //check route's config
         ActionContext ac = context.getActionContext();
@@ -137,7 +140,7 @@ public class DefaultSecuredPath extends SecuredObjectBase implements SecuredPath
             }
         }
 
-		if(authc == null || !authc.isAuthenticated()){
+		if(!isAuthenticated(authc)){
             log.debug("path [{}] : not authenticated, deny the request.", pattern);
 			return false;
 		}
@@ -176,6 +179,14 @@ public class DefaultSecuredPath extends SecuredObjectBase implements SecuredPath
         //check secured object
         SecuredObject so = context.getSecuredObject();
         return null == so ? true : so.checkAuthorization(context);
+    }
+
+    protected boolean isAuthenticated(Authentication authc) {
+        if(authc == null || !authc.isAuthenticated()){
+            log.debug("path [{}] : not authenticated, deny the request.", pattern);
+            return false;
+        }
+        return true;
     }
 
 }
