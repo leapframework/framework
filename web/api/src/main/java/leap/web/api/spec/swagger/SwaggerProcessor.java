@@ -15,6 +15,7 @@
  */
 package leap.web.api.spec.swagger;
 
+import leap.core.AppConfig;
 import leap.core.annotation.Inject;
 import leap.lang.New;
 import leap.lang.Strings;
@@ -33,9 +34,8 @@ import leap.web.api.meta.ApiMetadataContext;
 import leap.web.api.meta.ApiMetadataProcessor;
 import leap.web.api.spec.ApiSpecContext;
 import leap.web.assets.AssetStrategy;
-import leap.web.route.Route;
+import leap.web.route.RouteConfigurator;
 import leap.web.route.Routes;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
@@ -43,9 +43,11 @@ import java.util.Set;
 public class SwaggerProcessor implements ApiConfigProcessor,ApiMetadataProcessor {
 	
 	private static final String SWAGGER_JSON_FILE = "swagger.json";
+	private static final String SWAGGER_JSON_ANONYMOUS = "swagger.anonymous";
 
 	protected @Inject Apis          apis;
 	protected @Inject AssetStrategy assetStrategy;
+	protected @Inject AppConfig     appConfig;
 
 	@Override
     public void preProcess(ApiMetadataContext context, ApiMetadataBuilder m) {
@@ -58,22 +60,25 @@ public class SwaggerProcessor implements ApiConfigProcessor,ApiMetadataProcessor
 
         Routes routes = config.getContainerRoutes();
 
-        Route route = routes.create()
-                        .enableCors()
-                        .allowAnonymous()
-                        .get(getJsonSpecPath(config, routes), new Handler() {
-                            @Override
-                            public void handle(Request request, Response response) throws Throwable {
-                                handleJsonSpecRequest(context.getApi(), request, response);
-                            }
+        RouteConfigurator route = routes.create()
+                .enableCors()
+                .get(getJsonSpecPath(config, routes), new Handler() {
+                    @Override
+                    public void handle(Request request, Response response) throws Throwable {
+                        handleJsonSpecRequest(context.getApi(), request, response);
+                    }
 
-                            @Override
-                            public String toString() {
-                                return SwaggerProcessor.class.getSimpleName() + "(swagger.json)";
-                            }
-                        }).build();
+                    @Override
+                    public String toString() {
+                        return SwaggerProcessor.class.getSimpleName() + "(swagger.json)";
+                    }
+                });
 
-        context.getApi().getConfigurator().addDynamicRoute(route, false);
+        if (appConfig.getBooleanProperty(SWAGGER_JSON_ANONYMOUS, true)) {
+            route.allowAnonymous();
+        }
+
+        context.getApi().getConfigurator().addDynamicRoute(route.build(), false);
     }
 
     void handleJsonSpecRequest(Api api, Request req, Response resp) throws Throwable {
