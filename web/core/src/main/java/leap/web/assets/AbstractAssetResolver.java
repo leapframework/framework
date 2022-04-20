@@ -44,7 +44,7 @@ public abstract class AbstractAssetResolver implements AssetResolver {
 
         Resource resource = null;
         if (null != dir) {
-            resource = Resources.getResource(dir, Strings.trimStart(path, '/'));
+            resource = dir.createRelative(path);
         }
 
         if (null == resource || !resource.exists()) {

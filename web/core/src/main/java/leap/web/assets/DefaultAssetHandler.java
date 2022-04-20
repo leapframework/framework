@@ -70,10 +70,10 @@ public class DefaultAssetHandler implements AssetHandler,LoadableBean {
 	        
 	        //Extract resource path from request
 	        String path = Paths.normalize(request.getPath().substring(config.getPathPrefix().length()));
-	        if (path.contains("../")) {
-	        	throw new BadRequestException("Invalid '../' path in: " + path);
+	        if (path.contains("../") || path.contains(":")) {
+	        	throw new BadRequestException("Illegal path in: " + path);
 			}
-	        
+
 	        String[] pathAndFingerprint = strategy.splitPathAndFingerprint(path);
 	        if(null == pathAndFingerprint){
 	        	pathAndFingerprint = new String[]{path,null};
