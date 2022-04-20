@@ -70,7 +70,7 @@ public class DefaultAssetHandler implements AssetHandler,LoadableBean {
 	        
 	        //Extract resource path from request
 	        String path = Paths.normalize(request.getPath().substring(config.getPathPrefix().length()));
-	        if (path.contains("../") || path.contains(":")) {
+	        if (path.contains("../")) {
 	        	throw new BadRequestException("Illegal path in: " + path);
 			}
 

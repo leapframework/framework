@@ -19,8 +19,6 @@ import leap.core.annotation.Inject;
 import leap.lang.Strings;
 import leap.lang.path.Paths;
 import leap.lang.resource.Resource;
-import leap.lang.resource.Resources;
-
 import java.util.List;
 import java.util.Locale;
 
