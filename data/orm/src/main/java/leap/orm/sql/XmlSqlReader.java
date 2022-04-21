@@ -144,7 +144,7 @@ public class XmlSqlReader implements SqlReader {
 						boolean override          = reader.resolveBooleanAttribute(DEFAULT_OVERRIDE_ATTRIBUTE, defaultOverride);
 						String importResourceName = reader.resolveRequiredAttribute(RESOURCE_ATTRIBUTE);
 						
-						Resource importResource = Resources.getResource(resource,importResourceName);
+						Resource importResource = Resources.getOrRelateResource(resource,importResourceName);
 						
 						if(null == importResource || !importResource.exists()){
 							if(checkExistence){

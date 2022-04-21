@@ -92,7 +92,7 @@ public class XmlMessageReader extends AbstractMessageReader {
 						boolean importDefaultOverride = reader.getBooleanAttribute(DEFAULT_OVERRIDE_ATTRIBUTE, override);
 						String importResourceName = reader.getRequiredAttribute(RESOURCE_ATTRIBUTE);
 						
-						Resource importResource = Resources.getResource(resource,importResourceName);
+						Resource importResource = Resources.getOrRelateResource(resource,importResourceName);
 						
 						if(null == importResource || !importResource.exists()){
 							if(checkExistence){

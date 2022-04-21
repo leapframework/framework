@@ -258,7 +258,7 @@ class XmlBeanDefinitionLoader {
                         Boolean override = reader.getBooleanAttribute(OVERRIDE_ATTRIBUTE);
                         String importResourceName = reader.getRequiredAttribute(RESOURCE_ATTRIBUTE);
 
-                        Resource importResource = Resources.getResource(resource, importResourceName);
+                        Resource importResource = Resources.getOrRelateResource(resource, importResourceName);
 
                         if (null == importResource || !importResource.exists()) {
                             if (checkExistence) {

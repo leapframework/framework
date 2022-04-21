@@ -118,13 +118,13 @@ public class Resources {
         return loader.getResource(resourceLocation);
 	}
 	
-	public static Resource getResource(Resource current,String path) throws NestedIOException{
-		Args.notNull(current,"current resource");
-		Args.notNull(path,"resource path");
+	public static Resource getOrRelateResource(Resource current, String path) throws NestedIOException {
+		Args.notNull(current, "current resource");
+		Args.notNull(path, "resource path");
 		try {
-	        if(path.indexOf(':') > 0 || path.startsWith("/")){
+	        if (path.indexOf(':') > 0 || path.startsWith("/")) {
 	        	return Resources.getResource(path);
-	        }else{
+	        } else {
 	        	return current.createRelative(path);
 	        }
         } catch (IOException e) {

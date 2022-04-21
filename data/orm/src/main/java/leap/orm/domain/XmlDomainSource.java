@@ -135,7 +135,7 @@ public class XmlDomainSource implements DomainSource {
 						boolean override          = reader.resolveBooleanAttribute(DEFAULT_OVERRIDE, context.isDefaultOverride());
 						String importResourceName = reader.resolveRequiredAttribute(RESOURCE);
 
-						Resource importResource = Resources.getResource(resource,importResourceName);
+						Resource importResource = Resources.getOrRelateResource(resource,importResourceName);
 
 						if(null == importResource || !importResource.exists()){
 							if(checkExistence){

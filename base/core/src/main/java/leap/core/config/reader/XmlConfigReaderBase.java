@@ -88,7 +88,7 @@ public abstract class XmlConfigReaderBase {
                 boolean override          = reader.resolveBooleanAttribute(DEFAULT_OVERRIDE_ATTRIBUTE,context.isDefaultOverride());
                 String importResourceName = reader.resolveRequiredAttribute(RESOURCE_ATTRIBUTE);
 
-                Resource importResource = Resources.getResource(parent,importResourceName);
+                Resource importResource = Resources.getOrRelateResource(parent,importResourceName);
 
                 if(null == importResource || !importResource.exists()){
                     if(checkExistence){

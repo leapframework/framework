@@ -147,7 +147,7 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
                         boolean override          = reader.resolveBooleanAttribute(DEFAULT_OVERRIDE_ATTRIBUTE, context.isDefaultOverride());
                         String importResourceName = reader.resolveRequiredAttribute(RESOURCE_ATTRIBUTE);
 
-                        Resource importResource = Resources.getResource(resource,importResourceName);
+                        Resource importResource = Resources.getOrRelateResource(resource,importResourceName);
 
                         if(null == importResource || !importResource.exists()){
                             if(checkExistence){
