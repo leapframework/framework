@@ -31,13 +31,18 @@
  */
 package tests;
 
+import leap.core.annotation.Inject;
 import leap.junit.contexual.Contextual;
 import leap.lang.jsoup.nodes.Document;
 import leap.lang.jsoup.nodes.Element;
-
+import leap.web.assets.AssetSource;
+import leap.web.theme.ThemeManager;
 import org.junit.Test;
 
 public class AssetsTest extends HtplTestCase {
+
+	@Inject
+	protected ThemeManager themeManager;
 
 	@Test
 	public void testSingleScriptAsset() {
@@ -104,4 +109,10 @@ public class AssetsTest extends HtplTestCase {
         String src = html.getElementsByTag("script").first().attr("src");
         assertTrue(src.startsWith("/assets/js/hello1-"));
     }
+
+    @Test
+	public void testAssetsIllegalPaths() {
+		AssetSource themeAssetSource = themeManager.getDefaultTheme().getAssetSource();
+		assertNull(themeAssetSource.getAsset("file:D:/text.txt"));
+	}
 }
