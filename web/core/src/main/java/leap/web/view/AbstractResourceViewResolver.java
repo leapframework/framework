@@ -27,7 +27,6 @@ import leap.lang.logging.LogFactory;
 import leap.lang.path.Paths;
 import leap.lang.resource.Resource;
 import leap.lang.resource.Resources;
-
 import java.util.Locale;
 
 public abstract class AbstractResourceViewResolver<R extends Resource>
@@ -97,8 +96,7 @@ public abstract class AbstractResourceViewResolver<R extends Resource>
         if (null != dir) {
             paths = Locales.getLocalePaths(locale, Strings.trimStart(viewPath, '/'), suffix);
             for(String path : paths){
-
-                Resource r = Resources.getResource(dir, path);
+                Resource r = Resources.createRelativeResource(dir, path);
                 if(null != r && r.exists()){
                     return (R) r;
                 }

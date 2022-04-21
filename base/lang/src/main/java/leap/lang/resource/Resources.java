@@ -99,6 +99,16 @@ public class Resources {
 		return new SimpleFileResource(new File(path));
 	}
 
+	public static Resource createRelativeResource(Resource dir, String path) throws NestedIOException {
+		Args.notNull(dir, "dir resource");
+		Args.notNull(path, "resource path");
+		try {
+			return dir.createRelative(path);
+		} catch (IOException e) {
+			throw new NestedIOException(e);
+		}
+	}
+
     /**
      * Returns the resource of the given class.
      */
