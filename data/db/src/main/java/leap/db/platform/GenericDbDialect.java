@@ -202,7 +202,9 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 
         StringBuilder sb = new StringBuilder();
 
-        if (isQualifyFullSchemaObjectName()) {
+        if (!Strings.isEmpty(schema) && !schema.equals(metadata.getDefaultSchemaName())) {
+            sb.append(quoteIdentifier(schema)).append('.');
+        } else if (isQualifyFullSchemaObjectName()) {
             if (!Strings.isEmpty(catalog)) {
                 sb.append(quoteIdentifier(catalog)).append('.');
 
