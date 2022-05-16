@@ -16,6 +16,7 @@
 package leap.lang.convert;
 
 import java.lang.reflect.Type;
+import java.time.Instant;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -65,6 +66,13 @@ public abstract class AbstractDateConverter<T> extends AbstractConverter<T> {
 			
 			return true;
 		}
+
+		Instant instant = Converts.tryConvert(value, Instant.class, genericType);
+		if (null != instant) {
+			out.set(convertFrom(targetType, instant.toEpochMilli()));
+			return true;
+		}
+
 		return false;
     }
 

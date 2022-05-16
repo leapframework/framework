@@ -103,7 +103,7 @@ public class DateTimeConverters {
 
         @Override
         protected Instant convertToInstant(LocalDateTime value) {
-            return value.toInstant(ZoneOffset.UTC);
+            return value.toInstant(DateFormats.systemDefaultZoneOffset());
         }
 
         @Override

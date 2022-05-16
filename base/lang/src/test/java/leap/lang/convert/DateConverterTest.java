@@ -59,6 +59,13 @@ public class DateConverterTest extends TestCase{
     }
 
     @Test
+    public void testLocalDateTimeToTimestamp() {
+        LocalDateTime d = LocalDateTime.parse("2020-08-21T17:51:30");
+        Timestamp timestamp = Converts.convert(d, Timestamp.class);
+        assertEquals("2020-08-21 17:51:30.0", timestamp.toString());
+    }
+
+    @Test
     public void testIntegerToTimestamp() {
         Timestamp timestamp = Converts.convert(-28800000, Timestamp.class);
         assertNotNull(timestamp);
