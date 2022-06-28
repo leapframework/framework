@@ -103,9 +103,15 @@ public class DateConverterTest extends TestCase{
     public void testStringDateToDate(){
 	    String str = "1988-04-10 00:00:00";
         LocalDateTime ldt = LocalDateTime.parse(str, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        Date date =  Converts.convert(str, Date.class);
+        Date date = Converts.convert(str, Date.class);
         LocalDateTime converted = LocalDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC+8"));
-        assertEquals(ldt,converted);
+        assertEquals(ldt, converted);
+
+        str = "2020-08-21T17:51:30";
+        ldt = LocalDateTime.parse("2020-08-21T17:51:30");
+        date = Converts.convert(str, Date.class);
+        converted = LocalDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC+8"));
+        assertEquals(ldt, converted);
     }
 
 }

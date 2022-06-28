@@ -45,6 +45,7 @@ public class DateFormats {
 	public static final String RFC3339_DATE_PATTERN  = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
     public static final String ISO8601_DATE_PATTERN1 = "yyyy-MM-dd'T'HH:mm:ssZ";
     public static final String ISO8601_DATE_PATTERN2 = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
+    public static final String ISO_LOCAL_DATE_TIME   = "yyyy-MM-dd'T'HH:mm:ss";
     public static final String DATE_PATTERN1         = "yyyy-M-dd";
     public static final String DATE_PATTERN2         = "yyyy-MM-d";
     public static final String DATE_PATTERN3         = "yyyy-M-d";
@@ -57,6 +58,7 @@ public class DateFormats {
         RFC3339_DATE_PATTERN,
         ISO8601_DATE_PATTERN1,
         ISO8601_DATE_PATTERN2,
+        ISO_LOCAL_DATE_TIME,
         DATE_PATTERN1,
         DATE_PATTERN2,
         DATE_PATTERN3
