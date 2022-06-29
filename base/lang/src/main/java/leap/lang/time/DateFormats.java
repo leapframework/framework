@@ -17,7 +17,6 @@ package leap.lang.time;
 
 import leap.lang.Args;
 import leap.lang.Strings;
-
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -26,15 +25,12 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
-import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
-
-
 
 public class DateFormats {
 	
-	private static final Map<String, java.text.DateFormat> patternFormats  = new ConcurrentHashMap<String, java.text.DateFormat>();
-	private static final Map<Class<?>,String>              defaultPatterns = new ConcurrentHashMap<Class<?>,String>();
+	private static final Map<String, java.text.DateFormat> patternFormats  = new ConcurrentHashMap<>();
+	private static final Map<Class<?>,String>              defaultPatterns = new ConcurrentHashMap<>();
 
     private static final Map<String, DateFormat> formatters = new ConcurrentHashMap<>();
 
@@ -47,6 +43,7 @@ public class DateFormats {
     public static final String ISO8601_DATE_PATTERN2 = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
     public static final String ISO_LOCAL_DATE_TIME   = "yyyy-MM-dd'T'HH:mm:ss";
     public static final String ISO_LOCAL_DATE_TIME1  = "yyyy-MM-dd'T'HH:mm:ss.SSS";
+    public static final String ISO_LOCAL_DATE_TIME2  = "yyyy-MM-dd'T'HH:mm";
     public static final String DATE_PATTERN1         = "yyyy-M-dd";
     public static final String DATE_PATTERN2         = "yyyy-MM-d";
     public static final String DATE_PATTERN3         = "yyyy-M-d";
@@ -61,11 +58,12 @@ public class DateFormats {
         ISO8601_DATE_PATTERN2,
         ISO_LOCAL_DATE_TIME,
         ISO_LOCAL_DATE_TIME1,
+        ISO_LOCAL_DATE_TIME2,
         DATE_PATTERN1,
         DATE_PATTERN2,
         DATE_PATTERN3
     };
-    
+
     public static final ConcurrentDateFormat DATE_FORMAT      = new ConcurrentDateFormat(DATE_PATTERN);
     public static final ConcurrentDateFormat TIME_FORMAT      = new ConcurrentDateFormat(TIME_PATTERN);
     public static final ConcurrentDateFormat DATETIME_FORMAT  = new ConcurrentDateFormat(DATETIME_PATTERN);

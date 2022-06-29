@@ -118,6 +118,12 @@ public class DateConverterTest extends TestCase{
         date = Converts.convert(str, Date.class);
         converted = LocalDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC+8"));
         assertEquals(ldt, converted);
+
+        str = "2020-08-21T17:51:00";
+        ldt = LocalDateTime.parse(str);
+        date = Converts.convert(ldt.toString(), Date.class);
+        converted = LocalDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC+8"));
+        assertEquals(ldt, converted);
     }
 
 }
