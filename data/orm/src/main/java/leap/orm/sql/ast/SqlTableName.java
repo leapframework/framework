@@ -153,7 +153,7 @@ public class SqlTableName extends SqlObjectNameBase implements SqlTableSource {
     }
 
     protected void tryAppendSchema(SqlContext context, Appendable appendable) throws IOException {
-	    if (Strings.indexOf(em.getTableName(), ".") >= 0) {
+	    if (null != getSecondaryOrFirstName() || Strings.indexOf(em.getTableName(), ".") >= 0) {
 	        return;
         }
 	    String schema = em.getTable().getSchema();
