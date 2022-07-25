@@ -114,6 +114,11 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
     @Override
     public QueryOneResult queryOne(Object id, QueryOptionsBase options) {
+        return queryOne(id, options, null);
+    }
+
+    @Override
+    public QueryOneResult queryOne(Object id, QueryOptionsBase options, Consumer<CriteriaQuery> callback) {
         if (remoteRest) {
             RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), em);
             Record       record       = restResource.find(id, options);
@@ -145,6 +150,10 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                 } else {
                     CriteriaQuery<Record> query = createCriteriaQuery().whereById(id);
                     applySelect(context, query, options, new JoinModels());
+
+                    if (null != callback) {
+                        callback.accept(query);
+                    }
 
                     ex.preQueryOne(context, id, query);
                     if (null != ex.handler) {

@@ -72,6 +72,11 @@ public interface ModelQueryExecutor {
     QueryOneResult queryOne(Object id, QueryOptionsBase options);
 
     /**
+     * Finds the record by the given id.
+     */
+    QueryOneResult queryOne(Object id, QueryOptionsBase options, Consumer<CriteriaQuery> callback);
+
+    /**
      * Finds the record by the given key fields.
      */
     QueryOneResult queryOneByKey(Map<String, Object> key, QueryOptionsBase options);
