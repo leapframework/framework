@@ -109,6 +109,7 @@ public class ApacheHttpClient extends AbstractHttpClient implements Initializabl
     protected RequestConfig initRequestConfig() {
         return RequestConfig.copy(RequestConfig.DEFAULT)
                             .setConnectTimeout(getDefaultConnectTimeout())
+                            .setSocketTimeout(getDefaultReadTimeout())
                             .build();
     }
 

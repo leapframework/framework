@@ -23,16 +23,6 @@ public class JdkHttpClient extends AbstractHttpClient {
         HttpsURLConnection.setDefaultSSLSocketFactory(SSL_CONTEXT.getSocketFactory());
     }
 
-    protected int defaultReadTimeout = 30 * 1000;
-
-    public int getDefaultReadTimeout() {
-        return defaultReadTimeout;
-    }
-
-    public void setDefaultReadTimeout(int defaultReadTimeout) {
-        this.defaultReadTimeout = defaultReadTimeout;
-    }
-
     @Override
     public HttpRequest request(String url) {
         return new JdkHttpRequest(this, url);
