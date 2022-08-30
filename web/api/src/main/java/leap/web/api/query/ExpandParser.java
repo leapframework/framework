@@ -147,7 +147,7 @@ public class ExpandParser {
     protected static void applyParameter(Map<String, String> keys, String expandExpr, int i) {
         int start = expandExpr.indexOf(":", i);
 
-        String key = expandExpr.substring(i, start);
+        String key = expandExpr.substring(i, start).trim();
         if (!key.equals(SelectParser.SELETE) && !key.equals(FiltersParser.FILTERS) && !key.equals(OrderByParser.ORDER_BY)) {
             throw new IllegalStateException("Invalid expand query parameter: " + key);
         }
