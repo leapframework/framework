@@ -34,6 +34,9 @@ public class DMPlatform extends GenericDbPlatform {
 
     @Override
     protected GenericDbDialect createDialect(DatabaseMetaData jdbcMetadata) throws SQLException {
+        if (jdbcMetadata.getDatabaseMajorVersion() >= 8) {
+            return new DM8Dialect();
+        }
         return new DM7Dialect();
     }
 
