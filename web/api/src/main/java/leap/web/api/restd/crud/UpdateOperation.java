@@ -116,7 +116,7 @@ public class UpdateOperation extends CrudOperationBase implements CrudOperation 
 
         public ApiResponse updateWithResponse(ActionParams params, Object id, Map<String, Object> record) {
             final UpdateOneResult result = updateWithResult(params, id, record);
-            return responseUpdateResult(result);
+            return responseUpdateResult(result, id);
         }
 
         public UpdateOneResult updateWithResult(ActionParams params, Object id, Map<String, Object> record) {
@@ -128,7 +128,7 @@ public class UpdateOperation extends CrudOperationBase implements CrudOperation 
             return doUpdateRecord(params, executor, id, record);
         }
 
-        public ApiResponse responseUpdateResult(UpdateOneResult result) {
+        public ApiResponse responseUpdateResult(UpdateOneResult result, Object id) {
             if (null != result.entity) {
                 return ApiResponse.of(result.entity);
             }
