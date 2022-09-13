@@ -140,7 +140,6 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
         }
 
         ModelDynamic dynamic = ex.resolveUpdateDynamic(context, id, properties);
-        int affected;
         try {
             if(null != dynamic) {
                 context.setDynamic(dynamic);
@@ -149,26 +148,29 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
 
             ex.preUpdate(context, id, properties);
 
-            if (!em.isRemoteRest()) {
-                affected = em.withContextListeners(listeners, () -> {
-                    if (null != handler) {
-                        return handler.partialUpdate(context, id, properties);
-                    } else {
-                        return doUpdate(context, IdOrKey.ofId(id), properties, true);
-                    }
-                });
-            } else {
-                RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), em);
-                if (restResource.update(id, properties)) {
-                    affected = 1;
+            UpdateOneResult result = ex.handleUpdateOne(context, id, properties);
+            if (null == result) {
+                int affected;
+                if (!em.isRemoteRest()) {
+                    affected = em.withContextListeners(listeners, () -> {
+                        if (null != handler) {
+                            return handler.partialUpdate(context, id, properties);
+                        } else {
+                            return doUpdate(context, IdOrKey.ofId(id), properties, true);
+                        }
+                    });
                 } else {
-                    affected = 0;
+                    RestResource restResource = restResourceFactory.createResource(dao.getOrmContext(), em);
+                    if (restResource.update(id, properties)) {
+                        affected = 1;
+                    } else {
+                        affected = 0;
+                    }
                 }
+
+                Object entity = ex.postUpdateProperties(context, id, affected);
+                result = new UpdateOneResult(affected, entity);
             }
-
-            Object entity = ex.postUpdateProperties(context, id, affected);
-
-            UpdateOneResult result = new UpdateOneResult(affected, entity);
 
             ex.completeUpdate(context, result, null);
 

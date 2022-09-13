@@ -69,6 +69,10 @@ public interface ModelUpdateInterceptor {
         return null;
     }
 
+    default UpdateOneResult handleUpdateOne(ModelExecutionContext context, Object id, Map<String, Object> properties) {
+        return null;
+    }
+
     default void completeUpdate(ModelExecutionContext context, UpdateOneResult result, Throwable e) {
 
     }

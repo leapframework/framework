@@ -135,6 +135,16 @@ public class ModelUpdateExtension implements ModelUpdateInterceptor, ModelReplac
         return null;
     }
 
+    public UpdateOneResult handleUpdateOne(ModelExecutionContext context, Object id, Map<String, Object> properties) {
+        for(ModelUpdateInterceptor interceptor : updateInterceptors) {
+            UpdateOneResult result = interceptor.handleUpdateOne(context, id, properties);
+            if(null != result) {
+                return result;
+            }
+        }
+        return null;
+    }
+
     @Override
     public void completeUpdate(ModelExecutionContext context, UpdateOneResult result, Throwable e) {
         for(ModelUpdateInterceptor interceptor : updateInterceptors) {
