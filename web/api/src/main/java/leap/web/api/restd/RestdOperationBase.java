@@ -16,6 +16,7 @@
 
 package leap.web.api.restd;
 
+import java.time.ZoneId;
 import leap.core.annotation.Inject;
 import leap.core.validation.ValidationManager;
 import leap.lang.Classes;
@@ -206,7 +207,7 @@ public abstract class RestdOperationBase {
         if (null == settings && c.isDateFormatEnabled()) {
             String pattern = Strings.isEmpty(c.getDateFormatPattern()) ? SwaggerConstants.DATE_TIME_FORMAT : c.getDateFormatPattern();
             settings = new JsonSettings.Builder()
-                    .setDateTimeFormatter(pattern, "GMT")
+                    .setDateTimeFormatter(pattern, ZoneId.systemDefault().getId())
                     .setHtmlEscape(jsonConfig.isHtmlEscape())
                     .build();
         }
