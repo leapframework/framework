@@ -37,6 +37,7 @@ public class RestdConfig {
     protected boolean    allowRemoteEntity;
     protected boolean    dateFormatEnabled = true;
     protected String     dateFormatPattern;
+    protected String     dateFormatZoneId;
 
     protected Set<String>        includedModels = new LinkedHashSet<>();
     protected Set<String>        excludedModels = new LinkedHashSet<>();
@@ -106,6 +107,14 @@ public class RestdConfig {
 
     public void setDateFormatPattern(String dateFormatPattern) {
         this.dateFormatPattern = dateFormatPattern;
+    }
+
+    public String getDateFormatZoneId() {
+        return dateFormatZoneId;
+    }
+
+    public void setDateFormatZoneId(String dateFormatZoneId) {
+        this.dateFormatZoneId = dateFormatZoneId;
     }
 
     public Set<String> getIncludedModels() {

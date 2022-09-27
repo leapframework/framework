@@ -207,7 +207,7 @@ public abstract class RestdOperationBase {
         if (null == settings && c.isDateFormatEnabled()) {
             String pattern = Strings.isEmpty(c.getDateFormatPattern()) ? SwaggerConstants.DATE_TIME_FORMAT : c.getDateFormatPattern();
             settings = new JsonSettings.Builder()
-                    .setDateTimeFormatter(pattern, ZoneId.systemDefault().getId())
+                    .setDateTimeFormatter(pattern, Strings.isEmpty(c.getDateFormatZoneId()) ? "GMT" : c.getDateFormatZoneId())
                     .setHtmlEscape(jsonConfig.isHtmlEscape())
                     .build();
         }
