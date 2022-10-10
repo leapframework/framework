@@ -354,7 +354,9 @@ abstract class SqlQueryParser extends SqlParser {
         if (lexer.token().isOperator()) {
             acceptText(lexer.token());
 
-            parseSqlObjectNameOrExpr();
+            if (!parseSpecialToken()) {
+                parseSqlObjectNameOrExpr();
+            }
         }
     }
 

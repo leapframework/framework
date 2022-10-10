@@ -272,4 +272,13 @@ public class SqlParserMoreTest extends SqlParserTestCase {
 		assertNotNull(t);
 		assertNull(t.getAlias());
 	}
+
+	@Test
+	public void testParamPlaceholder() {
+		Sql sql = sql("update person set firstName = current_firstName + #firstName# where id = ?");
+		assertEquals("firstName", sql.findFirstNode(ParamPlaceholder.class).getName());
+		sql = sql("select current_firstName + #firstName# from person where id = ?");
+		assertEquals("firstName", sql.findFirstNode(ParamPlaceholder.class).getName());
+	}
+
 }
