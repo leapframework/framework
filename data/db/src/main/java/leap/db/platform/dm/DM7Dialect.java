@@ -26,7 +26,7 @@ import java.util.Arrays;
 
 public class DM7Dialect extends GenericDbDialect {
 
-    private static final String[] SQL_KEY_WORDS = new String[]{"VERSIONS"};
+    private static final String[] DM7_SQL_KEY_WORDS = new String[]{"ADMIN", "VERSIONS"};
 
     @Override
     protected String getTestDriverSupportsGetParameterTypeSQL() {
@@ -46,7 +46,7 @@ public class DM7Dialect extends GenericDbDialect {
     @Override
     protected void registerSQLKeyWords() {
         super.registerSQLKeyWords();
-        sqlKeyWords.addAll(Arrays.asList(SQL_KEY_WORDS));
+        sqlKeyWords.addAll(Arrays.asList(DM7_SQL_KEY_WORDS));
     }
 
     @Override
