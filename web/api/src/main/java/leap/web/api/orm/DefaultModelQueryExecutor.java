@@ -641,7 +641,6 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             return;
         }
 
-        ex.preExpand(context);
         try {
             final RelationProperty rp          = expand.rp;
             final RelationMapping  rm          = expand.rm;
@@ -675,6 +674,9 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                     continue;
                 }
                 fks.add(fk);
+            }
+            if (fks.isEmpty()) {
+                return;
             }
 
             if (rm.isManyToMany()) {
