@@ -641,6 +641,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             return;
         }
 
+        ex.preExpand(context);
         try {
             final RelationProperty rp          = expand.rp;
             final RelationMapping  rm          = expand.rm;
