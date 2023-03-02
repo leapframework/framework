@@ -156,6 +156,30 @@ public class Lexer {
 		}
 		return c;
 	}
+
+	public final String peekLiteral() {
+		int i = pos;
+		char c;
+		for(;;){
+			c = charAt(i++);
+			if (c == EOI) {
+				return Strings.EMPTY;
+			}
+			if(!isWhitespace(c)){
+				break;
+			}
+		}
+		StringBuilder builder = new StringBuilder();
+		builder.append(c);
+		for(;;){
+			c = charAt(i++);
+			if(c == EOI || isWhitespace(c)){
+				break;
+			}
+			builder.append(c);
+		}
+		return builder.toString();
+	}
 	
 	/*
 	public final Token peekToken(){

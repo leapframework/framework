@@ -29,9 +29,7 @@ import leap.orm.sql.Sql.Scope;
 import leap.orm.sql.ast.*;
 import org.junit.Before;
 import org.junit.Test;
-
 import java.util.List;
-
 
 @ContextualIgnore
 public class SqlParserMoreTest extends SqlParserTestCase {
@@ -78,6 +76,14 @@ public class SqlParserMoreTest extends SqlParserTestCase {
 		assertParse("update person set firstName = ? where id = ?");
 		
 		assertParse("update person set firstName = #firstName# where id=#id#");
+	}
+
+	@Test
+	public void testUpdateSetSubStatement() {
+		Sql sql = assertParse("update person set name1 = ?, name2 = (case when name1 != name2 then name1 else name3 end) where id = ?");
+		assertObjectNames(sql.findFirstNode(SqlUpdate.class).getNodes(), "name1", "name2", "name1", "name2", "name1", "name3");
+		sql = assertParse("update person set name1 = ?, name2 = (case) where id = ?");
+		assertObjectNames(sql.findFirstNode(SqlUpdate.class).getNodes(), "name1", "name2", "case");
 	}
 	
 	@Test
@@ -128,6 +134,12 @@ public class SqlParserMoreTest extends SqlParserTestCase {
 		sql = sql("select count(1) a from t");
 		select = sql.findFirstNode(SqlSelect.class);
 		assertTrue(select.getSelectItemAliases().containsKey("a"));
+	}
+
+	@Test
+	public void testSelectWithCalculate() {
+		Sql sql = assertParse("select t.id, ifnull(t.count,0)-(ifnull(t.loss,0)+ifnull(t.sales,0)) result from book t");
+		assertObjectNames(sql.findFirstNode(SqlSelectList.class).getNodes(), "t.id", "t.count", "t.loss", "t.sales");
 	}
 
 	@Test

@@ -28,7 +28,7 @@ import leap.lang.expression.ValuedExpression;
 import leap.orm.sql.Sql;
 import leap.orm.sql.Sql.ParseLevel;
 import leap.orm.sql.ast.AstNode;
-
+import leap.orm.sql.ast.SqlObjectName;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.runner.Description;
@@ -101,7 +101,17 @@ public abstract class SqlParserTestCase extends TestBase {
 		assertNotNull(node);
 		assertEquals(expected,node.toString());
 	}
-	
+
+	protected static void assertObjectNames(AstNode[] nodes, String... names) {
+		int i = 0;
+		for (AstNode node : nodes) {
+			if (node instanceof SqlObjectName) {
+				assertEquals(names[i], node);
+				i++;
+			}
+		}
+	}
+
 	protected List<String> split(String sqls){
 		return parser(sqls).split();
 	}

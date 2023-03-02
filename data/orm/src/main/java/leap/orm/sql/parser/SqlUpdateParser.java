@@ -108,9 +108,16 @@ public class SqlUpdateParser extends SqlQueryParser {
 			acceptText();
 			
 			//select item : subquery
-			if(lexer.token() == Token.SELECT){
+			if (lexer.token() == Token.SELECT) {
 				parseSelect();
-			}else{
+			} else if (lexer.token() == Token.CASE) {
+				String literal = lexer.peekLiteral();
+				if (Token.WHEN.literal().equalsIgnoreCase(literal)) {
+					new SqlExprParser(this).parseExpr();
+				} else {
+					parseUpdateValue(update);
+				}
+			} else {
 				parseUpdateValue(update);
 			}
 			expect(Token.RPAREN).acceptText();

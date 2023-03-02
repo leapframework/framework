@@ -332,12 +332,19 @@ abstract class SqlQueryParser extends SqlParser {
                 return;
             }
 
-            if(lexer.token().isKeywordOrIdentifier() && lexer.peekCharSkipWhitespaces() == '(') {
-                acceptText();
-                expect(Token.LPAREN).acceptText();
-                parseRestForClosingParen();
-                expect(Token.RPAREN).acceptText();
-            }else if(lexer.token().isOperator()){
+            if (lexer.peekCharSkipWhitespaces() == '(') {
+                if (lexer.token().isKeywordOrIdentifier()) {
+                    acceptText();
+                    expect(Token.LPAREN).acceptText();
+                    parseRestForClosingParen();
+                    expect(Token.RPAREN).acceptText();
+                } else if (lexer.token().isOperator()) {
+                    acceptText();
+                    expect(Token.LPAREN).acceptText();
+                    parseNameExpr();
+                    expect(Token.RPAREN).acceptText();
+                }
+            } else if(lexer.token().isOperator()) {
                 acceptText();
                 parseNameExpr();
             }
