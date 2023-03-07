@@ -138,7 +138,10 @@ public class SqlParserMoreTest extends SqlParserTestCase {
 
 	@Test
 	public void testSelectWithCalculate() {
-		Sql sql = assertParse("select t.id, ifnull(t.count,0)-(ifnull(t.loss,0)+ifnull(t.sales,0)) result from book t");
+		Sql sql = assertParse("select id+(count-sales) alias from table t where 1=1");
+		assertObjectNames(sql.findFirstNode(SqlSelectList.class).getNodes(), "id", "count", "sales");
+
+		sql = assertParse("select t.id, ifnull(t.count,0)-(ifnull(t.loss,0)+ifnull(t.sales,0)) result from book t");
 		assertObjectNames(sql.findFirstNode(SqlSelectList.class).getNodes(), "t.id", "t.count", "t.loss", "t.sales");
 	}
 
@@ -293,4 +296,8 @@ public class SqlParserMoreTest extends SqlParserTestCase {
 		assertEquals("firstName", sql.findFirstNode(ParamPlaceholder.class).getName());
 	}
 
+	@Test
+	public void testDelete() {
+		assertParse("delete person where id in (select m.member_id from member m where m.user_id = ?)");
+	}
 }

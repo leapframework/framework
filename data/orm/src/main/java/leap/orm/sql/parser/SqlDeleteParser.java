@@ -17,7 +17,6 @@ package leap.orm.sql.parser;
 
 import leap.orm.sql.ast.SqlQuery;
 
-
 public class SqlDeleteParser extends SqlQueryParser {
 
 	public SqlDeleteParser(SqlParser parent) {
@@ -31,9 +30,11 @@ public class SqlDeleteParser extends SqlQueryParser {
 		
 		expect(Token.DELETE).acceptText();
 		
-		parseRestStopAt(Token.FROM);
+		parseRestStopAt(Token.FROM, Token.WHERE);
 		
-		if(parseFrom(delete)){
+		if (parseFrom(delete)) {
+			parseWhere(delete);
+		} else {
 			parseWhere(delete);
 		}
 
@@ -41,7 +42,6 @@ public class SqlDeleteParser extends SqlQueryParser {
 		
 		delete.setNodes(nodes());
 		restoreNodes().addNode(delete);
-
 	}
 
 }

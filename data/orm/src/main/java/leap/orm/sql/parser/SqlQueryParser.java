@@ -324,30 +324,7 @@ abstract class SqlQueryParser extends SqlParser {
     protected void parseNameExpr() {
         if(lexer.peekCharSkipWhitespaces() == '('){
             acceptText();
-            expect(Token.LPAREN).acceptText();
-            parseRestForClosingParen();
-            expect(Token.RPAREN).acceptText();
-
-            if(lexer.token() == Token.FROM) {
-                return;
-            }
-
-            if (lexer.peekCharSkipWhitespaces() == '(') {
-                if (lexer.token().isKeywordOrIdentifier()) {
-                    acceptText();
-                    expect(Token.LPAREN).acceptText();
-                    parseRestForClosingParen();
-                    expect(Token.RPAREN).acceptText();
-                } else if (lexer.token().isOperator()) {
-                    acceptText();
-                    expect(Token.LPAREN).acceptText();
-                    parseNameExpr();
-                    expect(Token.RPAREN).acceptText();
-                }
-            } else if(lexer.token().isOperator()) {
-                acceptText();
-                parseNameExpr();
-            }
+            parseParenExpr();
         }else{
             parseSqlObjectNameOrExpr();
         }
@@ -361,9 +338,38 @@ abstract class SqlQueryParser extends SqlParser {
         if (lexer.token().isOperator()) {
             acceptText(lexer.token());
 
-            if (!parseSpecialToken()) {
+            if (lexer.token() == Token.LPAREN) {
+                parseParenExpr();
+            } else if (!parseSpecialToken()) {
                 parseSqlObjectNameOrExpr();
             }
+        }
+    }
+
+    protected void parseParenExpr() {
+        expect(Token.LPAREN).acceptText();
+        parseRestForClosingParen();
+        expect(Token.RPAREN).acceptText();
+
+        if(lexer.token() == Token.FROM) {
+            return;
+        }
+
+        if (lexer.peekCharSkipWhitespaces() == '(') {
+            if (lexer.token().isKeywordOrIdentifier()) {
+                acceptText();
+                expect(Token.LPAREN).acceptText();
+                parseRestForClosingParen();
+                expect(Token.RPAREN).acceptText();
+            } else if (lexer.token().isOperator()) {
+                acceptText();
+                expect(Token.LPAREN).acceptText();
+                parseNameExpr();
+                expect(Token.RPAREN).acceptText();
+            }
+        } else if(lexer.token().isOperator()) {
+            acceptText();
+            parseNameExpr();
         }
     }
 
