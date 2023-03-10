@@ -289,6 +289,16 @@ public class SqlParserMoreTest extends SqlParserTestCase {
 	}
 
 	@Test
+	public void testFromSelect() {
+		Sql sql = assertParse("select t.total, msa.name from ("
+				+ "(select appId, count(memberId) as total from member group by appId) t "
+				+ "left join user u on (u.id = t.memberId)"
+				+ ") order by t.total");
+		SqlSelect tableSource = (SqlSelect) sql.findFirstNode(SqlSelect.class).getFrom();
+		assertObjectNames(tableSource.getSelectList().getNodes(), "appId", "memberId");
+	}
+
+	@Test
 	public void testParamPlaceholder() {
 		Sql sql = sql("update person set firstName = current_firstName + #firstName# where id = ?");
 		assertEquals("firstName", sql.findFirstNode(ParamPlaceholder.class).getName());

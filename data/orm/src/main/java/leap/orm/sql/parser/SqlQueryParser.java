@@ -68,7 +68,11 @@ abstract class SqlQueryParser extends SqlParser {
             } else {
                 parseFromItem(query);
 
-                parseUnion();
+                if (!parseUnion()) {
+                    new SqlSelectParser(this).parseJoins(query);
+                    expect(Token.RPAREN).acceptText();
+                    return query.getFrom();
+                }
 
                 expect(Token.RPAREN).acceptText();
 
@@ -272,7 +276,7 @@ abstract class SqlQueryParser extends SqlParser {
         }
     }
 	
-	protected void parseUnion() {
+	protected boolean parseUnion() {
         if (lexer.token() == Token.UNION) {
             acceptText();
 
@@ -282,15 +286,17 @@ abstract class SqlQueryParser extends SqlParser {
             
             new SqlSelectParser(this).parseSelectBody();
             parseUnion();
-            return;
+            return true;
         }
 
         if (lexer.token() == Token.MINUS) {
         	acceptText();
         	
         	new SqlSelectParser(this).parseSelectBody();
-        	return;
+        	return true;
         }
+
+        return false;
 	}
 	
 	protected String parseTableAlias(){
