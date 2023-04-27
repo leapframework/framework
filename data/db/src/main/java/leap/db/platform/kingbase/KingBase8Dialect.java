@@ -50,8 +50,8 @@ public class KingBase8Dialect extends GenericDbDialect {
         int rows   = limit.getEnd()   - offset;
 
         String sql = query.getSql(db) + " limit ? offset ?";
-        query.getArgs().add(offset);
         query.getArgs().add(rows);
+        query.getArgs().add(offset);
 
         return sql;
     }
