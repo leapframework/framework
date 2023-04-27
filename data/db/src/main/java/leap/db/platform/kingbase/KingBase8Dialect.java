@@ -49,7 +49,7 @@ public class KingBase8Dialect extends GenericDbDialect {
         int offset = limit.getStart() - 1;
         int rows   = limit.getEnd()   - offset;
 
-        String sql = query.getSql(db) + " limit ?,?";
+        String sql = query.getSql(db) + " limit ? offset ?";
         query.getArgs().add(offset);
         query.getArgs().add(rows);
 
