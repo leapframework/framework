@@ -136,6 +136,20 @@ public interface Db extends Named , JdbcExecutor {
 	default boolean isSqlServer() {
 		return getType().equalsIgnoreCase(DbPlatforms.SQLSERVER);
 	}
+
+	/**
+	 * Returns <code>true</code> if this db type is da meng.
+	 */
+	default boolean isDaMeng() {
+		return getType().equalsIgnoreCase(DbPlatforms.DAMENG);
+	}
+
+	/**
+	 * Returns <code>true</code> if the db type is king base.
+	 */
+	default boolean isKingBase() {
+		return getType().equalsIgnoreCase(DbPlatforms.KINDBASE);
+	}
 	
 	/**
 	 * Checks is the given table exists in the cached default schema.
