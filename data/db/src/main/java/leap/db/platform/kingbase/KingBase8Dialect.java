@@ -43,6 +43,11 @@ public class KingBase8Dialect extends GenericDbDialect {
     }
 
     @Override
+    public boolean useTableAliasOnUpdate() {
+        return false;
+    }
+
+    @Override
     public String getLimitQuerySql(DbLimitQuery query) {
         Limit limit = query.getLimit();
 

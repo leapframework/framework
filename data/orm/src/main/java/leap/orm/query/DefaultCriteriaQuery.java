@@ -1460,10 +1460,17 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                 //update alias set ... from table alias
                 sql.append(alias);
             } else {
-                sql.append(secondary ? em.getSecondaryTableName() : em.getTableName()).append(" ").append(alias);
+                if (secondary) {
+                    sql.append(em.getSecondaryTableName());
+                } else {
+                    sql.append(em.getTableName()).append(" ");
+                    if (dialect.useTableAliasOnUpdate()) {
+                        sql.append(alias);
+                    }
+                }
             }
 
-            if (!setColumns(fields, params, true, secondary)) {
+            if (!setColumns(fields, params, dialect.useTableAliasOnUpdate(), secondary)) {
                 return false;
             }
 

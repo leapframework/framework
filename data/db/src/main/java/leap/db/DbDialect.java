@@ -113,6 +113,10 @@ public interface DbDialect {
         return false;
     }
 
+    default boolean useTableAliasOnUpdate() {
+        return true;
+    }
+
     String getStatementDelimiter();
 
     /**
