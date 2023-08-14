@@ -453,10 +453,10 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
             //resources
             try {
-                Map<String,Resource> urlResourceMap = new HashMap<>();
+                Map<String, Resource> urlResourceMap = new LinkedHashMap<>();
 
-                loadBasePackageResources(urlResourceMap,config.basePackage);
-                for(String basePackage : config.getAdditionalPackages()) {
+                loadBasePackageResources(urlResourceMap, config.basePackage);
+                for (String basePackage : config.getAdditionalPackages()) {
                     loadBasePackageResources(urlResourceMap, basePackage);
                 }
                 loadResources(urlResourceMap);
