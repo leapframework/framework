@@ -60,6 +60,8 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Ap
     protected String  redirectUri;
     protected String  errorView;
     protected String  logoutView;
+    protected Boolean cacheTokenEnabled;
+    protected Integer cacheTokenExpiresInMs;
 
     private List<RequestIgnore> ignoresList = new ArrayList<>();
     private RequestIgnore[] ignoresArray = new RequestIgnore[] {};
@@ -354,6 +356,26 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Ap
     @ConfigProperty
     public void setLogoutView(String logoutView) {
         this.logoutView = logoutView;
+    }
+
+    @Override
+    public boolean isCacheTokenEnabled() {
+        return null == cacheTokenEnabled || Boolean.TRUE.equals(cacheTokenEnabled);
+    }
+
+    @ConfigProperty
+    public void setCacheTokenEnabled(boolean cacheTokenEnabled) {
+        this.cacheTokenEnabled = cacheTokenEnabled;
+    }
+
+    @Override
+    public Integer getCacheTokenExpiresInMs() {
+        return this.cacheTokenExpiresInMs;
+    }
+
+    @ConfigProperty
+    public void setCacheTokenExpiresInMs(Integer cacheTokenExpiresInMs) {
+        this.cacheTokenExpiresInMs = cacheTokenExpiresInMs;
     }
 
     @Override

@@ -60,12 +60,16 @@ public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCrea
         this.cacheSize = cacheSize;
     }
 
-    public void setCacheExpiresInMs(int cacheExpiresInMs) {
-        this.cacheExpiresInMs = cacheExpiresInMs;
+    public void setCacheExpiresInMs(Integer cacheExpiresInMs) {
+        if (null != cacheExpiresInMs) {
+            this.cacheExpiresInMs = cacheExpiresInMs;
+        }
     }
 
     @Override
     public void postCreate(BeanFactory factory) throws Throwable {
+        setCacheExpiresInMs(config.getCacheTokenExpiresInMs());
+
         cache = cacheManager.createSimpleLRUCache(cacheSize);
         typedAccessTokenVerifiers = factory.getNamedBeans(TokenVerifier.class);
     }
@@ -73,23 +77,25 @@ public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCrea
     @Override
     public OAuth2Authentication authenticate(Token at) {
         //Resolve from cache.
-        CachedAuthentication cached = getCachedAuthentication(at);
-        if (null != cached) {
+        if (config.isCacheTokenEnabled()) {
+            CachedAuthentication cached = getCachedAuthentication(at);
+            if (null != cached) {
 
-            //Check expiration of token.
-            if (cached.isTokenExpired()) {
-                log.debug("Access token '{}' was expired", at.getToken());
-                removeCachedAuthentication(at, cached);
-                return null;
-            }
+                //Check expiration of token.
+                if (cached.isTokenExpired()) {
+                    log.debug("Access token '{}' was expired", at.getToken());
+                    removeCachedAuthentication(at, cached);
+                    return null;
+                }
 
-            //Check expiration of the cached item.
-            if (cached.isCacheExpired()) {
-                log.debug("Cached authentication expired, remove it from cache only");
-                removeCachedAuthentication(at, cached);
-            } else {
-                log.debug("Returns the cached authentication of access token : {}", at.getToken());
-                return cached.newAuthentication();
+                //Check expiration of the cached item.
+                if (cached.isCacheExpired()) {
+                    log.debug("Cached authentication expired, remove it from cache only");
+                    removeCachedAuthentication(at, cached);
+                } else {
+                    log.debug("Returns the cached authentication of access token : {}", at.getToken());
+                    return cached.newAuthentication();
+                }
             }
         }
 

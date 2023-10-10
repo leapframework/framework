@@ -125,4 +125,18 @@ public interface OAuth2Config extends OAuth2ConfigBase {
     default String getJwksKeyId(){
         return "oauth2_authorize_server_public_key";
     };
+
+    /**
+     * Returns true if enable cache token.
+     *
+     * <p/>
+     * Default is true.
+     */
+    boolean isCacheTokenEnabled();
+
+    /**
+     * Returns the expires of cached token.
+     */
+    Integer getCacheTokenExpiresInMs();
+
 }
