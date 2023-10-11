@@ -59,6 +59,7 @@ public abstract class AbstractQuery<T> implements Query<T>, QueryContext {
     protected String orderBy;
     protected String having;
     protected boolean forUpdate;
+    protected QueryValidator validator;
 
     private Sql querySql;
 
@@ -73,6 +74,19 @@ public abstract class AbstractQuery<T> implements Query<T>, QueryContext {
         this.targetType = targetType;
         this.em = null == entityMapping ? null : entityMapping.withDynamic();
         this.eventHandler = dao.getOrmContext().getEntityEventHandler();
+        this.validator = new UnsafeQueryValidator();
+    }
+
+    @Override
+    public QueryValidator getValidator() {
+        return this.validator;
+    }
+
+    @Override
+    public Query<T> withValidator(QueryValidator validator) {
+        Args.notNull(validator, "query validator");
+        this.validator = validator;
+        return this;
     }
 
     @Override
@@ -153,6 +167,12 @@ public abstract class AbstractQuery<T> implements Query<T>, QueryContext {
     public Query<T> orderBy(String expression) {
         this.orderBy = expression;
         return this;
+    }
+
+    @Override
+    public Query<T> unsafeOrderBy(String expression) {
+        this.validator.validateOrderBy(expression);
+        return orderBy(expression);
     }
 
     @Override

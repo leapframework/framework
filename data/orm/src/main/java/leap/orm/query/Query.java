@@ -29,6 +29,16 @@ import java.util.Map;
 public interface Query<T> extends QueryBase<T> {
 
     /**
+     * Returns the {@link QueryValidator}.
+     */
+    QueryValidator getValidator();
+
+    /**
+     * {@link QueryValidator} is used to validate unsafe methods.
+     */
+    Query<T> withValidator(QueryValidator validator);
+
+    /**
      * Returns the order by expression or null.
      */
     String getOrderBy();
@@ -89,6 +99,11 @@ public interface Query<T> extends QueryBase<T> {
      * </pre>
      */
     Query<T> orderBy(String expression);
+
+    /**
+     * Sets the order by expression in this query after validate the expression by {@link QueryValidator}.
+     */
+    Query<T> unsafeOrderBy(String expression);
 
     /**
      * Sets to query results limit to the given rows.

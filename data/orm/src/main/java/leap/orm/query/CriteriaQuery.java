@@ -27,8 +27,6 @@ import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
 import leap.orm.mapping.RelationMapping;
 import leap.orm.reader.RecordSetReader;
-
-import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -38,6 +36,11 @@ import java.util.function.Predicate;
 public interface CriteriaQuery<T> extends Query<T> {
 
     String DEFAULT_ALIAS_NAME = "t";
+
+    /**
+     * {@link QueryValidator} is used to validate unsafe methods.
+     */
+    CriteriaQuery<T> withValidator(QueryValidator validator);
 
     /**
      * Returns the selection fields or null.
@@ -129,6 +132,13 @@ public interface CriteriaQuery<T> extends Query<T> {
      * </pre>
      */
     CriteriaQuery<T> orderBy(String expression);
+
+    /**
+     * Sets the order by expression in this CriteriaQuery  after validate the expression by {@link QueryValidator}.
+     * 
+     * @see #orderBy(String)
+     */
+    CriteriaQuery<T> unsafeOrderBy(String expression);
 
     /**
      * Sets to CriteriaQuery results limit to the given rows.
@@ -487,6 +497,11 @@ public interface CriteriaQuery<T> extends Query<T> {
      * Sets the 'group by' sql expression in the generated sql.
      */
     CriteriaQuery<T> groupBy(String expression);
+
+    /**
+     * Sets the 'group by' sql expression in the generated sql after validate the expression by {@link QueryValidator}.
+     */
+    CriteriaQuery<T> unsafeGroupBy(String expression);
 
     /**
      * Sets the 'having' sql expression in the generated sql.

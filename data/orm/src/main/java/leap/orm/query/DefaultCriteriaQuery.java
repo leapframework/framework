@@ -96,6 +96,11 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     }
 
     @Override
+    public CriteriaQuery<T> withValidator(QueryValidator validator) {
+        return (CriteriaQuery<T>) super.withValidator(validator);
+    }
+
+    @Override
     public CriteriaQuery<T> fromSqlView(String sql) {
         this.sqlView = sql;
         return this;
@@ -768,6 +773,12 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     }
 
     @Override
+    public CriteriaQuery<T> unsafeGroupBy(String expression) {
+        this.validator.validateGroupBy(expression);
+        return groupBy(expression);
+    }
+
+    @Override
     public CriteriaQuery<T> having(String expression) {
         this.having = expression;
         return this;
@@ -786,6 +797,11 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     @Override
     public CriteriaQuery<T> orderBy(String expression) {
         return (CriteriaQuery<T>) super.orderBy(expression);
+    }
+
+    @Override
+    public CriteriaQuery<T> unsafeOrderBy(String expression) {
+        return (CriteriaQuery<T>) super.unsafeOrderBy(expression);
     }
 
     @Override
