@@ -211,6 +211,9 @@ public class AppFilter implements Filter {
     }
 
     protected void checkIgnoreAndDoService(Request request, Response response, FilterChain chain) throws ServletException, IOException {
+        if (config.isStrictHttpFirewall()) {
+            Utils.rejectedBlocklistedUrls(request.getServletRequest());
+        }
         if (checkIgnore(request, response)) {
             log.debug("Request '{}' ignored", request.getPath());
             handleIgnoredRequest(request, response, chain);

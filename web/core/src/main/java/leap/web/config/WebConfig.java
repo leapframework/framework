@@ -126,6 +126,11 @@ public interface WebConfig {
     boolean isAllowViewAction();
 
     /**
+     * Strict http firewall.
+     */
+    boolean isStrictHttpFirewall();
+
+    /**
      * Returns <code>true</code> if allow action extension(s) in request path, such as <code>.do</code>.
      *
      * <p/>

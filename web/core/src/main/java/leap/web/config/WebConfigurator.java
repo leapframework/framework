@@ -181,6 +181,11 @@ public interface WebConfigurator {
     WebConfigurator setAllowViewAction(boolean allowViewAction);
 
     /**
+     * Strict Http Firewall.
+     */
+    WebConfigurator setStrictHttpFirewall(boolean strictHttpFirewall);
+
+    /**
      * Optional.
      *
      * Sets the action extension(s).

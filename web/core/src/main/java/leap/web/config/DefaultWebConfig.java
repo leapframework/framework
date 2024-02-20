@@ -62,6 +62,7 @@ public class DefaultWebConfig implements WebConfig, WebConfigurator, PostCreateB
     protected @R boolean corsEnabled                  = false;
     protected @R boolean allowViewAction              = true;
     protected @R boolean viewEnabled                  = true;
+    protected @R boolean strictHttpFirewall           = true;
     protected @N String  cookieDomain                 = null;
 
     protected @Inject
@@ -200,6 +201,11 @@ public class DefaultWebConfig implements WebConfig, WebConfigurator, PostCreateB
     }
 
     @Override
+    public boolean isStrictHttpFirewall() {
+        return strictHttpFirewall;
+    }
+
+    @Override
     public String getHomeControllerName() {
         return homeControllerName;
     }
@@ -327,6 +333,12 @@ public class DefaultWebConfig implements WebConfig, WebConfigurator, PostCreateB
     @ConfigProperty
     public WebConfigurator setAllowViewAction(boolean allowViewAction) {
         this.allowViewAction = allowViewAction;
+        return this;
+    }
+
+    @ConfigProperty
+    public WebConfigurator setStrictHttpFirewall(boolean strictHttpFirewall) {
+        this.strictHttpFirewall = strictHttpFirewall;
         return this;
     }
 
