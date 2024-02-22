@@ -1479,10 +1479,11 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                 if (secondary) {
                     sql.append(em.getSecondaryTableName());
                 } else {
-                    sql.append(em.getTableName()).append(" ");
-                    if (dialect.useTableAliasOnUpdate()) {
-                        sql.append(alias);
-                    }
+                    sql.append(em.getTableName());
+                }
+                sql.append(" ");
+                if (dialect.useTableAliasOnUpdate()) {
+                    sql.append(alias);
                 }
             }
 
