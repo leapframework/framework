@@ -49,6 +49,7 @@ public class TConfigBean {
 
     public @ConfigProperty CProp    complexProperty2;
     public @ConfigProperty String[] arrayProperty1;
+    public @ConfigProperty String[] arrayPropertyWithSlash;
 
     protected int intPropertyWithDefaultValue;
     protected String strPropertyWithDefaultValue;

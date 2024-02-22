@@ -226,12 +226,14 @@ public class BeanConfigurator {
     }
 
     protected boolean doBeanConfigureByKey(Object bean, ReflectValued v, String key, String defaultValue) {
-        if(Property.class.isAssignableFrom(v.getType())) {
+        final Class<?> reflectType = v.getType();
+
+        if(Property.class.isAssignableFrom(reflectType)) {
             doBeanConfigureDynaProperty(bean, v, key, defaultValue);
             return true;
         }
 
-        if(v.getType().isArray()) {
+        if(reflectType.isArray()) {
             String[] array = config.getArrayProperty(key);
 
             if((null == array || array.length == 0) && !Strings.isEmpty(defaultValue)) {
@@ -244,7 +246,7 @@ public class BeanConfigurator {
             }
         }
 
-        if(List.class.equals(v.getType())) {
+        if(List.class.equals(reflectType)) {
             String[] array = config.getArrayProperty(key);
 
             if((null == array || array.length == 0) && !Strings.isEmpty(defaultValue)) {
@@ -259,7 +261,7 @@ public class BeanConfigurator {
             }
         }
 
-        if(Set.class.equals(v.getType())) {
+        if(Set.class.equals(reflectType)) {
             String[] array = config.getArrayProperty(key);
 
             if((null == array || array.length == 0) && !Strings.isEmpty(defaultValue)) {
@@ -284,10 +286,10 @@ public class BeanConfigurator {
             if(prop.length() > 0) {
                 try {
                     Object value;
-                    if(Classes.isSimpleValueType(v.getType())) {
-                        value = Converts.convert(prop, v.getType(), v.getGenericType());
-                    }else{
-                        value = JSON.decode(prop, v.getType(), v.getGenericType());
+                    if (Classes.isSimpleValueType(reflectType) || String[].class.isAssignableFrom(reflectType)) {
+                        value = Converts.convert(prop, reflectType, v.getGenericType());
+                    } else {
+                        value = JSON.decode(prop, reflectType, v.getGenericType());
                     }
                     v.setValue(bean, value);
                 } catch (Exception e) {

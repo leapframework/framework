@@ -67,6 +67,10 @@ public class BeanConfigTest extends CoreTestCase {
         assertEquals("b", arrayProperty1[1]);
         assertEquals("c", arrayProperty1[2]);
 
+        String[] arrayPropertyWithSlash = bean.arrayPropertyWithSlash;
+        assertEquals(1, arrayPropertyWithSlash.length);
+        assertEquals("/test", arrayPropertyWithSlash[0]);
+
         Property<TConfigBean.CProp> cprop1 = bean.complexProperty1;
         assertNotNull(cprop1.get());
         assertEquals("n1", cprop1.get().name);

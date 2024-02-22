@@ -15,6 +15,7 @@
         <property name="arrayProperty1[]" value="a"/>
         <property name="arrayProperty1[]" value="b"/>
         <property name="arrayProperty1[]" value="c"/>
+        <property name="arrayPropertyWithSlash" value="/test"/> <!-- must be string property, mock jmms config -->
         <property name="complexProperty1" value="{name:n1, value:100}"/>
         <property name="complexProperty2" value="{name:n2, value:200}"/>
         <property name="noFieldProperty1" value="1"/>
