@@ -61,7 +61,6 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     protected StringBuilder            joinByIdWhere;
     protected List                     joinByIdArgs;
     protected boolean                  distinct;
-    protected String                   groupBy;
     protected String                   having;
     protected Function<String, String> sqlWrapper;
 
@@ -81,10 +80,6 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
     public boolean isDistinct() {
         return distinct;
-    }
-
-    public String getGroupBy() {
-        return groupBy;
     }
 
     public String getHaving() {
@@ -768,14 +763,12 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
     @Override
     public CriteriaQuery<T> groupBy(String expression) {
-        this.groupBy = expression;
-        return this;
+        return (CriteriaQuery<T>) super.groupBy(expression);
     }
 
     @Override
     public CriteriaQuery<T> unsafeGroupBy(String expression) {
-        this.validator.validateGroupBy(expression);
-        return groupBy(expression);
+        return (CriteriaQuery<T>) super.unsafeGroupBy(expression);
     }
 
     @Override
@@ -986,11 +979,14 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         }
 
         if (count) {
-            //Count query don't add the order by.
+            //Count query don't add the order by and group by.
             String tmpOrderBy = this.orderBy;
+            String tmpGroupBy = this.groupBy;
             this.orderBy = null;
+            this.groupBy = null;
             SqlStatement statement = clause.createQueryStatement(qc, queryParams);
             this.orderBy = tmpOrderBy;
+            this.groupBy = tmpGroupBy;
             return statement;
         } else {
             return clause.createQueryStatement(qc, queryParams);

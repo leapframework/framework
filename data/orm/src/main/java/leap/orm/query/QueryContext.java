@@ -25,6 +25,8 @@ public interface QueryContext extends SqlContext,SqlLanguage.Options {
 	
 	String getOrderBy();
 
+	String getGroupBy();
+
 	default boolean isForUpdate() {
 		return false;
 	}

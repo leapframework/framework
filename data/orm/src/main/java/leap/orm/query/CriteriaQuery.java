@@ -494,16 +494,6 @@ public interface CriteriaQuery<T> extends Query<T> {
     CriteriaQuery<T> whereOr(String expr, Object... args);
 
     /**
-     * Sets the 'group by' sql expression in the generated sql.
-     */
-    CriteriaQuery<T> groupBy(String expression);
-
-    /**
-     * Sets the 'group by' sql expression in the generated sql after validate the expression by {@link QueryValidator}.
-     */
-    CriteriaQuery<T> unsafeGroupBy(String expression);
-
-    /**
      * Sets the 'having' sql expression in the generated sql.
      */
     CriteriaQuery<T> having(String expression);

@@ -57,6 +57,7 @@ public abstract class AbstractQuery<T> implements Query<T>, QueryContext {
     protected Object id;
     protected Limit  limit;
     protected String orderBy;
+    protected String groupBy;
     protected String having;
     protected boolean forUpdate;
     protected QueryValidator validator;
@@ -176,6 +177,18 @@ public abstract class AbstractQuery<T> implements Query<T>, QueryContext {
     }
 
     @Override
+    public Query<T> groupBy(String expression) {
+        this.groupBy = expression;
+        return this;
+    }
+
+    @Override
+    public Query<T> unsafeGroupBy(String expression) {
+        this.validator.validateGroupBy(expression);
+        return groupBy(expression);
+    }
+
+    @Override
     public Query<T> limit(Integer size) {
         this.limit = Page.limit(size);
         return this;
@@ -247,6 +260,11 @@ public abstract class AbstractQuery<T> implements Query<T>, QueryContext {
     @Override
     public String getOrderBy() {
         return orderBy;
+    }
+
+    @Override
+    public String getGroupBy() {
+        return groupBy;
     }
 
     @Override
@@ -363,6 +381,11 @@ public abstract class AbstractQuery<T> implements Query<T>, QueryContext {
         @Override
         public String getOrderBy() {
             return orderBy;
+        }
+
+        @Override
+        public String getGroupBy() {
+            return groupBy;
         }
 
         @Override

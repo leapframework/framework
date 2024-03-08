@@ -70,6 +70,11 @@ public class DefaultFindListCommand<T> extends AbstractEntityDaoCommand implemen
     }
 
 	@Override
+	public String getGroupBy() {
+		return null;
+	}
+
+	@Override
     public List<T> execute() throws TooManyRecordsException,RecordNotFoundException {
 		ResultSetReader<List<T>> reader = ResultSetReaders.forListEntity(context, this, em, elementType, resultClass);
 	    List<T> list = sqlCommand.executeQuery(this, idParameters, reader);

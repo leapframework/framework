@@ -57,7 +57,12 @@ public abstract class EntitySqlCommandBase extends AbstractDaoCommand implements
     public String getOrderBy() {
 	    return null == orderBy ? null : orderBy.toString();
     }
-	
+
+	@Override
+	public String getGroupBy() {
+		return null;
+	}
+
 	protected void param(String name,Object value){
 		params().put(name, value);
 	}

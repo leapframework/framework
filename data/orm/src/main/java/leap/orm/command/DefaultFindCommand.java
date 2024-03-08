@@ -63,6 +63,11 @@ public class DefaultFindCommand<T> extends AbstractEntityDaoCommand implements F
     }
 
     @Override
+    public String getGroupBy() {
+        return null;
+    }
+
+    @Override
     public T execute() throws TooManyRecordsException {
         ResultSetReader<T> reader = ResultSetReaders.forSingleEntity(context, this, em, resultClass);
 

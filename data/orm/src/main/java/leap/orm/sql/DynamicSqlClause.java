@@ -136,7 +136,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause,Sql
                 return createLimitQueryStatement(context, sqls, params);
             }
 
-            if (!Strings.isEmpty(context.getOrderBy())) {
+            if (!Strings.isEmpty(context.getOrderBy()) || !Strings.isEmpty(context.getGroupBy())) {
                 createSqlWithoutOrderBy(sqls);
                 return createOrderByQueryStatement(context, sqls, params);
             }
@@ -463,6 +463,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause,Sql
 
         private Sql                        sql;
 		private String                     orderBy;
+		private String                     groupBy;
 		private DefaultSqlStatementBuilder statement;
 		
 		//private boolean hasOrderByPlaceHolder = false;
@@ -477,6 +478,9 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause,Sql
 			}else{
 				orderBy = sqls.defaultOrderBy;
 			}
+			if (!Strings.isEmpty(context.getGroupBy())) {
+				groupBy = " group by " + context.getGroupBy();
+			}
 		}
 		
 		@Override
@@ -486,21 +490,31 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause,Sql
         }
 		
 		public DefaultSqlStatementBuilder buildStatement(Db db) {
+			String resolvingSql = null;
+			if (Strings.isNotBlank(groupBy) && !sqls.hasOrderByPlaceHolder) {
+				String withoutOrderBySql = getSqlWithoutOrderBy(db);
+				// todo: check placeHolder
+				if (!Strings.containsIgnoreCase(withoutOrderBySql, " group by ")) {
+					resolvingSql = getSqlWithoutOrderBy(db) + groupBy;
+				}
+			}
+
 			if(Strings.isEmpty(orderBy)) {
 				sql = mergeMultipleSelect(sqls.sqlWithoutOrderByResolved);
 			}else{
 				//TODO : optimize
-				String sqlWithOrderBy;
-				
-				String sqlWithoutOrderBy = getSqlWithoutOrderBy(db);
-				
-				if(sqls.hasOrderByPlaceHolder){
-					sqlWithOrderBy = Strings.replace(sqlWithoutOrderBy, ORDER_BY_PLACEHOLDER, orderBy);
-				}else{
-					sqlWithOrderBy = db.getDialect().addOrderBy(sqlWithoutOrderBy, orderBy);
+				if (null == resolvingSql) {
+					resolvingSql = getSqlWithoutOrderBy(db);
 				}
-				
-				sql = lang.parseExecutionSqls(context.getOrmContext(), sqlWithOrderBy, SqlLanguage.Options.EMPTY).sql;
+				if(sqls.hasOrderByPlaceHolder){
+					resolvingSql = Strings.replace(resolvingSql, ORDER_BY_PLACEHOLDER, orderBy);
+				}else{
+					resolvingSql = db.getDialect().addOrderBy(resolvingSql, orderBy);
+				}
+			}
+
+			if (null != resolvingSql) {
+				sql = lang.parseExecutionSqls(context.getOrmContext(), resolvingSql, SqlLanguage.Options.EMPTY).sql;
 			}
 
             if(sql.isSelect()) {

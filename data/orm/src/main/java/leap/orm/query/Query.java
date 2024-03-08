@@ -106,6 +106,16 @@ public interface Query<T> extends QueryBase<T> {
     Query<T> unsafeOrderBy(String expression);
 
     /**
+     * Sets the 'group by' sql expression in the generated sql.
+     */
+    Query<T> groupBy(String expression);
+
+    /**
+     * Sets the 'group by' sql expression in the generated sql after validate the expression by {@link QueryValidator}.
+     */
+    Query<T> unsafeGroupBy(String expression);
+
+    /**
      * Sets to query results limit to the given rows.
      *
      * <p>

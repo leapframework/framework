@@ -147,6 +147,11 @@ public abstract class AbstractDaoCommand implements DaoCommand {
         }
 
         @Override
+        public String getGroupBy() {
+            return null;
+        }
+
+        @Override
         public EntityMapping getPrimaryEntityMapping() {
             return null;
         }

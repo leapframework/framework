@@ -75,6 +75,11 @@ public class DefaultNativeQuery<T> implements NativeQuery<T>, QueryContext {
     }
 
     @Override
+    public String getGroupBy() {
+        return null;
+    }
+
+    @Override
     public Sql getQuerySql() {
         return querySql;
     }
