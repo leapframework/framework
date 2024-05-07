@@ -15,6 +15,7 @@
  */
 package leap.db.platform.dm;
 
+import leap.core.AppContext;
 import leap.db.DbPlatforms;
 import leap.db.platform.GenericDbDialect;
 import leap.db.platform.GenericDbMetadataReader;
@@ -34,10 +35,12 @@ public class DMPlatform extends GenericDbPlatform {
 
     @Override
     protected GenericDbDialect createDialect(DatabaseMetaData jdbcMetadata) throws SQLException {
+        boolean shouldQuoteIdentifier = AppContext.current().getConfig()
+                .getBooleanProperty("db.dm.shouldQuoteIdentifier", true);
         if (jdbcMetadata.getDatabaseMajorVersion() >= 8) {
-            return new DM8Dialect();
+            return new DM8Dialect(shouldQuoteIdentifier);
         }
-        return new DM7Dialect();
+        return new DM7Dialect(shouldQuoteIdentifier);
     }
 
     @Override

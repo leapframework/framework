@@ -21,6 +21,10 @@ import java.sql.SQLException;
 
 public class DM8Dialect extends DM7Dialect {
 
+    public DM8Dialect(boolean shouldQuoteIdentifier) {
+        super(shouldQuoteIdentifier);
+    }
+
     @Override
     public String getDefaultSchemaName(Connection connection, DatabaseMetaData dm) throws SQLException {
         return connection.getSchema();
