@@ -32,6 +32,7 @@ public class SqlParserBaseTest extends SqlParserTestCase {
 		assertTrue(sql("select * from t").isSelect());
 		assertFalse(sql("selectsss * from t").isSelect());
 		assertTrue(sql("insert into t(c1) values(1)").isInsert());
+		assertTrue(sql("replace into t(c1) values(1)").isInsert());
 		assertTrue(sql("update t set a = 1").isUpdate());
 		assertTrue(sql("delete from t").isDelete());
 		assertTrue(sql("truncate table d").isUnresolved());

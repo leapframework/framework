@@ -32,7 +32,7 @@ public class SqlInsertParser extends SqlParser {
 
         suspendNodes();
 
-        expect(Token.INSERT).acceptText();
+        acceptInsert();
 
         if(lexer.token() == Token.INTO) {
             acceptText();
@@ -54,6 +54,10 @@ public class SqlInsertParser extends SqlParser {
 
         insert.setNodes(nodes());
         restoreNodes().addNode(insert);
+    }
+
+    protected void acceptInsert() {
+        expect(Token.INSERT).acceptText();
     }
 
     protected boolean parseTableName(SqlInsert insert) {

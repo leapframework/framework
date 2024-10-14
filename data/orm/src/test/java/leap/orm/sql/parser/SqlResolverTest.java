@@ -90,6 +90,11 @@ public class SqlResolverTest extends OrmTestCase {
 	}
 
 	@Test
+	public void testSimpleInsert() {
+		assertEquals("replace into person_(id_) values(?)", resolve("replace into Person(id) values(?)"));
+	}
+
+	@Test
 	public void testQuotedText() {
 		assertEquals("select id from Person", resolve("select id from ```Person```"));
 		assertEquals("select id from Person p", resolve("select id from ```Person``` p"));

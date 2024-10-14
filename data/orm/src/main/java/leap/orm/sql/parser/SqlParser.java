@@ -238,6 +238,14 @@ public class SqlParser extends SqlParserBase {
                         parseInsert();
                     }
                     break;
+				case REPLACE:
+					type = Type.INSERT;
+					if (parseDyna) {
+						parseDynaOnly();
+					} else {
+						parseReplace();
+					}
+					break;
                 case UPDATE:
                     type = Type.UPDATE;
                     if(parseDyna) {
@@ -295,6 +303,14 @@ public class SqlParser extends SqlParserBase {
         }else{
             parseAny();
         }
+	}
+
+	protected void parseReplace() {
+		if (parseMore) {
+			new SqlReplaceParser(this).parseInsertBody();
+		} else {
+			parseAny();
+		}
 	}
 	
 	protected void parseUpdate(){

@@ -25,7 +25,8 @@ public enum Token {
 	//standard sql token
     SELECT("SELECT"), 
     DELETE("DELETE"), 
-    INSERT("INSERT"), 
+    INSERT("INSERT"),
+    REPLACE("REPLACE"),
     UPDATE("UPDATE"), 
     
     UNION("UNION"), 
