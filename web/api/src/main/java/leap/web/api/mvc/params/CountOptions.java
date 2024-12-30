@@ -23,6 +23,7 @@ import leap.web.annotation.QueryParam;
 public class CountOptions {
 
     protected @QueryParam("filters")     String  filters;
+    protected @QueryParam("joins")       String  joins;
 
     public String getFilters() {
         return filters;
@@ -30,6 +31,14 @@ public class CountOptions {
 
     public void setFilters(String filters) {
         this.filters = filters;
+    }
+
+    public String getJoins() {
+        return joins;
+    }
+
+    public void setJoins(String joins) {
+        this.joins = joins;
     }
 
 }

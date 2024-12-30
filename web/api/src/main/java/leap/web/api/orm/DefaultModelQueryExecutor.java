@@ -482,6 +482,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
         QueryOptions queryOptions = new QueryOptions();
         queryOptions.setFilters(options.getFilters());
+        queryOptions.setJoins(options.getJoins());
 
         applyFilters(context, query, null, queryOptions, null, null);
         applyCount(context, query);
