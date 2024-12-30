@@ -330,46 +330,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             }
             query.params(allParams);
 
-            Join[] joins = options.getResolvedJoins();
-            if (null != joins && joins.length > 0) {
-                Set<String> relations = new HashSet<>();
-
-                for (Join join : joins) {
-
-                    if (relations.contains(join.getRelation().toLowerCase())) {
-                        throw new BadRequestException("Duplicated join relation '" + join.getRelation() + "'");
-                    }
-
-                    if (joinModels.contains(join.getAlias())) {
-                        throw new BadRequestException("Duplicated join alias '" + join.getAlias() + "'");
-                    }
-
-                    if (join.getAlias().equalsIgnoreCase(query.alias())) {
-                        throw new BadRequestException("Alias '" + query.alias() + "' is reserved, please use another one");
-                    }
-
-                    RelationProperty rp = em.tryGetRelationProperty(join.getRelation());
-                    if (null == rp) {
-                        throw new BadRequestException("No relation '" + join.getRelation() + "' in model '" + am.getName() +
-                                " or the relation is not joinable");
-                    }
-
-                    if (rp.isOptional()) {
-                        query.leftJoin(rp.getTargetEntityName(), rp.getRelationName(), join.getAlias());
-                    } else {
-                        query.join(rp.getTargetEntityName(), rp.getRelationName(), join.getAlias());
-                    }
-
-                    relations.add(join.getRelation().toLowerCase());
-
-                    ModelAndMapping joinModel = lookupModelAndMapping(rp.getTargetEntityName());
-                    if (null == joinModel) {
-                        throw new BadRequestException("The joined model '" + rp.getTargetEntityName() + "' of relation '" + join.getRelation() + "' not found");
-                    }
-                    joinModels.add(join.getAlias(), joinModel);
-                }
-            }
-
+            applyJoins(query, options, joinModels);
             applyOrderBy(query, options, joinModels);
             applySelectOrAggregates(context, query, options, joinModels);
             applyFilters(context, query, options.getParams(), options, joinModels, filters, filterByParams);
@@ -484,7 +445,9 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         queryOptions.setFilters(options.getFilters());
         queryOptions.setJoins(options.getJoins());
 
-        applyFilters(context, query, null, queryOptions, null, null);
+        JoinModels joinModels = new JoinModels();
+        applyJoins(query, queryOptions, joinModels);
+        applyFilters(context, query, null, queryOptions, joinModels, null);
         applyCount(context, query);
 
         if (callback != null) {
@@ -1452,6 +1415,47 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         ex.preCount(context, query);
     }
 
+    protected void applyJoins(CriteriaQuery query, QueryOptions options, JoinModels joinModels) {
+        Join[] joins = options.getResolvedJoins();
+        if (null != joins && joins.length > 0) {
+            Set<String> relations = new HashSet<>();
+
+            for (Join join : joins) {
+
+                if (relations.contains(join.getRelation().toLowerCase())) {
+                    throw new BadRequestException("Duplicated join relation '" + join.getRelation() + "'");
+                }
+
+                if (joinModels.contains(join.getAlias())) {
+                    throw new BadRequestException("Duplicated join alias '" + join.getAlias() + "'");
+                }
+
+                if (join.getAlias().equalsIgnoreCase(query.alias())) {
+                    throw new BadRequestException("Alias '" + query.alias() + "' is reserved, please use another one");
+                }
+
+                RelationProperty rp = em.tryGetRelationProperty(join.getRelation());
+                if (null == rp) {
+                    throw new BadRequestException("No relation '" + join.getRelation() + "' in model '" + am.getName() +
+                            " or the relation is not joinable");
+                }
+
+                if (rp.isOptional()) {
+                    query.leftJoin(rp.getTargetEntityName(), rp.getRelationName(), join.getAlias());
+                } else {
+                    query.join(rp.getTargetEntityName(), rp.getRelationName(), join.getAlias());
+                }
+
+                relations.add(join.getRelation().toLowerCase());
+
+                ModelAndMapping joinModel = lookupModelAndMapping(rp.getTargetEntityName());
+                if (null == joinModel) {
+                    throw new BadRequestException("The joined model '" + rp.getTargetEntityName() + "' of relation '" + join.getRelation() + "' not found");
+                }
+                joinModels.add(join.getAlias(), joinModel);
+            }
+        }
+    }
 
     protected void applyFilters(ModelExecutionContext context, CriteriaQuery query, Params params,
                                 QueryOptions options, JoinModels jms, Map<String, Object> fields) {
