@@ -59,7 +59,7 @@ public class BCryptPasswordEncoder implements PasswordEncoder {
         this.random = random;
     }
 
-    public String encode(String rawPassword) {
+    public String encode(CharSequence rawPassword) {
         String salt;
         if (strength > 0) {
             if (random != null) {
@@ -72,7 +72,7 @@ public class BCryptPasswordEncoder implements PasswordEncoder {
         else {
             salt = BCrypt.gensalt();
         }
-        return BCrypt.hashpw(rawPassword, salt);
+        return BCrypt.hashpw(rawPassword.toString(), salt);
     }
 
     public boolean matches(String rawPassword, String encodedPassword) {
