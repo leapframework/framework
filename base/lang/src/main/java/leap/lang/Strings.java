@@ -370,7 +370,7 @@ public class Strings {
 	}
 	
 	//split
-	
+
 	public static String[] split(String string) {
 		return splitWorker(string, -1, false, true, true);
 	}
@@ -1066,26 +1066,34 @@ public class Strings {
 		return lowerSplit(name, '_');
 	}
 
+	public static String upperUnderscore(String name) {
+		return upperSplit(name, '_');
+	}
+
     /**
      * lower-hyphen
      */
 	public static String lowerHyphen(String name) {
 		return lowerSplit(name, '-');
 	}
-	
-	protected static String lowerSplit(String name, char c) {
+
+	protected static String splitChar(String name, char c) {
 		StringBuilder buf = new StringBuilder(name);
-		for (int i=1; i<buf.length()-1; i++) {
-			char p = buf.charAt(i-1);
-			if (
-				(Character.isLowerCase( p ) || Character.isDigit(p) ) &&
-				Character.isUpperCase( buf.charAt(i))
-			) {
+		for (int i = 1; i < buf.length() - 1; i++) {
+			char p = buf.charAt(i - 1);
+			if ((Character.isLowerCase(p) || Character.isDigit(p)) && Character.isUpperCase(buf.charAt(i))) {
 				buf.insert(i++, c);
 			}
 		}
-		
-		return buf.toString().toLowerCase();
+		return buf.toString();
+	}
+
+	protected static String lowerSplit(String name, char c) {
+		return splitChar(name, c).toLowerCase();
+	}
+
+	protected static String upperSplit(String name, char c) {
+		return splitChar(name, c).toUpperCase();
 	}
 	
 	//stars & ends with

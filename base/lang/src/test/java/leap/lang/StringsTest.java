@@ -57,10 +57,12 @@ public class StringsTest extends ConcurrentTestCase {
 		assertEquals("HelloWorld",Strings.upperCamel("hello_world",'_'));
 		assertEquals("HelloWorld",Strings.upperCamel("hello_world_",'_'));
 		assertEquals("HelloWorld",Strings.upperCamel("helloWorld",'_'));
+		assertEquals("HelloWorld",Strings.upperCamel("HelloWorld",'_'));
 
 		assertEquals("helloWorld",Strings.lowerCamel("hello_world",'_'));
 		assertEquals("helloWorld",Strings.lowerCamel("hello_world_",'_'));
 		assertEquals("helloWorld",Strings.lowerCamel("HelloWorld",'_'));
+		assertEquals("helloWorld",Strings.lowerCamel("helloWorld",'_'));
 	}
 	
 	@Test
@@ -101,9 +103,13 @@ public class StringsTest extends ConcurrentTestCase {
     }
 
     @Test
-    public void testLowerUnderscore() {
+    public void testUnderscore() {
 		assertEquals("qqq", Strings.lowerUnderscore("QQQ"));
         assertEquals("q_qq", Strings.lowerUnderscore("qQq"));
         assertEquals("q_qq", Strings.lowerUnderscore("qQQ"));
+
+		assertEquals("QQQ", Strings.upperUnderscore("QQQ"));
+		assertEquals("Q_QQ", Strings.upperUnderscore("qQq"));
+		assertEquals("Q_QQ", Strings.upperUnderscore("qQQ"));
 	}
 }

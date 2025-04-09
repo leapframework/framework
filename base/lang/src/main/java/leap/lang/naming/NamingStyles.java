@@ -61,6 +61,13 @@ public class NamingStyles {
 	public static final NamingStyle LOWER_UNDERSCORE = (s) -> {
 		return null == s ? null : Strings.lowerUnderscore(s);
 	};
+
+	/**
+	 * "helloWorld" -> "HELLO_WORLD"
+	 */
+	public static final NamingStyle UPPER_UNDERSCORE = (s) -> {
+		return null == s ? null : Strings.upperUnderscore(s);
+	};
 	
 	/**
 	 * <pre>
@@ -75,6 +82,20 @@ public class NamingStyles {
 		s = Strings.lowerUnderscore(s);
 		return s.indexOf('_') >= 0 ? s : s + "_";
 	};
+
+	/**
+	 * <pre>
+	 * "helloWorld" -> "HELLO_WORD"
+	 * "hello"      -> "HELLO_"
+	 * </pre>
+	 */
+	public static final NamingStyle UPPER_UNDERSCORE_ = (s) -> {
+		if(null == s){
+			return null;
+		}
+		s = Strings.upperUnderscore(s);
+		return s.indexOf('_') >= 0 ? s : s + "_";
+	};
 	
 	public static final String NAME_RAW               = "raw";
 	public static final String NAME_LOWER             = "lower";
@@ -82,7 +103,9 @@ public class NamingStyles {
 	public static final String NAME_LOWER_CAMEL       = "lower_camel";
 	public static final String NAME_UPPER_CAMEL       = "upper_camel";
 	public static final String NAME_LOWER_UNDERSCORE  = "lower_underscore";
+	public static final String NAME_UPPER_UNDERSCORE  = "upper_underscore";
 	public static final String NAME_LOWER_UNDERSCORE_ = "lower_underscore_";
+	public static final String NAME_UPPER_UNDERSCORE_ = "upper_underscore_";
 	
 	static {
 		styles.put(NAME_RAW,               RAW);
@@ -91,7 +114,9 @@ public class NamingStyles {
 		styles.put(NAME_LOWER_CAMEL,       LOWER_CAMEL);
 		styles.put(NAME_UPPER_CAMEL,       UPPER_CAMEL);
 		styles.put(NAME_LOWER_UNDERSCORE,  LOWER_UNDERSCORE);
+		styles.put(NAME_UPPER_UNDERSCORE,  UPPER_UNDERSCORE);
 		styles.put(NAME_LOWER_UNDERSCORE_, LOWER_UNDERSCORE_);
+		styles.put(NAME_UPPER_UNDERSCORE_, UPPER_UNDERSCORE_);
 	}
 	
 	public static NamingStyle get(String name) {
