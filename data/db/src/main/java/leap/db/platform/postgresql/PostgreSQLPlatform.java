@@ -17,7 +17,7 @@ package leap.db.platform.postgresql;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-
+import leap.core.AppContext;
 import leap.db.DbPlatforms;
 import leap.db.platform.GenericDbDialect;
 import leap.db.platform.GenericDbMetadataReader;
@@ -35,7 +35,9 @@ public class PostgreSQLPlatform extends GenericDbPlatform {
 
 	@Override
 	protected GenericDbDialect createDialect(DatabaseMetaData jdbcMetadata) throws SQLException {
-		return new PostgreSQL9Dialect();
+		boolean shouldQuoteIdentifier = AppContext.current().getConfig()
+				.getBooleanProperty("db.dialect.shouldQuoteIdentifier", false);
+		return new PostgreSQL9Dialect(shouldQuoteIdentifier);
 	}
 
 	@Override

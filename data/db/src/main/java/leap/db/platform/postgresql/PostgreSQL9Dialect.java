@@ -46,20 +46,16 @@ public class PostgreSQL9Dialect extends GenericDbDialect {
 	//http://www.postgresql.org/docs/current/static/sql-keywords-appendix.html
 	private static final String[] SQL_KEY_WORDS = new String[]{"USER"};
 
-	public PostgreSQL9Dialect() {
-	
+	protected final boolean shouldQuoteIdentifier;
+
+	public PostgreSQL9Dialect(boolean shouldQuoteIdentifier) {
+		this.shouldQuoteIdentifier = shouldQuoteIdentifier;
 	}
 	
 	@Override
     protected void registerSQLKeyWords() {
         super.registerSQLKeyWords();
         sqlKeyWords.addAll(Arrays.asList(SQL_KEY_WORDS));
-    }
-
-    @Override
-    protected String caseQuotedIdentifier(String identifier) {
-        //TODO : review
-        return identifier.toLowerCase();
     }
     
     @Override
@@ -72,7 +68,12 @@ public class PostgreSQL9Dialect extends GenericDbDialect {
         return "'0'";
     }
 
-    @Override
+	@Override
+	protected boolean shouldQuoteIdentifier(String word) {
+		return shouldQuoteIdentifier;
+	}
+
+	@Override
     public boolean supportsAutoIncrement() {
 	    return false;
     }
