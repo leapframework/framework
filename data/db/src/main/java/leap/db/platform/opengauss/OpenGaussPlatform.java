@@ -15,34 +15,17 @@
  */
 package leap.db.platform.opengauss;
 
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
-import leap.core.AppContext;
 import leap.db.DbPlatforms;
-import leap.db.platform.GenericDbDialect;
-import leap.db.platform.GenericDbMetadataReader;
-import leap.db.platform.GenericDbPlatform;
-import leap.db.platform.postgresql.PostgreSQL9Dialect;
+import leap.db.platform.postgresql.PostgreSQLPlatform;
 
-public class OpenGaussPlatform extends GenericDbPlatform {
+public class OpenGaussPlatform extends PostgreSQLPlatform {
 	
 	public OpenGaussPlatform() {
 		this(DbPlatforms.OPENGAUSS);
 	}
 
 	public OpenGaussPlatform(String type) {
-		super(type,productNameContainsIgnorecaseMatcher("OpenGauss"));
+		super(type, productNameContainsIgnorecaseMatcher("OpenGauss"));
 	}
 
-	@Override
-	protected GenericDbDialect createDialect(DatabaseMetaData jdbcMetadata) throws SQLException {
-		boolean shouldQuoteIdentifier = AppContext.current().getConfig()
-				.getBooleanProperty("db.dialect.shouldQuoteIdentifier", false);
-		return new PostgreSQL9Dialect(shouldQuoteIdentifier);
-	}
-
-	@Override
-    protected GenericDbMetadataReader createMetadataReader(DatabaseMetaData jdbcMetadata) throws SQLException {
-		return new OpenGaussMetadataReader();
-	}
 }

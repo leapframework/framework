@@ -48,8 +48,12 @@ public class PostgreSQL9Dialect extends GenericDbDialect {
 
 	protected final boolean shouldQuoteIdentifier;
 
-	public PostgreSQL9Dialect(boolean shouldQuoteIdentifier) {
-		this.shouldQuoteIdentifier = shouldQuoteIdentifier;
+	public PostgreSQL9Dialect() {
+		this(null);
+	}
+
+	public PostgreSQL9Dialect(Boolean shouldQuoteIdentifier) {
+		this.shouldQuoteIdentifier = Boolean.TRUE.equals(shouldQuoteIdentifier);
 	}
 	
 	@Override
