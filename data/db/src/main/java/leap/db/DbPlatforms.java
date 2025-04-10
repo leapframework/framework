@@ -34,6 +34,7 @@ public class DbPlatforms {
     public static final String MARIADB	  = "MariaDB";
     public static final String MYSQL      = "MySql";
     public static final String POSTGRESQL = "PostgreSQL";
+    public static final String OPENGAUSS  = "OpenGauss";
     public static final String H2         = "H2";
     public static final String DERBY	  = "Derby";
     public static final String DB2		  = "DB2";
