@@ -24,6 +24,7 @@ public class JoinFieldMappingBuilder implements Buildable<JoinFieldMapping> {
     protected boolean localPrimaryKey;
     protected String  referencedEntityName;
     protected String  referencedFieldName;
+    protected String  relationName;
 
     public String getLocalFieldName() {
 		return localFieldName;
@@ -65,8 +66,16 @@ public class JoinFieldMappingBuilder implements Buildable<JoinFieldMapping> {
 		this.referencedFieldName = referencedFieldName;
 	}
 
+    public String getRelationName() {
+        return relationName;
+    }
+
+    public void setRelationName(String relationName) {
+        this.relationName = relationName;
+    }
+
     @Override
 	public JoinFieldMapping build() {
-		return new JoinFieldMapping(localFieldName, localPrimaryKey, referencedEntityName, referencedFieldName);
+		return new JoinFieldMapping(localFieldName, localPrimaryKey, referencedEntityName, referencedFieldName, relationName);
 	}
 }

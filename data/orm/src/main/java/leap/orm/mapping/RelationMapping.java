@@ -25,6 +25,8 @@ public class RelationMapping {
     protected final String              name;             //relation's name
     protected final RelationType        type;             //relation's type
     protected final String              inverseRelationName;
+    protected final String              joinRelationName;
+    protected final String              joinTargetRelationName;
     protected final String              targetEntityName; //target entity's name
     protected final String              joinEntityName;     //join entity's name
     protected final boolean             optional;         //is the relation optional ?
@@ -41,7 +43,8 @@ public class RelationMapping {
     protected final boolean             allowSelfReference;
 
 	public RelationMapping(String name, RelationType type,
-                           String inverseRelationName, String targetEntityName, String joinEntityName,
+                           String inverseRelationName, String joinRelationName, String joinTargetRelationName,
+                           String targetEntityName, String joinEntityName,
                            boolean optional, boolean logical, boolean virtual, boolean remote,
                            boolean embedded, String embeddedFileName,
                            CascadeDeleteAction onCascadeDelete,
@@ -68,6 +71,8 @@ public class RelationMapping {
 		this.name       	  = name;
 		this.type       	  = type;
         this.inverseRelationName = inverseRelationName;
+        this.joinRelationName = joinRelationName;
+        this.joinTargetRelationName = joinTargetRelationName;
 		this.targetEntityName = targetEntityName;
 		this.joinEntityName   = joinEntityName;
 		this.optional    	  = optional;
@@ -120,10 +125,24 @@ public class RelationMapping {
     }
 
     /**
-     * Required. The inverse relation name in the target entity.
+     * The relation name for target/join entity to this entity.
      */
     public String getInverseRelationName() {
         return inverseRelationName;
+    }
+
+    /**
+     * The relation name for join entity to this entity.
+     */
+    public String getJoinRelationName() {
+        return joinRelationName;
+    }
+
+    /**
+     * The relation name for join entity to target entity.
+     */
+    public String getJoinTargetRelationName() {
+        return joinTargetRelationName;
     }
 
     /**

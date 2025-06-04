@@ -288,6 +288,15 @@ public class RelationMapper implements Mapper {
 	        return;
         }
 
+        if (Strings.isNotEmpty(rmb.getJoinRelationName()) && Strings.isNotEmpty(rmb.getJoinTargetRelationName())) {
+            RelationMappingBuilder rm1 = join.getRelationMapping(rmb.getJoinRelationName());
+            RelationMappingBuilder rm2 = join.getRelationMapping(rmb.getJoinTargetRelationName());
+            if (null != rm1 && null != rm2) {
+                addManyToManyJoinFields(entity, target, rmb, rm1, rm2);
+                return;
+            }
+        }
+
 	    List<FieldMappingBuilder> keyFields = join.getIdFieldMappings();
 	    if(null == keyFields || keyFields.isEmpty()) {
 	        throw new MetadataException("Primary key fields must be exists at join entity '" + join.getEntityName() + "'");
@@ -352,6 +361,7 @@ public class RelationMapper implements Mapper {
             m2mJf.setLocalPrimaryKey(true);
             m2mJf.setLocalColumnName(jf.getLocalColumnName());
             m2mJf.setReferencedEntityName(entity.getEntityName());
+            m2mJf.setRelationName(rm1.getName());
             rmb.getJoinFields().add(m2mJf);
         }
 
@@ -362,6 +372,7 @@ public class RelationMapper implements Mapper {
             m2mJf.setLocalPrimaryKey(true);
             m2mJf.setLocalColumnName(jf.getLocalColumnName());
             m2mJf.setReferencedEntityName(target.getEntityName());
+            m2mJf.setRelationName(rm2.getName());
             rmb.getJoinFields().add(m2mJf);
         }
     }

@@ -1171,7 +1171,13 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                         .append(" on ");
 
                 int i = 0;
+
+                String joinRelationName = relation.getJoinRelationName();
                 for (JoinFieldMapping jf : relation.getJoinFields()) {
+                    if (Strings.isNotEmpty(joinRelationName) && Strings.isNotEmpty(jf.getRelationName())
+                            && !Strings.equals(joinRelationName, jf.getRelationName())) {
+                        continue;
+                    }
                     if (Strings.equalsIgnoreCase(sourceEntityName, jf.getReferencedEntityName())) {
                         if (i > 0) {
                             sql.append(" and ");
@@ -1195,7 +1201,12 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                         .append(" on ");
 
                 i = 0;
+                String joinTargetRelationName = relation.getJoinTargetRelationName();
                 for (JoinFieldMapping jf : relation.getJoinFields()) {
+                    if (Strings.isNotEmpty(joinTargetRelationName) && Strings.isNotEmpty(jf.getRelationName())
+                            && !Strings.equals(joinTargetRelationName, jf.getRelationName())) {
+                        continue;
+                    }
                     if (Strings.equalsIgnoreCase(targetEntityName, jf.getReferencedEntityName())) {
                         if (i > 0) {
                             sql.append(" and ");
