@@ -689,6 +689,8 @@ public class RelationMapper implements Mapper {
         inverse.setJoinEntityName(relation.getJoinEntityName());
         inverse.setJoinEntityType(relation.getJoinEntityType());
         inverse.setJoinTableName(relation.getJoinTableName());
+        inverse.setJoinRelationName(relation.getJoinTargetRelationName());
+        inverse.setJoinTargetRelationName(relation.getJoinRelationName());
         autoCreateManyToManyJoinFields(target, source, join, inverse);
 
         inverse.setInverseRelationName(relation.getName());
