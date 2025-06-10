@@ -1029,20 +1029,19 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             if (null != expr) {
                 s.append(expr);
             } else {
-                MApiModel model;
+                ModelAndMapping mm;
 
                 if (item.hasAlias() && !item.alias().equalsIgnoreCase(query.alias())) {
-                    ModelAndMapping jm = joinModels.get(item.alias());
-                    if (null == jm) {
+                    mm = joinModels.get(item.alias());
+                    if (null == mm) {
                         throw new BadRequestException("Can't found join alias '" + item.alias() + "', check order by");
                     }
-                    model = jm.model;
                 } else {
-                    model = am;
+                    mm = new ModelAndMapping(am, em);
                 }
 
                 String       name    = item.name();
-                MApiProperty ap      = model.tryGetProperty(name);
+                MApiProperty ap      = mm.model.tryGetProperty(name);
                 boolean      isAlias = false;
 
                 if (null == ap) {
@@ -1054,20 +1053,24 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                         isAlias = true;
                     }
                     if (!isAlias) {
-                        throw new BadRequestException("Property '" + name + "' not exists in model '" + model.getName() + "'");
+                        throw new BadRequestException("Property '" + name + "' not exists in model '" + mm.getModelName() + "'");
                     }
-                } else if (ap.isNotSortableExplicitly()) {
-                    throw new BadRequestException("Property '" + name + "' is not sortable in model '" + model.getName() + "'");
-                }
-
-                if (isAlias) {
-                    s.append(item.name());
-                } else if (item.hasAlias()) {
-                    s.append(item.alias()).append('.').append(item.name());
-                } else if (Strings.isNotEmpty(query.alias())) {
-                    s.append(query.alias()).append('.').append(item.name());
+                    s.append(name);
                 } else {
-                    s.append(item.name());
+                    if (ap.isNotSortableExplicitly()) {
+                        throw new BadRequestException("Property '" + name + "' is not sortable in model '" + mm.getModelName() + "'");
+                    }
+                    FieldMapping f = mm.mapping.tryGetFieldMapping(name);
+                    if (null != f) {
+                        name = f.getColumnName();
+                    }
+                    if (item.hasAlias()) {
+                        s.append(item.alias()).append('.').append(name);
+                    } else if (Strings.isNotEmpty(query.alias())) {
+                        s.append(query.alias()).append('.').append(name);
+                    } else {
+                        s.append(name);
+                    }
                 }
             }
 
@@ -1113,18 +1116,22 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                     if (!isAlias) {
                         throw new BadRequestException("Expand property '" + name + "' not exists in model '" + model.getName() + "'");
                     }
-                } else if (ap.isNotSortableExplicitly()) {
-                    throw new BadRequestException("Expand property '" + name + "' is not sortable in model '" + model.getName() + "'");
-                }
-
-                if (isAlias) {
-                    s.append(item.name());
-                } else if (item.hasAlias()) {
-                    s.append(item.alias()).append('.').append(item.name());
-                } else if (Strings.isNotEmpty(query.alias())) {
-                    s.append(query.alias()).append('.').append(item.name());
+                    s.append(name);
                 } else {
-                    s.append(item.name());
+                    if (ap.isNotSortableExplicitly()) {
+                        throw new BadRequestException("Expand property '" + name + "' is not sortable in model '" + model.getName() + "'");
+                    }
+                    FieldMapping fm = em.tryGetFieldMapping(name);
+                    if (null != fm) {
+                        name = fm.getColumnName();
+                    }
+                    if (item.hasAlias()) {
+                        s.append(item.alias()).append('.').append(name);
+                    } else if (Strings.isNotEmpty(query.alias())) {
+                        s.append(query.alias()).append('.').append(name);
+                    } else {
+                        s.append(name);
+                    }
                 }
             }
 
@@ -1931,6 +1938,11 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             this.model = model;
             this.mapping = mapping;
         }
+
+        public String getModelName() {
+            return model.getName();
+        }
+
     }
 
     protected static class ModelAndProp extends ModelAndMapping {
