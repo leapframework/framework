@@ -104,7 +104,7 @@ public class RelationMapper implements Mapper {
             //create one-to-many for many-to-one
             if(RelationType.MANY_TO_ONE.equals(type)) {
                 //find one-to-many in target entity.
-                RelationMappingBuilder inverse = findRelation(targetEmb, emb, RelationType.ONE_TO_MANY, rmb.getInverseRelationName());
+                RelationMappingBuilder inverse = findRelation(targetEmb, emb, RelationType.ONE_TO_MANY, rmb);
                 if(null == inverse) {
                     inverse = createInverseOneToManyRelation(emb, targetEmb, rmb);
 
@@ -124,7 +124,7 @@ public class RelationMapper implements Mapper {
 
             //create many-to-many for another side.
             if(RelationType.MANY_TO_MANY.equals(type) && !rmb.isEmbedded()) {
-                RelationMappingBuilder inverse = findRelation(targetEmb, emb, RelationType.MANY_TO_MANY, rmb.getInverseRelationName());
+                RelationMappingBuilder inverse = findRelation(targetEmb, emb, RelationType.MANY_TO_MANY, rmb);
                 if(null == inverse) {
                     //create the virtual inverse relation in target entity.
                     EntityMappingBuilder joinEmb = context.getEntityMapping(rmb.getJoinEntityName());
@@ -153,23 +153,6 @@ public class RelationMapper implements Mapper {
         }
         return existence.getTargetEntityName().equalsIgnoreCase(inverse.getTargetEntityName())
                 && existence.getType().equals(inverse.getType());
-    }
-
-    protected RelationMappingBuilder findManyToManyRelation(EntityMappingBuilder emb, String targetEntityName, String joinEntityName) {
-
-        for(RelationMappingBuilder rm : emb.getRelationMappings()) {
-
-            if(rm.getType().equals(RelationType.MANY_TO_MANY) &&
-                    rm.getTargetEntityName().equals(targetEntityName) &&
-                    rm.getJoinEntityName().equals(joinEntityName)) {
-
-                return rm;
-
-            }
-
-        }
-
-        return null;
     }
 
 	protected void processManyToOneMapping(MappingConfigContext context,EntityMappingBuilder emb, RelationMappingBuilder rmb) {
@@ -871,19 +854,38 @@ public class RelationMapper implements Mapper {
         rp.setOptional(rm.isOptional());
     }
 
-    protected RelationMappingBuilder findRelation(EntityMappingBuilder emb, EntityMappingBuilder targetEntity, RelationType type, String relation) {
+    protected RelationMappingBuilder findRelation(EntityMappingBuilder emb, EntityMappingBuilder targetEntity,
+            RelationType type, RelationMappingBuilder rmb) {
         List<RelationMappingBuilder> rms = new ArrayList<>();
         for(RelationMappingBuilder rm : emb.getRelationMappings()) {
-            if(type.equals(rm.getType()) &&
-                    rm.getTargetEntityName().equalsIgnoreCase(targetEntity.getEntityName())) {
-                rms.add(rm);
+            if (!type.equals(rm.getType())) {
+                continue;
             }
+            if (!rm.getTargetEntityName().equalsIgnoreCase(targetEntity.getEntityName())) {
+                continue;
+            }
+            if (RelationType.MANY_TO_MANY.equals(type)) {
+                if (Strings.isNotEmpty(rmb.getJoinEntityName())
+                        && !Strings.equals(rmb.getJoinEntityName(), rm.getJoinEntityName())) {
+                    continue;
+                }
+                if (Strings.isNotEmpty(rmb.getJoinRelationName())
+                        && !Strings.equals(rmb.getJoinRelationName(), rm.getJoinTargetRelationName())) {
+                    continue;
+                }
+                if (Strings.isNotEmpty(rmb.getJoinTargetRelationName())
+                        && !Strings.equals(rmb.getJoinTargetRelationName(), rm.getJoinRelationName())) {
+                    continue;
+                }
+            }
+            rms.add(rm);
         }
 
         if(rms.isEmpty()) {
             return null;
         }
 
+        String relation = rmb.getInverseRelationName();
         if(Strings.isEmpty(relation)) {
             if(rms.size() > 1) {
                 return null;
@@ -896,14 +898,12 @@ public class RelationMapper implements Mapper {
                 }
             }
         }else{
-
             for(RelationMappingBuilder rm : rms) {
                 if(rm.getName().equalsIgnoreCase(relation)) {
                     return rm;
                 }
             }
         }
-
         return null;
     }
 }
