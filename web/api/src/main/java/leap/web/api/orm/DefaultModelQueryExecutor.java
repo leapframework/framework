@@ -648,7 +648,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                 expandQuery.where(Strings.format("_jt_.{0} in :fks", referredFieldName))
                         .param("fks", fks.toArray());
             } else {
-                expandQuery.where(Strings.format("{0} in :fks", referredFieldName))
+                expandQuery.where(Strings.format(expandQuery.alias() + ".{0} in :fks", referredFieldName))
                         .param("fks", fks.toArray());
             }
 
