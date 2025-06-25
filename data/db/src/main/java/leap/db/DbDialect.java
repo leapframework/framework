@@ -200,6 +200,20 @@ public interface DbDialect {
     String qualifySchemaObjectName(DbSchemaObjectName table);
 
     /**
+     * converts the given value to the native value.
+     */
+    default Object toNativeValue(int typeCode, Class<?> javaType, Object value) {
+        return value;
+    }
+
+    /**
+     * converts the given value from the native value.
+     */
+    default Object fromNativeValue(int typeCode, Class<?> javaType, Object value) {
+        return value;
+    }
+
+    /**
      * Escapes special characters in the given SQL literal string
      */
     String escape(String string);

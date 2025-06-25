@@ -37,13 +37,6 @@ public class DMPlatform extends GenericDbPlatform {
     protected GenericDbDialect createDialect(DatabaseMetaData jdbcMetadata) throws SQLException {
         Boolean shouldQuoteIdentifier = AppContext.current().getConfig()
                 .getProperty("db.dm.shouldQuoteIdentifier", Boolean.class);
-        if (null == shouldQuoteIdentifier) {
-            shouldQuoteIdentifier = AppContext.current().getConfig()
-                    .getProperty("db.dialect.shouldQuoteIdentifier", Boolean.class);
-            if (null == shouldQuoteIdentifier) {
-                shouldQuoteIdentifier = true;
-            }
-        }
         if (jdbcMetadata.getDatabaseMajorVersion() >= 8) {
             return new DM8Dialect(shouldQuoteIdentifier);
         }

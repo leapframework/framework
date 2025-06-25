@@ -28,10 +28,10 @@ public class DM7Dialect extends GenericDbDialect {
 
     private static final String[] DM7_SQL_KEY_WORDS = new String[]{"ADMIN", "COMMENT", "VERSIONS"};
 
-    protected final boolean shouldQuoteIdentifier;
-
-    public DM7Dialect(boolean shouldQuoteIdentifier) {
-        this.shouldQuoteIdentifier = shouldQuoteIdentifier;
+    public DM7Dialect(Boolean shouldQuoteIdentifier) {
+        if (null != shouldQuoteIdentifier) {
+            this.shouldQuoteIdentifier = shouldQuoteIdentifier;
+        }
     }
 
     @Override
@@ -51,7 +51,7 @@ public class DM7Dialect extends GenericDbDialect {
 
     @Override
     protected boolean shouldQuoteIdentifier(String word) {
-        return shouldQuoteIdentifier;
+        return null == shouldQuoteIdentifier || shouldQuoteIdentifier;
     }
 
     @Override

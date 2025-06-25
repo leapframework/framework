@@ -15,6 +15,8 @@
  */
 package leap.db.platform;
 
+import leap.core.AppConfig;
+import leap.core.AppContext;
 import leap.core.jdbc.PreparedStatementHandler;
 import leap.db.*;
 import leap.db.change.*;
@@ -30,7 +32,6 @@ import leap.lang.jdbc.JdbcTypes;
 import leap.lang.logging.Log;
 import leap.lang.reflect.Reflection;
 import leap.lang.value.Null;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
@@ -65,9 +66,13 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
     protected Map<String, Object> properties;
     protected FunctionSupport     functions;
     protected String              statementDelimiter = ";";
+    protected Boolean             shouldQuoteIdentifier;
+    protected boolean             convertBooleanToInteger;
 
     protected GenericDbDialect() {
-
+        AppConfig appConfig = AppContext.current().getConfig();
+        this.shouldQuoteIdentifier = appConfig.getProperty("db.dialect.shouldQuoteIdentifier", Boolean.class);
+        this.convertBooleanToInteger = appConfig.getProperty("db.dialect.convertBooleanToInteger", Boolean.class, false);
     }
 
     @Override
@@ -193,7 +198,7 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
     }
 
     protected boolean shouldQuoteIdentifier(String word) {
-        return false;
+        return null != shouldQuoteIdentifier && shouldQuoteIdentifier;
     }
 
     @Override
@@ -1168,7 +1173,26 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
         }
     }
 
+    @Override
+    public Object toNativeValue(int typeCode, Class<?> javaType, Object value) {
+        if (convertBooleanToInteger && null != value && !javaType.isAssignableFrom(value.getClass())) {
+            return Converts.convert(value, javaType);
+        }
+        return super.toNativeValue(typeCode, javaType, value);
+    }
+
+    @Override
+    public Object fromNativeValue(int typeCode, Class<?> javaType, Object value) {
+        if (convertBooleanToInteger && (boolean.class.isAssignableFrom(javaType) || Boolean.class.isAssignableFrom(javaType)) && value instanceof Integer) {
+            return Converts.convert(value, javaType);
+        }
+        return super.fromNativeValue(typeCode, javaType, value);
+    }
+
     protected void setObject(PreparedStatement ps, int index, Object value) throws SQLException {
+        if (convertBooleanToInteger && value instanceof Boolean) {
+            value = Boolean.TRUE.equals(value) ? 1 : 0;
+        }
         ps.setObject(index, value);
     }
 

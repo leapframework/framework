@@ -22,7 +22,6 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import leap.db.DbLimitQuery;
 import leap.db.change.ColumnDefinitionChange;
 import leap.db.change.ColumnPropertyChange;
@@ -44,17 +43,7 @@ public class PostgreSQL9Dialect extends GenericDbDialect {
 	private static final String[] SYSTEM_SCHEMAS = new String[]{"INFORMATION_SCHEMA","PG_CATALOG"};
 	
 	//http://www.postgresql.org/docs/current/static/sql-keywords-appendix.html
-	private static final String[] SQL_KEY_WORDS = new String[]{"USER"};
-
-	protected final boolean shouldQuoteIdentifier;
-
-	public PostgreSQL9Dialect() {
-		this(null);
-	}
-
-	public PostgreSQL9Dialect(Boolean shouldQuoteIdentifier) {
-		this.shouldQuoteIdentifier = Boolean.TRUE.equals(shouldQuoteIdentifier);
-	}
+	private static final String[] SQL_KEY_WORDS = new String[]{"USER", "LIMIT"};
 	
 	@Override
     protected void registerSQLKeyWords() {
@@ -71,11 +60,6 @@ public class PostgreSQL9Dialect extends GenericDbDialect {
     protected String getBooleanFalseString() {
         return "'0'";
     }
-
-	@Override
-	protected boolean shouldQuoteIdentifier(String word) {
-		return shouldQuoteIdentifier;
-	}
 
 	@Override
     public boolean supportsAutoIncrement() {
@@ -248,7 +232,7 @@ public class PostgreSQL9Dialect extends GenericDbDialect {
 	
 	@Override
     public String getDefaultSchemaName(Connection connection, DatabaseMetaData dm) throws SQLException {
-	    return DEFAULT_SCHEMA;
+	    return connection.getSchema();
     }
 
     public boolean isSystemSchema(String schemaName) {
