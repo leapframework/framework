@@ -968,7 +968,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     }
 
     protected SqlStatement createQueryStatement(QueryContext qc, String sql, boolean count) {
-        SqlClause clause = context.getQueryFactory().createQueryClause(dao, sql);
+        SqlClause clause = createSqlClause(sql);
 
         Object   queryParams;
         Object[] args = args();
@@ -995,7 +995,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     }
 
     protected SqlStatement createUpdateStatement(QueryContext qc, String sql) {
-        SqlClause clause = context.getQueryFactory().createQueryClause(dao, sql);
+        SqlClause clause = createSqlClause(sql);
 
         Object   updateParams;
         Object[] args = args();
@@ -1006,6 +1006,13 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         }
 
         return clause.createUpdateStatement(qc, updateParams);
+    }
+
+    protected SqlClause createSqlClause(String sql) {
+        if (!Strings.isEmpty(sqlView) || em.hasQueryView()) {
+            return context.getQueryFactory().createQueryClause(dao, sql, alias(), New.hashMap(alias(), em));
+        }
+        return context.getQueryFactory().createQueryClause(dao, sql);
     }
 
     protected String[] columns(String[] fields) {

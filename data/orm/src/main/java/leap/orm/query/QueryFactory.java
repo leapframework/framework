@@ -15,6 +15,7 @@
  */
 package leap.orm.query;
 
+import java.util.Map;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.sql.SqlClause;
@@ -34,5 +35,9 @@ public interface QueryFactory {
 	
 	<T> EntityQuery<T> createEntityQuery(Dao dao,EntityMapping em, Class<T> resultClass, SqlCommand command);
 	
-	SqlClause createQueryClause(Dao dao, String sql);
+	default SqlClause createQueryClause(Dao dao, String sql) {
+		return createQueryClause(dao, sql, null, null);
+	}
+
+	SqlClause createQueryClause(Dao dao, String sql, String defaultAlias, Map<String, EntityMapping> aliasMappings);
 }

@@ -68,6 +68,11 @@ public interface OrmConfig {
      */
 	boolean isConvertFieldForJoin();
 
+    /**
+     * Returns true if sql factory use query view.
+     */
+    boolean isReadByQueryView();
+
 	/**
 	 * Returns the names of auto generated fields for {@link leap.orm.model.Model}.
 	 */

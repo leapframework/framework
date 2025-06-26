@@ -435,11 +435,21 @@ public class DefaultSqlFactory implements SqlFactory {
         return sql.toString();
     }
 
+    protected StringBuilder appendFrom(MetadataContext context, EntityMapping em, StringBuilder sql) {
+        sql.append(" from ");
+        if (context.getConfig().isReadByQueryView() && em.hasQueryView()) {
+            sql.append("(").append(em.getQueryView()).append(")");
+        } else {
+            sql.append(em.getEntityName());
+        }
+        return sql;
+    }
+
     protected String getExistsSql(MetadataContext context, EntityMapping em) {
         StringBuilder sql = new StringBuilder();
 
-        sql.append("select 1 from ").append(em.getEntityName()).append(" where ");
-
+        sql.append("select 1");
+        appendFrom(context, em, sql).append(" where ");
         appendPrimaryKey(context, em, sql);
 
         return sql.toString();
@@ -448,7 +458,8 @@ public class DefaultSqlFactory implements SqlFactory {
     protected String getCountSql(MetadataContext context, EntityMapping em) {
         StringBuilder sql = new StringBuilder();
 
-        sql.append("select count(*) from ").append(em.getEntityName());
+        sql.append("select count(*)");
+        appendFrom(context, em, sql);
 
         return sql.toString();
     }
@@ -457,12 +468,8 @@ public class DefaultSqlFactory implements SqlFactory {
         StringBuilder sql = new StringBuilder();
 
         sql.append("select ");
-        sql.append(createSelectColumns(context, em, null))
-                .append(" from ")
-                .append(em.getEntityName())
-                .append(" t ");
-        sql.append(" where ");
-
+        sql.append(createSelectColumns(context, em, null));
+        appendFrom(context, em, sql).append(" t where ");
         appendPrimaryKey(context, em, sql);
 
         return sql.toString();
@@ -498,11 +505,8 @@ public class DefaultSqlFactory implements SqlFactory {
 
         StringBuilder sql = new StringBuilder();
 
-        sql.append("select ")
-                .append(createSelectColumns(context, em, null))
-                .append(" from ")
-                .append(em.getEntityName())
-                .append(" t ").append(" where ");
+        sql.append("select ").append(createSelectColumns(context, em, null));
+        appendFrom(context, em, sql).append(" t where ");
 
         int index = 0;
         for (FieldMapping key : em.getKeyFieldMappings()) {
@@ -520,11 +524,8 @@ public class DefaultSqlFactory implements SqlFactory {
     protected String getFindAllSql(MetadataContext context, EntityMapping em) {
         StringBuilder sql = new StringBuilder();
 
-        sql.append("select ")
-                .append(createSelectColumns(context, em, null))
-                .append(" from ")
-                .append(em.getEntityName())
-                .append(" t ");
+        sql.append("select ").append(createSelectColumns(context, em, null));
+        appendFrom(context, em, sql).append(" t ");
 
         return sql.toString();
     }

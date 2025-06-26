@@ -15,6 +15,7 @@
  */
 package leap.orm.query;
 
+import java.util.Map;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.orm.dao.Dao;
@@ -23,6 +24,7 @@ import leap.orm.sql.SqlClause;
 import leap.orm.sql.SqlCommand;
 import leap.orm.sql.SqlFactory;
 import leap.orm.sql.SqlLanguage;
+import leap.orm.sql.SqlMetadataContext;
 
 public class DefaultQueryFactory implements QueryFactory {
 	
@@ -61,7 +63,10 @@ public class DefaultQueryFactory implements QueryFactory {
 	}
 	
 	@Override
-    public SqlClause createQueryClause(Dao dao, String sql) {
-	    return queryLanguage.parseClause(dao.getOrmContext(), sql);
+    public SqlClause createQueryClause(Dao dao, String sql, String defaultAlias, Map<String, EntityMapping> aliasMappings) {
+		if (null == aliasMappings) {
+			return queryLanguage.parseClause(dao.getOrmContext(), sql);
+		}
+	    return queryLanguage.parseClause(new SqlMetadataContext(dao.getOrmContext(), defaultAlias, aliasMappings), sql);
     }
 }

@@ -163,18 +163,42 @@ public class SqlResolver {
 	}
 	
 	protected boolean resolveColumnFromSubQuery(SqlSelect subQuery,SqlObjectName name){
+		String lastName = name.getLastName();
+		if (!resolveColumnFromSubQuery(subQuery, name, lastName)) {
+			String subAlias = subQuery.getAlias();
+			if (null != subAlias && this.context instanceof SqlMetadataContext) {
+				SqlMetadataContext c = (SqlMetadataContext) this.context;
+				if (subAlias.equals(name.getFirstName()) || (Strings.isEmpty(name.getFirstName()) && subAlias.equals(c.defaultAlias))) {
+					EntityMapping em = c.getEntityMapping(subQuery.getAlias());
+					if (null != em) {
+						FieldMapping fm = em.tryGetFieldMapping(lastName);
+						if (null == fm) {
+							fm = em.tryGetFieldMappingByColumn(lastName);
+						}
+						if (null != fm) {
+							name.setFieldMapping(em, fm);
+							return true;
+						}
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	protected boolean resolveColumnFromSubQuery(SqlSelect subQuery, SqlObjectName name, String lastName) {
 		//Checks the name is the selected item in the sub query.
-		if(subQuery.isSelectItemAlias(name.getLastName())) {
+		if(subQuery.isSelectItemAlias(lastName)) {
 			return true;
 		}
-		
+
 		boolean selectAll = false;
 
 		for(AstNode node : subQuery.getSelectList().getNodes()) {
 			if(node instanceof SqlObjectName) {
 				SqlObjectName selectedItem = (SqlObjectName)node;
 				if(selectedItem.getScope() == Scope.SELECT_LIST) {
-					if(name.getLastName().equalsIgnoreCase(selectedItem.getLastName())) {
+					if(lastName.equalsIgnoreCase(selectedItem.getLastName())) {
 						name.setReferenceTo(selectedItem);
 						return true;
 					}
@@ -183,7 +207,7 @@ public class SqlResolver {
 				selectAll = true;
 			}
 		}
-		
+
 		if(!selectAll) {
 			return false;
 		}else{
