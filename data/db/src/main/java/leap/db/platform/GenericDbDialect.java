@@ -1102,6 +1102,8 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 
     @SuppressWarnings("rawtypes")
     protected void setNonNullParameter(PreparedStatement ps, int index, Object value, int type) throws SQLException {
+        value = toNativeValue(type, null, value);
+
         Class<?> valueType = Primitives.wrap(value.getClass());
 
         if (valueType.isEnum()) {
@@ -1175,8 +1177,8 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 
     @Override
     public Object toNativeValue(int typeCode, Class<?> javaType, Object value) {
-        if (convertBooleanToInteger && null != value && !javaType.isAssignableFrom(value.getClass())) {
-            return Converts.convert(value, javaType);
+        if (convertBooleanToInteger && value instanceof Boolean) {
+            value = Boolean.TRUE.equals(value) ? 1 : 0;
         }
         return super.toNativeValue(typeCode, javaType, value);
     }
@@ -1190,9 +1192,6 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
     }
 
     protected void setObject(PreparedStatement ps, int index, Object value) throws SQLException {
-        if (convertBooleanToInteger && value instanceof Boolean) {
-            value = Boolean.TRUE.equals(value) ? 1 : 0;
-        }
         ps.setObject(index, value);
     }
 

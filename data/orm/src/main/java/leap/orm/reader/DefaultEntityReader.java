@@ -296,6 +296,8 @@ public class DefaultEntityReader implements EntityReader {
 			}else{
 				if(null != fm.getSerializer()) {
 					value = fm.getSerializer().deserialize(fm, value);
+				} else {
+					value = dialect.fromNativeValue(cm.getColumnType(), fm.getJavaType(), value);
 				}
 			}
 		}
@@ -321,11 +323,11 @@ public class DefaultEntityReader implements EntityReader {
                     }
 
                 }else {
-
                     if(null != fm.getSerializer()){
                         value = fm.getSerializer().deserialize(fm, value);
-                    }
-
+                    } else {
+						value = dialect.fromNativeValue(cm.getColumnType(), fm.getJavaType(), value);
+					}
                 }
             }
 		}
