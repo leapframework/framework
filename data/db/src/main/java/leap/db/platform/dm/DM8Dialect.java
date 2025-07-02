@@ -21,7 +21,7 @@ import java.sql.SQLException;
 
 public class DM8Dialect extends DM7Dialect {
 
-    public DM8Dialect(boolean shouldQuoteIdentifier) {
+    public DM8Dialect(Boolean shouldQuoteIdentifier) {
         super(shouldQuoteIdentifier);
     }
 
