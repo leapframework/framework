@@ -891,6 +891,17 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 		public String   schemaPattern;
 		public String   tablePattern;
 		public String[] tableTypes;
+
+		public MetadataParameters copy() {
+			MetadataParameters p = new MetadataParameters();
+			p.catalog        = catalog;
+			p.catalogPattern = catalogPattern;
+			p.schema         = schema;
+			p.schemaPattern  = schemaPattern;
+			p.tablePattern   = tablePattern;
+			p.tableTypes     = tableTypes;
+			return p;
+		}
 	}
 
     protected static class CloseStatementResultSet extends ResultSetWrapper {

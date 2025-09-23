@@ -27,6 +27,11 @@ public class KingBase8MetadataReader extends GenericDbMetadataReader {
 
     }
 
+    @Override
+    protected boolean supportsReadAllIndexes() {
+        return false;
+    }
+
     /**
      * ct.relname = '%' -> ct.relname LIKE '%'
      */
@@ -42,4 +47,15 @@ public class KingBase8MetadataReader extends GenericDbMetadataReader {
                 "WHERE true AND n.nspname = ? AND ct.relname LIKE '%' AND i.indisprimary  ORDER BY table_name, pk_name, key_seq";
         return executeSchemaQuery(connection, params, sql);
     }
+
+    @Override
+    protected ResultSet getForeignKeys(Connection connection, DatabaseMetaData dm, MetadataParameters params)
+            throws SQLException {
+        if ("%".equals(params.tablePattern)) {
+            params = params.copy();
+            params.tablePattern = null;
+        }
+        return super.getForeignKeys(connection, dm, params);
+    }
+
 }
