@@ -17,8 +17,10 @@
 package leap.web.api.mvc;
 
 import leap.core.annotation.Inject;
+import leap.lang.Strings;
 import leap.lang.html.HTML;
 import leap.web.Response;
+import leap.web.config.WebConfig;
 import leap.web.json.JsonConfig;
 
 public class DefaultApiErrorHandler implements ApiErrorHandler {
@@ -26,10 +28,15 @@ public class DefaultApiErrorHandler implements ApiErrorHandler {
     @Inject
     protected JsonConfig jc;
 
+    @Inject
+    protected WebConfig wc;
+
     @Override
     public void responseError(Response response, int status, ApiError error) {
         response.setStatus(status);
-        if (jc.isHtmlEscape()) {
+        if (null != wc.getErrorMessage()) {
+            error.setMessage(wc.getErrorMessage());
+        } else if (jc.isHtmlEscape()) {
             error.setMessage(HTML.escape(error.getMessage()));
         }
         error.response(response);

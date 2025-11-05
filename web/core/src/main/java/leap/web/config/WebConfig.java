@@ -103,6 +103,16 @@ public interface WebConfig {
     String getCookieDomain();
 
     /**
+     * Optional.
+     *
+     * Returns the error message for internal server error.
+     *
+     * <p/>
+     * Default is <code>null</code>.
+     */
+    String getErrorMessage();
+
+    /**
      * Returns <code>true</code> if trims all request parameters automatically.
      *
      * <p/>

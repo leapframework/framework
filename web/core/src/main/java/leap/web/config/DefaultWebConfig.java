@@ -64,6 +64,7 @@ public class DefaultWebConfig implements WebConfig, WebConfigurator, PostCreateB
     protected @R boolean viewEnabled                  = true;
     protected @R boolean strictHttpFirewall           = true;
     protected @N String  cookieDomain                 = null;
+    protected @N String  errorMessage                 = null;
 
     protected @Inject
     @M
@@ -159,6 +160,11 @@ public class DefaultWebConfig implements WebConfig, WebConfigurator, PostCreateB
     @Override
     public String getCookieDomain() {
         return cookieDomain;
+    }
+
+    @Override
+    public String getErrorMessage() {
+        return errorMessage;
     }
 
     public boolean isFormatExtensionEnabled() {
@@ -345,6 +351,12 @@ public class DefaultWebConfig implements WebConfig, WebConfigurator, PostCreateB
     @ConfigProperty
     public WebConfigurator setCookieDomain(String cookieDomain) {
         this.cookieDomain = cookieDomain;
+        return this;
+    }
+
+    @ConfigProperty
+    public WebConfigurator setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
         return this;
     }
 
