@@ -227,6 +227,9 @@ public abstract class AbstractRestResource implements RestResource {
             if (Strings.isNotEmpty(qo.getAggregates())) {
                 request.addQueryParam("aggregates", qo.getAggregates());
             }
+            if (Strings.isNotEmpty(qo.getViewId())) {
+                request.addQueryParam("viewId", qo.getViewId());
+            }
         }
         return request;
     }
