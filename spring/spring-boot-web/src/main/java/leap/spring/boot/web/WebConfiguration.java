@@ -42,6 +42,7 @@ import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.Environment;
@@ -54,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 
 @Configuration
+@Import(HtmlEscapeResponseBodyAdvice.class)
 public class WebConfiguration extends AbstractWebConfiguration {
 
     private static final Log log = LogFactory.get(WebConfiguration.class);

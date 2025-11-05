@@ -124,6 +124,11 @@ public class JwkWriter {
         }
 
         @Override
+        public String[] getHtmlEscapeWhiteList() {
+            return jc.getHtmlEscapeWhiteList();
+        }
+
+        @Override
         public Collection<String> getJsonpAllowResponseHeaders() {
             return jc.getJsonpAllowResponseHeaders();
         }

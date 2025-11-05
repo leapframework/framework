@@ -35,6 +35,8 @@ public interface JsonConfig {
 
 	boolean isHtmlEscape();
 
+	String[] getHtmlEscapeWhiteList();
+
 	/**
 	 * 
 	 * Returns the headers name that allow response in jsonp callback

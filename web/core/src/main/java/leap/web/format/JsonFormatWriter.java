@@ -17,6 +17,7 @@ package leap.web.format;
 
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
+import leap.lang.Arrays2;
 import leap.lang.Strings;
 import leap.lang.json.JSON;
 import leap.lang.json.JsonSettings;
@@ -25,6 +26,7 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.naming.NamingStyle;
 import leap.lang.naming.NamingStyles;
+import leap.lang.path.AntPathMatcher;
 import leap.web.action.Action;
 import leap.web.action.ActionContext;
 import leap.web.action.ActionInitializable;
@@ -38,6 +40,8 @@ import java.util.Map;
 public class JsonFormatWriter implements FormatWriter, ActionInitializable {
 
     private static final Log log = LogFactory.get(JsonFormatWriter.class);
+
+    protected final AntPathMatcher antPathMatcher = new AntPathMatcher();
 
     private JsonSettings defaultJsonSettings;
 
@@ -65,6 +69,19 @@ public class JsonFormatWriter implements FormatWriter, ActionInitializable {
         JsonSettings settings = context.getRoute().getExtension(JsonSettings.class);
         if (null == settings) {
             settings = getDefaultJsonSettings();
+        }
+
+        if (settings.isHtmlEscape()) {
+            String[] whiteList = defaultJsonConfig.getHtmlEscapeWhiteList();
+            if (Arrays2.isNotEmpty(whiteList)) {
+                String requestPath = context.getRequest().getUriWithQueryString();
+                for (String pattern : whiteList) {
+                    if (antPathMatcher.match(pattern, requestPath)) {
+                        settings = new JsonSettings.Builder().setSettings(settings).setHtmlEscape(false).build();
+                        break;
+                    }
+                }
+            }
         }
 
         if (value instanceof JsonStringable) {

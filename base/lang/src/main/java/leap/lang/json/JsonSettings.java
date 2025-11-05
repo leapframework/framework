@@ -190,16 +190,18 @@ public class JsonSettings {
             return ignoreEmptyString;
         }
 
-        public void setIgnoreEmptyString(boolean ignoreEmptyString) {
+        public Builder setIgnoreEmptyString(boolean ignoreEmptyString) {
             this.ignoreEmptyString = ignoreEmptyString;
+            return this;
         }
 
         public boolean isIgnoreEmptyArray() {
             return ignoreEmptyArray;
         }
 
-        public void setIgnoreEmptyArray(boolean ignoreEmptyArray) {
+        public Builder setIgnoreEmptyArray(boolean ignoreEmptyArray) {
             this.ignoreEmptyArray = ignoreEmptyArray;
+            return this;
         }
 
         public Builder ignoreEmpty() {

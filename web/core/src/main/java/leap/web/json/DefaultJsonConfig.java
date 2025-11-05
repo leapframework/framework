@@ -18,6 +18,7 @@ package leap.web.json;
 import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
 import leap.lang.Args;
+import leap.lang.Arrays2;
 import leap.lang.New;
 import leap.lang.naming.NamingStyle;
 import leap.lang.naming.NamingStyles;
@@ -34,6 +35,7 @@ public class DefaultJsonConfig implements JsonConfig, JsonConfigurator {
     protected boolean            jsonpEnabled                    = true;
     protected boolean            jsonpResponseHeaders            = true;
     protected boolean            htmlEscape                      = false;
+    protected String[]           htmlEscapeWhiteList             = Arrays2.EMPTY_STRING_ARRAY;
     protected String             jsonpParameter                  = DEFAULT_JSONP_PARAMETER;
     protected Collection<String> jsonpAllowResponseHeaders       = New.arrayList("X-Total-Count");
 
@@ -135,6 +137,16 @@ public class DefaultJsonConfig implements JsonConfig, JsonConfigurator {
     @ConfigProperty
     public JsonConfigurator setHtmlEscape(boolean htmlEscape) {
         this.htmlEscape = htmlEscape;
+        return this;
+    }
+
+    public String[] getHtmlEscapeWhiteList() {
+        return htmlEscapeWhiteList;
+    }
+
+    @ConfigProperty
+    public JsonConfigurator setHtmlEscapeWhiteList(String[] htmlEscapeWhiteList) {
+        this.htmlEscapeWhiteList = htmlEscapeWhiteList;
         return this;
     }
 
