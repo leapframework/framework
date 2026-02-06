@@ -40,7 +40,6 @@ import leap.lang.value.Limit;
 
 public class PostgreSQL9Dialect extends GenericDbDialect {
 	
-	private static final String   DEFAULT_SCHEMA = "public";
 	private static final String[] SYSTEM_SCHEMAS = new String[]{"INFORMATION_SCHEMA","PG_CATALOG"};
 	
 	//http://www.postgresql.org/docs/current/static/sql-keywords-appendix.html
@@ -248,7 +247,7 @@ public class PostgreSQL9Dialect extends GenericDbDialect {
 	
 	@Override
     public String getDefaultSchemaName(Connection connection, DatabaseMetaData dm) throws SQLException {
-	    return DEFAULT_SCHEMA;
+	    return connection.getSchema();
     }
 
     public boolean isSystemSchema(String schemaName) {
