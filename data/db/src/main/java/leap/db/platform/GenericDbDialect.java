@@ -17,6 +17,7 @@ package leap.db.platform;
 
 import leap.core.AppConfig;
 import leap.core.AppContext;
+import leap.core.config.ConfigUtils;
 import leap.core.jdbc.PreparedStatementHandler;
 import leap.db.*;
 import leap.db.change.*;
@@ -1508,8 +1509,27 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
         this.registerSQLKeyWords();
         this.registerSystemSchemas();
         this.registerColumnTypes();
+        this.mappingColumnTypes();
         this.registerSupportedOnDeleteActions();
         this.registerDisconnectSqlStates();
+    }
+
+    protected void mappingColumnTypes() {
+        AppConfig appConfig = AppContext.current().getConfig();
+        Map<String, Object> mappings = ConfigUtils.extractMap(appConfig, "db.dialect." + db.getType() + ".typeMappings");
+        mappings.forEach((type, typeDef) -> {
+            if (typeDef instanceof String) {
+                JdbcType jdbcType;
+                if (type.matches("^\\d+$")) {
+                    jdbcType = JdbcTypes.tryForTypeCode(Integer.valueOf(type));
+                } else {
+                    jdbcType = JdbcTypes.tryForTypeName(type);
+                }
+                if (null != jdbcType) {
+                    columnTypes.add(jdbcType.getCode(), (String) typeDef);
+                }
+            }
+        });
     }
 
     /**

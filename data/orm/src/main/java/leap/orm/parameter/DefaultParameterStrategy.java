@@ -31,6 +31,7 @@ import leap.lang.params.Params;
 import leap.lang.params.UnsupportedParametersException;
 import leap.orm.OrmContext;
 import leap.orm.mapping.EntityMapping;
+import leap.orm.mapping.Mappings;
 
 public class DefaultParameterStrategy implements ParameterStrategy {
 	
@@ -81,7 +82,7 @@ public class DefaultParameterStrategy implements ParameterStrategy {
 			if(null != em.getEntityClass() && em.getEntityClass().isAssignableFrom(id.getClass())){
 				return new BeanParams(id);
 			}else if(keys.length == 1){
-				return new ArrayParams(id);
+				return new ArrayParams(Mappings.getIdArgs(em, id));
 			}else{
 				throw new UnsupportedParametersException("The class '" + id.getClass().getName() + "' not supported as id parameter");
 			}

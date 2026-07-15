@@ -16,14 +16,14 @@
 package leap.orm.mapping;
 
 import java.util.*;
-
 import leap.lang.Beans;
-import leap.lang.New;
+import leap.lang.Classes;
 import leap.lang.Objects2;
 import leap.lang.Strings;
 import leap.lang.accessor.Getter;
 import leap.lang.beans.BeanType;
 import leap.lang.collection.WrappedCaseInsensitiveMap;
+import leap.lang.convert.Converts;
 import leap.lang.params.Params;
 import leap.orm.value.EntityWrapper;
 
@@ -90,7 +90,8 @@ public class Mappings {
             return ((Collection)id).toArray();
         }
 
-        if(em.getKeyColumnNames().length > 1) {
+        String[] keyFieldNames = em.getKeyFieldNames();
+        if (keyFieldNames.length > 1) {
             Map map;
             if(id instanceof Map) {
                 map = (Map)id;
@@ -98,13 +99,30 @@ public class Mappings {
                 map = Beans.toMap(id);
             }
             List<Object> args = new ArrayList<>();
-            for(String name : em.getKeyFieldNames()) {
-                args.add(map.get(name));
+            for(String name : keyFieldNames) {
+                args.add(trySerialize(em, name, map.get(name)));
             }
             return args.toArray();
-        }else {
+        } else if (keyFieldNames.length == 1) {
+            return new Object[]{trySerialize(em, keyFieldNames[0], id)};
+        } else {
             return new Object[]{id};
         }
+    }
+
+    protected static Object trySerialize(EntityMapping em, String field, Object value) {
+        if (null == value) {
+            return null;
+        }
+        FieldMapping fm = em.getFieldMapping(field);
+        if (null != fm.getSerializer()) {
+            return fm.getSerializer().trySerialize(fm, value);
+        }
+        Class<?> javaType = fm.getJavaType();
+        if (Classes.isSimpleValueType(javaType) && !javaType.isAssignableFrom(value.getClass())) {
+            return Converts.convert(value, javaType);
+        }
+        return value;
     }
 
     public static Map<String, Object> getIdAsMap(EntityMapping em, Object id) {

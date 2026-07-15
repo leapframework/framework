@@ -15,6 +15,10 @@
  */
 package leap.orm.command;
 
+import leap.lang.Classes;
+import leap.lang.convert.Converts;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.lang.params.Params;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
@@ -23,6 +27,8 @@ import leap.orm.mapping.FieldMapping;
 import java.util.Map;
 
 public abstract class AbstractEntityDaoCommand extends AbstractDaoCommand {
+
+    private final Log log = LogFactory.get(AbstractEntityDaoCommand.class);
 
 	protected final EntityMapping em;
 	
@@ -51,13 +57,26 @@ public abstract class AbstractEntityDaoCommand extends AbstractDaoCommand {
 
         //Serialize field(s).
         for(FieldMapping fm : em.getFieldMappings()){
+            String fieldName = fm.getFieldName();
+            Object value = fields.get(fieldName);
+            if (null == value) {
+                continue;
+            }
             if(null != fm.getSerializer()) {
-                Object value = fields.get(fm.getFieldName());
-                if (null != value) {
-                    Object encoded = fm.getSerializer().trySerialize(fm, value);
-                    if(encoded != value) {
-                        fields.put(fm.getFieldName(), encoded);
-                    }
+                Object encoded = fm.getSerializer().trySerialize(fm, value);
+                if(encoded != value) {
+                    value = encoded;
+                    fields.replace(fieldName, value);
+                }
+            }
+            Class<?> javaType = fm.getJavaType();
+            if (Classes.isSimpleValueType(javaType) && !javaType.isAssignableFrom(value.getClass())) {
+                try {
+                    Object converted = Converts.convert(value, javaType);
+                    fields.replace(fieldName, converted);
+                } catch (Exception e) {
+                    log.warn("Cannot convert entity '" + em.getEntityName() + "' field '"  + fieldName
+                            + "' value '" + value + "' to type '" + javaType.getName() + "'");
                 }
             }
         }

@@ -1773,7 +1773,10 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
     }
 
     protected void applyFieldFilter(WhereBuilder.Expr expr, String alias, FieldMapping fm, Object value, String op) {
-        applyFieldFilterOrArg(expr, alias, fm, op, "?", Converts.convert(value, fm.getJavaType()));
+        if (!("[]".equals(value) && fm.getJavaType().isArray())) {
+            value = Converts.convert(value, fm.getJavaType());
+        }
+        applyFieldFilterOrArg(expr, alias, fm, op, "?", value);
     }
 
     protected void applyFieldFilterIn(WhereBuilder.Expr expr, String alias, FieldMapping fm, String[] values) {
